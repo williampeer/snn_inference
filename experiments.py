@@ -1,0 +1,63 @@
+import torch
+
+from model_util import generate_model_data
+
+torch.manual_seed(0)
+# torch.backends.cudnn.deterministic = True
+# torch.backends.cudnn.benchmark = False
+
+
+def randomise_parameters(initial_parameters, coeff=torch.tensor(0.5)):
+    res = initial_parameters.copy()
+    for key in initial_parameters.keys():
+        # rand_sign = round(torch.randn())*2 -1
+        rand_sign = 2*torch.randint(0, 1, (1,))[0] -1
+        res[key] = res[key] + rand_sign * coeff * torch.randn((1,))[0] * res[key]
+
+    return res
+
+
+def zip_dicts(a, b):
+    res = a.copy()
+    for key in b.keys():
+        if key in a.keys():
+            res[key].append(b[key])
+        else:
+            res[key] = b[key]
+    return res
+
+
+def poisson_input(rate, t, N):
+    return torch.poisson(rate * torch.ones((int(t), N)))  # t x N
+
+
+def generate_synthetic_data(gen_model, poisson_rate, t):
+    gen_input = poisson_input(rate=poisson_rate, t=t, N=gen_model.N)
+    _, gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)
+    # for gen spiketrain this may be thresholded to binary values:
+    gen_spiketrain = torch.round(gen_spiketrain)
+    del gen_input
+
+    return gen_spiketrain
+
+
+def train_test_split(data, train_test_split_factor=0.85):
+    assert data.shape[0] > data.shape[1], "assert row as timestep matrix. data.size: {}".format(data.size)
+    splice_index = int(train_test_split_factor * data.size(0))
+    train_data = data[:splice_index]
+    test_data = data[splice_index:]
+    return train_data, test_data
+
+
+def train_val_test_split(data, train_factor=0.6, val_factor=0.2, test_factor=0.2):
+    f_sum = (train_factor + val_factor + test_factor)
+    assert f_sum == 1, "the factors must sum to one. sum:{}".format(f_sum)
+
+    splice_train_index = int(train_factor*data.size(0))
+    splice_val_index = int(val_factor*data.size(0))
+
+    train_data = data[:splice_train_index]
+    val_data = data[splice_train_index:splice_val_index]
+    test_data = data[(splice_train_index+splice_val_index):]
+
+    return train_data, val_data, test_data
