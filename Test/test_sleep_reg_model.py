@@ -6,7 +6,7 @@ from Models.SleepRegulationModel import SleepRegulationModel
 from experiments import poisson_input
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
-snn = SleepRegulationModel(1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
+snn = SleepRegulationModel(0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
 
 sample_inputs = poisson_input(0.6, t=400, N=3)
 membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, sample_inputs)
