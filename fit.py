@@ -49,7 +49,7 @@ def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_r
         else:
             raise NotImplementedError("Loss function not supported.")
 
-        print('batch loss: {}'.format(loss))
+        # print('batch loss: {}'.format(loss))
         if loss_per_node:
             for l_i in range(len(loss)):
                 loss[l_i].backward(retain_graph=True)
@@ -57,7 +57,7 @@ def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_r
         else:
             loss.backward(retain_graph=True)
             batch_losses[0].append(loss.clone().detach().data)
-        print('batch_losses: {}'.format(batch_losses))
+        # print('batch_losses: {}'.format(batch_losses))
 
         for optim in optimisers:
             optim.step()

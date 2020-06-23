@@ -16,7 +16,7 @@ def main(argv):
     # optimiser = 'Adam'
     optimiser = 'SGD'
     exp_type = 'SanityCheck'
-    initial_poisson_rate = 0.6
+    initial_poisson_rate = 0.5
     # model_type_str = Izhikevich.IzhikevichStable.__name__
     # model_type_str = Izhikevich.Izhikevich.__name__
     # model_type_str = Izhikevich.IzhikevichWeightsOnly.__name__
@@ -33,8 +33,8 @@ def main(argv):
         if opt == '-h':
             print('main.py -s <script> -lr <learning-rate> -ti <training-iterations> -N <number-of-experiments> '
                   '-bs <batch-size> -tvr <van-rossum-time-constant> -ic <input-coefficient> '
-                  '-rpti <rows-per-training-iteration> -optim <optimiser> -ipr <initial-poisson-rate>'
-                  '-mt <model-type>')
+                  '-rpti <rows-per-training-iteration> -optim <optimiser> -ipr <initial-poisson-rate> '
+                  '-mt <model-type> -lfn <loss-fn>')
             sys.exit()
         elif opt in ("-s", "--script"):
             exp_type = args[i]
