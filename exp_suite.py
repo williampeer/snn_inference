@@ -229,8 +229,8 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
         free_parameters = {'tau_m': 4.0, 'tau_g': 2.0, 'v_rest': -70.0}
 
     elif model_class in [Izhikevich, IzhikevichStable, IzhikevichWeightsOnly]:
-        static_init_parameters = {'N': 12, 'w_mean': 0.2, 'w_var': 0.3, 'a': 0.05, 'b': 0.24}
-        free_parameters = {'c': -62.5, 'd': 6., 'tau_g': 2.0}
+        static_init_parameters = {'N': 12, 'w_mean': 0.1, 'w_var': 0.2, 'a': 0.1, 'b': 0.25}
+        free_parameters = {'c': -62.5, 'd': 6., 'tau_g': 4.5}
 
     elif model_class is BaselineSNN:
         static_init_parameters = {'N': 12, 'w_mean': 0.6, 'w_var': 0.7}
