@@ -9,19 +9,20 @@ def main(argv):
 
     # Default values
     data_bin_size = 4000; target_bin_size = 1
-    learn_rate = 0.05; train_iters = 20; N_exp = 3; batch_size = 400; tau_van_rossum = 12.0
+    learn_rate = 0.05; train_iters = 12; N_exp = 1; batch_size = 200; tau_van_rossum = 3.0
     input_coefficient = 1.0
     # rows_per_train_iter = data_bin_size
     rows_per_train_iter = 1600
-    # optimiser = 'Adam'
-    optimiser = 'SGD'
-    exp_type = 'SanityCheck'
+    optimiser = 'Adam'
+    # optimiser = 'SGD'
+    exp_type = 'Synthetic'
     initial_poisson_rate = 0.5
-    # model_type_str = Izhikevich.IzhikevichStable.__name__
+    model_type_str = Izhikevich.IzhikevichStable.__name__
     # model_type_str = Izhikevich.Izhikevich.__name__
     # model_type_str = Izhikevich.IzhikevichWeightsOnly.__name__
-    model_type_str = LIF.LIF.__name__
+    # model_type_str = LIF.LIF.__name__
     # model_type_str = BaselineSNN.BaselineSNN.__name__
+    # loss_fn = 'van_rossum_dist'
     loss_fn = 'van_rossum_dist_per_node'
     # loss_fn = 'van_rossum_squared_per_node'
     # loss_fn = 'mse_per_node'

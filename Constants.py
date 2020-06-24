@@ -43,3 +43,4 @@ class ExperimentType(enum.Enum):
     DataDriven = 1
     Synthetic = 2
     SanityCheck = 3
+    RetrieveFitted = 4

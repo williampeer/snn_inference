@@ -198,7 +198,7 @@ def run_exp_loop(logger, constants, exp_type, model_class, params_model, params_
     for exp_i in range(constants.N_exp):
         if exp_type is ExperimentType.DataDriven:
             recovered_parameters = fit_model_to_data(logger, constants, model_class, params_model, exp_type=exp_type, exp_num=exp_i)
-        elif exp_type in [ExperimentType.SanityCheck, ExperimentType.Synthetic]:
+        elif exp_type in [ExperimentType.SanityCheck, ExperimentType.Synthetic, ExperimentType.RetrieveFitted]:
             if exp_type is ExperimentType.SanityCheck:
                 params_model = params_gen.copy()
             recovered_parameters, target_parameters = recover_model_parameters(logger, constants, model_class, params_model, params_gen, exp_type=exp_type, exp_num=exp_i)
@@ -242,9 +242,12 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
         logger.log([], 'Model class not supported.')
         sys.exit(1)
 
-    if experiment_type == ExperimentType.Synthetic:
+    if experiment_type is ExperimentType.Synthetic:
         params_gen = zip_dicts(randomise_parameters(free_parameters, torch.tensor(0.5)), static_init_parameters).copy()
         params_model = zip_dicts(randomise_parameters(free_parameters, torch.tensor(0.5)), static_init_parameters).copy()
+    elif experiment_type is ExperimentType.RetrieveFitted:
+        # assign params from state dict?
+        pass
     else:
         params_gen = zip_dicts(free_parameters, static_init_parameters).copy()
         params_model = zip_dicts(free_parameters, static_init_parameters).copy()
