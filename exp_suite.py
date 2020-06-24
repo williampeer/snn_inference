@@ -61,7 +61,7 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
     plot_losses(training_loss=train_losses, test_loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
                 custom_title='Loss ({}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
                                                            constants.learn_rate),
-                fname='training_and_test_loss_exp_{}'.format(exp_num))
+                fname='training_and_test_loss_exp_{}_loss_fn_{}'.format(exp_num, constants.loss_fn))
 
     logger.log('', 'train_losses: #{}'.format(train_losses))
     mean_test_loss = torch.mean(torch.tensor(test_losses)).data
