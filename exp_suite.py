@@ -226,7 +226,7 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
     if model_class is LIF:
         static_init_parameters = {'N': 12, 'w_mean': 0.2, 'w_var': 0.3,
                              'pre_activation_coefficient': 2.0, 'post_activation_coefficient': 120.0}
-        free_parameters = {'tau_m': 4.0, 'tau_g': 2.0, 'v_rest': -70.0}
+        free_parameters = {'v_rest': -70.0, 'tau_m': 4.0, 'tau_g': 2.0}
 
     elif model_class in [Izhikevich, IzhikevichStable, IzhikevichWeightsOnly]:
         static_init_parameters = {'N': 12, 'w_mean': 0.1, 'w_var': 0.2, 'a': 0.1, 'b': 0.25}
@@ -243,8 +243,10 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
         sys.exit(1)
 
     if experiment_type == ExperimentType.Synthetic:
-        free_parameters = randomise_parameters(free_parameters)
-    params_gen = zip_dicts(free_parameters, static_init_parameters)
-    params_model = zip_dicts(free_parameters, static_init_parameters)
+        params_gen = zip_dicts(randomise_parameters(free_parameters, torch.tensor(0.5)), static_init_parameters).copy()
+        params_model = zip_dicts(randomise_parameters(free_parameters, torch.tensor(0.5)), static_init_parameters).copy()
+    else:
+        params_gen = zip_dicts(free_parameters, static_init_parameters).copy()
+        params_model = zip_dicts(free_parameters, static_init_parameters).copy()
 
     run_exp_loop(logger, constants, experiment_type, model_class, params_model, params_gen)
