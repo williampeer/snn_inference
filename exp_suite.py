@@ -105,7 +105,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
 
         # -- in-place model modification --
         # avg_train_loss, test_loss = train_iter(inputs, targets, model, current_rates, constants, logger, train_i, exp_type.name)
-        train_test_split_factor = 0.8
+        train_test_split_factor = 0.9
         avg_train_loss, test_loss = train_iter(None, targets, train_test_split_factor, model, current_rate, optims,
                                                constants, logger, train_i, exp_type.name, exp_num)
         model.reset_hidden_state()
@@ -197,7 +197,8 @@ def run_exp_loop(logger, constants, exp_type, model_class, params_model, params_
     target_parameters = False
     for exp_i in range(constants.N_exp):
         if exp_type is ExperimentType.DataDriven:
-            recovered_parameters = fit_model_to_data(logger, constants, model_class, params_model, exp_type=exp_type, exp_num=exp_i)
+            recovered_parameters = fit_model_to_data(logger, constants, model_class, params_model,
+                                                     data_set=constants.data_set, exp_type=exp_type, exp_num=exp_i)
         elif exp_type in [ExperimentType.SanityCheck, ExperimentType.Synthetic, ExperimentType.RetrieveFitted]:
             if exp_type is ExperimentType.SanityCheck:
                 params_model = params_gen.copy()

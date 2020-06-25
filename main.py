@@ -26,6 +26,7 @@ def main(argv):
     loss_fn = 'van_rossum_dist_per_node'
     # loss_fn = 'van_rossum_squared_per_node'
     # loss_fn = 'mse_per_node'
+    data_set = 'exp138'
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
@@ -35,7 +36,7 @@ def main(argv):
             print('main.py -s <script> -lr <learning-rate> -ti <training-iterations> -N <number-of-experiments> '
                   '-bs <batch-size> -tvr <van-rossum-time-constant> -ic <input-coefficient> '
                   '-rpti <rows-per-training-iteration> -optim <optimiser> -ipr <initial-poisson-rate> '
-                  '-mt <model-type> -lfn <loss-fn>')
+                  '-mt <model-type> -lfn <loss-fn> -ds <data-set>')
             sys.exit()
         elif opt in ("-s", "--script"):
             exp_type = args[i]
@@ -61,11 +62,13 @@ def main(argv):
             model_type_str = args[i]
         elif opt in ("-lfn", "--loss-fn"):
             loss_fn = args[i]
+        elif opt in ("-ds", "--data-set"):
+            data_set = args[i]
 
     constants = C.Constants(data_bin_size=data_bin_size, target_bin_size=target_bin_size, learn_rate=learn_rate,
                             train_iters=train_iters, N_exp=N_exp, batch_size=batch_size, tau_van_rossum=tau_van_rossum,
                             input_coefficient=input_coefficient, rows_per_train_iter=rows_per_train_iter,
-                            optimiser=optimiser, initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn)
+                            optimiser=optimiser, initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, data_set=data_set)
 
     EXP_TYPE = None
     try:
