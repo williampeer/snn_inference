@@ -11,7 +11,8 @@ exp_names = ['exp108', 'exp109', 'exp124', 'exp126', 'exp138', 'exp146', 'exp147
 # prefix = '/home/william/'  # Ubuntu
 prefix = '/Users/william/'  # OS X
 # prefix = '/home/williampeer/'  # server
-path = 'data/sleep_data/'
+# path = 'data/sleep_data/'
+path = 'repos/pnmf/data/'
 
 
 def load_data(exp_num):
@@ -29,7 +30,7 @@ def load_data(exp_num):
     return satisfactory_quality_node_indices, spike_times, spike_indices, states
 
 
-def convert_to_sparse_vectors(spiketrain):
+def convert_to_sparse_vectors(spiketrain, t_offset):
     assert spiketrain.shape[0] > spiketrain.shape[1], "assuming bins x nodes (rows as timesteps). spiketrain.shape: {}".format(spiketrain.shape)
 
     spike_indices = np.array([], dtype='int8')
@@ -39,7 +40,7 @@ def convert_to_sparse_vectors(spiketrain):
             if spiketrain[ms_i][node_i] != 0:
                 assert spiketrain[ms_i][node_i] == 1, \
                     "found element that was neither 0 nor 1. row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
-                spike_times = np.append(spike_times, np.float32(float(ms_i)))
+                spike_times = np.append(spike_times, np.float32(float(ms_i) +t_offset))
                 spike_indices = np.append(spike_indices, np.int8(node_i))
 
     return spike_indices, spike_times
