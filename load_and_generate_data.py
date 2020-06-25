@@ -20,12 +20,12 @@ def main(argv):
 
     # path = None
     path = './Test/IzhikevichStable_sample.pt'
-    t = 30 * 60 * 1000  # 5 min
+    t = 60 * 60 * 1000
     poisson_rate = 0.6
 
     for i, opt in enumerate(opts):
         if opt == '-h':
-            print('load_and_generate_data.py -p <model-path>')
+            print('load_and_generate_data.py -p <model-path> -t <time> -r <poisson-rate>')
             sys.exit()
         elif opt in ("-p", "--model-path"):
             path = args[i]
