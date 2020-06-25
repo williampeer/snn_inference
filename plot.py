@@ -250,6 +250,9 @@ def plot_all_param_pairs_with_variance(param_means, target_params, exp_type, uui
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists(full_path)
 
+    data = {'param_means': param_means, 'target_params': target_params, 'exp_type': exp_type, 'uuid': uuid, 'custom_title': custom_title, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_all_param_pairs_with_variance')
+
     if not fname:
         fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
     path = full_path + fname
