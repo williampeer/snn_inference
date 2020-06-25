@@ -9,10 +9,10 @@ np.random.seed(0)
 
 exp_names = ['exp108', 'exp109', 'exp124', 'exp126', 'exp138', 'exp146', 'exp147']
 # prefix = '/home/william/'  # Ubuntu
-prefix = '/Users/william/'  # OS X
+# prefix = '/Users/william/'  # OS X
 # prefix = '/home/williampeer/'  # server
-# path = 'data/sleep_data/'
-path = 'repos/pnmf/data/'
+prefix = '/afs/inf.ed.ac.uk/user/s18/s1895734/'
+path = 'data/sleep_data/'
 
 
 def load_data(exp_num):
