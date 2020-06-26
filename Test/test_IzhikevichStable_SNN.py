@@ -11,7 +11,7 @@ free_parameters = {'c': -62.5, 'd': 6., 'tau_g': 4.5}
 
 snn = IzhikevichStable(device='cpu', parameters=zip_dicts(static_init_parameters, free_parameters))
 
-inputs = poisson_input(0.5, t=500, N=static_init_parameters['N'])
+inputs = poisson_input(0.4, t=500, N=static_init_parameters['N'])
 membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
 plot_neuron(membrane_potentials.data, title='Neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_IzhikevichStable_poisson_input')
 
@@ -21,6 +21,6 @@ plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.
 
 plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_IzhikevichStable', title='Spiketrains random and zero input (Izhikevich)')
 
-tau_vr = torch.tensor(12.0)
+tau_vr = torch.tensor(2.0)
 loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)
 print('tau_vr: {}, loss: {}'.format(tau_vr, loss))

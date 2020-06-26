@@ -21,6 +21,6 @@ plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.
 
 plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_LIF', title='Test LIF spiketrains random and zero input')
 
-tau_vr = torch.tensor(15.0)
+tau_vr = torch.tensor(2.0)
 loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)
 print('tau_vr: {}, loss: {}'.format(tau_vr, loss))
