@@ -86,7 +86,8 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
         model.reset_hidden_state()
         current_rate = current_rate.clone().detach()
 
-        if train_i % constants.evaluate_step == 0:
+        last_train_iter = (train_i == constants.train_iters-1)
+        if train_i % constants.evaluate_step == 0 or last_train_iter:
             prev_spike_arr_index, targets = data_util.get_spike_array(index_last_step=prev_spike_arr_index,
                                                                       advance_by_t_steps=constants.rows_per_train_iter,
                                                                       spike_times=spike_times,
