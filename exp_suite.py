@@ -48,7 +48,7 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
 def fit_model_to_data(logger, constants, model_class, params_model, data_set='exp138', exp_type=ExperimentType.DataDriven, exp_num=None):
     data_index = data_util.exp_names.index(data_set)
     node_indices, spike_times, spike_indices, states = data_util.load_data(data_index)
-    params_model.N = len(node_indices)
+    params_model['N'] = len(node_indices)
 
     # states_per_train_iter = int(constants.rows_per_train_iter / constants.data_bin_size)
 
