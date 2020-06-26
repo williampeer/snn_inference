@@ -25,8 +25,8 @@ def main(argv):
     # fname = 'LIF_exp_num_0_mean_loss_53.212135314941406'
     ext = '.pt'
     path = folder + fname + ext
-    t = 20 * 60 * 1000
-    poisson_rate = 0.35
+    t = 120 * 60 * 1000
+    poisson_rate = 0.6
 
     for i, opt in enumerate(opts):
         if opt == '-h':
@@ -57,9 +57,9 @@ def main(argv):
         cur_spike_indices, cur_spike_times = convert_to_sparse_vectors(spiketrain, t_offset=t_i*interval_size)
         spike_indices = np.append(spike_indices, cur_spike_indices)
         spike_times = np.append(spike_times, cur_spike_times)
-        print('Simulated a total of {} seconds of data'.format(interval_range * (t_i+1)))
+        print('Simulated a total of {} seconds ({} min) of data'.format(interval_range * (t_i+1)/1000., interval_range * (t_i+1)/(60.*1000)))
 
-    save_spiketrain_in_matlab_format(fname='generated_spikes_rate_{}_'.format(poisson_rate) + fname + '.mat',
+    save_spiketrain_in_matlab_format(fname='generated_spikes_rate_{}_'.format(poisson_rate) + fname + IO.dt_descriptor() + '.mat',
                                      spike_indices=spike_indices, spike_times=spike_times)
 
 

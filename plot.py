@@ -282,3 +282,35 @@ def plot_all_param_pairs_with_variance(param_means, target_params, exp_type, uui
                 plot_parameter_pair_with_variance(cur_p_i, cur_p_j, target_params=cur_tar_params,
                                                   path=path+'_i_j_{}_{}'.format(plot_i, plot_j),
                                                   custom_title=custom_title, logger=logger)
+
+
+def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'r1': r1, 'r2': r2, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_neuron_rates')
+
+    xs = np.linspace(1, r1.shape[0], r1.shape[0])
+    plt.errorbar(xs-0.2, r1, yerr=r1_std, width=0.4)
+    plt.errorbar(xs+0.2, r2, yerr=r2_std, width=0.4)
+    plt.ylim(0, 1)
+    plt.xticks(xs)
+    plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+
+
+def heatmap_spike_train_correlations(corrs, exp_type, uuid, fname):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'corrs': corrs, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='heat_plot_spike_train_correlations')
+
+    plt.imshow(corrs, cmap='hot', interpolation='nearest')
+    plt.title('Pairwise spiketrain correlations')
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()

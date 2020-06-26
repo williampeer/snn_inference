@@ -1,11 +1,12 @@
 import stats
 from experiments import poisson_input
+from plot import heatmap_spike_train_correlations
 
 
 def test_spike_train_correlation():
     t = 12000; N=12; bin_size = 400
     s1 = (poisson_input(0.6, t=t, N=N) > 0).float()
-    s2 = (poisson_input(0.6, t=t, N=N) > 0).float()
+    s2 = (poisson_input(0.4, t=t, N=N) > 0).float()
 
     corrs_vars = stats.spike_train_correlation(s1, s2, bin_size=bin_size)
     assert corrs_vars.shape[0] == N and corrs_vars.shape[1] == N, \
@@ -19,7 +20,24 @@ def test_spike_train_correlation():
 
 
 def test_plot_spike_train_correlations():
-    pass
+    t = 12000; N = 12; bin_size = 400
+    s1 = (poisson_input(0.6, t=t, N=N) > 0).float()
+    s2 = (poisson_input(0.4, t=t, N=N) > 0).float()
+
+    corrs_vars = stats.spike_train_correlation(s1, s2, bin_size=bin_size)
+
+    heatmap_spike_train_correlations(corrs_vars, exp_type='default', uuid='test_heatmap_corrs', fname='test_heatmap_plot')
+
+
+def test_plot_spike_train_correlation_self():
+    t = 12000; N = 12; bin_size = 400
+    spiketrain = (poisson_input(0.5, t=t, N=N) > 0).float()
+
+    corrs_vars = stats.spike_train_correlation(spiketrain, spiketrain, bin_size=bin_size)
+
+    heatmap_spike_train_correlations(corrs_vars, exp_type='default', uuid='test_heatmap_corrs', fname='test_heatmap_self_plot')
+
 
 test_spike_train_correlation()
 test_plot_spike_train_correlations()
+test_plot_spike_train_correlation_self()
