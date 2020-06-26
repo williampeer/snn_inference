@@ -39,7 +39,7 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
     mean_test_loss = torch.mean(torch.tensor(test_losses)).data
     logger.log(['mean test loss: {}'.format(mean_test_loss)], 'test_losses: #{}'.format(test_losses))
 
-    cur_fname = '{}_exp_num_{}_mean_loss_{}'.format(model.__class__.__name__, exp_num, mean_test_loss)
+    cur_fname = '{}_exp_num_{}_mean_loss_{:.3f}'.format(model.__class__.__name__, exp_num, mean_test_loss)
     IO.save(model, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
 
     del model, mean_test_loss
@@ -57,9 +57,10 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
     model = model_class(device=device, parameters=params_model)
     logger.log([model_class.__name__], 'initial model parameters: {}'.format(params_model))
     current_rate = torch.tensor(constants.initial_poisson_rate)  # * torch.rand((1,))[0]
-    model_parameters = {}
+    parameters = {}
     for p_i, param in enumerate(list(model.parameters())):
-        model_parameters[p_i] = [param.clone().detach().numpy()]
+        parameters[p_i] = [param.clone().detach().numpy()]
+    parameters[p_i + 1] = [current_rate.clone().detach().numpy()]
 
     model_optim = constants.optimiser(list(model.parameters()), lr=constants.learn_rate)
     poisson_rates_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
@@ -103,14 +104,15 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
         for param_i, param in enumerate(list(model.parameters())):
             logger.log('-', 'parameter #{}: {}'.format(param_i, param))
             logger.log('-', 'parameter #{} gradient: {}'.format(param_i, param.grad))
-            model_parameters[param_i].append(param.clone().detach().numpy())
+            parameters[param_i].append(param.clone().detach().numpy())
+        parameters[param_i + 1].append(current_rate.clone().detach().numpy())
 
-    stats_training_iterations(model_parameters, model, train_losses, test_losses, constants, logger, exp_type.name, target_parameters=False, exp_num=exp_num)
+    stats_training_iterations(parameters, model, train_losses, test_losses, constants, logger, exp_type.name, target_parameters=False, exp_num=exp_num)
 
     # del inputs, targets, model, train_losses, test_losses  # cleanup
     del targets, model, train_losses, test_losses  # cleanup
 
-    return model_parameters
+    return parameters
 
 
 def recover_model_parameters(logger, constants, model_class, params_model, params_gen, exp_type=ExperimentType.Synthetic, exp_num=None):

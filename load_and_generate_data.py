@@ -19,8 +19,9 @@ def main(argv):
     args = [arg for arg in argv if not arg.startswith("-")]
 
     # path = None
-    path = './Test/IzhikevichStable_sample.pt'
-    t = 60 * 60 * 1000
+    # path = './Test/IzhikevichStable_sample.pt'
+    path = './saved/IzhikevichStable_exp_num_0_mean_loss_41.887474060058594.pt'
+    t = 20 * 60 * 1000
     poisson_rate = 0.6
 
     for i, opt in enumerate(opts):
@@ -45,13 +46,14 @@ def main(argv):
 
     spike_indices = np.array([], dtype='int8')
     spike_times = np.array([], dtype='float32')
-    for t_i in range(interval_range):  # 1s at a time
+    for t_i in range(interval_range):
         model.reset_hidden_state()
         spiketrain = generate_synthetic_data(model, poisson_rate, t=interval_size)
         # plot_spiketrain(spiketrain, 'Plot imported SNN', 'plot_imported_model')
         cur_spike_indices, cur_spike_times = convert_to_sparse_vectors(spiketrain, t_offset=t_i*interval_size)
         spike_indices = np.append(spike_indices, cur_spike_indices)
         spike_times = np.append(spike_times, cur_spike_times)
+        print('Simulated a total of {} seconds of data'.format(interval_range * (t_i+1)))
 
     save_spiketrain_in_matlab_format(fname='model_spiketrain_{}.mat'.format(IO.dt_descriptor()), spike_indices=spike_indices, spike_times=spike_times)
 

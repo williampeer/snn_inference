@@ -17,11 +17,11 @@ def main(argv):
     # exp_type = 'Synthetic'
     # exp_type = 'SanityCheck'
     initial_poisson_rate = 0.5
-    # model_type_str = Izhikevich.IzhikevichStable.__name__
-    model_type_str = LIF.LIF.__name__
+    model_type_str = Izhikevich.IzhikevichStable.__name__
+    # model_type_str = LIF.LIF.__name__
     # model_type_str = BaselineSNN.BaselineSNN.__name__
-    # loss_fn = 'van_rossum_dist'
-    loss_fn = 'van_rossum_dist_per_node'
+    loss_fn = 'van_rossum_dist'
+    # loss_fn = 'van_rossum_dist_per_node'
     data_set = 'exp138'
     # data_set = 'exp147'
     evaluate_step = 1
