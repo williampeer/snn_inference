@@ -16,7 +16,7 @@ path = 'data/sleep_data/'
 
 
 def load_data(exp_num):
-    cur_fname = exp_names[4] + '.mat'
+    cur_fname = exp_names[exp_num] + '.mat'
 
     exp_data = sio.loadmat(prefix + path + cur_fname)['DATA']
 

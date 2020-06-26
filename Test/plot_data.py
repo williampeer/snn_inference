@@ -19,7 +19,7 @@ def fetch_and_plot_data(exp_num, t_steps, index_previous_step):
     return next_step
 
 
-next_step = fetch_and_plot_data(4, 500, 0)
-next_step = fetch_and_plot_data(4, 500, next_step)
-next_step = fetch_and_plot_data(4, 500, next_step)
-next_step = fetch_and_plot_data(4, 500, next_step)
+next_step = fetch_and_plot_data(6, 500, 0)
+next_step = fetch_and_plot_data(6, 500, next_step)
+next_step = fetch_and_plot_data(6, 500, next_step)
+next_step = fetch_and_plot_data(6, 500, next_step)

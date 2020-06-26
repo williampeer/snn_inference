@@ -39,7 +39,7 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
     mean_test_loss = torch.mean(torch.tensor(test_losses)).data
     logger.log(['mean test loss: {}'.format(mean_test_loss)], 'test_losses: #{}'.format(test_losses))
 
-    cur_fname = '{}_exp_num_{}_mean_loss_{:.3f}'.format(model.__class__.__name__, exp_num, mean_test_loss)
+    cur_fname = '{}_exp_num_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, mean_test_loss, constants.UUID)
     IO.save(model, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
 
     del model, mean_test_loss
@@ -48,6 +48,8 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
 def fit_model_to_data(logger, constants, model_class, params_model, data_set='exp138', exp_type=ExperimentType.DataDriven, exp_num=None):
     data_index = data_util.exp_names.index(data_set)
     node_indices, spike_times, spike_indices, states = data_util.load_data(data_index)
+    params_model.N = len(node_indices)
+
     # states_per_train_iter = int(constants.rows_per_train_iter / constants.data_bin_size)
 
     assert constants.train_iters * constants.rows_per_train_iter <= spike_times[-1], \

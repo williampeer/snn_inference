@@ -20,7 +20,11 @@ def main(argv):
 
     # path = None
     # path = './Test/IzhikevichStable_sample.pt'
-    path = './saved/IzhikevichStable_exp_num_0_mean_loss_41.887474060058594.pt'
+    folder = './saved/'
+    # fname = 'IzhikevichStable_exp_num_0_mean_loss_41.887474060058594'
+    fname = 'LIF_exp_num_0_mean_loss_53.212135314941406'
+    ext = '.pt'
+    path = folder + fname + ext
     t = 20 * 60 * 1000
     poisson_rate = 0.6
 
@@ -39,6 +43,7 @@ def main(argv):
         print('No path to load model from specified.')
         sys.exit(1)
 
+
     model = torch.load(path)['model']
 
     interval_size = 4000
@@ -55,7 +60,7 @@ def main(argv):
         spike_times = np.append(spike_times, cur_spike_times)
         print('Simulated a total of {} seconds of data'.format(interval_range * (t_i+1)))
 
-    save_spiketrain_in_matlab_format(fname='model_spiketrain_{}.mat'.format(IO.dt_descriptor()), spike_indices=spike_indices, spike_times=spike_times)
+    save_spiketrain_in_matlab_format(fname='generated_spikes_'+fname+'.mat', spike_indices=spike_indices, spike_times=spike_times)
 
 
 if __name__ == "__main__":
