@@ -39,7 +39,7 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
     mean_test_loss = torch.mean(torch.tensor(test_losses)).data
     logger.log(['mean test loss: {}'.format(mean_test_loss)], 'test_losses: #{}'.format(test_losses))
 
-    cur_fname = '{}_exp_num_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, mean_test_loss, constants.UUID)
+    cur_fname = '{}_exp_num_{}_data_set_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, constants.data_set, mean_test_loss, constants.UUID)
     IO.save(model, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
 
     del model, mean_test_loss

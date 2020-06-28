@@ -57,9 +57,9 @@ def main(argv):
         cur_spike_indices, cur_spike_times = convert_to_sparse_vectors(spiketrain, t_offset=t_i*interval_size)
         spike_indices = np.append(spike_indices, cur_spike_indices)
         spike_times = np.append(spike_times, cur_spike_times)
-        print('Simulated a total of {} seconds ({} min) of data'.format(interval_range * (t_i+1)/1000., interval_range * (t_i+1)/(60.*1000)))
+        print('Simulated a total of {} seconds ({} min) of data'.format(interval_size * (t_i+1)/1000., interval_size * (t_i+1)/(60.*1000)))
 
-    save_spiketrain_in_matlab_format(fname='generated_spikes_rate_{}_'.format(poisson_rate) + fname + IO.dt_descriptor() + '.mat',
+    save_spiketrain_in_matlab_format(fname='generated_spikes_t_{:.1f}_rate_{}_'.format(t/1000., poisson_rate) + fname + IO.dt_descriptor() + '.mat',
                                      spike_indices=spike_indices, spike_times=spike_times)
 
 

@@ -22,7 +22,7 @@ def main(argv):
     # model_type_str = BaselineSNN.BaselineSNN.__name__
     loss_fn = 'van_rossum_dist'
     # loss_fn = 'van_rossum_dist_per_node'
-    data_set = 'exp138'
+    data_set = 'N/A'
     # data_set = 'exp147'
     evaluate_step = 1
 
