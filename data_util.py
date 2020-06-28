@@ -13,6 +13,7 @@ prefix = '/Users/william/'  # OS X
 # prefix = '/home/williampeer/'  # server
 # prefix = '/afs/inf.ed.ac.uk/user/s18/s1895734/'
 path = 'data/sleep_data/'
+matlab_export = 'matlab_export/'
 
 
 def load_data(exp_num):
@@ -51,7 +52,7 @@ def save_spiketrain_in_matlab_format(fname, spike_indices, spike_times):
     exp_data['clu'] = np.reshape(spike_indices, (-1, 1))
     exp_data['res'] = np.reshape(spike_times, (-1, 1))
     mat_data = {'DATA': exp_data}
-    sio.savemat(file_name=prefix + path + fname, mdict=mat_data)
+    sio.savemat(file_name=prefix + path + matlab_export + fname, mdict=mat_data)
 
 
 def get_spike_array(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):

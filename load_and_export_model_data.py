@@ -4,6 +4,7 @@ import numpy as np
 import torch
 
 import IO
+import data_util
 from data_util import save_spiketrain_in_matlab_format, convert_to_sparse_vectors
 from experiments import generate_synthetic_data
 from plot import plot_spiketrain
@@ -20,36 +21,39 @@ def main(argv):
 
     # path = None
     # path = './Test/IzhikevichStable_sample.pt'
-    folder = './saved/'
-    fname = 'IzhikevichStable_exp_num_0_mean_loss_41.887474060058594'
-    # fname = 'LIF_exp_num_0_mean_loss_53.212135314941406'
-    ext = '.pt'
-    path = folder + fname + ext
-    t = 120 * 60 * 1000
+    folder = data_util.prefix + data_util.path
+    fname = 'LIF_exp138_exp_num_1_mean_loss_31.989_uuid_06-26_09-46-27-114.pt'
+    load_path = folder + fname
+    t = 20 * 60 * 1000
     poisson_rate = 0.6
 
     for i, opt in enumerate(opts):
         if opt == '-h':
-            print('load_and_generate_data.py -p <model-path> -t <time> -r <poisson-rate>')
+            print('load_and_generate_data.py -mp <model-path> -fname <filename> -t <time> -r <poisson-rate>')
             sys.exit()
-        elif opt in ("-p", "--model-path"):
-            path = args[i]
+        elif opt in ("-mp", "--model-path"):
+            load_path = args[i]
+        elif opt in ("-fname", "--filename"):
+            fname = args[i]
         elif opt in ("-t", "--time"):
             t = int(args[i])
         elif opt in ("-r", "--poisson-rate"):
             poisson_rate = float(args[i])
 
-    if path is None:
+    if load_path is None:
         print('No path to load model from specified.')
         sys.exit(1)
 
-    model = torch.load(path)['model']
+    model = torch.load(load_path)['model']
+    print('Loaded model.')
 
     interval_size = 4000
     interval_range = int(t/interval_size)
+    assert interval_range > 0, "t must be greater than the interval size, {}. t={}".format(interval_size, t)
 
     spike_indices = np.array([], dtype='int8')
     spike_times = np.array([], dtype='float32')
+    print('Simulating data..')
     for t_i in range(interval_range):
         model.reset_hidden_state()
         spiketrain = generate_synthetic_data(model, poisson_rate, t=interval_size)
@@ -57,10 +61,10 @@ def main(argv):
         cur_spike_indices, cur_spike_times = convert_to_sparse_vectors(spiketrain, t_offset=t_i*interval_size)
         spike_indices = np.append(spike_indices, cur_spike_indices)
         spike_times = np.append(spike_times, cur_spike_times)
-        print('Simulated a total of {} seconds ({} min) of data'.format(interval_size * (t_i+1)/1000., interval_size * (t_i+1)/(60.*1000)))
+        print('{} seconds ({:.2f} min) simulated.'.format(interval_size * (t_i+1)/1000., interval_size * (t_i+1)/(60.*1000)))
 
-    save_spiketrain_in_matlab_format(fname='generated_spikes_t_{:.1f}_rate_{}_'.format(t/1000., poisson_rate) + fname + IO.dt_descriptor() + '.mat',
-                                     spike_indices=spike_indices, spike_times=spike_times)
+    save_fname = 'generated_spikes_t_{:.1f}_rate_{}_'.format(t/1000., poisson_rate) + fname.split('.pt')[0] + '.mat'
+    save_spiketrain_in_matlab_format(fname=save_fname, spike_indices=spike_indices, spike_times=spike_times)
 
 
 if __name__ == "__main__":
