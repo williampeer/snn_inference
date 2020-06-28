@@ -7,10 +7,6 @@ import IO
 import data_util
 from data_util import save_spiketrain_in_matlab_format, convert_to_sparse_vectors
 from experiments import generate_synthetic_data
-from plot import plot_spiketrain
-
-# path = './Test/LIF_test.pt'
-# path = './Test/IzhikevichStable_test.pt'
 
 
 def main(argv):
@@ -22,17 +18,18 @@ def main(argv):
     # path = None
     # path = './Test/IzhikevichStable_sample.pt'
     folder = data_util.prefix + data_util.path
-    fname = 'LIF_exp138_exp_num_1_mean_loss_31.989_uuid_06-26_09-46-27-114.pt'
+    fname = 'placeholder_'.format(IO.dt_descriptor())
     load_path = folder + fname
     t = 20 * 60 * 1000
     poisson_rate = 0.6
 
     for i, opt in enumerate(opts):
         if opt == '-h':
-            print('load_and_generate_data.py -mp <model-path> -fname <filename> -t <time> -r <poisson-rate>')
+            print('load_and_export_model_data.py -mp <model-path> -fname <filename> -t <time> -r <poisson-rate>')
             sys.exit()
         elif opt in ("-mp", "--model-path"):
             load_path = args[i]
+            fname = load_path.split('/')[-1]
         elif opt in ("-fname", "--filename"):
             fname = args[i]
         elif opt in ("-t", "--time"):
@@ -63,7 +60,7 @@ def main(argv):
         spike_times = np.append(spike_times, cur_spike_times)
         print('{} seconds ({:.2f} min) simulated.'.format(interval_size * (t_i+1)/1000., interval_size * (t_i+1)/(60.*1000)))
 
-    save_fname = 'generated_spikes_t_{:.1f}_rate_{}_'.format(t/1000., poisson_rate) + fname.split('.pt')[0] + '.mat'
+    save_fname = 'generated_spikes_t_{:.1f}_s_rate_{}_'.format(t/1000., poisson_rate) + fname.split('.pt')[0] + '.mat'
     save_spiketrain_in_matlab_format(fname=save_fname, spike_indices=spike_indices, spike_times=spike_times)
 
 
