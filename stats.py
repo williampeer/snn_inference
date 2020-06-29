@@ -21,6 +21,7 @@ def firing_rate_per_neuron(spikes):
 
 
 def binned_avg_firing_rate_per_neuron(spikes, bin_size):
+    spikes = np.array(spikes)
     assert spikes.shape[0] > spikes.shape[1], "should be bins (1ms) by nodes (rows by cols)"
 
     std_per_node = torch.zeros((spikes.shape[1],))
@@ -32,15 +33,12 @@ def binned_avg_firing_rate_per_neuron(spikes, bin_size):
 
 
 def binned_firing_rates(vec, bin_size):
-    # if vec.shape[0] < vec.shape[1]:
-    #     vec = vec.T
-
     num_intervals = int(vec.shape[0] / bin_size)
     avgs = np.zeros((num_intervals,))
 
     for i in range(num_intervals):
-        # TODO: Fixme
-        avgs[i] = np.mean(vec[i*bin_size:(i+1)*bin_size])
+        cur_interval = vec[i*bin_size:(i+1)*bin_size]
+        avgs[i] = np.mean(cur_interval)
 
     return avgs
 

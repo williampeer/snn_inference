@@ -292,9 +292,13 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_neuron_rates')
 
     xs = np.linspace(1, r1.shape[0], r1.shape[0])
-    plt.errorbar(xs-0.2, r1, yerr=r1_std, width=0.4)
-    plt.errorbar(xs+0.2, r2, yerr=r2_std, width=0.4)
-    plt.ylim(0, 1)
+    plt.bar(xs-0.2, r1, yerr=r1_std, width=0.4)
+    plt.bar(xs+0.2, r2, yerr=r2_std, width=0.4)
+    plt.legend(['Data set', 'Model'])
+    r_max = np.max([np.array(r1), np.array(r2)])
+    rstd_max = np.max([np.array(r1_std), np.array(r2_std)])
+    summed_max = r_max + rstd_max
+    plt.ylim(0, summed_max + rstd_max*0.05)
     plt.xticks(xs)
     plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
     # plt.show()
