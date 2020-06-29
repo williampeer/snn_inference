@@ -8,6 +8,7 @@ mkdir figures/default
 mkdir figures/DataDriven
 mkdir figures/Synthetic
 mkdir figures/SanityCheck
+mkdir figures/RetrieveFitted
 
 mkdir saved/plot_data
 

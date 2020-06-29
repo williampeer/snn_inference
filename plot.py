@@ -35,7 +35,7 @@ def plot_spiketrain(spike_history, title, uuid, exp_type='default', fname='spike
     plt.close()
 
 
-def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='default', title=False, fname=False):
+def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='default', title=False, fname=False, legend=None):
     assert model_spikes.shape[0] > model_spikes.shape[1], \
         "assert one node per column, one bin per row. spikes shape: {}".format(model_spikes.shape)
     assert model_spikes.shape[0] == target_spikes.shape[0], \
@@ -58,7 +58,10 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
 
     plt.plot(0, -1, '.b')
     plt.plot(0, -1, '.g')
-    plt.legend(['Model', 'Target'])
+    if legend is not None:
+        plt.legend(legend)
+    else:
+        plt.legend(['Model', 'Target'])
 
     for neuron_i in range(model_spike_history.shape[1]):
         if model_spike_times[:, neuron_i].nonzero().sum() > 0:
@@ -81,6 +84,49 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
     IO.makedir_if_not_exists(full_path)
     fig.savefig(fname=full_path + fname)
     # plt.show()
+
+
+def plot_all_spiketrains(spikes_arr, uuid, exp_type='default', title=False, fname=False, legend=None):
+    assert spikes_arr[0].shape[0] > spikes_arr[0].shape[1], \
+        "assert one node per column, one bin per row. spikes shape: {}".format(spikes_arr[0].shape)
+
+    if not fname:
+        fname = 'spiketrains_' + IO.dt_descriptor()
+
+    data = {'spikes_arr': spikes_arr, 'exp_type': exp_type, 'title': title, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_spiketrains_side_by_side')
+
+    fig = plt.figure()
+    time_indices = torch.reshape(torch.arange(spikes_arr[0].shape[0]), (spikes_arr[0].shape[0], 1)).float()
+
+    colours = ['.b', '.g', '.c', '.m', '.r']
+    for i in range(len(spikes_arr)):
+        plt.plot(0, -1, colours[i%len(colours)])
+    if legend is not None:
+        plt.legend(legend)
+
+    for s_i in range(len(spikes_arr)):
+        # ensure binary values:
+        model_spike_history = torch.round(spikes_arr[s_i])
+        model_spike_times = model_spike_history * time_indices
+
+        for neuron_i in range(model_spike_history.shape[1]):
+            if model_spike_times[:, neuron_i].nonzero().sum() > 0:
+                plt.plot(torch.reshape(model_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
+                         neuron_i + (1.0-0.5*0.15*len(spikes_arr)+0.15*s_i), colours[s_i%len(colours)], markersize=4.0)
+
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Neuron')
+    plt.yticks(range(1, neuron_i + 2))
+    plt.ylim(0, neuron_i+2)
+    if not title:
+        title = 'Spiketrains side by side'
+    plt.title(title)
+
+    # full_path = './figures/' + exp_type + '/' +  uuid + '/'
+    # IO.makedir_if_not_exists(full_path)
+    # fig.savefig(fname=full_path + fname)
+    plt.show()
     plt.close()
 
 

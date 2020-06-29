@@ -25,6 +25,7 @@ def main(argv):
     data_set = 'N/A'
     # data_set = 'exp147'
     evaluate_step = 1
+    fitted_model_path = 'N/A'
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
@@ -34,7 +35,7 @@ def main(argv):
             print('main.py -s <script> -lr <learning-rate> -ti <training-iterations> -N <number-of-experiments> '
                   '-bs <batch-size> -tvr <van-rossum-time-constant> -ic <input-coefficient> '
                   '-rpti <rows-per-training-iteration> -optim <optimiser> -ipr <initial-poisson-rate> '
-                  '-mt <model-type> -lfn <loss-fn> -ds <data-set> -es <evaluate-step>')
+                  '-mt <model-type> -lfn <loss-fn> -ds <data-set> -es <evaluate-step> -fmp <fitted-model-path>')
             sys.exit()
         elif opt in ("-s", "--script"):
             exp_type = args[i]
@@ -64,12 +65,14 @@ def main(argv):
             data_set = args[i]
         elif opt in ("-es", "--evaluate-step"):
             evaluate_step = int(args[i])
+        elif opt in ("-fmp", "--fitted-model-path"):
+            fitted_model_path = args[i]
 
     constants = C.Constants(data_bin_size=data_bin_size, target_bin_size=target_bin_size, learn_rate=learn_rate,
                             train_iters=train_iters, N_exp=N_exp, batch_size=batch_size, tau_van_rossum=tau_van_rossum,
                             input_coefficient=input_coefficient, rows_per_train_iter=rows_per_train_iter,
                             optimiser=optimiser, initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, data_set=data_set,
-                            evaluate_step=evaluate_step)
+                            evaluate_step=evaluate_step, fitted_model_path=fitted_model_path)
 
     EXP_TYPE = None
     try:

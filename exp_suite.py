@@ -112,20 +112,24 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
 
     stats_training_iterations(parameters, model, train_losses, test_losses, constants, logger, exp_type.name, target_parameters=False, exp_num=exp_num)
 
-    # del inputs, targets, model, train_losses, test_losses  # cleanup
     del targets, model, train_losses, test_losses  # cleanup
 
     return parameters
 
 
 def recover_model_parameters(logger, constants, model_class, params_model, params_gen, exp_type=ExperimentType.Synthetic, exp_num=None):
-    gen_model = model_class(device=device, parameters=params_gen)
+    if exp_type is ExperimentType.RetrieveFitted:
+        gen_model = torch.load(constants.fitted_model_path)['model']
+    else:
+        gen_model = model_class(device=device, parameters=params_gen)
+
     logger.log([model_class.__name__], 'gen model parameters: {}'.format(params_gen))
     gen_rate = torch.tensor(constants.initial_poisson_rate)  # * torch.rand((1,))[0]
     target_parameters = {}
     for param_i, param in enumerate(list(gen_model.parameters())):
         target_parameters[param_i] = [param.clone().detach().numpy()]
 
+    params_model['N'] = gen_model.N
     model = model_class(device=device, parameters=params_model)
     if exp_type is ExperimentType.SanityCheck:
         if hasattr(model, 'w'):
@@ -156,7 +160,8 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
         model.reset_hidden_state()
         current_rate = current_rate.clone().detach()
 
-        if train_i % constants.evaluate_step == 0:
+        last_train_iter = (train_i == constants.train_iters - 1)
+        if train_i % constants.evaluate_step == 0 or last_train_iter:
             gen_model.reset_hidden_state()
             targets = generate_synthetic_data(gen_model, poisson_rate=gen_rate, t=constants.rows_per_train_iter)
 
@@ -176,9 +181,6 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
             fitted_parameters[param_i].append(param.clone().detach().numpy())
         fitted_parameters[param_i+1].append(current_rate.clone().detach().numpy())
 
-        del avg_train_loss, test_loss
-        del targets
-
     final_parameters = {}
     for param_i, param in enumerate(list(model.parameters())):
         logger.log('-', 'parameter #{}: {}'.format(param_i, param))
@@ -189,8 +191,8 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
     stats_training_iterations(fitted_parameters, model, train_losses, test_losses, constants, logger, exp_type.name,
                               target_parameters=target_parameters, exp_num=exp_num)
 
-    # del inputs, targets, model, train_losses, test_losses  # cleanup
-    del model, train_losses, test_losses  # cleanup
+    # del model, train_losses, test_losses  # cleanup
+    del targets, model, train_losses, test_losses  # cleanup
 
     return final_parameters, target_parameters
     # return model_parameters, target_parameters
@@ -247,12 +249,9 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
         logger.log([], 'Model class not supported.')
         sys.exit(1)
 
-    if experiment_type is ExperimentType.Synthetic:
+    if experiment_type in [ExperimentType.Synthetic, ExperimentType.RetrieveFitted]:
         params_gen = zip_dicts(randomise_parameters(free_parameters, torch.tensor(0.5)), static_init_parameters).copy()
         params_model = zip_dicts(randomise_parameters(free_parameters, torch.tensor(0.5)), static_init_parameters).copy()
-    elif experiment_type is ExperimentType.RetrieveFitted:
-        # assign params from state dict?
-        pass
     else:
         params_gen = zip_dicts(free_parameters, static_init_parameters).copy()
         params_model = zip_dicts(free_parameters, static_init_parameters).copy()
