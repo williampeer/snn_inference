@@ -1,14 +1,15 @@
 import torch
 from torch import tensor as T
+
 import model_util
 from Models import SleepModels
 from experiments import poisson_input
-from plot import plot_neuron, plot_all_spiketrains, plot_spiketrain
+from plot import plot_neuron, plot_spiketrain
 from stats import firing_rate_per_neuron
 
 
 def test_sleep_model(snn):
-    inputs = poisson_input(0.5, t=4000, N=snn.N)
+    inputs = poisson_input(0.5, t=12000, N=snn.N)
     membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     mean_rates = firing_rate_per_neuron(spikes)
     print('mean_rates (Poisson): {}'.format(mean_rates))
@@ -47,8 +48,8 @@ def test_sleep_model(snn):
     # plot_all_spiketrains([spikes, spikes_wake, spikes_rem, spikes_nrem], 'test_{}_complex'.format(snn.__class__.__name__), title='Test {} spiketrains'.format(snn.__class__.__name__), legend=['Poisson', 'Wake', 'REM', 'NREM'])
 
 
-# snn = SleepModels.LIF()
-# test_sleep_model(snn)
+snn = SleepModels.LIF()
+test_sleep_model(snn)
 
 snn = SleepModels.IzhikevichStable()
 test_sleep_model(snn)
