@@ -8,24 +8,27 @@ def main(argv):
 
     # Default values
     data_bin_size = 4000; target_bin_size = 1
-    learn_rate = 0.05; train_iters = 7; N_exp = 1; batch_size = 200; tau_van_rossum = 3.0
+    learn_rate = 0.04; train_iters = 2; N_exp = 2; batch_size = 200; tau_van_rossum = 3.0
     input_coefficient = 1.0
     rows_per_train_iter = 400
     optimiser = 'Adam'
     # optimiser = 'SGD'
-    exp_type = 'DataDriven'
+    exp_type = 'RetrieveFitted'
+    # exp_type = 'DataDriven'
     # exp_type = 'Synthetic'
     # exp_type = 'SanityCheck'
     initial_poisson_rate = 0.5
-    model_type_str = Izhikevich.IzhikevichStable.__name__
-    # model_type_str = LIF.LIF.__name__
+    # model_type_str = Izhikevich.IzhikevichStable.__name__
+    model_type_str = LIF.LIF.__name__
     # model_type_str = BaselineSNN.BaselineSNN.__name__
     loss_fn = 'van_rossum_dist'
     # loss_fn = 'van_rossum_dist_per_node'
-    data_set = 'N/A'
+    data_set = None
     # data_set = 'exp147'
     evaluate_step = 1
-    fitted_model_path = 'N/A'
+    fitted_model_path = None
+    # fitted_model_path = '/Users/william/data/sleep_data/LIF_sleep_model/LIF_sleep_model.pt'
+    # fitted_model_path = '/Users/william/data/sleep_data/Izhikevich_sleep_model/Izhikevich_sleep_model.pt'
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
