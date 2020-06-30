@@ -67,7 +67,7 @@ class LIF(nn.Module):
         dv = torch.div(torch.add(torch.sub(self.v_rest, self.v), I), self.tau_m)
         self.v = torch.add(self.v, dv)
 
-        self.spiked = torch.round(torch.sigmoid(torch.sub(self.v, self.spike_threshold)))
+        self.spiked = torch.sigmoid(torch.sub(self.v, self.spike_threshold))
 
         spiked = (self.v >= self.spike_threshold).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
         not_spiked = (spiked - 1.) / -1.  # flips the boolean mat.

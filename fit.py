@@ -18,6 +18,7 @@ def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_r
     loss = None; cur_inputs = None; loss_per_node = False
     for batch_i in range(batch_N):
         model.reset_hidden_state()
+        current_rate = torch.abs(current_rate.clone().detach())
         for optim in optimisers:
             optim.zero_grad()
         print('batch #{}'.format(batch_i))
@@ -60,8 +61,8 @@ def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_r
         # print('batch_losses: {}'.format(batch_losses))
 
         for optim in optimisers:
+            # print('stepping with optimiser: {}'.format(optim))
             optim.step()
-        current_rate = torch.abs(current_rate.clone().detach())
 
     if not loss_per_node:
         batch_losses = [batch_losses[0]]
