@@ -34,7 +34,7 @@ class LIF(nn.Module):
 
         # self.tau_m = T(tau_m)
         # self.tau_g = T(tau_g)
-        self.v_rest = T(v_rest)
+        # self.v_rest = T(v_rest)
 
         self.v = torch.zeros((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
@@ -42,10 +42,12 @@ class LIF(nn.Module):
 
         rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
         self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
-        self.v_rest = nn.Parameter(T(v_rest), requires_grad=True)
-        self.tau_m = nn.Parameter(T(tau_m), requires_grad=True)
-        self.tau_g = nn.Parameter(T(tau_g), requires_grad=True)
+        self.v_rest = nn.Parameter(T(N * [v_rest]), requires_grad=True)
+        self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
+        self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
 
+        # self.pre_activation_coefficient = T(pre_activation_coefficient)
+        # self.post_activation_coefficient = T(post_activation_coefficient)
         self.pre_activation_coefficient = nn.Parameter(T(pre_activation_coefficient), requires_grad=True)
         self.post_activation_coefficient = nn.Parameter(T(post_activation_coefficient), requires_grad=True)
 
