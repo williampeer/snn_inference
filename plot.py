@@ -124,11 +124,11 @@ def plot_all_spiketrains(spikes_arr, uuid, exp_type='default', title=False, fnam
         title = 'Spiketrains side by side'
     plt.title(title)
 
-    # full_path = './figures/' + exp_type + '/' +  uuid + '/'
-    # IO.makedir_if_not_exists(full_path)
-    # fig.savefig(fname=full_path + fname)
-    plt.show()
-    plt.close()
+    full_path = './figures/' + exp_type + '/' +  uuid + '/'
+    IO.makedir_if_not_exists(full_path)
+    fig.savefig(fname=full_path + fname)
+    # plt.show()
+    # plt.close()
 
 
 def plot_neuron(membrane_potentials_through_time, title='Neuron activity', fname_ext=False):
