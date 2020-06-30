@@ -181,6 +181,9 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
             fitted_parameters[param_i].append(param.clone().detach().numpy())
         fitted_parameters[param_i+1].append(current_rate.clone().detach().numpy())
 
+        del targets
+
+
     final_parameters = {}
     for param_i, param in enumerate(list(model.parameters())):
         logger.log('-', 'parameter #{}: {}'.format(param_i, param))
@@ -192,7 +195,7 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
                               target_parameters=target_parameters, exp_num=exp_num)
 
     # del model, train_losses, test_losses  # cleanup
-    del targets, model, train_losses, test_losses  # cleanup
+    del model, train_losses, test_losses  # cleanup
 
     return final_parameters, target_parameters
     # return model_parameters, target_parameters

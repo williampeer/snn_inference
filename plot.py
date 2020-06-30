@@ -35,7 +35,7 @@ def plot_spiketrain(spike_history, title, uuid, exp_type='default', fname='spike
     plt.close()
 
 
-def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='default', title=False, fname=False, legend=None):
+def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='default', title=False, fname=False, legend=None, export=False):
     assert model_spikes.shape[0] > model_spikes.shape[1], \
         "assert one node per column, one bin per row. spikes shape: {}".format(model_spikes.shape)
     assert model_spikes.shape[0] == target_spikes.shape[0], \
@@ -44,8 +44,9 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
     if not fname:
         fname = 'spiketrains_' + IO.dt_descriptor()
 
-    data = {'model_spikes': model_spikes, 'target_spikes': target_spikes, 'exp_type': exp_type, 'title': title, 'fname': fname}
-    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_spiketrains_side_by_side')
+    if not export:
+        data = {'model_spikes': model_spikes, 'target_spikes': target_spikes, 'exp_type': exp_type, 'title': title, 'fname': fname}
+        IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_spiketrains_side_by_side')
 
     fig = plt.figure()
     time_indices = torch.reshape(torch.arange(model_spikes.shape[0]), (model_spikes.shape[0], 1)).float()
