@@ -14,3 +14,5 @@ rm -r saved/*
 mkdir saved/plot_data
 
 zip -r archive.zip archive/
+
+./create_dirs.sh

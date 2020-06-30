@@ -15,23 +15,16 @@ def main(argv):
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
 
-    # path = None
-    # path = './Test/IzhikevichStable_sample.pt'
-    folder = data_util.prefix + data_util.path
-    fname = 'placeholder_'.format(IO.dt_descriptor())
-    load_path = folder + fname
-    t = 20 * 60 * 1000
-    poisson_rate = 0.6
+    t = 60 * 60 * 1000
+    poisson_rate = 0.5
+    load_path = None
 
     for i, opt in enumerate(opts):
         if opt == '-h':
-            print('load_and_export_model_data.py -mp <model-path> -fname <filename> -t <time> -r <poisson-rate>')
+            print('load_and_export_model_data.py -p <path> -t <time> -r <poisson-rate>')
             sys.exit()
-        elif opt in ("-mp", "--model-path"):
+        elif opt in ("-p", "--path"):
             load_path = args[i]
-            fname = load_path.split('/')[-1]
-        elif opt in ("-fname", "--filename"):
-            fname = args[i]
         elif opt in ("-t", "--time"):
             t = int(args[i])
         elif opt in ("-r", "--poisson-rate"):
@@ -60,7 +53,9 @@ def main(argv):
         spike_times = np.append(spike_times, cur_spike_times)
         print('{} seconds ({:.2f} min) simulated.'.format(interval_size * (t_i+1)/1000., interval_size * (t_i+1)/(60.*1000)))
 
-    save_fname = 'generated_spikes_t_{:.1f}_s_rate_{}_'.format(t/1000., poisson_rate) + fname.split('.pt')[0] + '.mat'
+    fname = load_path.split('/')[-1]
+    model_name = fname.split('.pt')[0]
+    save_fname = 'generated_spikes_{}_t_{:.1f}_s_rate_{}.mat'.format(model_name, t/1000., poisson_rate)
     save_spiketrain_in_matlab_format(fname=save_fname, spike_indices=spike_indices, spike_times=spike_times)
 
 
