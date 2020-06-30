@@ -15,9 +15,13 @@ def main(argv):
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
 
-    t = 60 * 60 * 1000
+    t = 20 * 60 * 1000
     poisson_rate = 0.5
-    load_path = None
+    # load_path = None
+    # load_path = './saved/LIF_sleep_model/LIF_sleep_model.pt'
+    # load_path = './saved/Izhikevich_sleep_model/Izhikevich_sleep_model.pt'
+    # load_path ='/Users/william/repos/archives_snn_inference/archive inf 3006-1820/saved/06-30_15-53-19-119/LIF_exp_num_0_data_set_None_mean_loss_29.740_uuid_06-30_15-53-19-119.pt'
+    load_path ='/Users/william/repos/archives_snn_inference/archive inf 3006-1747/saved/06-30_14-58-39-186/LIF_exp_num_0_data_set_None_mean_loss_26.283_uuid_06-30_14-58-39-186.pt'
 
     for i, opt in enumerate(opts):
         if opt == '-h':
