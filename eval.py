@@ -26,7 +26,7 @@ def evaluate_likelihood(model, inputs, target_spiketrain, tau_van_rossum, uuid, 
         exp_type_str = exp_type.name
     plot_spiketrains_side_by_side(model_spiketrain, target_spiketrain, uuid=uuid,
                                   exp_type=exp_type_str, title='Spiketrains test set ({}, loss: {:.3f})'.format(label, loss),
-                                  fname='spiketrains_test_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))
+                                  fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))
 
     return loss
 

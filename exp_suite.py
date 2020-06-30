@@ -181,9 +181,6 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
             fitted_parameters[param_i].append(param.clone().detach().numpy())
         fitted_parameters[param_i+1].append(current_rate.clone().detach().numpy())
 
-        del targets
-
-
     final_parameters = {}
     for param_i, param in enumerate(list(model.parameters())):
         logger.log('-', 'parameter #{}: {}'.format(param_i, param))
@@ -234,9 +231,9 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
     logger.log([constants.__str__()], 'Starting exp. with the listed hyperparameters.')
 
     if model_class is LIF:
-        static_init_parameters = {'N': 12, 'w_mean': 0.2, 'w_var': 0.3,
+        static_init_parameters = {'N': 12, 'w_mean': 0., 'w_var': 0.3,
                              'pre_activation_coefficient': 2.0, 'post_activation_coefficient': 120.0}
-        free_parameters = {'v_rest': -70.0, 'tau_m': 4.0, 'tau_g': 2.0}
+        free_parameters = {'v_rest': -65.0, 'tau_m': 2.0, 'tau_g': 2.0}
 
     elif model_class in [Izhikevich, IzhikevichStable, IzhikevichWeightsOnly]:
         static_init_parameters = {'N': 12, 'w_mean': 0.1, 'w_var': 0.2, 'a': 0.1, 'b': 0.25}
