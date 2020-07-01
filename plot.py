@@ -85,6 +85,7 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
     IO.makedir_if_not_exists(full_path)
     fig.savefig(fname=full_path + fname)
     # plt.show()
+    plt.close()
 
 
 def plot_all_spiketrains(spikes_arr, uuid, exp_type='default', title=False, fname=False, legend=None):
@@ -347,6 +348,8 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     summed_max = r_max + rstd_max
     plt.ylim(0, summed_max + rstd_max*0.05)
     plt.xticks(xs)
+    plt.xlabel('Neuron')
+    plt.ylabel('$Hz$')
     plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
     # plt.show()
     plt.savefig(fname=full_path + fname)
@@ -360,8 +363,12 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname):
     data = {'corrs': corrs, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='heat_plot_spike_train_correlations')
 
-    plt.imshow(corrs, cmap='hot', interpolation='nearest')
-    plt.title('Pairwise spiketrain correlations')
+    a = plt.imshow(corrs, cmap="PuOr", vmin=-1, vmax=1)
+    cbar = plt.colorbar(a)
+    cbar.set_label("correlation coeff.")
+    plt.title('Pairwise spike train correlations')
+    plt.xticks(np.arange(0, len(corrs)))
+    plt.yticks(np.arange(0, len(corrs)))
     plt.ylabel(axes[0])
     plt.xlabel(axes[1])
     # plt.show()

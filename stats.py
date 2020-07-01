@@ -66,3 +66,27 @@ def spike_train_correlation(s1, s2, bin_size=100):
         for node_j in range(s2.shape[1]):
             pairwise_correlations[node_i, node_j] = pairwise_correlation(s1[:, node_i], s2[:, node_j], bin_size)
     return pairwise_correlations
+
+# ----------------------------------------
+
+def sub_sums(s, bin_size):
+    assert s.shape[0] > s.shape[1], "assert more rows than columns. shape: {}".format(s.shape)
+
+    sums = s[:bin_size].sum(axis=0)
+    for ctr in range(1, int(s.shape[0]/bin_size)):
+        sums = np.vstack((sums, s[ctr*bin_size:(ctr+1)*bin_size].sum(axis=0)))
+    return sums
+
+
+def spike_train_corr_new(s1, s2, bin_size=20):
+    s1 = np.array(s1); s2 = np.array(s2)
+    assert s1.shape[0] == s2.shape[0] and s1.shape[1] == s2.shape[
+        1], "shapes should be equal. s1.shape: {}, s2.shape: {}".format(s1.shape, s2.shape)
+
+    sums1 = sub_sums(s1, bin_size=bin_size)
+    # sums1 = sums1 / np.amax(sums1, axis=0)
+    sums2 = sub_sums(s2, bin_size=bin_size)
+    # sums2 = sums2 / np.amax(sums2, axis=0)
+
+    corrcoef = np.corrcoef(sums1, sums2, rowvar=False)
+    return corrcoef
