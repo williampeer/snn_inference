@@ -47,10 +47,11 @@ def main(argv):
     #         if(i==j):
     #             corrs[i,j]=0.1
     plot.heatmap_spike_train_correlations(corrs[12:, :12], axes=['Fitted model spike train', 'Sleep model spike train'],
-                                          exp_type='default', uuid='export', fname='heatmap_bin_{}_{}'.format(bin_size, save_fname))
+                                          exp_type='default', uuid='export', fname='heatmap_bin_{}_{}'.format(bin_size, save_fname),
+                                          bin_size=bin_size)
     plot.heatmap_spike_train_correlations(np.abs(corrs[12:, :12]), axes=['Fitted model spike train', 'Sleep model spike train'],
                                           exp_type='default', uuid='export',
-                                          fname='heatmap_abs_bin_{}_{}'.format(bin_size, save_fname))
+                                          fname='heatmap_abs_bin_{}_{}'.format(bin_size, save_fname), bin_size=bin_size)
 
     std1, r1 = stats.binned_avg_firing_rate_per_neuron(s1, bin_size=bin_size)
     std2, r2 = stats.binned_avg_firing_rate_per_neuron(s2, bin_size=bin_size)

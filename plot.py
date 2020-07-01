@@ -342,7 +342,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     xs = np.linspace(1, r1.shape[0], r1.shape[0])
     plt.bar(xs-0.2, r1, yerr=r1_std, width=0.4)
     plt.bar(xs+0.2, r2, yerr=r2_std, width=0.4)
-    plt.legend(['Data set', 'Model'])
+    plt.legend(['Fitted model', 'Sleep model'])
     r_max = np.max([np.array(r1), np.array(r2)])
     rstd_max = np.max([np.array(r1_std), np.array(r2_std)])
     summed_max = r_max + rstd_max
@@ -356,7 +356,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     plt.close()
 
 
-def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname):
+def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_size):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists(full_path)
 
@@ -366,7 +366,7 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname):
     a = plt.imshow(corrs, cmap="PuOr", vmin=-1, vmax=1)
     cbar = plt.colorbar(a)
     cbar.set_label("correlation coeff.")
-    plt.title('Pairwise spike train correlations')
+    plt.title('Pairwise spike correlations (interval: {} ms)'.format(bin_size))
     plt.xticks(np.arange(0, len(corrs)))
     plt.yticks(np.arange(0, len(corrs)))
     plt.ylabel(axes[0])

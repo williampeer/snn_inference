@@ -60,7 +60,7 @@ class LIF(nn.Module):
 
     def forward(self, x_in):
         # constant chosen so as to enable spiking for this model
-        # I = w g + w x = w(g + x)
+        # I = w g + x = w(g + x)
         pre_act_in = self.pre_activation_coefficient * torch.add(self.w.matmul(self.g), x_in)
         I = self.post_activation_coefficient * torch.sigmoid(pre_act_in)
         # dv = (v_rest - v + I) / tau_m
