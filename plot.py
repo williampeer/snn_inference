@@ -356,6 +356,39 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     plt.close()
 
 
+def bar_plot_all_neuron_rates(rates, stds, bin_size, exp_type, uuid, fname, legends):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'rates': rates, 'stds': stds, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_neuron_rates')
+
+    xs = np.linspace(1, rates[0].shape[0], rates[0].shape[0])
+    width = 0.8/len(rates)
+    max_rates = []; max_stds = []
+    for i in range(len(rates)):
+        print('plotting i: {}'.format(i))
+        r = rates[i]; std = stds[i]
+        plt.bar(xs-width+i*width, r.numpy(), yerr=std.numpy(), width=width)
+        # max_rates.append([np.max(r)])
+        # max_stds.append([np.max(std)])
+
+    plt.legend(legends)
+    # r_max = np.max(max_rates); rstd_max = np.max(max_stds)
+    # summed_max = r_max + rstd_max
+
+    # plt.ylim(0, summed_max + rstd_max*0.05)
+    plt.xticks(xs)
+
+    plt.xlabel('Neuron')
+    plt.ylabel('$Hz$')
+    plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
+
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+
+
 def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_size):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists(full_path)
