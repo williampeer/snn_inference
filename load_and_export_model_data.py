@@ -25,7 +25,9 @@ def main(argv):
     # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-1313/saved/07-01_10-27-06-734/LIF_complex_exp_num_0_data_set_None_mean_loss_22.533_uuid_07-01_10-27-06-734.pt'
     # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-1619/saved/07-01_11-20-27-519/LIF_complex_exp_num_0_data_set_None_mean_loss_22.656_uuid_07-01_11-20-27-519.pt'
     # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-1619/saved/07-01_11-29-17-136/LIF_complex_exp_num_0_data_set_None_mean_loss_27.440_uuid_07-01_11-29-17-136.pt'
-    load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-1937/saved/07-01_15-48-18-521/LIF_complex_exp_num_0_data_set_None_mean_loss_27.367_uuid_07-01_15-48-18-521.pt'
+    # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-1937/saved/07-01_15-48-18-521/LIF_complex_exp_num_0_data_set_None_mean_loss_27.367_uuid_07-01_15-48-18-521.pt'
+    # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-morning/saved/06-30_19-07-48-687/LIF_exp_num_1_data_set_None_mean_loss_29.470_uuid_06-30_19-07-48-687.pt'
+    load_path = '/Users/william/repos/archives_snn_inference/archive inf 0207-0750/saved/07-01_15-49-26-138/LIF_complex_exp_num_2_data_set_None_mean_loss_26.625_uuid_07-01_15-49-26-138.pt'
 
     for i, opt in enumerate(opts):
         if opt == '-h':

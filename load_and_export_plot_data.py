@@ -35,7 +35,13 @@ def main(argv):
     # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-1619/saved/plot_data/07-01_11-29-17-136/plot_spiketrains_side_by_side07-01_11-50-21-891.pt'
 
     # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-1937/saved/plot_data/07-01_15-48-18-521/plot_spiketrains_side_by_side07-01_15-55-15-508.pt'
-    load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-1937/saved/plot_data/07-01_15-48-18-521/plot_all_param_pairs_with_variance07-01_15-55-16-869.pt'
+    # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-1937/saved/plot_data/07-01_15-48-18-521/plot_all_param_pairs_with_variance07-01_15-55-16-869.pt'
+
+    # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-morning/saved/plot_data/06-30_19-07-48-687/plot_all_param_pairs_with_variance06-30_22-33-56-245.pt'
+    # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0107-morning/saved/plot_data/06-30_19-07-48-687/plot_spiketrains_side_by_side06-30_22-33-55-374.pt'
+
+    # load_path = '/Users/william/repos/archives_snn_inference/archive inf 0207-0750/saved/plot_data/07-01_15-49-26-138/plot_all_param_pairs_with_variance07-01_16-15-36-924.pt'
+    load_path = '/Users/william/repos/archives_snn_inference/archive inf 0207-0750/saved/plot_data/07-01_15-49-26-138/plot_spiketrains_side_by_side07-01_16-15-35-707.pt'
 
     for i, opt in enumerate(opts):
         if opt == '-h':
