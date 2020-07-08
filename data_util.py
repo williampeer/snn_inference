@@ -8,14 +8,16 @@ np.random.seed(0)
 # torch.backends.cudnn.benchmark = False
 
 exp_names = ['exp108', 'exp109', 'exp124', 'exp126', 'exp138', 'exp146', 'exp147']
-# prefix = '/home/william'  # Ubuntu
+# prefix = '/home/william/'  # Ubuntu
 prefix = '/Users/william/'  # OS X
 # prefix = '/home/williampeer/'  # server
-path = 'repos/phd/pycharm/sleep_data/data/'
+# prefix = '/afs/inf.ed.ac.uk/user/s18/s1895734/'
+path = 'data/sleep_data/'
+matlab_export = 'matlab_export/'
 
 
 def load_data(exp_num):
-    cur_fname = exp_names[4] + '.mat'
+    cur_fname = exp_names[exp_num] + '.mat'
 
     exp_data = sio.loadmat(prefix + path + cur_fname)['DATA']
 
@@ -27,6 +29,30 @@ def load_data(exp_num):
     satisfactory_quality_node_indices = np.unique(spike_indices)
 
     return satisfactory_quality_node_indices, spike_times, spike_indices, states
+
+
+def convert_to_sparse_vectors(spiketrain, t_offset):
+    assert spiketrain.shape[0] > spiketrain.shape[1], "assuming bins x nodes (rows as timesteps). spiketrain.shape: {}".format(spiketrain.shape)
+
+    spike_indices = np.array([], dtype='int8')
+    spike_times = np.array([], dtype='float32')
+    for ms_i in range(spiketrain.shape[0]):
+        for node_i in range(spiketrain.shape[1]):
+            if spiketrain[ms_i][node_i] != 0:
+                assert spiketrain[ms_i][node_i] == 1, \
+                    "found element that was neither 0 nor 1. row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
+                spike_times = np.append(spike_times, np.float32(float(ms_i) +t_offset))
+                spike_indices = np.append(spike_indices, np.int8(node_i))
+
+    return spike_indices, spike_times
+
+
+def save_spiketrain_in_matlab_format(fname, spike_indices, spike_times):
+    exp_data = {}
+    exp_data['clu'] = np.reshape(spike_indices, (-1, 1))
+    exp_data['res'] = np.reshape(spike_times, (-1, 1))
+    mat_data = {'DATA': exp_data}
+    sio.savemat(file_name=prefix + path + matlab_export + fname, mdict=mat_data)
 
 
 def get_spike_array(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):

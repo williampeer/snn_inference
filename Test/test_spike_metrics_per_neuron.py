@@ -2,7 +2,7 @@ from experiments import poisson_input
 
 import torch
 
-from spike_metrics import mse_per_node, van_rossum_dist_per_node, van_rossum_squared_per_node
+from spike_metrics import mse_per_node, van_rossum_dist_per_node, van_rossum_squared_per_node, firing_rate_per_neuron
 
 
 def test_sum_per_node():
@@ -24,4 +24,16 @@ def test_sum_per_node():
         .format(vr_squared_nodes.shape, s1.shape)
 
 
+def test_firing_rate_per_neuron():
+    N = 12; t=1000
+    spikes = (poisson_input(0.75, t=t, N=N) > 0).float()
+    rates = firing_rate_per_neuron(spikes)
+    assert rates.shape[0] == N, "rates should be per node"
+    rates_mean = torch.mean(rates)
+    assert rates_mean - rates_mean * 0.05 < spikes.sum() / (N * t) < rates_mean + rates_mean * 0.05
+    print('# spikes: {}'.format(spikes.sum()))
+    print('mean rates: {}'.format(rates))
+
+
 test_sum_per_node()
+test_firing_rate_per_neuron()

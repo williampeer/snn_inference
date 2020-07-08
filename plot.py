@@ -35,7 +35,7 @@ def plot_spiketrain(spike_history, title, uuid, exp_type='default', fname='spike
     plt.close()
 
 
-def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='default', title=False, fname=False):
+def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='default', title=False, fname=False, legend=None, export=False):
     assert model_spikes.shape[0] > model_spikes.shape[1], \
         "assert one node per column, one bin per row. spikes shape: {}".format(model_spikes.shape)
     assert model_spikes.shape[0] == target_spikes.shape[0], \
@@ -44,8 +44,9 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
     if not fname:
         fname = 'spiketrains_' + IO.dt_descriptor()
 
-    data = {'model_spikes': model_spikes, 'target_spikes': target_spikes, 'exp_type': exp_type, 'title': title, 'fname': fname}
-    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_spiketrains_side_by_side')
+    if not export:
+        data = {'model_spikes': model_spikes, 'target_spikes': target_spikes, 'exp_type': exp_type, 'title': title, 'fname': fname}
+        IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_spiketrains_side_by_side')
 
     fig = plt.figure()
     time_indices = torch.reshape(torch.arange(model_spikes.shape[0]), (model_spikes.shape[0], 1)).float()
@@ -58,15 +59,64 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
 
     plt.plot(0, -1, '.b')
     plt.plot(0, -1, '.g')
-    plt.legend(['Model', 'Target'])
+    if legend is not None:
+        plt.legend(legend)
+    else:
+        plt.legend(['Model', 'Target'])
 
     for neuron_i in range(model_spike_history.shape[1]):
         if model_spike_times[:, neuron_i].nonzero().sum() > 0:
             plt.plot(torch.reshape(model_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
                      neuron_i + 1.1, '.b', markersize=4.0, label='Model')
+    for neuron_i in range(target_spike_times.shape[1]):
         if target_spike_times[:, neuron_i].nonzero().sum() > 0:
             plt.plot(torch.reshape(target_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
                      neuron_i + 0.9, '.g', markersize=4.0, label='Target')
+
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Neuron')
+    plt.yticks(range(1, neuron_i + 2))
+    plt.ylim(0, neuron_i+2)
+    if not title:
+        title = 'Spiketrains side by side'
+    plt.title(title)
+
+    full_path = './figures/' + exp_type + '/' +  uuid + '/'
+    IO.makedir_if_not_exists(full_path)
+    fig.savefig(fname=full_path + fname)
+    # plt.show()
+    plt.close()
+
+
+def plot_all_spiketrains(spikes_arr, uuid, exp_type='default', title=False, fname=False, legend=None):
+    assert spikes_arr[0].shape[0] > spikes_arr[0].shape[1], \
+        "assert one node per column, one bin per row. spikes shape: {}".format(spikes_arr[0].shape)
+
+    if not fname:
+        fname = 'spiketrains_' + IO.dt_descriptor()
+
+    data = {'spikes_arr': spikes_arr, 'exp_type': exp_type, 'title': title, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_spiketrains_side_by_side')
+
+    fig = plt.figure()
+    time_indices = torch.reshape(torch.arange(spikes_arr[0].shape[0]), (spikes_arr[0].shape[0], 1)).float()
+
+    colours = ['.b', '.g', '.c', '.m', '.r']
+    for i in range(len(spikes_arr)):
+        plt.plot(0, -1, colours[i%len(colours)])
+
+    for s_i in range(len(spikes_arr)):
+        # ensure binary values:
+        model_spike_history = torch.round(spikes_arr[s_i])
+        model_spike_times = model_spike_history * time_indices
+
+        for neuron_i in range(model_spike_history.shape[1]):
+            if model_spike_times[:, neuron_i].nonzero().sum() > 0:
+                plt.plot(torch.reshape(model_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
+                         neuron_i + (1.0+0.5*0.15*len(spikes_arr)-0.15*s_i), colours[s_i%len(colours)], markersize=4.0)
+
+    if legend is not None:
+        plt.legend(legend, shadow=False, framealpha=0.5)
 
     plt.xlabel('Time (ms)')
     plt.ylabel('Neuron')
@@ -100,7 +150,7 @@ def plot_neuron(membrane_potentials_through_time, title='Neuron activity', fname
     plt.close()
 
 
-def plot_losses(training_loss, test_loss, uuid, exp_type='default', custom_title=False, fname=False):
+def plot_losses(training_loss, test_loss, test_loss_step, uuid, exp_type='default', custom_title=False, fname=False):
     if not fname:
         fname = 'training_and_test_loss'+IO.dt_descriptor()
     data = {'training_loss': training_loss, 'test_loss': test_loss, 'exp_type': exp_type, 'custom_title': custom_title, 'fname': fname}
@@ -108,7 +158,10 @@ def plot_losses(training_loss, test_loss, uuid, exp_type='default', custom_title
 
     plt.figure()
     plt.plot(training_loss)
-    plt.plot(test_loss)
+    x_test_loss = []
+    for i in range(len(test_loss)):
+        x_test_loss.append(i * test_loss_step)
+    plt.plot(x_test_loss, test_loss)
     plt.legend(['Training loss', 'Test loss'])
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
@@ -211,7 +264,7 @@ def plot_parameter_pair_with_variance(p1_means, p2_means, target_params, path, c
 def decompose_param_plot(param_2D, target_params, path):
     params_by_exp = np.array(param_2D).T
     num_of_parameters = params_by_exp.shape[0]
-    print('in decompose_param_plot.. params_by_exp: {}'.format(params_by_exp))
+    # print('in decompose_param_plot.. params_by_exp: {}'.format(params_by_exp))
 
     fig, axs = plt.subplots(nrows=num_of_parameters-1, ncols=num_of_parameters-1)
     [axi.set_axis_off() for axi in axs.ravel()]
@@ -227,18 +280,19 @@ def decompose_param_plot(param_2D, target_params, path):
                                   origin='lower', aspect='auto',
                                   extent=[x_min, x_max, y_min, y_max],
                                   cmap='Blues')
-                if target_params and len(target_params) > np.max([i, j]):
+                if target_params:  # and len(target_params) >= np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'oy', markersize=2.0)
             except ArithmeticError:
                 cur_ax.plot(params_by_exp[i], params_by_exp[j], 'xb', markersize=3.5)
-                if target_params and len(target_params) > np.max([i, j]):
+                if target_params:  # and len(target_params) >= np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'oy', markersize=2.0)
             except:
                 print('WARN: Failed to calculate KDE for param.s: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
 
-    fig.suptitle('Decomposed KDE pairs for N-dimensional parameter')
+    # fig.suptitle('Decomposed KDE pairs for N-dimensional parameter')
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
+    # plt.show()
     fig.savefig(path)
     plt.close()
 
@@ -247,15 +301,20 @@ def plot_all_param_pairs_with_variance(param_means, target_params, exp_type, uui
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists(full_path)
 
+    data = {'param_means': param_means, 'target_params': target_params, 'exp_type': exp_type, 'uuid': uuid, 'custom_title': custom_title, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_all_param_pairs_with_variance')
+
     if not fname:
         fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
     path = full_path + fname
 
     number_of_parameters = len(param_means.values())
+    # for plot_i in range(2,3):  # assuming a dict., for all parameter combinations
     for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
         for plot_j in range(plot_i + 1, number_of_parameters):
+        # for plot_j in range(plot_i + 1, 4):
             cur_tar_params = False
-            if target_params and len(target_params) > np.max([plot_i, plot_j]):
+            if target_params:  # and len(target_params) > np.max([plot_i, plot_j]):
                 cur_tar_params = [target_params[plot_i], target_params[plot_j]]
 
             cur_p_i = np.array(param_means[plot_i])
@@ -263,15 +322,96 @@ def plot_all_param_pairs_with_variance(param_means, target_params, exp_type, uui
             # silently fail for 3D params (weights)
             if len(cur_p_i.shape) == 2:
                 cur_tar = False
-                if target_params and len(target_params) > plot_i:
+                if target_params:  # and len(target_params) > plot_i:
                     cur_tar = target_params[plot_i]
-                decompose_param_plot(cur_p_i, cur_tar, path+'_param_{}'.format(plot_i))
+                # path_parts = path.split('.')
+                # path_name_subplot = '.{}_param_{}.{}'.format(path_parts[1], plot_i, path_parts[2])
+                decompose_param_plot(cur_p_i, cur_tar, path=path+'_param_{}'.format(plot_i))
             if len(cur_p_j.shape) == 2:
                 cur_tar = False
-                if target_params and len(target_params) > plot_j:
+                if target_params:  # and len(target_params) > plot_j:
                     cur_tar = target_params[plot_j]
-                decompose_param_plot(cur_p_j, cur_tar, path+'_param_{}'.format(plot_j))
+                # path_parts = path.split('.')
+                # path_name_subplot = '.{}_param_{}.{}'.format(path_parts[1], plot_j, path_parts[2])
+                decompose_param_plot(cur_p_j, cur_tar, path=path+'_param_{}'.format(plot_j))
             if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
                 plot_parameter_pair_with_variance(cur_p_i, cur_p_j, target_params=cur_tar_params,
                                                   path=path+'_i_j_{}_{}'.format(plot_i, plot_j),
                                                   custom_title=custom_title, logger=logger)
+
+
+def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'r1': r1, 'r2': r2, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_neuron_rates')
+
+    xs = np.linspace(1, r1.shape[0], r1.shape[0])
+    plt.bar(xs-0.2, r1, yerr=r1_std, width=0.4)
+    plt.bar(xs+0.2, r2, yerr=r2_std, width=0.4)
+    plt.legend(['Fitted model', 'Sleep model'])
+    r_max = np.max([np.array(r1), np.array(r2)])
+    rstd_max = np.max([np.array(r1_std), np.array(r2_std)])
+    summed_max = r_max + rstd_max
+    plt.ylim(0, summed_max + rstd_max*0.05)
+    plt.xticks(xs)
+    plt.xlabel('Neuron')
+    plt.ylabel('$Hz$')
+    plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+
+
+def bar_plot_all_neuron_rates(rates, stds, bin_size, exp_type, uuid, fname, legends):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'rates': rates, 'stds': stds, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_neuron_rates')
+
+    xs = np.linspace(1, rates[0].shape[0], rates[0].shape[0])
+    width = 0.8/len(rates)
+    max_rates = []; max_stds = []
+    for i in range(len(rates)):
+        print('plotting i: {}'.format(i))
+        r = rates[i]; std = stds[i]
+        plt.bar(xs-width+i*width, r.numpy(), yerr=std.numpy(), width=width)
+        # max_rates.append([np.max(r)])
+        # max_stds.append([np.max(std)])
+
+    plt.legend(legends)
+    # r_max = np.max(max_rates); rstd_max = np.max(max_stds)
+    # summed_max = r_max + rstd_max
+
+    # plt.ylim(0, summed_max + rstd_max*0.05)
+    plt.xticks(xs)
+
+    plt.xlabel('Neuron')
+    plt.ylabel('$Hz$')
+    plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
+
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+
+
+def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_size):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'corrs': corrs, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='heat_plot_spike_train_correlations')
+
+    a = plt.imshow(corrs, cmap="PuOr", vmin=-1, vmax=1)
+    cbar = plt.colorbar(a)
+    cbar.set_label("correlation coeff.")
+    plt.title('Pairwise spike correlations (interval: {} ms)'.format(bin_size))
+    plt.xticks(np.arange(0, len(corrs)))
+    plt.yticks(np.arange(0, len(corrs)))
+    plt.ylabel(axes[0])
+    plt.xlabel(axes[1])
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()

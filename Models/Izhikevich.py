@@ -53,10 +53,10 @@ class Izhikevich(nn.Module):
         self.c = nn.Parameter(tensor(N * [c]), requires_grad=True)
         self.d = nn.Parameter(tensor(N * [d]), requires_grad=True)
 
-        self.tau_g = tensor(tau_g)  # synaptic conductance decay constant
-        # self.tau_g = nn.Parameter(tau_g * torch.ones((self.N,)), requires_grad=True)
+        # self.tau_g = tensor(tau_g)  # synaptic conductance decay constant
+        self.tau_g = nn.Parameter(tau_g * torch.ones((self.N,)), requires_grad=True)
 
-        self.pre_spike_sensitivity = tensor(4.0)
+        self.pre_spike_sensitivity = tensor(6.0)
         # self.pre_spike_sensitivity = nn.Parameter(tensor(4.0), requires_grad=True)
 
         # self.to(self.device)

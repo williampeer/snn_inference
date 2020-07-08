@@ -1,21 +1,6 @@
 import torch
 
 
-def mean_firing_rate(spikes, bin_size=1.):
-    if spikes.shape[0] > spikes.shape[1]:
-        return spikes.sum(axis=0) / (spikes.shape[0] * bin_size)
-    else:
-        return spikes.sum(axis=1) / (spikes.shape[1] * bin_size)
-
-
-def sums_helper(spikes1, spikes2):
-    assert spikes1.shape[0] > spikes1.shape[1], "expected one column per neuron. spikes1.shape: {}".format(spikes1.shape)
-    # sum over bins
-    sum_spikes1 = spikes1.sum(axis=1)
-    sum_spikes2 = spikes2.sum(axis=1)
-    return torch.reshape(torch.cat([sum_spikes1, sum_spikes2]), (2, -1))  # N by spikes
-
-
 # an approximation using torch.where
 def torch_van_rossum_convolution(spikes, tau):
     decay_kernel = torch.exp(-torch.tensor(1.) / tau)

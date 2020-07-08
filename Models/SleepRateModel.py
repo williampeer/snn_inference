@@ -18,7 +18,7 @@ from torch import tensor
 ################################################
 
 class SleepRegulationModel(nn.Module):
-    def __init__(self, res, g_RRe, g_RWe, g_WNi, g_WRi, g_NRi, g_NWi):
+    def __init__(self, g_RRe, g_RWe, g_WNi, g_WRi, g_NRi, g_NWi):
         """
             totalSimDuration: table with all time step values
             res: simulation resolution time

@@ -6,7 +6,7 @@ from experiments import poisson_input
 
 
 def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_rate, batch_size, uuid,
-                     optimisers, loss_fn='van_rossum_dist', exp_type_str='default', exp_num=None, train_i=None):
+                     optimisers, loss_fn='van_rossum_dist', exp_type_str='default', exp_num=None, train_i=None, logger=None):
     if inputs is not None:
         assert inputs.shape[0] == target_spiketrain.shape[0], \
             "inputs shape: {}, target spiketrain shape: {}".format(inputs.shape, target_spiketrain.shape)
@@ -18,9 +18,10 @@ def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_r
     loss = None; cur_inputs = None; loss_per_node = False
     for batch_i in range(batch_N):
         model.reset_hidden_state()
+        current_rate = torch.abs(current_rate.clone().detach())
         for optim in optimisers:
             optim.zero_grad()
-        print('mini batch #{}'.format(batch_i))
+        print('batch #{}'.format(batch_i))
 
         if inputs is not None:
             spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs[batch_size*batch_i:batch_size*(batch_i+1)])
@@ -57,31 +58,25 @@ def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_r
         else:
             loss.backward(retain_graph=True)
             batch_losses[0].append(loss.clone().detach().data)
-        print('batch_losses: {}'.format(batch_losses))
+        # print('batch_losses: {}'.format(batch_losses))
 
         for optim in optimisers:
+            # print('stepping with optimiser: {}'.format(optim))
             optim.step()
-        current_rate = torch.abs(current_rate.clone().detach())
-
-        # if batch_i == batch_N-1 or True:
-        # # if batch_i == batch_N-1:
-        #     plot_spiketrains_side_by_side(model_spikes=spikes, target_spikes=target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)],
-        #                                   uuid=uuid, exp_type=exp_type_str,
-        #                                   title='Model and target spiketrains (training batch #{}, loss: {:.3f})'.format(batch_i, loss),
-        #                                   fname='spiketrains_train_{}_exp_{}_train_iter_{}_batch_{}'.format(model.__class__.__name__, exp_num, train_i, batch_i))
 
     if not loss_per_node:
         batch_losses = [batch_losses[0]]
     # plot_losses_nodes(batch_losses, uuid, exp_type_str, 'Batch loss')
 
     if loss_per_node:
-        avg_loss_batches = []
+        avg_batch_loss = []
         for b_losses in batch_losses:
-            avg_loss_batches.append(torch.mean(torch.tensor(b_losses)))
-        avg_loss_batches = torch.mean(torch.tensor(avg_loss_batches))
+            avg_batch_loss.append(torch.mean(torch.tensor(b_losses)))
+        avg_batch_loss = torch.mean(torch.tensor(avg_batch_loss))
     else:
-        avg_loss_batches = torch.mean(torch.tensor(batch_losses[0]))
-    del loss, spikes, inputs, cur_inputs
-    print('** avg batch loss: {}'.format(avg_loss_batches))
+        avg_batch_loss = torch.mean(torch.tensor(batch_losses[0]))
 
-    return float(avg_loss_batches.clone().detach().data)
+    logger.log({'train_i': train_i}, 'avg_batch_loss: {}'.format(avg_batch_loss))
+    del loss, spikes, inputs, cur_inputs, batch_losses
+
+    return float(avg_batch_loss.clone().detach().data)

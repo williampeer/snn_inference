@@ -8,7 +8,7 @@ class Logger:
             format(experiment_type, '{:1.3f}'.format(constants.learn_rate).replace('.', '_'), constants.batch_size,
                    constants.train_iters, constants.rows_per_train_iter, constants.UUID)
 
-    def log(self, params, log_str, opt_fname_postfix=False):
+    def log(self, params=[], log_str='', opt_fname_postfix=False):
         if not opt_fname_postfix:
             opt_fname_postfix = self.constants.optimiser.__name__
 
@@ -17,7 +17,9 @@ class Logger:
             fname += '_' + opt_fname_postfix
         fname += '.txt'
 
-        prefix = '[{}] ---------- parameters: {}'.format(dt.datetime.now(), params)
+        prefix = '[{}]'.format(dt.datetime.now())
+        if len(params) > 0:
+            prefix = prefix + ' ---------- parameters: {}'.format(params)
         full_str = prefix + ' ' + log_str + '\n'
         print('Writing to log:\n{}'.format(full_str))
         with open(fname, 'a') as f:
