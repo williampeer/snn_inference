@@ -104,8 +104,6 @@ def plot_all_spiketrains(spikes_arr, uuid, exp_type='default', title=False, fnam
     colours = ['.b', '.g', '.c', '.m', '.r']
     for i in range(len(spikes_arr)):
         plt.plot(0, -1, colours[i%len(colours)])
-    if legend is not None:
-        plt.legend(legend)
 
     for s_i in range(len(spikes_arr)):
         # ensure binary values:
@@ -115,7 +113,10 @@ def plot_all_spiketrains(spikes_arr, uuid, exp_type='default', title=False, fnam
         for neuron_i in range(model_spike_history.shape[1]):
             if model_spike_times[:, neuron_i].nonzero().sum() > 0:
                 plt.plot(torch.reshape(model_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
-                         neuron_i + (1.0-0.5*0.15*len(spikes_arr)+0.15*s_i), colours[s_i%len(colours)], markersize=4.0)
+                         neuron_i + (1.0+0.5*0.15*len(spikes_arr)-0.15*s_i), colours[s_i%len(colours)], markersize=4.0)
+
+    if legend is not None:
+        plt.legend(legend, shadow=False, framealpha=0.5)
 
     plt.xlabel('Time (ms)')
     plt.ylabel('Neuron')
@@ -129,7 +130,7 @@ def plot_all_spiketrains(spikes_arr, uuid, exp_type='default', title=False, fnam
     IO.makedir_if_not_exists(full_path)
     fig.savefig(fname=full_path + fname)
     # plt.show()
-    # plt.close()
+    plt.close()
 
 
 def plot_neuron(membrane_potentials_through_time, title='Neuron activity', fname_ext=False):
@@ -263,7 +264,7 @@ def plot_parameter_pair_with_variance(p1_means, p2_means, target_params, path, c
 def decompose_param_plot(param_2D, target_params, path):
     params_by_exp = np.array(param_2D).T
     num_of_parameters = params_by_exp.shape[0]
-    print('in decompose_param_plot.. params_by_exp: {}'.format(params_by_exp))
+    # print('in decompose_param_plot.. params_by_exp: {}'.format(params_by_exp))
 
     fig, axs = plt.subplots(nrows=num_of_parameters-1, ncols=num_of_parameters-1)
     [axi.set_axis_off() for axi in axs.ravel()]
@@ -279,18 +280,19 @@ def decompose_param_plot(param_2D, target_params, path):
                                   origin='lower', aspect='auto',
                                   extent=[x_min, x_max, y_min, y_max],
                                   cmap='Blues')
-                if target_params and len(target_params) > np.max([i, j]):
+                if target_params:  # and len(target_params) >= np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'oy', markersize=2.0)
             except ArithmeticError:
                 cur_ax.plot(params_by_exp[i], params_by_exp[j], 'xb', markersize=3.5)
-                if target_params and len(target_params) > np.max([i, j]):
+                if target_params:  # and len(target_params) >= np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'oy', markersize=2.0)
             except:
                 print('WARN: Failed to calculate KDE for param.s: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
 
-    fig.suptitle('Decomposed KDE pairs for N-dimensional parameter')
+    # fig.suptitle('Decomposed KDE pairs for N-dimensional parameter')
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
+    # plt.show()
     fig.savefig(path)
     plt.close()
 
@@ -307,10 +309,12 @@ def plot_all_param_pairs_with_variance(param_means, target_params, exp_type, uui
     path = full_path + fname
 
     number_of_parameters = len(param_means.values())
+    # for plot_i in range(2,3):  # assuming a dict., for all parameter combinations
     for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
         for plot_j in range(plot_i + 1, number_of_parameters):
+        # for plot_j in range(plot_i + 1, 4):
             cur_tar_params = False
-            if target_params and len(target_params) > np.max([plot_i, plot_j]):
+            if target_params:  # and len(target_params) > np.max([plot_i, plot_j]):
                 cur_tar_params = [target_params[plot_i], target_params[plot_j]]
 
             cur_p_i = np.array(param_means[plot_i])
@@ -318,14 +322,18 @@ def plot_all_param_pairs_with_variance(param_means, target_params, exp_type, uui
             # silently fail for 3D params (weights)
             if len(cur_p_i.shape) == 2:
                 cur_tar = False
-                if target_params and len(target_params) > plot_i:
+                if target_params:  # and len(target_params) > plot_i:
                     cur_tar = target_params[plot_i]
-                decompose_param_plot(cur_p_i, cur_tar, path+'_param_{}'.format(plot_i))
+                # path_parts = path.split('.')
+                # path_name_subplot = '.{}_param_{}.{}'.format(path_parts[1], plot_i, path_parts[2])
+                decompose_param_plot(cur_p_i, cur_tar, path=path+'_param_{}'.format(plot_i))
             if len(cur_p_j.shape) == 2:
                 cur_tar = False
-                if target_params and len(target_params) > plot_j:
+                if target_params:  # and len(target_params) > plot_j:
                     cur_tar = target_params[plot_j]
-                decompose_param_plot(cur_p_j, cur_tar, path+'_param_{}'.format(plot_j))
+                # path_parts = path.split('.')
+                # path_name_subplot = '.{}_param_{}.{}'.format(path_parts[1], plot_j, path_parts[2])
+                decompose_param_plot(cur_p_j, cur_tar, path=path+'_param_{}'.format(plot_j))
             if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
                 plot_parameter_pair_with_variance(cur_p_i, cur_p_j, target_params=cur_tar_params,
                                                   path=path+'_i_j_{}_{}'.format(plot_i, plot_j),

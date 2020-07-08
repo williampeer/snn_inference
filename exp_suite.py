@@ -128,6 +128,7 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
     target_parameters = {}
     for param_i, param in enumerate(list(gen_model.parameters())):
         target_parameters[param_i] = [param.clone().detach().numpy()]
+    target_parameters[param_i + 1] = [gen_rate.clone().detach().numpy()]
 
     params_model['N'] = gen_model.N
     model = model_class(device=device, parameters=params_model)
