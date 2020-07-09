@@ -203,6 +203,8 @@ def run_exp_loop(logger, constants, exp_type, model_class, params_model, params_
     all_recovered_params = {}; recovered_parameters = None
     target_parameters = False
     for exp_i in range(constants.N_exp):
+        torch.manual_seed(exp_i)
+        np.random.seed(exp_i)
         if exp_type is ExperimentType.DataDriven:
             recovered_parameters = fit_model_to_data(logger, constants, model_class, params_model,
                                                      data_set=constants.data_set, exp_type=exp_type, exp_num=exp_i)
