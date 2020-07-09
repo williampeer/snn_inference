@@ -126,8 +126,8 @@ class LIF_complex(nn.Module):
 
         # self.pre_activation_coefficient = T(pre_activation_coefficient)
         # self.post_activation_coefficient = T(post_activation_coefficient)
-        self.pre_activation_coefficient = nn.Parameter(T(pre_activation_coefficient), requires_grad=True)
-        self.post_activation_coefficient = nn.Parameter(T(post_activation_coefficient), requires_grad=True)
+        self.pre_activation_coefficient = nn.Parameter(T(N * [pre_activation_coefficient]), requires_grad=True)
+        self.post_activation_coefficient = nn.Parameter(T(N * [post_activation_coefficient]), requires_grad=True)
 
         # self.to(self.device)
 
