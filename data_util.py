@@ -2,14 +2,13 @@ import scipy.io as sio
 import numpy as np
 import torch
 
-# torch.backends.cudnn.deterministic = True
-# torch.backends.cudnn.benchmark = False
+# NOTE: This is just a sample implementation for how one might import and handle experiments containing a sparse
+#   representation (two vectors) of a spike train, consisting of two vectors with the spike times, and node indices.
 
 exp_names = ['exp108', 'exp109', 'exp124', 'exp126', 'exp138', 'exp146', 'exp147']
 # prefix = '/home/william/'  # Ubuntu
 prefix = '/Users/william/'  # OS X
 # prefix = '/home/williampeer/'  # server
-# prefix = '/afs/inf.ed.ac.uk/user/s18/s1895734/'
 path = 'data/sleep_data/'
 matlab_export = 'matlab_export/'
 
