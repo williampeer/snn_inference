@@ -4,39 +4,6 @@ from spike_metrics import *
 import torch
 
 
-def test_mean_firing_rate():
-    # firing rate
-    a = 0.4 * torch.ones((10, 2))
-    b = 0.6 * torch.ones((10, 2))
-    tar_rate = 0.5
-    sut = torch.reshape(torch.cat([a, b]), (-1, a.shape[1]))
-    # check stack OK
-    assert sut.shape[0] == (a.shape[0] + b.shape[0]), \
-        "sut shape: {}, a.shape: {}, b.shape: {}".format(sut.shape, a.shape, b.shape)
-
-    sut_mean_rates = mean_firing_rate(sut)
-    assert tar_rate - 5e-06 < sut_mean_rates[0] < tar_rate + 5e-06, \
-        "mean rate 0 should be: {}, was: {}".format(tar_rate, sut_mean_rates[0])
-    assert tar_rate - 5e-06 < sut_mean_rates[1] < tar_rate + 5e-06, \
-        "mean rate 0 should be: {}, was: {}".format(tar_rate, sut_mean_rates[1])
-
-    # test neurons by columns too.
-    train_10_by_100 = poisson_input(0.5 * torch.ones((10,)), t=100, N=10)
-    mean_rate = mean_firing_rate(train_10_by_100)
-    assert mean_rate.shape[0] == 10, "mean_rate.shape: {}".format(mean_rate.shape)
-    train_20_by_40 = poisson_input(0.5 * torch.ones((20,)), t=40, N=20)
-    mean_rate = mean_firing_rate(train_20_by_40)
-    assert mean_rate.shape[0] == 20, "mean_rate.shape: {}".format(mean_rate.shape)
-
-
-def test_sums_helper():
-    s1 = poisson_input(0.5 * torch.ones((10,)), t=100, N=10)
-    s2 = poisson_input(0.5 * torch.ones((10,)), t=100, N=10)
-
-    sut = sums_helper(spikes1=s1, spikes2=s2)
-    assert sut.shape[0] == 2 and sut.shape[1] == 100, "sut does not have expected shape (N=2,t=100). sut.shape: {}".format(sut.shape)
-
-
 def test_van_rossum_dist():
     tar_spikes = poisson_input(1. * torch.ones((3,)), t=100, N=3)
     model_spikes = poisson_input(1. * torch.ones((3,)), t=100, N=3)
@@ -107,10 +74,8 @@ def test_van_rossum_convolution():
     assert dist == dist_approx, "distance: {:.4f} was not approx. dist: {:.4f}".format(dist, dist_approx)
     assert conv.sum() > sample_spikes.sum(), "conv sum should be greater than sum of spikes"
 
+
 # --------------------------------------
-test_mean_firing_rate()
-test_sums_helper()
 test_van_rossum_dist()
-test_optimised_van_rossum()
 test_different_taus_van_rossum_dist()
 test_van_rossum_convolution()

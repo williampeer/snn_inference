@@ -125,10 +125,13 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
 
     logger.log([model_class.__name__], 'gen model parameters: {}'.format(params_gen))
     gen_rate = torch.tensor(constants.initial_poisson_rate)  # * torch.rand((1,))[0]
-    target_parameters = {}
-    for param_i, param in enumerate(list(gen_model.parameters())):
-        target_parameters[param_i] = [param.clone().detach().numpy()]
-    target_parameters[param_i + 1] = [gen_rate.clone().detach().numpy()]
+    if model_class.__name__ == gen_model.__class__.__name__:
+        target_parameters = {}
+        for param_i, param in enumerate(list(gen_model.parameters())):
+            target_parameters[param_i] = [param.clone().detach().numpy()]
+        target_parameters[param_i + 1] = [gen_rate.clone().detach().numpy()]
+    else:
+        target_parameters = False
 
     params_model['N'] = gen_model.N
     model = model_class(device=device, parameters=params_model)
@@ -203,6 +206,8 @@ def run_exp_loop(logger, constants, exp_type, model_class, params_model, params_
     all_recovered_params = {}; recovered_parameters = None
     target_parameters = False
     for exp_i in range(constants.N_exp):
+        torch.manual_seed(exp_i)
+        np.random.seed(exp_i)
         if exp_type is ExperimentType.DataDriven:
             recovered_parameters = fit_model_to_data(logger, constants, model_class, params_model,
                                                      data_set=constants.data_set, exp_type=exp_type, exp_num=exp_i)

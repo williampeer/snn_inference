@@ -8,13 +8,13 @@ def test_plot_van_rossum_convolution():
     sample_spiketrain_2 = 1.0 * (torch.rand((200, 3)) < 0.25)
     plot.plot_spiketrain(sample_spiketrain, uuid='test_uuid', title="Sample spiketrain")
     plot.plot_spiketrains_side_by_side(sample_spiketrain, sample_spiketrain_2, 'test_uuid',
-                                       title="Sample side-by-side raster plot")
+                                       title="Sample side-by-side spike trains")
 
-    convolved = spike_metrics.torch_van_rossum_convolution(sample_spiketrain, tau=torch.tensor(5.0))
+    convolved = spike_metrics.torch_van_rossum_convolution(sample_spiketrain, tau=torch.tensor(2.0))
     # convolved = spike_metrics.convolve_van_rossum_using_clone(sample_spiketrain, tau=torch.tensor(5.0))
-    plot.plot_neuron(convolved[:, 0], 'Spiketrain node 1 van Rossum convolved')
-    plot.plot_neuron(convolved[:, 1], 'Spiketrain node 2 van Rossum convolved')
-    plot.plot_neuron(convolved[:, 2], 'Spiketrain node 3 van Rossum convolved')
+    plot.plot_neuron(convolved[:, 0], 'Spiketrain node 1 van Rossum convolved', fname_ext='1')
+    plot.plot_neuron(convolved[:, 1], 'Spiketrain node 2 van Rossum convolved', fname_ext='2')
+    plot.plot_neuron(convolved[:, 2], 'Spiketrain node 3 van Rossum convolved', fname_ext='3')
 
 
 def test_plot_parameter_pairs_with_variance():
