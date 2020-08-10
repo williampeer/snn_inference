@@ -1,6 +1,6 @@
 # snn_inference
 
-Currently in what I would describe as a development/alpha-version.
+Currently a development/alpha-version.
 
 ## Usage
 `python main.py -h`
@@ -13,11 +13,11 @@ exp_suite.py should give you a gist of what running an experiment does
 
 ### Sample usage
 ```
-python main.py -s Synthetic -lr 0.001 -ti 40 -N 1 -bs 400 -tvr 10.0 -rpti 4000 -optim Adam -ipr 0.5 -mt LIF -lfn van_rossum_dist -es 1
+python main.py -s Synthetic -lr 0.001 -ti 10 -N 1 -bs 400 -tvr 10.0 -rpti 4000 -optim Adam -ipr 0.5 -mt LIF -lfn van_rossum_dist -es 1
 ```
 
 ```
-python main.py -s DataDriven -lr 0.001 -ti 40 -N 1 -bs 400 -tvr 10.0 -rpti 4000 -optim Adam -ipr 0.5 -mt LIF -lfn van_rossum_dist -ds exp404 -es 1
+python main.py -s DataDriven -lr 0.001 -ti 10 -N 1 -bs 400 -tvr 10.0 -rpti 4000 -optim Adam -ipr 0.5 -mt LIF -lfn van_rossum_dist -ds exp404 -es 1
 ```
 
 Output of python main.py -h:
