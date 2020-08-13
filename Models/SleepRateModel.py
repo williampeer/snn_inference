@@ -5,7 +5,7 @@ Adapted to Pytorch from https://github.com/SakataLab/Sleep_Computational_Model_2
 Computational model core Herice C. and Sakata S. (2019)
 Sleep/wake regulation model and synapses alterations.
 Original model from Costa et al. (2016) and Diniz Behn et al. (2012).
-Charlotte HERICE - January 2019
+William BERG - August 2020
 """
 
 import torch
