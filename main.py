@@ -1,6 +1,6 @@
 import sys
 import Constants as C
-from Models import LIF, Izhikevich, BaselineSNN
+from Models import LIF, Izhikevich, BaselineSNN, LIF_R_ASC_AT
 
 
 def main(argv):
@@ -8,9 +8,9 @@ def main(argv):
 
     # Default values
     data_bin_size = 4000; target_bin_size = 1
-    learn_rate = 0.04; train_iters = 2; N_exp = 1; batch_size = 400; tau_van_rossum = 2.0
+    learn_rate = 0.001; train_iters = 3; N_exp = 1; batch_size = 400; tau_van_rossum = 10.0
     input_coefficient = 1.0
-    rows_per_train_iter = 400
+    rows_per_train_iter = 800
     optimiser = 'Adam'
     # optimiser = 'SGD'
     exp_type = 'RetrieveFitted'
@@ -19,10 +19,11 @@ def main(argv):
     # exp_type = 'SanityCheck'
     initial_poisson_rate = 0.5
     # model_type_str = Izhikevich.IzhikevichStable.__name__
-    model_type_str = LIF.LIF_complex.__name__
+    model_type_str = LIF_R_ASC_AT.GLIF.__name__
+    # model_type_str = LIF.LIF_complex.__name__
     # model_type_str = BaselineSNN.BaselineSNN.__name__
-    # loss_fn = 'van_rossum_dist'
-    loss_fn = 'van_rossum_dist_per_node'
+    loss_fn = 'van_rossum_dist'
+    # loss_fn = 'van_rossum_dist_per_node'
     data_set = None
     # data_set = 'exp147'
     evaluate_step = 1
@@ -83,7 +84,7 @@ def main(argv):
     except:
         print('Script type not supported.')
 
-    models = [BaselineSNN.BaselineSNN, LIF.LIF, LIF.LIF_complex, Izhikevich.Izhikevich, Izhikevich.IzhikevichStable]
+    models = [BaselineSNN.BaselineSNN, LIF.LIF, LIF.LIF_complex, Izhikevich.Izhikevich, Izhikevich.IzhikevichStable, LIF_R_ASC_AT.GLIF]
     model_class = None
     for _, c in enumerate(models):
         if model_type_str == c.__name__:

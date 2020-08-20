@@ -4,8 +4,8 @@ from torch import tensor as T
 
 
 class LIF(nn.Module):
-    def __init__(self, device, parameters, tau_m=4.0, tau_g=2.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25,
-                 pre_activation_coefficient=4.0, post_activation_coefficient=130.0):
+    def __init__(self, device, parameters, tau_m=1.0, tau_g=2.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25,
+                 R_I=42.):
         super(LIF, self).__init__()
         # self.device = device
 
@@ -32,10 +32,6 @@ class LIF(nn.Module):
         self.spike_threshold = T(30.)
         self.N = N
 
-        # self.tau_m = T(tau_m)
-        # self.tau_g = T(tau_g)
-        # self.v_rest = T(v_rest)
-
         self.v = torch.zeros((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
@@ -46,11 +42,8 @@ class LIF(nn.Module):
         self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
         self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
 
-        self.pre_activation_coefficient = T(pre_activation_coefficient)
-        self.post_activation_coefficient = T(post_activation_coefficient)
-        # self.pre_activation_coefficient = nn.Parameter(T(pre_activation_coefficient), requires_grad=True)
-        # self.post_activation_coefficient = nn.Parameter(T(post_activation_coefficient), requires_grad=True)
-
+        # constant chosen so as to enable spiking for this model
+        self.R_I = R_I
         # self.to(self.device)
 
     def reset_hidden_state(self):
@@ -59,16 +52,9 @@ class LIF(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
-        # constant chosen so as to enable spiking for this model
-        # I = w g + x = w(g + x)
-        # pre_act_in = self.pre_activation_coefficient * torch.add(self.w.matmul(self.g), x_in)
-        # I = self.post_activation_coefficient * torch.sigmoid(pre_act_in)
         I = self.w.matmul(self.g) + x_in
 
-        # dv = (v_rest - v + I) / tau_m
-        # dv = torch.div(torch.add(torch.sub(self.v_rest, self.v), I), self.tau_m)
-        C_m = 0.04
-        dv = self.v_rest - self.v + I/C_m
+        dv = (self.v_rest - self.v + I * self.R_I)/self.tau_m
         self.v = torch.add(self.v, dv)
 
         self.spiked = torch.sigmoid(torch.sub(self.v, self.spike_threshold))
