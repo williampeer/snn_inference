@@ -137,14 +137,18 @@ class LIF_complex(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
-        # constant chosen so as to enable spiking for this model
         # I = w g + w x = w(g + x)
         pre_act_in = self.pre_activation_coefficient * torch.add(self.w.matmul(self.g), x_in)
         I = self.post_activation_coefficient * torch.sigmoid(pre_act_in)
+
+        dg = -torch.div(self.g, self.tau_g)
+        self.g = self.g + dg
+
         # dv = (v_rest - v + I) / tau_m
         dv = torch.div(torch.add(torch.sub(self.v_rest, self.v), I), self.tau_m)
         self.v = torch.add(self.v, dv)
 
+        # Test for spikes
         self.spiked = torch.sigmoid(torch.sub(self.v, self.spike_threshold))
 
         spiked = (self.v >= self.spike_threshold).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
@@ -152,8 +156,6 @@ class LIF_complex(nn.Module):
 
         # v = spiked * v_rest + not_spiked * v
         self.v = torch.add(spiked * self.v_rest, not_spiked * self.v)
-        dg = -torch.div(self.g, self.tau_g)
-        self.g = torch.add(spiked * torch.ones_like(self.g),
-                           not_spiked * torch.add(self.g, dg))
+        self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * self.g)
 
         return self.v, self.spiked

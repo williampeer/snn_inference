@@ -13,13 +13,13 @@ snn = LIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters)
 
 inputs = poisson_input(0.5, t=500, N=static_parameters['N'])
 membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
-plot_neuron(membrane_potentials.data, title='Neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_LIF_poisson_input')
+plot_neuron(membrane_potentials.data, title='LIF_test neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_LIF_test_poisson_input')
 
 zeros = torch.zeros_like(inputs)
 membrane_potentials_zeros, spikes_zeros = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, zeros)
-plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()), fname_ext='test_LIF_no_input')
+plot_neuron(membrane_potentials_zeros.data, title='LIF_test neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()), fname_ext='test_LIF_test_no_input')
 
-plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_LIF', title='Test LIF spiketrains random and zero input')
+plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_LIF_test', title='Test LIF_test spiketrains random and zero input')
 
 tau_vr = torch.tensor(2.0)
 loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)
