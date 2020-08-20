@@ -4,8 +4,8 @@ from torch import tensor as T
 
 
 class GLIF(nn.Module):
-    def __init__(self, device, parameters, tau_m=1.0, tau_g=2.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25,
-                 delta_theta_s=30., b_s=0.5, R_I=25., f_v=0.15, delta_V=12., k_I_l=0.5, I_A=1., b_v=0.5, a_v=0.5,
+    def __init__(self, device, parameters, tau_m=4.0, tau_g=2.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25,
+                 delta_theta_s=30., b_s=0.5, R_I=20., f_v=0.15, delta_V=12., k_I_l=0.5, I_A=1., b_v=0.5, a_v=0.5,
                  theta_inf=-40):
         super(GLIF, self).__init__()
         # self.device = device
@@ -25,24 +25,26 @@ class GLIF(nn.Module):
                 elif key == 'w_var':
                     w_var = float(parameters[key])
 
-        __constants__ = ['N']
-        self.delta_theta_s = T(delta_theta_s)
+        __constants__ = ['N', 'v_rest', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
         self.N = N
+        self.v_rest = T(N * [v_rest])
+
+        self.delta_theta_s = T(delta_theta_s)
+        self.b_s = T(b_s)
+        self.a_v = T(a_v)
+        self.b_v = T(b_v)
+        self.theta_inf = T(theta_inf)
 
         self.v = torch.zeros((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
         self.theta_s = T(30.) * torch.ones((self.N,))
-        self.b_s = T(b_s)
         self.theta_v = torch.ones((self.N,))
-        self.a_v = T(a_v)
-        self.b_v = T(b_v)
-        self.theta_inf = T(theta_inf)
         self.I_additive = torch.zeros((self.N,))
 
         rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
         self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
-        self.v_rest = nn.Parameter(T(N * [v_rest]), requires_grad=True)
+        # self.v_rest = nn.Parameter(T(N * [v_rest]), requires_grad=True)
         self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
         self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
 
@@ -57,17 +59,22 @@ class GLIF(nn.Module):
         self.g = self.g.clone().detach()
         self.spiked = self.spiked.clone().detach()
 
+        self.theta_s = self.theta_s.clone().detach()
+        self.theta_v = self.theta_v.clone().detach()
+        self.I_additive = self.I_additive.clone().detach()
+
     def forward(self, x_in):
         I = x_in + self.w.matmul(self.I_additive)
 
         dv = (self.v_rest - self.v + I * self.R_I) / self.tau_m
-        v_next = self.v + dv
+        v_prev = self.v.clone()
+        self.v = self.v + dv
 
         # differentiable
-        self.spiked = torch.sigmoid(torch.sub(v_next, (self.theta_s + self.theta_v)))
+        self.spiked = torch.sigmoid(torch.sub(self.v, (self.theta_s + self.theta_v)))
 
         # "filters"
-        spiked = (v_next >= self.theta_s).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
+        spiked = (self.v >= self.theta_s).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
         not_spiked = (spiked - 1.) / -1.  # flips the boolean mat.
 
         # ones_g = torch.ones_like(self.tau_g)
@@ -76,8 +83,8 @@ class GLIF(nn.Module):
         self.theta_s = (1 - self.b_s) * self.theta_s
 
         # Sample values: f_v = 0.15; delta_V = 12.
-        v_reset = self.v_rest + self.f_v * (self.v - self.v_rest) - self.delta_V
-        self.v = spiked * v_reset + not_spiked * v_next
+        v_reset = self.v_rest + self.f_v * (v_prev - self.v_rest) - self.delta_V
+        self.v = spiked * v_reset + not_spiked * self.v
         self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * (self.theta_s)
         d_theta_v = self.a_v * (self.v - self.v_rest) - self.b_v * (self.theta_v - self.theta_inf)
         self.theta_v = spiked * (self.theta_v) + not_spiked * (self.theta_v + d_theta_v)
