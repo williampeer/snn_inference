@@ -24,6 +24,8 @@ class GLIF(nn.Module):
                     w_mean = float(parameters[key])
                 elif key == 'w_var':
                     w_var = float(parameters[key])
+                elif key == 'R_I':
+                    R_I = float(parameters[key])
 
         __constants__ = ['N', 'v_rest', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
         self.N = N
@@ -46,7 +48,9 @@ class GLIF(nn.Module):
         self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
         # self.v_rest = nn.Parameter(T(N * [v_rest]), requires_grad=True)
         self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
-        self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
+        # self.tau_m = T(N * [tau_m])
+        # self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
+        # self.R_I = nn.Parameter(T(N * [T(R_I)]), requires_grad=True)
 
         self.R_I = T(R_I)
         self.f_v = T(f_v)
@@ -67,30 +71,27 @@ class GLIF(nn.Module):
         I = x_in + self.w.matmul(self.I_additive)
 
         dv = (self.v_rest - self.v + I * self.R_I) / self.tau_m
-        v_prev = self.v.clone()
-        self.v = self.v + dv
+        # v_prev = self.v.clone()
+        # self.v = self.v + dv
+        v_next = self.v + dv
 
         # differentiable
-        self.spiked = torch.sigmoid(torch.sub(self.v, (self.theta_s + self.theta_v)))
+        self.spiked = torch.sigmoid(torch.sub(v_next, (self.theta_s + self.theta_v)))
 
-        # "filters"
-        spiked = (self.v >= self.theta_s).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
+        # NB: Non-differentiable terms & "filters"
+        spiked = (v_next >= self.theta_s).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
         not_spiked = (spiked - 1.) / -1.  # flips the boolean mat.
 
-        # ones_g = torch.ones_like(self.tau_g)
-        # self.g = (ones_g - ones_g / self.tau_g) * self.g  # g = g - g/tau_g
+        self.theta_s = (1 - self.b_s) * self.theta_s + spiked * self.delta_theta_s
+        d_theta_v = self.a_v * (self.v - self.v_rest) - self.b_v * (self.theta_v - self.theta_inf)
+        self.theta_v = self.theta_v + not_spiked * d_theta_v
 
-        self.theta_s = (1 - self.b_s) * self.theta_s
+        # I_additive_decayed = (torch.ones_like(self.k_I_l) - self.k_I_l) * self.I_additive
+        # self.I_additive = I_additive_decayed + spiked * self.I_A
+        self.I_additive = (torch.ones_like(self.k_I_l) - self.k_I_l) * self.I_additive + self.spiked * self.I_A
 
         # Sample values: f_v = 0.15; delta_V = 12.
-        v_reset = self.v_rest + self.f_v * (v_prev - self.v_rest) - self.delta_V
-        self.v = spiked * v_reset + not_spiked * self.v
-        self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * (self.theta_s)
-        d_theta_v = self.a_v * (self.v - self.v_rest) - self.b_v * (self.theta_v - self.theta_inf)
-        self.theta_v = spiked * (self.theta_v) + not_spiked * (self.theta_v + d_theta_v)
-
-        I_additive_decayed = (torch.ones_like(self.k_I_l) - self.k_I_l) * self.I_additive
-        self.I_additive = spiked * (self.I_additive + self.I_A) + not_spiked * I_additive_decayed
-        # self.g = spiked * torch.ones_like(self.g) + not_spiked * self.g
+        v_reset = self.v_rest + self.f_v * (self.v - self.v_rest) - self.delta_V
+        self.v = spiked * v_reset + not_spiked * v_next  # spike reset
 
         return self.v, self.spiked

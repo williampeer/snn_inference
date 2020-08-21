@@ -147,8 +147,9 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
     fitted_parameters[p_i + 1] = [current_rate.clone().detach().numpy()]
 
     model_optim = constants.optimiser(list(model.parameters()), lr=constants.learn_rate)
-    poisson_rate_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
-    optims = [model_optim, poisson_rate_optim]
+    # poisson_rate_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
+    # optims = [model_optim, poisson_rate_optim]
+    optims = [model_optim]
 
     train_losses = []; test_losses = []
     for train_i in range(constants.train_iters):
@@ -163,7 +164,6 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
         logger.log(['avg train loss', avg_train_loss])
         train_losses.append(avg_train_loss)
         model.reset_hidden_state()
-        current_rate = current_rate.clone().detach()
 
         last_train_iter = (train_i == constants.train_iters - 1)
         if train_i % constants.evaluate_step == 0 or last_train_iter:
@@ -185,13 +185,20 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
             logger.log('-', 'parameter #{} gradient: {}'.format(param_i, param.grad))
             fitted_parameters[param_i].append(param.clone().detach().numpy())
         fitted_parameters[param_i+1].append(current_rate.clone().detach().numpy())
+        logger.log('-', 'rates: {}'.format(current_rate))
+        logger.log('-', 'rates gradient: {}'.format(current_rate.grad))
 
     final_parameters = {}
     for param_i, param in enumerate(list(model.parameters())):
         logger.log('-', 'parameter #{}: {}'.format(param_i, param))
         logger.log('-', 'parameter #{} gradient: {}'.format(param_i, param.grad))
         final_parameters[param_i] = param.clone().detach().numpy()
-    fitted_parameters[param_i + 1].append(current_rate.clone().detach().numpy())
+    final_parameters[param_i + 1] = current_rate.clone().detach().numpy()
+
+    for ctr in range(len(fitted_parameters)):
+        print('fitted_parameters param #{}:'.format(ctr))
+        for ij in range(len(fitted_parameters[ctr])):
+            print(fitted_parameters[ctr][ij])
 
     stats_training_iterations(fitted_parameters, model, train_losses, test_losses, constants, logger, exp_type.name,
                               target_parameters=target_parameters, exp_num=exp_num)

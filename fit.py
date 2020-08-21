@@ -17,11 +17,11 @@ def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_r
     batch_losses = model.N * [[]]
     loss = None; cur_inputs = None; loss_per_node = False
     for batch_i in range(batch_N):
-        model.reset_hidden_state()
-        current_rate = torch.abs(current_rate.clone().detach())
-        for optim in optimisers:
-            optim.zero_grad()
         print('batch #{}'.format(batch_i))
+
+        model.reset_hidden_state()
+        # current_rate = current_rate.clone().detach()
+        # current_rate = torch.abs(current_rate.clone().detach())
 
         if inputs is not None:
             spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs[batch_size*batch_i:batch_size*(batch_i+1)])
@@ -51,6 +51,10 @@ def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_r
             raise NotImplementedError("Loss function not supported.")
 
         print('batch loss: {}'.format(loss))
+
+        for optim in optimisers:
+            optim.zero_grad()
+
         if loss_per_node:
             for l_i in range(len(loss)):
                 loss[l_i].backward(retain_graph=True)
