@@ -47,6 +47,7 @@ class LIF_R(nn.Module):
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()
         self.g = self.g.clone().detach()
+        self.theta_s = self.theta_s.clone().detach()
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
