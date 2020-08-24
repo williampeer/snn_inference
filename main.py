@@ -1,6 +1,11 @@
 import sys
 import Constants as C
-from Models import LIF, Izhikevich, BaselineSNN, LIF_R_ASC_AT
+from Models.Izhikevich import Izhikevich
+from Models.LIF import LIF_complex, LIF
+from Models.LIF_ASC import LIF_ASC
+from Models.LIF_R import LIF_R
+from Models.LIF_R_ASC import LIF_R_ASC
+from Models.LIF_R_ASC_AT import GLIF
 
 
 def main(argv):
@@ -18,10 +23,11 @@ def main(argv):
     # exp_type = 'Synthetic'
     # exp_type = 'SanityCheck'
     initial_poisson_rate = 0.5
-    # model_type_str = Izhikevich.IzhikevichStable.__name__
-    model_type_str = LIF_R_ASC_AT.GLIF.__name__
-    # model_type_str = LIF.LIF_complex.__name__
-    # model_type_str = BaselineSNN.BaselineSNN.__name__
+    # model_type_str = IzhikevichStable.__name__
+    model_type_str = GLIF.__name__
+    # model_type_str = LIF.__name__
+    # model_type_str = LIF_complex.__name__
+    # model_type_str = BaselineSNN.__name__
     loss_fn = 'van_rossum_dist'
     # loss_fn = 'van_rossum_dist_per_node'
     data_set = None
@@ -84,7 +90,8 @@ def main(argv):
     except:
         print('Script type not supported.')
 
-    models = [BaselineSNN.BaselineSNN, LIF.LIF, LIF.LIF_complex, Izhikevich.Izhikevich, Izhikevich.IzhikevichStable, LIF_R_ASC_AT.GLIF]
+    models = [LIF, LIF_complex, Izhikevich, Izhikevich.IzhikevichStable,
+              LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     model_class = None
     for _, c in enumerate(models):
         if model_type_str == c.__name__:
