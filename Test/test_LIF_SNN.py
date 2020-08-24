@@ -6,8 +6,8 @@ from Models.LIF import LIF
 from experiments import poisson_input, zip_dicts, randomise_parameters
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
-static_parameters = {'N': 3, 'w_mean': 0.2, 'w_var': 0.3, 'R_I': 45.}
-free_parameters = {'tau_m': 1.0, 'tau_g': 2.0, 'v_rest': -60.0}
+static_parameters = {'N': 3, 'w_mean': 0.2, 'w_var': 0.3, 'R_I': 42.}
+free_parameters = {'tau_m': 1.8, 'tau_g': 4.0, 'v_rest': -60.0}
 
 snn = LIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
 

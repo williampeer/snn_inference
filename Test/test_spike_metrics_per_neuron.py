@@ -2,7 +2,8 @@ from experiments import poisson_input
 
 import torch
 
-from spike_metrics import mse_per_node, van_rossum_dist_per_node, van_rossum_squared_per_node, firing_rate_per_neuron
+from spike_metrics import mse_per_node, van_rossum_dist_per_node, van_rossum_squared_per_node
+from stats import firing_rate_per_neuron
 
 
 def test_sum_per_node():

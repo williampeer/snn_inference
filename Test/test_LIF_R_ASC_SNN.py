@@ -6,7 +6,7 @@ from Models.LIF_R_ASC import LIF_R_ASC
 from experiments import zip_dicts, poisson_input
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
-static_parameters = {'N': 12, 'w_mean': 0.1, 'w_var': 0.3}
+static_parameters = {'N': 3, 'w_mean': 0.1, 'w_var': 0.3}
 free_parameters = {'tau_m': 2.0, 'tau_g': 2.0, 'v_rest': -60.0}
 
 snn = LIF_R_ASC(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
