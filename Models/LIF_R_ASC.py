@@ -60,23 +60,17 @@ class LIF_R_ASC(nn.Module):
 
         # differentiable
         self.spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
-
-        # "filters"
+        # non-differentiable, hard threshold
         spiked = (v_next >= self.theta_s).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
         not_spiked = (spiked - 1.) / -1.  # flips the boolean mat.
 
-        # ones_g = torch.ones_like(self.tau_g)
-        # self.g = (ones_g - ones_g / self.tau_g) * self.g  # g = g - g/tau_g
-
-        self.theta_s = self.theta_s - self.b_s * self.theta_s
-
-        # Sample values: f_v = 0.15; delta_V = 12.
         v_reset = self.v_rest + self.f_v * (self.v - self.v_rest) - self.delta_V
         self.v = spiked * v_reset + not_spiked * v_next
-        self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * (self.theta_s)
+
+        theta_s_next = self.theta_s - self.b_s * self.theta_s
+        self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
 
         I_additive_decayed = (torch.ones_like(self.k_I_l) - self.k_I_l) * self.I_additive
         self.I_additive = spiked * (self.I_additive + self.I_A) + not_spiked * I_additive_decayed
-        # self.g = spiked * torch.ones_like(self.g) + not_spiked * self.g
 
         return self.v, self.spiked

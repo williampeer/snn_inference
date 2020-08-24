@@ -71,27 +71,22 @@ class GLIF(nn.Module):
         I = x_in + self.w.matmul(self.I_additive)
 
         dv = (self.v_rest - self.v + I * self.R_I) / self.tau_m
-        # v_prev = self.v.clone()
-        # self.v = self.v + dv
         v_next = self.v + dv
 
         # differentiable
         self.spiked = torch.sigmoid(torch.sub(v_next, (self.theta_s + self.theta_v)))
+        # NB: Non-differentiable, not used for gradients
+        spiked = (v_next >= self.theta_s).float()
+        not_spiked = (spiked - 1.) / -1.
 
-        # NB: Non-differentiable terms & "filters"
-        spiked = (v_next >= self.theta_s).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
-        not_spiked = (spiked - 1.) / -1.  # flips the boolean mat.
+        v_reset = self.v_rest + self.f_v * (self.v - self.v_rest) - self.delta_V
+        self.v = spiked * v_reset + not_spiked * v_next  # spike reset
 
-        self.theta_s = (1 - self.b_s) * self.theta_s + spiked * self.delta_theta_s
+        self.theta_s = (1 - self.b_s) * self.theta_s + spiked * self.delta_theta_s  # always decay
         d_theta_v = self.a_v * (self.v - self.v_rest) - self.b_v * (self.theta_v - self.theta_inf)
         self.theta_v = self.theta_v + not_spiked * d_theta_v
 
-        # I_additive_decayed = (torch.ones_like(self.k_I_l) - self.k_I_l) * self.I_additive
-        # self.I_additive = I_additive_decayed + spiked * self.I_A
-        self.I_additive = (torch.ones_like(self.k_I_l) - self.k_I_l) * self.I_additive + self.spiked * self.I_A
-
-        # Sample values: f_v = 0.15; delta_V = 12.
-        v_reset = self.v_rest + self.f_v * (self.v - self.v_rest) - self.delta_V
-        self.v = spiked * v_reset + not_spiked * v_next  # spike reset
+        self.I_additive = (torch.ones_like(self.k_I_l) - self.k_I_l) * self.I_additive \
+                          + self.spiked * self.I_A
 
         return self.v, self.spiked

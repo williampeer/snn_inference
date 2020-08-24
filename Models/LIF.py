@@ -39,7 +39,6 @@ class LIF(nn.Module):
         self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
         self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
 
-        # constant chosen so as to enable spiking for this model
         self.R_I = R_I
         # self.to(self.device)
 
@@ -52,25 +51,24 @@ class LIF(nn.Module):
         I = self.w.matmul(self.g) + x_in
 
         dv = (self.v_rest - self.v + I * self.R_I)/self.tau_m
-        self.v = torch.add(self.v, dv)
+        v_next = torch.add(self.v, dv)
 
-        self.spiked = torch.sigmoid(torch.sub(self.v, self.spike_threshold))
-
-        spiked = (self.v >= self.spike_threshold).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
-        not_spiked = (spiked - 1.) / -1.  # flips the boolean mat.
+        # differentiable soft threshold
+        self.spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
+        # non-differentiable, hard threshold
+        spiked = (self.v >= self.spike_threshold).float()
+        not_spiked = (spiked - 1.) / -1.
 
         # v = spiked * v_rest + not_spiked * v
-        self.v = torch.add(spiked * self.v_rest, not_spiked * self.v)
+        self.v = torch.add(spiked * self.v_rest, not_spiked * v_next)
         dg = -torch.div(self.g, self.tau_g)
-        self.g = torch.add(spiked * torch.ones_like(self.g),
-                           not_spiked * torch.add(self.g, dg))
+        self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 
         return self.v, self.spiked
 
 
 class LIF_complex(nn.Module):
-    def __init__(self, device, parameters, tau_m=4.0, tau_g=2.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25,
-                 pre_activation_coefficient=4.0, post_activation_coefficient=130.0):
+    def __init__(self, device, parameters, tau_m=4.0, tau_g=2.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25, R_I=42.):
         super(LIF_complex, self).__init__()
         # self.device = device
 
@@ -88,18 +86,12 @@ class LIF_complex(nn.Module):
                     w_mean = float(parameters[key])
                 elif key == 'w_var':
                     w_var = float(parameters[key])
-                elif key == 'pre_activation_coefficient':
-                    pre_activation_coefficient = float(parameters[key])
-                elif key == 'post_activation_coefficient':
-                    post_activation_coefficient = float(parameters[key])
+                elif key == 'R_I':
+                    R_I = float(parameters[key])
 
         __constants__ = ['spike_threshold', 'N']
         self.spike_threshold = T(30.)
         self.N = N
-
-        # self.tau_m = T(tau_m)
-        # self.tau_g = T(tau_g)
-        # self.v_rest = T(v_rest)
 
         self.v = torch.zeros((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
@@ -110,11 +102,7 @@ class LIF_complex(nn.Module):
         self.v_rest = nn.Parameter(T(N * [v_rest]), requires_grad=True)
         self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
         self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
-
-        # self.pre_activation_coefficient = T(pre_activation_coefficient)
-        # self.post_activation_coefficient = T(post_activation_coefficient)
-        self.pre_activation_coefficient = nn.Parameter(T(pre_activation_coefficient), requires_grad=True)
-        self.post_activation_coefficient = nn.Parameter(T(post_activation_coefficient), requires_grad=True)
+        self.R_I = nn.Parameter(T(N * [R_I]), requires_grad=True)
 
         # self.to(self.device)
 
@@ -124,25 +112,20 @@ class LIF_complex(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
-        # I = w g + w x = w(g + x)
-        pre_act_in = self.pre_activation_coefficient * torch.add(self.w.matmul(self.g), x_in)
-        I = self.post_activation_coefficient * torch.sigmoid(pre_act_in)
+        I = self.w.matmul(self.g) + x_in
 
-        dg = -torch.div(self.g, self.tau_g)
-        self.g = self.g + dg
+        dv = (self.v_rest - self.v + I * self.R_I) / self.tau_m
+        v_next = torch.add(self.v, dv)
 
-        # dv = (v_rest - v + I) / tau_m
-        dv = torch.div(torch.add(torch.sub(self.v_rest, self.v), I), self.tau_m)
-        self.v = torch.add(self.v, dv)
-
-        # Test for spikes
-        self.spiked = torch.sigmoid(torch.sub(self.v, self.spike_threshold))
-
-        spiked = (self.v >= self.spike_threshold).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
-        not_spiked = (spiked - 1.) / -1.  # flips the boolean mat.
+        # differentiable soft threshold
+        self.spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
+        # non-differentiable, hard threshold
+        spiked = (self.v >= self.spike_threshold).float()
+        not_spiked = (spiked - 1.) / -1.
 
         # v = spiked * v_rest + not_spiked * v
-        self.v = torch.add(spiked * self.v_rest, not_spiked * self.v)
-        self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * self.g)
+        self.v = torch.add(spiked * self.v_rest, not_spiked * v_next)
+        dg = -torch.div(self.g, self.tau_g)
+        self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 
         return self.v, self.spiked

@@ -41,7 +41,7 @@ class LIF_R(nn.Module):
         self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
 
         self.R_I = T(R_I)
-        self.f_v = T(f_v)
+        self.f_v = T(f_v)  # Sample values: f_v = 0.15; delta_V = 12.
         self.delta_V = T(delta_V)
 
     def reset_hidden_state(self):
@@ -51,27 +51,22 @@ class LIF_R(nn.Module):
 
     def forward(self, x_in):
         I = self.w.matmul(self.g) + x_in
-
-        ones_g = torch.ones_like(self.tau_g)
-        self.g = (ones_g - ones_g/self.tau_g) * self.g  # g = g - g/tau_g
-        theta_s_next = (1-self.b_s) * self.theta_s
-
-        # e.g. R_I = 20.
         dv = (self.v_rest - self.v + I * self.R_I) / self.tau_m
         v_next = self.v + dv
 
         # differentiability
         self.spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
+        # non-differentiable, hard threshold
+        spiked = (v_next >= self.theta_s).float()
+        not_spiked = (spiked - 1.) / -1.
 
-        # "filters"
-        spiked = (v_next >= self.theta_s).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
-        not_spiked = (spiked - 1.) / -1.  # flips the boolean mat.
-
-        # Sample values: f_v = 0.15; delta_V = 12.
         v_reset = self.v_rest + self.f_v * (self.v - self.v_rest) - self.delta_V
         self.v = spiked * v_reset + not_spiked * v_next
+
+        theta_s_next = (1-self.b_s) * self.theta_s
         self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
-        self.g = spiked * torch.ones_like(self.g) + not_spiked * self.g
+
+        self.g = self.g - not_spiked * self.g/self.tau_g
 
         return self.v, self.spiked
 

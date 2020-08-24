@@ -53,28 +53,22 @@ class LIF_ASC(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
-        I = x_in + self.w.matmul(self.I_additive)
-
+        I = self.w.matmul(self.I_additive) + x_in
         dv = (self.v_rest - self.v + I * self.R_I) / self.tau_m
-        self.v = self.v + dv
+        v_next = self.v + dv
 
         # differentiable
         self.spiked = torch.sigmoid(torch.sub(self.v, self.theta_s))
+        # non-differentiable, hard threshold
+        spiked = (self.v >= self.theta_s).float()
+        not_spiked = (spiked - 1.) / -1.
 
-        # "filters"
-        spiked = (self.v >= self.theta_s).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
-        not_spiked = (spiked - 1.) / -1.  # flips the boolean mat.
+        self.v = torch.add(spiked * self.v_rest, not_spiked * v_next)
 
-        # ones_g = torch.ones_like(self.tau_g)
-        # self.g = (ones_g - ones_g / self.tau_g) * self.g  # g = g - g/tau_g
-
-        self.theta_s = self.theta_s - self.b_s * self.theta_s
-
-        self.v = torch.add(spiked * self.v_rest, not_spiked * self.v)
-        self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * (self.theta_s)
+        theta_s_next = (1 - self.b_s) * self.theta_s
+        self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
 
         I_additive_decayed = (torch.ones_like(self.k_I_l) - self.k_I_l) * self.I_additive
         self.I_additive = spiked * (self.I_additive + self.I_A) + not_spiked * I_additive_decayed
-        # self.g = spiked * torch.ones_like(self.g) + not_spiked * self.g
 
         return self.v, self.spiked
