@@ -1,6 +1,6 @@
 import sys
 import Constants as C
-from Models.Izhikevich import Izhikevich
+from Models.Izhikevich import Izhikevich, IzhikevichStable
 from Models.LIF import LIF_complex, LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
@@ -90,7 +90,7 @@ def main(argv):
     except:
         print('Script type not supported.')
 
-    models = [LIF, LIF_complex, Izhikevich, Izhikevich.IzhikevichStable,
+    models = [LIF, LIF_complex, Izhikevich, IzhikevichStable,
               LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     model_class = None
     for _, c in enumerate(models):
