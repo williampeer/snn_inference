@@ -8,6 +8,9 @@ from Constants import ExperimentType
 from Models.BaselineSNN import BaselineSNN
 from Models.Izhikevich import Izhikevich, IzhikevichStable
 from Models.LIF import LIF, LIF_complex
+from Models.LIF_ASC import LIF_ASC
+from Models.LIF_R import LIF_R
+from Models.LIF_R_ASC import LIF_R_ASC
 from Models.LIF_R_ASC_AT import GLIF
 from eval import evaluate_likelihood
 from experiments import *
@@ -254,7 +257,7 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
     logger = Log.Logger(experiment_type, constants, prefix=model_class.__name__)
     logger.log([constants.__str__()], 'Starting exp. with the listed hyperparameters.')
 
-    if model_class in [LIF, LIF_complex, GLIF]:
+    if model_class in [LIF, LIF_complex, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
         static_init_parameters = {'N': 12, 'w_mean': 0.1, 'w_var': 0.3, 'pre_activation_coefficient': 2.0,
                              'post_activation_coefficient': 100.0}
         free_parameters = {'tau_m': 2.0, 'tau_g': 2.0, 'v_rest': -60.0}
