@@ -13,28 +13,31 @@ def main(argv):
 
     # Default values
     data_bin_size = 4000; target_bin_size = 1
-    learn_rate = 0.001; train_iters = 3; N_exp = 1; batch_size = 400; tau_van_rossum = 10.0
+    learn_rate = 0.01; train_iters = 10; N_exp = 2; batch_size = 400; tau_van_rossum = 5.0
     input_coefficient = 1.0
     rows_per_train_iter = 800
     optimiser = 'Adam'
     # optimiser = 'SGD'
-    exp_type = 'RetrieveFitted'
+    # exp_type = 'RetrieveFitted'
     # exp_type = 'DataDriven'
-    # exp_type = 'Synthetic'
+    exp_type = 'Synthetic'
     # exp_type = 'SanityCheck'
     initial_poisson_rate = 0.5
-    # model_type_str = IzhikevichStable.__name__
-    model_type_str = GLIF.__name__
     # model_type_str = LIF.__name__
     # model_type_str = LIF_complex.__name__
+    # model_type_str = LIF_R.__name__
+    # model_type_str = LIF_ASC.__name__
+    # model_type_str = LIF_R_ASC.__name__
+    model_type_str = GLIF.__name__
+    # model_type_str = IzhikevichStable.__name__
     # model_type_str = BaselineSNN.__name__
     loss_fn = 'van_rossum_dist'
     # loss_fn = 'van_rossum_dist_per_node'
     data_set = None
     # data_set = 'exp147'
     evaluate_step = 1
-    # fitted_model_path = None
-    fitted_model_path = '/Users/william/data/sleep_data/LIF_sleep_model/LIF_sleep_model.pt'
+    fitted_model_path = None
+    # fitted_model_path = '/Users/william/data/sleep_data/LIF_sleep_model/LIF_sleep_model.pt'
     # fitted_model_path = '/Users/william/data/sleep_data/Izhikevich_sleep_model/Izhikevich_sleep_model.pt'
 
     opts = [opt for opt in argv if opt.startswith("-")]

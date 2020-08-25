@@ -56,7 +56,7 @@ class LIF(nn.Module):
         # differentiable soft threshold
         self.spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
         # non-differentiable, hard threshold
-        spiked = (self.v >= self.spike_threshold).float()
+        spiked = (v_next >= self.spike_threshold).float()
         not_spiked = (spiked - 1.) / -1.
 
         # v = spiked * v_rest + not_spiked * v
@@ -120,7 +120,7 @@ class LIF_complex(nn.Module):
         # differentiable soft threshold
         self.spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
         # non-differentiable, hard threshold
-        spiked = (self.v >= self.spike_threshold).float()
+        spiked = (v_next >= self.spike_threshold).float()
         not_spiked = (spiked - 1.) / -1.
 
         # v = spiked * v_rest + not_spiked * v

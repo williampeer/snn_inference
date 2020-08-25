@@ -23,6 +23,8 @@ class LIF_R_ASC(nn.Module):
                     w_mean = float(parameters[key])
                 elif key == 'w_var':
                     w_var = float(parameters[key])
+                elif key == 'R_I':
+                    R_I = float(parameters[key])
 
         __constants__ = ['N']
         self.delta_theta_s = T(delta_theta_s)

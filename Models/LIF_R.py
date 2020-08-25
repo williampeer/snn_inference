@@ -5,7 +5,7 @@ from torch import tensor as T
 
 class LIF_R(nn.Module):
     def __init__(self, device, parameters, tau_m=1.0, tau_g=2.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25,
-                 delta_theta_s=30., b_s=0.5, R_I=20., f_v=0.15, delta_V=12.):
+                 delta_theta_s=30., b_s=0.5, R_I=25., f_v=0.15, delta_V=12.):
         super(LIF_R, self).__init__()
         # self.device = device
 
@@ -23,6 +23,8 @@ class LIF_R(nn.Module):
                     w_mean = float(parameters[key])
                 elif key == 'w_var':
                     w_var = float(parameters[key])
+                elif key == 'R_I':
+                    R_I = float(parameters[key])
 
         __constants__ = ['N']
         self.delta_theta_s = T(delta_theta_s)

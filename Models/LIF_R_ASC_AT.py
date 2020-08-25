@@ -76,7 +76,7 @@ class GLIF(nn.Module):
         # differentiable
         self.spiked = torch.sigmoid(torch.sub(v_next, (self.theta_s + self.theta_v)))
         # NB: Non-differentiable, not used for gradients
-        spiked = (v_next >= self.theta_s).float()
+        spiked = (v_next >= (self.theta_s + self.theta_v)).float()
         not_spiked = (spiked - 1.) / -1.
 
         v_reset = self.v_rest + self.f_v * (self.v - self.v_rest) - self.delta_V

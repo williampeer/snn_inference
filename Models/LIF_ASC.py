@@ -5,7 +5,7 @@ from torch import tensor as T
 
 class LIF_ASC(nn.Module):
     def __init__(self, device, parameters, tau_m=1.0, tau_g=2.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25,
-                 delta_theta_s=30., b_s=0.5, R_I=25., f_v=0.15, delta_V=12., k_I_l=0.5, I_A=1.):
+                 delta_theta_s=30., b_s=0.5, R_I=50., f_v=0.15, delta_V=12., k_I_l=0.5, I_A=1.):
         super(LIF_ASC, self).__init__()
         # self.device = device
 
@@ -23,6 +23,8 @@ class LIF_ASC(nn.Module):
                     w_mean = float(parameters[key])
                 elif key == 'w_var':
                     w_var = float(parameters[key])
+                elif key == 'R_I':
+                    R_I = float(parameters[key])
 
         __constants__ = ['N']
         self.delta_theta_s = T(delta_theta_s)
@@ -62,7 +64,7 @@ class LIF_ASC(nn.Module):
         # differentiable
         self.spiked = torch.sigmoid(torch.sub(self.v, self.theta_s))
         # non-differentiable, hard threshold
-        spiked = (self.v >= self.theta_s).float()
+        spiked = (v_next >= self.theta_s).float()
         not_spiked = (spiked - 1.) / -1.
 
         self.v = torch.add(spiked * self.v_rest, not_spiked * v_next)
