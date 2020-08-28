@@ -2,7 +2,7 @@ import torch
 
 import model_util
 import spike_metrics
-from Models.LIF_R_ASC_AT import GLIF
+from Models.GLIF import GLIF
 from experiments import poisson_input, zip_dicts
 from plot import plot_neuron, plot_spiketrains_side_by_side
 

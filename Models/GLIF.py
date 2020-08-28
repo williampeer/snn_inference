@@ -5,7 +5,7 @@ from torch import tensor as T
 
 class GLIF(nn.Module):
     def __init__(self, device, parameters, tau_m=4.0, tau_g=2.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25,
-                 delta_theta_s=30., b_s=0.5, R_I=20., f_v=0.15, delta_V=12., k_I_l=0.5, I_A=1., b_v=0.5, a_v=0.5,
+                 delta_theta_s=30., b_s=0.5, R_I=12., f_v=0.15, delta_V=12., k_I_l=0.5, I_A=1., b_v=0.5, a_v=0.5,
                  theta_inf=-40):
         super(GLIF, self).__init__()
         # self.device = device
@@ -14,8 +14,6 @@ class GLIF(nn.Module):
             for key in parameters.keys():
                 if key == 'tau_m':
                     tau_m = float(parameters[key])
-                elif key == 'tau_g':
-                    tau_g = float(parameters[key])
                 elif key == 'v_rest':
                     v_rest = float(parameters[key])
                 elif key == 'N':
@@ -49,13 +47,14 @@ class GLIF(nn.Module):
         # self.v_rest = nn.Parameter(T(N * [v_rest]), requires_grad=True)
         self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
         # self.tau_m = T(N * [tau_m])
-        # self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
-        # self.R_I = nn.Parameter(T(N * [T(R_I)]), requires_grad=True)
-
-        self.R_I = T(R_I)
-        self.f_v = T(f_v)
-        self.delta_V = T(delta_V)
+        # self.k_I_l = nn.Parameter(T(N * [k_I_l]), requires_grad=True)
         self.k_I_l = T(k_I_l)
+        self.R_I = nn.Parameter(T(N * [R_I]), requires_grad=True)
+        # self.R_I = T(R_I)
+        # self.f_v = nn.Parameter(T(N * [f_v]), requires_grad=True)
+        self.f_v = T(f_v)
+
+        self.delta_V = T(delta_V)
         self.I_A = T(I_A)
 
     def reset_hidden_state(self):
@@ -66,6 +65,9 @@ class GLIF(nn.Module):
         self.theta_s = self.theta_s.clone().detach()
         self.theta_v = self.theta_v.clone().detach()
         self.I_additive = self.I_additive.clone().detach()
+
+        # self.k_I_l = self.k_I_l.clone().detach()
+        # self.R_I = self.R_I.clone().detach()
 
     def forward(self, x_in):
         I = x_in + self.w.matmul(self.I_additive)

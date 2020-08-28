@@ -11,7 +11,7 @@ from Models.LIF import LIF, LIF_complex
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from Models.LIF_R_ASC_AT import GLIF
+from Models.GLIF import GLIF
 from eval import evaluate_likelihood
 from experiments import *
 from fit import *
@@ -69,8 +69,9 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
     parameters[p_i + 1] = [current_rate.clone().detach().numpy()]
 
     model_optim = constants.optimiser(list(model.parameters()), lr=constants.learn_rate)
-    poisson_rates_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
-    optims = [model_optim, poisson_rates_optim]
+    # poisson_rates_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
+    # optims = [model_optim, poisson_rates_optim]
+    optims = [model_optim]
 
     train_losses = []; test_losses = []; prev_spike_arr_index = 0
     for train_i in range(constants.train_iters):

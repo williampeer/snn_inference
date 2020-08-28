@@ -13,8 +13,6 @@ class LIF_R_ASC(nn.Module):
             for key in parameters.keys():
                 if key == 'tau_m':
                     tau_m = float(parameters[key])
-                elif key == 'tau_g':
-                    tau_g = float(parameters[key])
                 elif key == 'v_rest':
                     v_rest = float(parameters[key])
                 elif key == 'N':
@@ -41,20 +39,25 @@ class LIF_R_ASC(nn.Module):
         self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
         self.v_rest = nn.Parameter(T(N * [v_rest]), requires_grad=True)
         self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
-        self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
+        self.k_I_l = nn.Parameter(T(N * [k_I_l]), requires_grad=True)
+        self.R_I = nn.Parameter(T(N * [R_I]), requires_grad=True)
+        # self.k_I_l = T(k_I_l)
+        # self.R_I = T(R_I)
 
-        self.R_I = T(R_I)
         self.f_v = T(f_v)
         self.delta_V = T(delta_V)
-        self.k_I_l = T(k_I_l)
         self.I_A = T(I_A)
 
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()
         self.g = self.g.clone().detach()
+        self.spiked = self.spiked.clone().detach()
+
         self.theta_s = self.theta_s.clone().detach()
         self.I_additive = self.I_additive.clone().detach()
-        self.spiked = self.spiked.clone().detach()
+
+        # self.k_I_l = self.k_I_l.clone().detach()
+        # self.R_I = self.R_I.clone().detach()
 
     def forward(self, x_in):
         I = x_in + self.w.matmul(self.I_additive)

@@ -55,18 +55,19 @@ def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_r
         for optim in optimisers:
             optim.zero_grad()
 
-        if loss_per_node:
-            for l_i in range(len(loss)):
-                loss[l_i].backward(retain_graph=True)
-                batch_losses[l_i].append(loss[l_i].clone().detach().data)
-        else:
-            loss.backward(retain_graph=True)
-            batch_losses[0].append(loss.clone().detach().data)
+        # if loss_per_node:
+        #     for l_i in range(len(loss)):
+        #         loss[l_i].backward(retain_graph=True)
+        #         batch_losses[l_i].append(loss[l_i].clone().detach().data)
+        # else:
+        loss.backward(retain_graph=True)
+        batch_losses[0].append(loss.clone().detach().data)
         # print('batch_losses: {}'.format(batch_losses))
 
         for optim in optimisers:
             # print('stepping with optimiser: {}'.format(optim))
             optim.step()
+            print('DEBUG: Stepping in optim.')
 
     if not loss_per_node:
         batch_losses = [batch_losses[0]]

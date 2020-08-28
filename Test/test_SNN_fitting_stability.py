@@ -1,7 +1,7 @@
 import torch
 
 from Models.LIF import LIF
-from Models.LIF_R_ASC_AT import GLIF
+from Models.GLIF import GLIF
 from Test import TestLog
 from experiments import poisson_input, zip_dicts
 from fit import fit_mini_batches
