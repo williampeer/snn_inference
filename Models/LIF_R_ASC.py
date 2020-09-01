@@ -4,25 +4,27 @@ from torch import tensor as T
 
 
 class LIF_R_ASC(nn.Module):
-    def __init__(self, device, parameters, tau_m=1.0, tau_g=2.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25,
-                 delta_theta_s=30., b_s=0.5, R_I=25., f_v=0.15, delta_V=12., k_I_l=0.5, I_A=1.):
+    def __init__(self, device, parameters, C_m=1.0, G=0.7, E_L=-65., N=10, w_mean=0.15, w_var=0.25,
+                 delta_theta_s=30., b_s=0.5, R_I=25., f_v=0.15, delta_V=12., f_I=0.5, I_A=1.):
         super(LIF_R_ASC, self).__init__()
         # self.device = device
 
         if parameters:
             for key in parameters.keys():
-                if key == 'tau_m':
-                    tau_m = float(parameters[key])
-                elif key == 'v_rest':
-                    v_rest = float(parameters[key])
+                if key == 'C_m':
+                    C_m = float(parameters[key])
+                elif key == 'E_L':
+                    E_L = float(parameters[key])
+                elif key == 'G':
+                    G = float(parameters[key])
+                elif key == 'R_I':
+                    R_I = float(parameters[key])
                 elif key == 'N':
                     N = int(parameters[key])
                 elif key == 'w_mean':
                     w_mean = float(parameters[key])
                 elif key == 'w_var':
                     w_var = float(parameters[key])
-                elif key == 'R_I':
-                    R_I = float(parameters[key])
 
         __constants__ = ['N']
         self.delta_theta_s = T(delta_theta_s)
@@ -37,12 +39,11 @@ class LIF_R_ASC(nn.Module):
 
         rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
         self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
-        self.v_rest = nn.Parameter(T(N * [v_rest]), requires_grad=True)
-        self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
-        self.k_I_l = nn.Parameter(T(N * [k_I_l]), requires_grad=True)
+        self.E_L = nn.Parameter(T(N * [E_L]), requires_grad=True)
+        self.G = nn.Parameter(T(N * [G]), requires_grad=True)
+        self.C_m = nn.Parameter(T(N * [C_m]), requires_grad=True)
+        self.f_I = nn.Parameter(T(N * [f_I]), requires_grad=True)
         self.R_I = nn.Parameter(T(N * [R_I]), requires_grad=True)
-        # self.k_I_l = T(k_I_l)
-        # self.R_I = T(R_I)
 
         self.f_v = T(f_v)
         self.delta_V = T(delta_V)
@@ -56,13 +57,10 @@ class LIF_R_ASC(nn.Module):
         self.theta_s = self.theta_s.clone().detach()
         self.I_additive = self.I_additive.clone().detach()
 
-        # self.k_I_l = self.k_I_l.clone().detach()
-        # self.R_I = self.R_I.clone().detach()
-
     def forward(self, x_in):
         I = x_in + self.w.matmul(self.I_additive)
 
-        dv = (self.v_rest - self.v + I * self.R_I) / self.tau_m
+        dv = (self.G * (self.E_L - self.v) + I * self.R_I) / self.C_m
         v_next = self.v + dv
 
         # differentiable
@@ -71,13 +69,13 @@ class LIF_R_ASC(nn.Module):
         spiked = (v_next >= self.theta_s).float()  # thresholding when spiked isn't use for grad.s (non-differentiable)
         not_spiked = (spiked - 1.) / -1.  # flips the boolean mat.
 
-        v_reset = self.v_rest + self.f_v * (self.v - self.v_rest) - self.delta_V
+        v_reset = self.E_L + self.f_v * (self.v - self.E_L) - self.delta_V
         self.v = spiked * v_reset + not_spiked * v_next
 
         theta_s_next = self.theta_s - self.b_s * self.theta_s
         self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
 
-        I_additive_decayed = (torch.ones_like(self.k_I_l) - self.k_I_l) * self.I_additive
+        I_additive_decayed = (torch.ones_like(self.f_I) - self.f_I) * self.I_additive
         self.I_additive = spiked * (self.I_additive + self.I_A) + not_spiked * I_additive_decayed
 
         return self.v, self.spiked
