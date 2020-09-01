@@ -13,29 +13,21 @@ def main(argv):
 
     # Default values
     data_bin_size = 4000; target_bin_size = 1
-    learn_rate = 0.01; train_iters = 50; N_exp = 3; batch_size = 400; tau_van_rossum = 5.0
+    data_set = None
+    exp_type = 'RetrieveFitted'
+
+    learn_rate = 0.01; train_iters = 50; N_exp = 20; batch_size = 400; tau_van_rossum = 5.0
     rows_per_train_iter = 1600
     optimiser = 'Adam'
-    # optimiser = 'SGD'
-    exp_type = 'RetrieveFitted'
-    # exp_type = 'DataDriven'
-    # exp_type = 'Synthetic'
-    # exp_type = 'SanityCheck'
-    initial_poisson_rate = 0.4
-    # model_type_str = LIF.__name__
-    # model_type_str = LIF_complex.__name__
-    # model_type_str = LIF_R.__name__
-    # model_type_str = LIF_ASC.__name__
-    # model_type_str = LIF_R_ASC.__name__
-    model_type_str = GLIF.__name__
-    # model_type_str = IzhikevichStable.__name__
-    # model_type_str = BaselineSNN.__name__
-    loss_fn = 'van_rossum_dist'
-    # loss_fn = 'van_rossum_dist_per_node'
-    data_set = None
-    # data_set = 'exp147'
+    initial_poisson_rate = 0.3
+    loss_fn = 'van_rossum_dist'  # loss_fn = 'van_rossum_dist_per_node'
+
     evaluate_step = 1
-    fitted_model_path = None
+
+    fitted_model_selection = None
+    path_prefix = '/Users/william/data/target_models/'
+    target_models_arr = ['LIF_sleep_model.pt', 'Izhikevich_sleep_model.pt', 'GLIF_random.pt', 'Attractor_net.pt']
+
     # fitted_model_path = '/Users/william/data/sleep_data/LIF_sleep_model/LIF_sleep_model.pt'
     fitted_model_path = '/Users/william/data/sleep_data/Izhikevich_sleep_model/Izhikevich_sleep_model.pt'
 
@@ -47,10 +39,8 @@ def main(argv):
             print('main.py -s <script> -lr <learning-rate> -ti <training-iterations> -N <number-of-experiments> '
                   '-bs <batch-size> -tvr <van-rossum-time-constant> '
                   '-rpti <rows-per-training-iteration> -optim <optimiser> -ipr <initial-poisson-rate> '
-                  '-mt <model-type> -lfn <loss-fn> -ds <data-set> -es <evaluate-step> -fmp <fitted-model-path>')
+                  '-es <evaluate-step> -fmp <fitted-model-path> -fmn <fitted-model-number>')
             sys.exit()
-        elif opt in ("-s", "--script"):
-            exp_type = args[i]
         elif opt in ("-lr", "--learning-rate"):
             learn_rate = float(args[i])
         elif opt in ("-ti", "--training-iterations"):
@@ -67,16 +57,18 @@ def main(argv):
             optimiser = str(args[i])
         elif opt in ("-ipr", "--initial-poisson-rate"):
             initial_poisson_rate = float(args[i])
-        elif opt in ("-mt", "--model-type"):
-            model_type_str = args[i]
-        elif opt in ("-lfn", "--loss-fn"):
-            loss_fn = args[i]
-        elif opt in ("-ds", "--data-set"):
-            data_set = args[i]
         elif opt in ("-es", "--evaluate-step"):
             evaluate_step = int(args[i])
         elif opt in ("-fmp", "--fitted-model-path"):
             fitted_model_path = args[i]
+        elif opt in ("-fms", "--fitted-model-selection"):
+            fitted_model_selection = args[i]
+
+    if fitted_model_selection is not None and fitted_model_path is None:
+        sel_ind = int(fitted_model_selection)
+        assert 0 < sel_ind < len(target_models_arr), \
+            "index: {} for fitted models must be in the range(0, {})".format(sel_ind, len(target_models_arr))
+        fitted_model_path = path_prefix + target_models_arr[sel_ind]
 
     constants = C.Constants(data_bin_size=data_bin_size, target_bin_size=target_bin_size, learn_rate=learn_rate,
                             train_iters=train_iters, N_exp=N_exp, batch_size=batch_size, tau_van_rossum=tau_van_rossum,
@@ -84,26 +76,11 @@ def main(argv):
                             initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, data_set=data_set,
                             evaluate_step=evaluate_step, fitted_model_path=fitted_model_path)
 
-    EXP_TYPE = None
-    try:
-        EXP_TYPE = C.ExperimentType[exp_type]
-    except:
-        print('Script type not supported.')
 
-    models = [LIF, LIF_complex, Izhikevich, IzhikevichStable,
-              LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
-    model_class = None
-    for _, c in enumerate(models):
-        if model_type_str == c.__name__:
-            model_class = c
-            break
-    if model_class is None:
-        print('Model type not supported.')
-        sys.exit(1)
-
-
-    import exp_suite
-    exp_suite.start_exp(constants=constants, model_class=model_class, experiment_type=EXP_TYPE)
+    import retrieve_exp_suite
+    models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    for m_class in models:
+        retrieve_exp_suite.start_exp(constants=constants, model_class=m_class)
 
 
 if __name__ == "__main__":

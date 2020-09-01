@@ -9,11 +9,11 @@ from model_util import generate_model_data
 from plot import plot_neuron, plot_losses
 
 
-def test_stability_with_matching_configurations_deprecated(model, gen_model, input_coefficient, rate_factor, tau_vr, learn_rate, optim):
+def test_stability_with_matching_configurations_deprecated(model, gen_model, rate_factor, tau_vr, learn_rate, optim):
     t=4000
 
     poisson_rate = torch.tensor(rate_factor)
-    gen_inputs = input_coefficient * poisson_input(poisson_rate, t, gen_model.N)
+    gen_inputs = poisson_input(poisson_rate, t, gen_model.N)
     gen_membrane_potentials, gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_inputs)
 
     optims = [optim(list(model.parameters()), lr=learn_rate),
@@ -37,7 +37,7 @@ def test_stability_with_matching_configurations_deprecated(model, gen_model, inp
     return avg_batch_loss
 
 
-def test_stability_with_matching_configurations(model, gen_model, input_coefficient, rate_factor, tau_vr, learn_rate, optim, train_iter_cap):
+def test_stability_with_matching_configurations(model, gen_model, rate_factor, tau_vr, learn_rate, optim, train_iter_cap):
     t=4000
 
     gen_model_rate = torch.tensor(rate_factor)
@@ -48,7 +48,7 @@ def test_stability_with_matching_configurations(model, gen_model, input_coeffici
     batch_losses = []
     train_iter = 0; avg_batch_loss = 10
     while train_iter < train_iter_cap and avg_batch_loss > 5.0:
-        gen_inputs = input_coefficient * poisson_input(gen_model_rate, t, gen_model.N)
+        gen_inputs = poisson_input(gen_model_rate, t, gen_model.N)
         gen_model.reset_hidden_state()
         # for gen spiketrain this may be thresholded to binary values:
         gen_membrane_potentials, targets = generate_model_data(model=gen_model, inputs=gen_inputs)
@@ -86,19 +86,18 @@ def test_stability_with_matching_configurations(model, gen_model, input_coeffici
 
 # gen_model = BaselineSNN.BaselineSNN(device='cpu', parameters={}, N=12, w_mean=0.8, w_var=0.6)
 # model = BaselineSNN.BaselineSNN(device='cpu', parameters={}, N=12, w_mean=0.8, w_var=0.6)
-# test_stability_with_matching_configurations_deprecated(gen_model, model, input_coefficient=1.0, rate_factor=0.7, tau_vr=tau_vr, learn_rate=0.05)
-# test_stability_with_matching_configurations(gen_model, model, input_coefficient=1.0, rate_factor=0.7, tau_vr=tau_vr,
-#                                             learn_rate=learn_rate, optim=torch.optim.SGD)
+# test_stability_with_matching_configurations_deprecated(gen_model, model, rate_factor=0.7, tau_vr=tau_vr, learn_rate=0.05)
+# test_stability_with_matching_configurations(gen_model, model, rate_factor=0.7, tau_vr=tau_vr, learn_rate=learn_rate, optim=torch.optim.SGD)
 
 # gen_model = LIF.LIF(device='cpu', parameters={}, tau_m=6.5, N=3, w_mean=0.2, w_var=0.25)
 # model = LIF.LIF(device='cpu', parameters={}, tau_m=6.5, N=3, w_mean=0.2, w_var=0.25)
-# test_stability_with_matching_configurations_and_training_input_noise(gen_model, model, input_coefficient=4.0, rate_factor=0.5)
-# test_stability_with_matching_configurations_different_training_input_noise(gen_model, model, input_coefficient=4.0, rate_factor=0.5)
+# test_stability_with_matching_configurations_and_training_input_noise(gen_model, model, rate_factor=0.5)
+# test_stability_with_matching_configurations_different_training_input_noise(gen_model, model, rate_factor=0.5)
 #
 # gen_model = Izhikevich.Izhikevich(device='cpu', parameters={}, N=3, tau_g=1.0, a=0.1, b=0.27, w_mean=0.15, w_var=0.25)
 # model = Izhikevich.Izhikevich(device='cpu', parameters={}, N=3, tau_g=1.0, a=0.1, b=0.27, w_mean=0.15, w_var=0.25)
-# test_stability_with_matching_configurations_and_training_input_noise(gen_model, model, input_coefficient=1.0, rate_factor=0.25)
-# test_stability_with_matching_configurations_different_training_input_noise(gen_model, model, input_coefficient=1.0, rate_factor=0.25)
+# test_stability_with_matching_configurations_and_training_input_noise(gen_model, model, rate_factor=0.25)
+# test_stability_with_matching_configurations_different_training_input_noise(gen_model, model, rate_factor=0.25)
 
 # gen_model = Izhikevich.Izhikevich_constrained(device='cpu', parameters={}, N=3, a=0.1, b=0.28, w_mean=0.1, w_var=0.25)
 # model = Izhikevich.Izhikevich_constrained(device='cpu', parameters={}, N=3, a=0.1, b=0.28, w_mean=0.1, w_var=0.25)
@@ -114,10 +113,10 @@ params = zip_dicts(static_parameters, free_parameters)
 gen_model = LIF(device='cpu', parameters=params, tau_m=1.0, R_I=42.)
 model = GLIF(device='cpu', parameters=params, tau_m=4.0, R_I=20.)
 # model = LIF(device='cpu', parameters=params)
-# test_stability_with_matching_configurations_deprecated(model, gen_model, 1., 0.7, tau_vr, learn_rate, optim=torch.optim.Adam)
-test_stability_with_matching_configurations_deprecated(model, gen_model, 1., 0.7, tau_vr, learn_rate, optim=torch.optim.SGD)
+# test_stability_with_matching_configurations_deprecated(model, gen_model, 0.7, tau_vr, learn_rate, optim=torch.optim.Adam)
+test_stability_with_matching_configurations_deprecated(model, gen_model, 0.7, tau_vr, learn_rate, optim=torch.optim.SGD)
 
-# test_stability_with_matching_configurations(gen_model, model, input_coefficient=1.0, rate_factor=0.7, tau_vr=tau_vr,
+# test_stability_with_matching_configurations(gen_model, model, rate_factor=0.7, tau_vr=tau_vr,
 #                                             learn_rate=learn_rate, optim=torch.optim.SGD, train_iter_cap=15)
-# test_stability_with_matching_configurations(gen_model, model, input_coefficient=1.0, rate_factor=0.7, tau_vr=tau_vr,
+# test_stability_with_matching_configurations(gen_model, model, rate_factor=0.7, tau_vr=tau_vr,
 #                                             learn_rate=learn_rate, optim=torch.optim.Adam, train_iter_cap=15)

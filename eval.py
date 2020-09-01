@@ -1,6 +1,5 @@
 import model_util
 import spike_metrics
-from Constants import ExperimentType
 from plot import *
 
 
