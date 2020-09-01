@@ -79,6 +79,7 @@ def recover_model_parameters(logger, constants, model_class, params_model, exp_n
     for train_i in range(constants.train_iters):
         gen_model.reset_hidden_state()
         targets = generate_synthetic_data(gen_model, poisson_rate=gen_rate, t=constants.rows_per_train_iter)
+        assert targets.sum() > gen_model.N, "target model should not be silent. spikes in target spike train: {}".format(targets.sum())
 
         avg_train_loss = fit_mini_batches(model, inputs=None, target_spiketrain=targets,
                                           tau_van_rossum=T(constants.tau_van_rossum), current_rate=current_rate,
@@ -149,7 +150,7 @@ def run_exp_loop(logger, constants, model_class, free_parameters):
             params_model = randomise_parameters(free_parameters, coeff=torch.tensor(0.10))
 
             recovered_parameters, target_parameters, train_losses = recover_model_parameters(logger, constants, model_class, params_model, exp_num=exp_i)
-            convergence_criterion = train_losses[-1] < train_losses[0] * 0.85 or while_ctr >= 10
+            convergence_criterion = train_losses[-1] < train_losses[0] * 0.85 or while_ctr >= 10  # TODO: Sanity check firing rate
             if while_ctr >= 10:
                 print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, while_ctr: {}, train_losses{}'
                       .format(exp_i, while_ctr, train_losses))

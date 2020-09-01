@@ -7,7 +7,7 @@ from experiments import poisson_input, zip_dicts
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
 static_parameters = {'N': 3}
-free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.5, 'tau_g': 4.0, 'v_rest': -60.0}
+free_parameters = {'w_mean': 0.2, 'w_var': 0.3}
 
 snn = GLIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
 

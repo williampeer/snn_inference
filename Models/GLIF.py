@@ -4,30 +4,31 @@ from torch import tensor as T
 
 
 class GLIF(nn.Module):
-    def __init__(self, device, parameters, tau_m=4.0, v_rest=-65., N=10, w_mean=0.15, w_var=0.25,
-                 delta_theta_s=30., b_s=0.5, R_I=15., f_v=0.15, delta_V=12., k_I_l=0.5, I_A=1., b_v=0.5, a_v=0.5,
-                 theta_inf=-40):
+    def __init__(self, device, parameters, C_m=1., G=0.7, R_I=18., E_L=-60., N=10, w_mean=0.55, w_var=0.65,
+                 delta_theta_s=30., b_s=0.3, f_v=0.15, delta_V=12., f_I=0.3, I_A=1., b_v=0.5, a_v=0.5, theta_inf=-20):
         super(GLIF, self).__init__()
         # self.device = device
 
         if parameters:
             for key in parameters.keys():
-                if key == 'tau_m':
-                    tau_m = float(parameters[key])
-                elif key == 'v_rest':
-                    v_rest = float(parameters[key])
+                if key == 'C_m':
+                    C_m = float(parameters[key])
+                elif key == 'E_L':
+                    E_L = float(parameters[key])
+                elif key == 'G':
+                    G = float(parameters[key])
+                elif key == 'R_I':
+                    R_I = float(parameters[key])
                 elif key == 'N':
                     N = int(parameters[key])
                 elif key == 'w_mean':
                     w_mean = float(parameters[key])
                 elif key == 'w_var':
                     w_var = float(parameters[key])
-                elif key == 'R_I':
-                    R_I = float(parameters[key])
 
-        __constants__ = ['N', 'v_rest', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
+        __constants__ = ['N', 'E_L', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
         self.N = N
-        self.v_rest = T(N * [v_rest])
+        self.E_L = T(N * [E_L])
 
         self.delta_theta_s = T(delta_theta_s)
         self.b_s = T(b_s)
@@ -44,15 +45,17 @@ class GLIF(nn.Module):
 
         rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
         self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
-        # self.v_rest = nn.Parameter(T(N * [v_rest]), requires_grad=True)
-        self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
-        # self.tau_m = T(N * [tau_m])
-        # self.k_I_l = nn.Parameter(T(N * [k_I_l]), requires_grad=True)
-        self.k_I_l = T(k_I_l)
+        # self.E_L = nn.Parameter(T(N * [E_L]), requires_grad=True)
+        self.C_m = nn.Parameter(T(N * [C_m]), requires_grad=True)
+        self.G = nn.Parameter(T(N * [G]), requires_grad=True)
         self.R_I = nn.Parameter(T(N * [R_I]), requires_grad=True)
+        self.f_v = nn.Parameter(T(N * [f_v]), requires_grad=True)
+        self.f_I = nn.Parameter(T(N * [f_I]), requires_grad=True)
+        # self.C_m = T(N * [C_m])
+        # self.G = T(N * [G])
         # self.R_I = T(R_I)
-        # self.f_v = nn.Parameter(T(N * [f_v]), requires_grad=True)
-        self.f_v = T(f_v)
+        # self.f_v = T(f_v)
+        # self.f_I = T(f_I)
 
         self.delta_V = T(delta_V)
         self.I_A = T(I_A)
@@ -66,13 +69,10 @@ class GLIF(nn.Module):
         self.theta_v = self.theta_v.clone().detach()
         self.I_additive = self.I_additive.clone().detach()
 
-        # self.k_I_l = self.k_I_l.clone().detach()
-        # self.R_I = self.R_I.clone().detach()
-
     def forward(self, x_in):
         I = x_in + self.w.matmul(self.I_additive)
 
-        dv = (self.v_rest - self.v + I * self.R_I) / self.tau_m
+        dv = (I * self.R_I - self.G * (self.v - self.E_L)) / self.C_m
         v_next = self.v + dv
 
         # differentiable
@@ -81,14 +81,14 @@ class GLIF(nn.Module):
         spiked = (v_next >= (self.theta_s + self.theta_v)).float()
         not_spiked = (spiked - 1.) / -1.
 
-        v_reset = self.v_rest + self.f_v * (self.v - self.v_rest) - self.delta_V
+        v_reset = self.E_L + self.f_v * (self.v - self.E_L) - self.delta_V
         self.v = spiked * v_reset + not_spiked * v_next  # spike reset
 
-        self.theta_s = (1 - self.b_s) * self.theta_s + spiked * self.delta_theta_s  # always decay
-        d_theta_v = self.a_v * (self.v - self.v_rest) - self.b_v * (self.theta_v - self.theta_inf)
+        self.theta_s = (1. - self.b_s) * self.theta_s + spiked * self.delta_theta_s  # always decay
+        d_theta_v = self.a_v * (self.v - self.E_L) - self.b_v * (self.theta_v - self.theta_inf)
         self.theta_v = self.theta_v + not_spiked * d_theta_v
 
-        self.I_additive = (torch.ones_like(self.k_I_l) - self.k_I_l) * self.I_additive \
+        self.I_additive = (1. - self.f_I) * self.I_additive \
                           + self.spiked * self.I_A
 
         return self.v, self.spiked
