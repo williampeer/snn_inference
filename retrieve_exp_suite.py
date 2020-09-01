@@ -98,7 +98,8 @@ def recover_model_parameters(logger, constants, model_class, params_model, exp_n
             test_inputs = poisson_input(rate=current_rate, t=constants.rows_per_train_iter, N=model.N)
             test_loss = evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
                                             tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                            exp_type=ExperimentType.RetrieveFitted, train_i=train_i, exp_num=exp_num)
+                                            exp_type=ExperimentType.RetrieveFitted, train_i=train_i, exp_num=exp_num,
+                                            constants=constants)
             logger.log(['test loss', test_loss], '')
             test_losses.append(test_loss)
 
@@ -145,7 +146,7 @@ def run_exp_loop(logger, constants, model_class, free_parameters):
         convergence_criterion = False
         while_ctr = 0
         while not convergence_criterion:
-            params_model = randomise_parameters(free_parameters, coeff=torch.tensor(0.25))
+            params_model = randomise_parameters(free_parameters, coeff=torch.tensor(0.10))
 
             recovered_parameters, target_parameters, train_losses = recover_model_parameters(logger, constants, model_class, params_model, exp_num=exp_i)
             convergence_criterion = train_losses[-1] < train_losses[0] * 0.85 or while_ctr >= 10

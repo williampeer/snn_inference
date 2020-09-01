@@ -1,7 +1,9 @@
 import torch
 from torch.nn.functional import poisson_nll_loss
 
-from experiments import poisson_input
+import model_util
+from Models.GLIF import GLIF
+from experiments import poisson_input, randomise_parameters, zip_dicts
 
 
 def test_poisson_NLL():
@@ -24,5 +26,27 @@ def test_poisson_NLL():
     assert loss_model_spikes_zeros > loss_zeros, "spikes should result in greater loss with spikes than no spikes with no spikes as target"
 
 
+def test_poisson_NLL_models():
+    static_parameters = {'N': 3}
+    free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.5, 'tau_g': 4.0, 'v_rest': -60.0}
+    m1 = GLIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
+    m2 = GLIF(device='cpu', parameters=zip_dicts(static_parameters, randomise_parameters(free_parameters, coeff=torch.tensor(0.25))))
+
+    inputs = poisson_input(0.5, t=500, N=static_parameters['N'])
+    membrane_potentials, spikes1 = model_util.feed_inputs_sequentially_return_spikes_and_potentials(m1, inputs)
+    membrane_potentials, spikes1_2 = model_util.feed_inputs_sequentially_return_spikes_and_potentials(m1, inputs)
+    membrane_potentials, spikes2 = model_util.feed_inputs_sequentially_return_spikes_and_potentials(m2, inputs)
+
+    print('num of sample model1 spikes1: {}'.format(spikes1.sum()))
+    print('num of sample model1 spikes2: {}'.format(spikes1_2.sum()))
+    print('num of sample model2 spikes: {}'.format(spikes2.sum()))
+
+    loss = poisson_nll_loss(spikes1, spikes1_2)
+    print('poisson nll s1 vs s1_2: {}'.format(loss))
+
+    loss2 = poisson_nll_loss(spikes1, spikes2)
+    print('poisson nll s1 vs s2: {}'.format(loss2))
+
 # --------------------------------------
 test_poisson_NLL()
+test_poisson_NLL_models()

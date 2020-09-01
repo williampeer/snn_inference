@@ -1,9 +1,11 @@
+from torch.nn.functional import poisson_nll_loss
+
 import model_util
 import spike_metrics
 from plot import *
 
 
-def evaluate_likelihood(model, inputs, target_spiketrain, tau_van_rossum, uuid, label='', exp_type=None, train_i=None, exp_num=None):
+def evaluate_likelihood(model, inputs, target_spiketrain, tau_van_rossum, uuid, label='', exp_type=None, train_i=None, exp_num=None, constants=None):
     assert (inputs.shape[0] == target_spiketrain.shape[0]), "inputs and targets should have same shape. inputs shape: {}, targets shape: {}"\
         .format(inputs.shape, target_spiketrain.shape)
 
@@ -16,7 +18,14 @@ def evaluate_likelihood(model, inputs, target_spiketrain, tau_van_rossum, uuid, 
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
 
-    loss = float(spike_metrics.van_rossum_dist(model_spiketrain, target_spiketrain, tau=tau_van_rossum).detach().data)
+    if constants.loss_fn.__contains__('van_rossum_dist'):
+        loss = float(spike_metrics.van_rossum_dist(model_spiketrain, target_spiketrain, tau=tau_van_rossum).detach().data)
+    elif constants.loss_fn.__contains__('poisson_nll'):
+        loss = float(poisson_nll_loss(model_spiketrain, target_spiketrain).detach().data)
+    elif constants.loss_fn.__contains__('van_rossum_squared'):
+        loss = float(spike_metrics.van_rossum_squared_distance(model_spiketrain, target_spiketrain, tau=tau_van_rossum).detach().data)
+    elif constants.loss_fn.__contains__('mse'):
+        loss = float(spike_metrics.mse(model_spiketrain, target_spiketrain).detach().data)
     print('loss:', loss)
 
     if exp_type is None:
@@ -28,13 +37,6 @@ def evaluate_likelihood(model, inputs, target_spiketrain, tau_van_rossum, uuid, 
                                   fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))
 
     return loss
-
-
-def evaluate(model, test_inputs, test_targets, tau_van_rossum, uuid, exp_type='default', train_i=None, exp_num=None):
-    print('----- Evaluating TEST set likelihood.. -----')
-    return evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=test_targets, uuid=uuid,
-                                    tau_van_rossum=tau_van_rossum, label='train i: {}'.format(train_i),
-                                    exp_type=exp_type, train_i=train_i, exp_num=exp_num)
 
 # --------------------------------------------------------
 

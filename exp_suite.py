@@ -102,7 +102,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
 
             test_loss = evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
                                             tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num)
+                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num, constants=constants)
             logger.log(['test loss', test_loss], '')
             test_losses.append(test_loss)
 
@@ -177,7 +177,7 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
             test_inputs = poisson_input(rate=current_rate, t=constants.rows_per_train_iter, N=model.N)
             test_loss = evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
                                             tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num)
+                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num, constants=constants)
             logger.log(['test loss', test_loss], '')
             test_losses.append(test_loss)
 
