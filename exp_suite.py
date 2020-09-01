@@ -225,7 +225,7 @@ def run_exp_loop(logger, constants, exp_type, model_class, free_parameters, stat
             params_gen = zip_dicts(free_parameters, static_init_parameters).copy()
             params_model = zip_dicts(free_parameters, static_init_parameters).copy()
         else:
-            params_gen = zip_dicts(randomise_parameters(free_parameters, coeff=torch.tensor(0.25)),
+            params_gen = zip_dicts(randomise_parameters(free_parameters, coeff=torch.tensor(0.05)),
                                    static_init_parameters).copy()
             params_model = zip_dicts(randomise_parameters(free_parameters, coeff=torch.tensor(0.25)),
                                      static_init_parameters).copy()
@@ -260,7 +260,7 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
 
     if model_class in [LIF, LIF_complex, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
         static_init_parameters = {'N': 12}
-        free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.8, 'tau_g': 4.0, 'v_rest': -65.0}
+        free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.5, 'tau_g': 4.0, 'v_rest': -60.0}
 
     elif model_class in [Izhikevich, IzhikevichStable]:
         static_init_parameters = {'N': 12, 'w_mean': 0.1, 'w_var': 0.2, 'a': 0.1, 'b': 0.25}

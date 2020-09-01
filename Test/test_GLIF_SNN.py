@@ -7,12 +7,13 @@ from experiments import poisson_input, zip_dicts
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
 static_parameters = {'N': 3}
-free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.8, 'tau_g': 4.0, 'v_rest': -65.0}
+free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.5, 'tau_g': 4.0, 'v_rest': -60.0}
 
 snn = GLIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
 
 inputs = poisson_input(0.5, t=500, N=static_parameters['N'])
 membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
+print('#spikes: {}'.format(spikes.sum()))
 plot_neuron(membrane_potentials.data, title='GLIF neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_GLIF_poisson_input')
 
 zeros = torch.zeros_like(inputs)

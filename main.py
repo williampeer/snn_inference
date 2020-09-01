@@ -13,13 +13,13 @@ def main(argv):
 
     # Default values
     data_bin_size = 4000; target_bin_size = 1
-    learn_rate = 0.01; train_iters = 50; N_exp = 3; batch_size = 400; tau_van_rossum = 5.0
+    learn_rate = 0.01; train_iters = 10; N_exp = 3; batch_size = 400; tau_van_rossum = 5.0
     rows_per_train_iter = 1600
     optimiser = 'Adam'
     # optimiser = 'SGD'
-    exp_type = 'RetrieveFitted'
+    # exp_type = 'RetrieveFitted'
     # exp_type = 'DataDriven'
-    # exp_type = 'Synthetic'
+    exp_type = 'Synthetic'
     # exp_type = 'SanityCheck'
     initial_poisson_rate = 0.4
     # model_type_str = LIF.__name__
@@ -30,14 +30,14 @@ def main(argv):
     model_type_str = GLIF.__name__
     # model_type_str = IzhikevichStable.__name__
     # model_type_str = BaselineSNN.__name__
-    loss_fn = 'van_rossum_dist'
-    # loss_fn = 'van_rossum_dist_per_node'
+    # loss_fn = 'van_rossum_dist'
+    loss_fn = 'poisson_nll'
     data_set = None
     # data_set = 'exp147'
     evaluate_step = 1
     fitted_model_path = None
     # fitted_model_path = '/Users/william/data/sleep_data/LIF_sleep_model/LIF_sleep_model.pt'
-    fitted_model_path = '/Users/william/data/sleep_data/Izhikevich_sleep_model/Izhikevich_sleep_model.pt'
+    # fitted_model_path = '/Users/william/data/sleep_data/Izhikevich_sleep_model/Izhikevich_sleep_model.pt'
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]

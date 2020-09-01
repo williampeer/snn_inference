@@ -4,6 +4,7 @@ from torch import tensor as T
 
 import Log
 from Constants import ExperimentType
+from Models import SleepModelWrappers
 from Models.GLIF import GLIF
 from Models.LIF import LIF, LIF_complex
 from Models.LIF_ASC import LIF_ASC
@@ -47,7 +48,8 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
 
 
 def recover_model_parameters(logger, constants, model_class, params_model, exp_num=None):
-    gen_model = torch.load(constants.fitted_model_path)['model']
+    # gen_model = torch.load(constants.fitted_model_path)['model']
+    gen_model = SleepModelWrappers.lif_sleep_model()
 
     logger.log([model_class.__name__], 'gen model parameters: {}'.format(gen_model.parameters()))
     gen_rate = torch.tensor(constants.initial_poisson_rate)
@@ -174,7 +176,7 @@ def start_exp(constants, model_class):
     logger.log([constants.__str__()], 'Starting exp. with the listed hyperparameters.')
 
     if model_class in [LIF, LIF_complex, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
-        free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.8, 'tau_g': 4.0, 'v_rest': -65.0}
+        free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.5, 'tau_g': 4.0, 'v_rest': -60.0}
 
     else:
         logger.log([], 'Model class not supported.')

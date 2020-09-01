@@ -16,8 +16,8 @@ def main(argv):
     data_set = None
     exp_type = 'RetrieveFitted'
 
-    learn_rate = 0.01; train_iters = 15; N_exp = 20; batch_size = 1000; tau_van_rossum = 5.0
-    rows_per_train_iter = 4000
+    learn_rate = 0.01; train_iters = 15; N_exp = 3; batch_size = 400; tau_van_rossum = 5.0
+    rows_per_train_iter = 2000
     optimiser = 'Adam'
     initial_poisson_rate = 0.4
     # loss_fn = 'van_rossum_dist'  # loss_fn = 'van_rossum_dist_per_node'
@@ -29,8 +29,8 @@ def main(argv):
     path_prefix = '/Users/william/data/target_models/'
     target_models_arr = ['LIF_sleep_model.pt', 'Izhikevich_sleep_model.pt', 'GLIF_random.pt', 'Attractor_net.pt']
 
-    # fitted_model_path = '/Users/william/data/sleep_data/LIF_sleep_model/LIF_sleep_model.pt'
-    fitted_model_path = '/Users/william/data/sleep_data/Izhikevich_sleep_model/Izhikevich_sleep_model.pt'
+    fitted_model_path = '/Users/william/data/sleep_data/LIF_sleep_model/LIF_sleep_model.pt'
+    # fitted_model_path = '/Users/william/data/sleep_data/Izhikevich_sleep_model/Izhikevich_sleep_model.pt'
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
@@ -79,7 +79,8 @@ def main(argv):
 
 
     import retrieve_exp_suite
-    models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    models = [GLIF]
     for m_class in models:
         retrieve_exp_suite.start_exp(constants=constants, model_class=m_class)
 

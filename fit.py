@@ -41,6 +41,8 @@ def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_r
         else:
             raise NotImplementedError("Loss function not supported.")
 
+        sut_tar_sum = target_spiketrain[batch_size*batch_i:batch_size*(batch_i+1)].sum()
+        print('DEBUG. # target spikes in batch: {}'.format(sut_tar_sum))
         print('batch loss: {}'.format(loss))
 
         for optim in optimisers:
