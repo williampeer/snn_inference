@@ -96,7 +96,7 @@ def recover_model_parameters(logger, constants, model_class, params_model, exp_n
             test_inputs = poisson_input(rate=current_rate, t=constants.rows_per_train_iter, N=model.N)
             test_loss = evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
                                             tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                            exp_type=ExperimentType.RetrieveFitted.name, train_i=train_i, exp_num=exp_num)
+                                            exp_type=ExperimentType.RetrieveFitted, train_i=train_i, exp_num=exp_num)
             logger.log(['test loss', test_loss], '')
             test_losses.append(test_loss)
 
@@ -126,11 +126,11 @@ def recover_model_parameters(logger, constants, model_class, params_model, exp_n
     stats_training_iterations(fitted_parameters, model, train_losses, test_losses, constants, logger, ExperimentType.RetrieveFitted.name,
                               target_parameters=target_parameters, exp_num=exp_num)
 
+    train_loss_detached = torch.tensor(train_losses).clone().detach()
     # del model, train_losses, test_losses  # cleanup
     del model, train_losses, test_losses  # cleanup
 
-    return final_parameters, target_parameters
-    # return model_parameters, target_parameters
+    return final_parameters, target_parameters, train_loss_detached
 
 
 def run_exp_loop(logger, constants, model_class, free_parameters):
@@ -140,16 +140,24 @@ def run_exp_loop(logger, constants, model_class, free_parameters):
         torch.manual_seed(exp_i)
         np.random.seed(exp_i)
 
-        params_model = randomise_parameters(free_parameters, coeff=torch.tensor(0.25))
+        convergence_criterion = False
+        while_ctr = 0
+        while not convergence_criterion:
+            params_model = randomise_parameters(free_parameters, coeff=torch.tensor(0.25))
 
-        recovered_parameters, target_parameters = recover_model_parameters(logger, constants, model_class, params_model, exp_num=exp_i)
-        # recover_model_parameters(logger, constants, model_class, params_model, params_gen, exp_type=exp_type)
+            recovered_parameters, target_parameters, train_losses = recover_model_parameters(logger, constants, model_class, params_model, exp_num=exp_i)
+            convergence_criterion = train_losses[-1] < train_losses[0] * 0.85 or while_ctr >= 10
+            if while_ctr >= 10:
+                print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, while_ctr: {}, train_losses{}'
+                      .format(exp_i, while_ctr, train_losses))
 
         for p_i, p in enumerate(recovered_parameters.values()):
             if exp_i == 0:
                 all_recovered_params[p_i] = [p]
             else:
                 all_recovered_params[p_i].append(p)
+
+        # Note: Test losses, avg. firing rates?, ++
 
     # TODO: Fixme
     # plot_all_param_pairs_with_variance_new(all_recovered_params,

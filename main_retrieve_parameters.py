@@ -16,10 +16,10 @@ def main(argv):
     data_set = None
     exp_type = 'RetrieveFitted'
 
-    learn_rate = 0.01; train_iters = 50; N_exp = 20; batch_size = 400; tau_van_rossum = 5.0
-    rows_per_train_iter = 1600
+    learn_rate = 0.01; train_iters = 15; N_exp = 20; batch_size = 1000; tau_van_rossum = 5.0
+    rows_per_train_iter = 4000
     optimiser = 'Adam'
-    initial_poisson_rate = 0.3
+    initial_poisson_rate = 0.4
     # loss_fn = 'van_rossum_dist'  # loss_fn = 'van_rossum_dist_per_node'
     loss_fn = 'poisson_nll'  # loss_fn = 'van_rossum_dist_per_node'
 
