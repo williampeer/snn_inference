@@ -32,24 +32,3 @@ def van_rossum_squared_distance(s1, s2, tau):
     c1 = torch_van_rossum_convolution(spikes=s1, tau=tau)
     c2 = torch_van_rossum_convolution(spikes=s2, tau=tau)
     return mse(c1, c2)
-
-
-# ------------- per neuron ---------------
-def mse_per_node(s1, s2):
-    return torch.pow(torch.sub(s1, s2), 2).sum(dim=0)
-
-
-def euclid_dist_per_node(s1, s2):
-    return torch.sqrt(torch.pow(torch.sub(s1, s2), 2).sum(dim=0) + 1e-18)  # avoid sqrt(0) -> NaN
-
-
-def van_rossum_dist_per_node(s1, s2, tau):
-    c1 = torch_van_rossum_convolution(spikes=s1, tau=tau)
-    c2 = torch_van_rossum_convolution(spikes=s2, tau=tau)
-    return euclid_dist_per_node(c1, c2)
-
-
-def van_rossum_squared_per_node(s1, s2, tau):
-    c1 = torch_van_rossum_convolution(spikes=s1, tau=tau)
-    c2 = torch_van_rossum_convolution(spikes=s2, tau=tau)
-    return mse_per_node(c1, c2)

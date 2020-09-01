@@ -1,11 +1,11 @@
 import sys
+
 import Constants as C
-from Models.Izhikevich import Izhikevich, IzhikevichStable
-from Models.LIF import LIF_complex, LIF
+from Models.GLIF import GLIF
+from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from Models.GLIF import GLIF
 
 
 def main(argv):
@@ -20,7 +20,8 @@ def main(argv):
     rows_per_train_iter = 1600
     optimiser = 'Adam'
     initial_poisson_rate = 0.3
-    loss_fn = 'van_rossum_dist'  # loss_fn = 'van_rossum_dist_per_node'
+    # loss_fn = 'van_rossum_dist'  # loss_fn = 'van_rossum_dist_per_node'
+    loss_fn = 'poisson_nll'  # loss_fn = 'van_rossum_dist_per_node'
 
     evaluate_step = 1
 
