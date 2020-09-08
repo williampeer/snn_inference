@@ -24,13 +24,13 @@ verbose = True
 
 
 def stats_training_iterations(model_parameters, model, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num):
-    plot_all_param_pairs_with_variance(model_parameters,
-                                       uuid=constants.UUID,
-                                       exp_type=exp_type_str,
-                                       target_params=target_parameters,
-                                       custom_title='Inferred parameters across training iterations',
-                                       fname='inferred_params_{}_exp_num_{}'.format(model.__class__.__name__, exp_num),
-                                       logger=logger)
+    plot_parameter_inference_trajectories_2d(model_parameters,
+                                             uuid=constants.UUID,
+                                             exp_type=exp_type_str,
+                                             target_params=target_parameters,
+                                             custom_title='Inferred parameters across training iterations',
+                                             fname='inferred_param_trajectories_{}_exp_num_{}'.format(model.__class__.__name__, exp_num),
+                                             logger=logger)
 
     plot_losses(training_loss=train_losses, test_loss=test_losses, test_loss_step=constants.evaluate_step, uuid=constants.UUID, exp_type=exp_type_str,
                 custom_title='Loss ({}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__, constants.learn_rate),
@@ -124,11 +124,12 @@ def recover_model_parameters(logger, constants, model_class, params_model, gen_m
     stats_training_iterations(fitted_parameters, model, train_losses, test_losses, constants, logger, ExperimentType.RetrieveFitted.name,
                               target_parameters=target_parameters, exp_num=exp_num)
 
+    test_loss_detached = torch.tensor(test_losses).clone().detach()
     train_loss_detached = torch.tensor(train_losses).clone().detach()
     # del model, train_losses, test_losses  # cleanup
     del model, train_losses, test_losses  # cleanup
 
-    return final_parameters, target_parameters, train_loss_detached
+    return final_parameters, target_parameters, train_loss_detached, test_loss_detached
 
 
 def run_exp_loop(logger, constants, model_class, free_model_parameters, gen_model):
@@ -144,11 +145,15 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, gen_mode
         gen_model.reset()
         params_model = randomise_parameters(free_model_parameters, coeff=torch.tensor(0.1))
 
-        recovered_parameters, target_parameters, train_losses = recover_model_parameters(logger, constants, model_class, params_model, gen_model=gen_model, exp_num=exp_i)
-        # convergence_criterion = train_losses[-1] < train_losses[0] * 0.85 or while_ctr >= 10  # TODO: Sanity check firing rate
+        recovered_parameters, target_parameters, train_losses, test_losses = \
+            recover_model_parameters(logger, constants, model_class, params_model, gen_model=gen_model, exp_num=exp_i)
+
+        # TODO: Sanity check firing rate
+        # convergence_criterion = train_losses[-1] < train_losses[0] * 0.9 or while_ctr >= 10
         # if while_ctr >= 10:
         #     print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, while_ctr: {}, train_losses{}'
         #           .format(exp_i, while_ctr, train_losses))
+        #     break / return
 
         for p_i, p in enumerate(recovered_parameters.values()):
             if exp_i == 0:
@@ -159,13 +164,13 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, gen_mode
         # Note: Test losses, avg. firing rates?, ++
 
     # TODO: Fixme
-    # plot_all_param_pairs_with_variance_new(all_recovered_params,
-    #                                    uuid=constants.UUID,
-    #                                    exp_type=exp_type.name,
-    #                                    target_params=target_parameters,
-    #                                    custom_title="Average inferred parameters across experiments [{}, {}]".format(
-    #                                            model_class.__name__, constants.optimiser),
-    #                                    logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
+    plot_all_param_pairs_with_variance(all_recovered_params,
+                                       uuid=constants.UUID,
+                                       exp_type=ExperimentType.RetrieveFitted,
+                                       target_params=target_parameters,
+                                       custom_title="Average inferred parameters across experiments [{}, {}]".format(
+                                               model_class.__name__, constants.optimiser),
+                                       logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
 
 
 def start_exp(constants, model_class, gen_model):

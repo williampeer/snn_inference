@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
-import torch
 import numpy as np
-
+import torch
+import matplotlib.cm as cm
 from scipy.stats import gaussian_kde
 
 import IO
@@ -341,6 +341,109 @@ def plot_all_param_pairs_with_variance(param_means, target_params, exp_type, uui
                 plot_parameter_pair_with_variance(cur_p_i, cur_p_j, target_params=cur_tar_params,
                                                   path=path+'_i_j_{}_{}'.format(plot_i, plot_j),
                                                   custom_title=custom_title, logger=logger)
+
+
+def decompose_param_pair_trajectory_plot(param_2D, target_params, path):
+    params_by_exp = np.array(param_2D).T
+    num_of_parameters = params_by_exp.shape[0]
+    # print('in decompose_param_plot.. params_by_exp: {}'.format(params_by_exp))
+
+    fig, axs = plt.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1)
+    [axi.set_axis_off() for axi in axs.ravel()]
+
+    for i in range(num_of_parameters):
+        for j in range(i + 1, num_of_parameters):
+            # 2D plot between p_i and p_j
+            cur_ax = axs[i, j - 1]
+            try:
+                if target_params:  # and len(target_params) >= np.max([i, j]):
+                    cur_ax.plot(target_params[0][i], target_params[0][j], 'Dc', markersize=4.)
+
+                p_len = len(params_by_exp[i])
+                colors = cm.rainbow(np.linspace(0, 1, p_len))
+                for p_i in range(p_len):
+                    cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='x')
+                cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray')
+            # except ArithmeticError:
+            except:
+                print('WARN: Failed to plot trajectory for params: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
+
+    # fig.suptitle('Decomposed KDE pairs for N-dimensional parameter')
+    if not path:
+        path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
+    # plt.show()
+    fig.savefig(path)
+    plt.close()
+
+
+def param_pair_trajectory_plot(p1_means, p2_means, target_params, path, custom_title=False, logger=False):
+    try:
+        # Z, Xgrid, x_min, x_max, y_min, y_max = calculate_kde(p1_means, p2_means, logger)
+        plt.figure()
+
+        if target_params:  # and len(target_params) >= np.max([i, j]):
+            plt.plot(p1_means, p2_means, 'Dc', markersize=4.)
+
+        p_len = len(p1_means)
+        colors = cm.rainbow(np.linspace(0, 1, p_len))
+        for p_i in range(p_len):
+            plt.scatter(p1_means[p_i], p2_means[p_i], color=colors[p_i], marker='x')
+        plt.plot(p1_means, p2_means, color='gray')
+
+        plt.xlabel('Parameter 1')
+        plt.ylabel('Parameter 2')
+        if custom_title:
+            plt.title(custom_title)
+        else:
+            plt.title('Inferred parameter distributions')
+
+        # plt.imsave(fname, image)
+        plt.savefig(fname=path)
+        # plt.show()
+        plt.close()
+    except:
+        if not logger:
+            print('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means))
+        else:
+            logger.log(['plot.plot_parameter_pair_with_variance'],
+                       'WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means))
+
+
+def plot_parameter_inference_trajectories_2d(param_means, target_params, exp_type, uuid, fname, custom_title, logger):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'param_means': param_means, 'target_params': target_params, 'exp_type': exp_type, 'uuid': uuid, 'custom_title': custom_title, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_parameter_inference_trajectories_2d')
+
+    if not fname:
+        fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
+    path = full_path + fname
+
+    number_of_parameters = len(param_means.values())
+    for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
+        for plot_j in range(plot_i + 1, number_of_parameters):
+            cur_tar_params = False
+            if target_params:  # and len(target_params) > np.max([plot_i, plot_j]):
+                cur_tar_params = [target_params[plot_i], target_params[plot_j]]
+
+            cur_p_i = np.array(param_means[plot_i])
+            cur_p_j = np.array(param_means[plot_j])
+            # silently fail for 3D params (weights)
+            if len(cur_p_i.shape) == 2:
+                cur_tar = False
+                if target_params:  # and len(target_params) > plot_i:
+                    cur_tar = target_params[plot_i]
+                decompose_param_pair_trajectory_plot(cur_p_i, cur_tar, path=path+'_param_{}'.format(plot_i))
+            if len(cur_p_j.shape) == 2:
+                cur_tar = False
+                if target_params:  # and len(target_params) > plot_j:
+                    cur_tar = target_params[plot_j]
+                decompose_param_pair_trajectory_plot(cur_p_j, cur_tar, path=path+'_param_{}'.format(plot_j))
+            if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
+                param_pair_trajectory_plot(cur_p_i, cur_p_j, target_params=cur_tar_params,
+                                           path=path+'_i_j_{}_{}'.format(plot_i, plot_j),
+                                           custom_title=custom_title, logger=logger)
 
 
 def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname):
