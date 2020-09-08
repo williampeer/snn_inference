@@ -37,7 +37,7 @@ def generate_synthetic_data(gen_model, poisson_rate, t):
     gen_spiketrain = torch.round(gen_spiketrain)
     del gen_input
 
-    return gen_spiketrain
+    return gen_spiketrain.clone().detach()
 
 
 def train_test_split(data, train_test_split_factor=0.85):

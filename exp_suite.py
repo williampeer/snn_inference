@@ -11,7 +11,7 @@ from Models.LIF import LIF, LIF_complex
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from Models.LIF_R_ASC_AT import GLIF
+from Models.GLIF import GLIF
 from eval import evaluate_likelihood
 from experiments import *
 from fit import *
@@ -69,8 +69,9 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
     parameters[p_i + 1] = [current_rate.clone().detach().numpy()]
 
     model_optim = constants.optimiser(list(model.parameters()), lr=constants.learn_rate)
-    poisson_rates_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
-    optims = [model_optim, poisson_rates_optim]
+    # poisson_rates_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
+    # optims = [model_optim, poisson_rates_optim]
+    optims = [model_optim]
 
     train_losses = []; test_losses = []; prev_spike_arr_index = 0
     for train_i in range(constants.train_iters):
@@ -101,7 +102,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
 
             test_loss = evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
                                             tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num)
+                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num, constants=constants)
             logger.log(['test loss', test_loss], '')
             test_losses.append(test_loss)
 
@@ -176,7 +177,7 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
             test_inputs = poisson_input(rate=current_rate, t=constants.rows_per_train_iter, N=model.N)
             test_loss = evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
                                             tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num)
+                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num, constants=constants)
             logger.log(['test loss', test_loss], '')
             test_losses.append(test_loss)
 
@@ -224,7 +225,7 @@ def run_exp_loop(logger, constants, exp_type, model_class, free_parameters, stat
             params_gen = zip_dicts(free_parameters, static_init_parameters).copy()
             params_model = zip_dicts(free_parameters, static_init_parameters).copy()
         else:
-            params_gen = zip_dicts(randomise_parameters(free_parameters, coeff=torch.tensor(0.25)),
+            params_gen = zip_dicts(randomise_parameters(free_parameters, coeff=torch.tensor(0.05)),
                                    static_init_parameters).copy()
             params_model = zip_dicts(randomise_parameters(free_parameters, coeff=torch.tensor(0.25)),
                                      static_init_parameters).copy()
@@ -259,7 +260,7 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
 
     if model_class in [LIF, LIF_complex, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
         static_init_parameters = {'N': 12}
-        free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.8, 'tau_g': 4.0, 'v_rest': -65.0}
+        free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.5, 'tau_g': 4.0, 'v_rest': -60.0}
 
     elif model_class in [Izhikevich, IzhikevichStable]:
         static_init_parameters = {'N': 12, 'w_mean': 0.1, 'w_var': 0.2, 'a': 0.1, 'b': 0.25}

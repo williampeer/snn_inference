@@ -5,7 +5,7 @@ from Models.LIF import LIF_complex, LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from Models.LIF_R_ASC_AT import GLIF
+from Models.GLIF import GLIF
 
 
 def main(argv):
@@ -13,16 +13,15 @@ def main(argv):
 
     # Default values
     data_bin_size = 4000; target_bin_size = 1
-    learn_rate = 0.01; train_iters = 10; N_exp = 2; batch_size = 400; tau_van_rossum = 5.0
-    input_coefficient = 1.0
-    rows_per_train_iter = 800
+    learn_rate = 0.01; train_iters = 10; N_exp = 3; batch_size = 400; tau_van_rossum = 5.0
+    rows_per_train_iter = 1600
     optimiser = 'Adam'
     # optimiser = 'SGD'
     # exp_type = 'RetrieveFitted'
     # exp_type = 'DataDriven'
     exp_type = 'Synthetic'
     # exp_type = 'SanityCheck'
-    initial_poisson_rate = 0.5
+    initial_poisson_rate = 0.4
     # model_type_str = LIF.__name__
     # model_type_str = LIF_complex.__name__
     # model_type_str = LIF_R.__name__
@@ -31,8 +30,8 @@ def main(argv):
     model_type_str = GLIF.__name__
     # model_type_str = IzhikevichStable.__name__
     # model_type_str = BaselineSNN.__name__
-    loss_fn = 'van_rossum_dist'
-    # loss_fn = 'van_rossum_dist_per_node'
+    # loss_fn = 'van_rossum_dist'
+    loss_fn = 'poisson_nll'
     data_set = None
     # data_set = 'exp147'
     evaluate_step = 1
@@ -46,7 +45,7 @@ def main(argv):
     for i, opt in enumerate(opts):
         if opt == '-h':
             print('main.py -s <script> -lr <learning-rate> -ti <training-iterations> -N <number-of-experiments> '
-                  '-bs <batch-size> -tvr <van-rossum-time-constant> -ic <input-coefficient> '
+                  '-bs <batch-size> -tvr <van-rossum-time-constant> '
                   '-rpti <rows-per-training-iteration> -optim <optimiser> -ipr <initial-poisson-rate> '
                   '-mt <model-type> -lfn <loss-fn> -ds <data-set> -es <evaluate-step> -fmp <fitted-model-path>')
             sys.exit()
@@ -62,8 +61,6 @@ def main(argv):
             batch_size = int(args[i])
         elif opt in ("-tvr", "--van-rossum-time-constant"):
             tau_van_rossum = float(args[i])
-        elif opt in ("-ic", "--input-coefficient"):
-            input_coefficient = float(args[i])
         elif opt in ("-rpti", "--rows-per-training-iteration"):
             rows_per_train_iter = int(args[i])
         elif opt in ("-optim", "--optimiser"):
@@ -83,8 +80,8 @@ def main(argv):
 
     constants = C.Constants(data_bin_size=data_bin_size, target_bin_size=target_bin_size, learn_rate=learn_rate,
                             train_iters=train_iters, N_exp=N_exp, batch_size=batch_size, tau_van_rossum=tau_van_rossum,
-                            input_coefficient=input_coefficient, rows_per_train_iter=rows_per_train_iter,
-                            optimiser=optimiser, initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, data_set=data_set,
+                            rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
+                            initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, data_set=data_set,
                             evaluate_step=evaluate_step, fitted_model_path=fitted_model_path)
 
     EXP_TYPE = None
