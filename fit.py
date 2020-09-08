@@ -6,8 +6,8 @@ import spike_metrics
 from experiments import poisson_input
 
 
-def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_rate, batch_size, uuid,
-                     optimisers, loss_fn='van_rossum_dist', exp_type_str='default', exp_num=None, train_i=None, logger=None):
+def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_rate, batch_size,
+                     optimisers, loss_fn='van_rossum_dist', train_i=None, logger=None):
     if inputs is not None:
         assert inputs.shape[0] == target_spiketrain.shape[0], \
             "inputs shape: {}, target spiketrain shape: {}".format(inputs.shape, target_spiketrain.shape)

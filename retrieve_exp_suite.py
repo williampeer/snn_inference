@@ -4,9 +4,8 @@ from torch import tensor as T
 
 import Log
 from Constants import ExperimentType
-from Models import SleepModelWrappers
 from Models.GLIF import GLIF
-from Models.LIF import LIF, LIF_complex
+from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
@@ -47,10 +46,7 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
     del model, mean_test_loss
 
 
-def recover_model_parameters(logger, constants, model_class, params_model, exp_num=None):
-    # gen_model = torch.load(constants.fitted_model_path)['model']
-    gen_model = SleepModelWrappers.lif_sleep_model()
-
+def recover_model_parameters(logger, constants, model_class, params_model, gen_model, exp_num=None):
     logger.log([model_class.__name__], 'gen model parameters: {}'.format(gen_model.parameters()))
     gen_rate = torch.tensor(constants.initial_poisson_rate)
     if model_class.__name__ == gen_model.__class__.__name__:
@@ -79,14 +75,12 @@ def recover_model_parameters(logger, constants, model_class, params_model, exp_n
     for train_i in range(constants.train_iters):
         gen_model.reset_hidden_state()
         targets = generate_synthetic_data(gen_model, poisson_rate=gen_rate, t=constants.rows_per_train_iter)
-        assert targets.sum() > gen_model.N, "target model should not be silent. spikes in target spike train: {}".format(targets.sum())
+        # assert targets.sum() > gen_model.N, "target model should not be silent. spikes in target spike train: {}".format(targets.sum())
 
         avg_train_loss = fit_mini_batches(model, inputs=None, target_spiketrain=targets,
                                           tau_van_rossum=T(constants.tau_van_rossum), current_rate=current_rate,
-                                          batch_size=constants.batch_size, uuid=constants.UUID,
-                                          optimisers=optims, loss_fn=constants.loss_fn,
-                                          exp_type_str=ExperimentType.RetrieveFitted.name,
-                                          exp_num=exp_num, train_i=train_i, logger=logger)
+                                          batch_size=constants.batch_size, optimisers=optims, loss_fn=constants.loss_fn,
+                                          train_i=train_i, logger=logger)
         logger.log(['avg train loss', avg_train_loss])
         train_losses.append(avg_train_loss)
         model.reset_hidden_state()
@@ -137,23 +131,24 @@ def recover_model_parameters(logger, constants, model_class, params_model, exp_n
     return final_parameters, target_parameters, train_loss_detached
 
 
-def run_exp_loop(logger, constants, model_class, free_parameters):
+def run_exp_loop(logger, constants, model_class, free_model_parameters, gen_model):
     all_recovered_params = {}; recovered_parameters = None
     target_parameters = False
     for exp_i in range(constants.N_exp):
         torch.manual_seed(exp_i)
         np.random.seed(exp_i)
 
-        convergence_criterion = False
-        while_ctr = 0
-        while not convergence_criterion:
-            params_model = randomise_parameters(free_parameters, coeff=torch.tensor(0.10))
+        # convergence_criterion = False
+        # while_ctr = 0
+        # while not convergence_criterion:
+        gen_model.reset()
+        params_model = randomise_parameters(free_model_parameters, coeff=torch.tensor(0.1))
 
-            recovered_parameters, target_parameters, train_losses = recover_model_parameters(logger, constants, model_class, params_model, exp_num=exp_i)
-            convergence_criterion = train_losses[-1] < train_losses[0] * 0.85 or while_ctr >= 10  # TODO: Sanity check firing rate
-            if while_ctr >= 10:
-                print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, while_ctr: {}, train_losses{}'
-                      .format(exp_i, while_ctr, train_losses))
+        recovered_parameters, target_parameters, train_losses = recover_model_parameters(logger, constants, model_class, params_model, gen_model=gen_model, exp_num=exp_i)
+        # convergence_criterion = train_losses[-1] < train_losses[0] * 0.85 or while_ctr >= 10  # TODO: Sanity check firing rate
+        # if while_ctr >= 10:
+        #     print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, while_ctr: {}, train_losses{}'
+        #           .format(exp_i, while_ctr, train_losses))
 
         for p_i, p in enumerate(recovered_parameters.values()):
             if exp_i == 0:
@@ -173,15 +168,22 @@ def run_exp_loop(logger, constants, model_class, free_parameters):
     #                                    logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
 
 
-def start_exp(constants, model_class):
+def start_exp(constants, model_class, gen_model):
     logger = Log.Logger(ExperimentType.RetrieveFitted, constants, prefix=model_class.__name__)
     logger.log([constants.__str__()], 'Starting exp. with the listed hyperparameters.')
 
-    if model_class in [LIF, LIF_complex, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
-        free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.5, 'tau_g': 4.0, 'v_rest': -60.0}
+    spike_train = generate_synthetic_data(gen_model, constants.initial_poisson_rate, t=400)
+    assert spike_train.sum() > gen_model.N, \
+        "sample gen model spike train should contain more spikes than number of nodes. #spikes: {}, N: {}"\
+            .format(spike_train.sum(), gen_model.N)
+    gen_model.reset()
 
+    if model_class in [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
+        free_parameters = {'w_mean': 0.3, 'w_var': 0.5, 'C_m': 1.5, 'G': 0.8, 'R_I': 18., 'E_L': -60.,
+                           'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 12., 'f_I': 0.4, 'I_A': 1.,
+                           'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
     else:
         logger.log([], 'Model class not supported.')
         sys.exit(1)
 
-    run_exp_loop(logger, constants, model_class, free_parameters)
+    run_exp_loop(logger, constants, model_class, free_parameters, gen_model=gen_model)

@@ -5,7 +5,7 @@ from torch import tensor as T
 
 class LIF_R_ASC(nn.Module):
     def __init__(self, device, parameters, C_m=1.0, G=0.7, E_L=-65., N=10, w_mean=0.15, w_var=0.25,
-                 delta_theta_s=30., b_s=0.5, R_I=25., f_v=0.15, delta_V=12., f_I=0.5, I_A=1.):
+                 delta_theta_s=30., b_s=0.5, R_I=18., f_v=0.12, delta_V=12., f_I=0.3, I_A=1.):
         super(LIF_R_ASC, self).__init__()
         # self.device = device
 

@@ -5,7 +5,7 @@ from torch import tensor as T
 
 class LIF_R(nn.Module):
     def __init__(self, device, parameters, C_m=1.0, G=0.7, tau_g=2.0, E_L=-65., N=10, w_mean=0.15, w_var=0.25,
-                 delta_theta_s=30., b_s=0.5, R_I=25., f_v=0.15, delta_V=12.):
+                 delta_theta_s=30., b_s=0.5, R_I=18., f_v=0.12, delta_V=12.):
         super(LIF_R, self).__init__()
         # self.device = device
 
@@ -42,6 +42,7 @@ class LIF_R(nn.Module):
         self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
         self.E_L = nn.Parameter(T(N * [E_L]), requires_grad=True)
         self.C_m = nn.Parameter(T(N * [C_m]), requires_grad=True)
+        self.G = nn.Parameter(T(N * [G]), requires_grad=True)
         self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
 
         self.R_I = T(R_I)

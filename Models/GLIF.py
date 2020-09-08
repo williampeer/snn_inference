@@ -13,12 +13,28 @@ class GLIF(nn.Module):
             for key in parameters.keys():
                 if key == 'C_m':
                     C_m = float(parameters[key])
-                elif key == 'E_L':
-                    E_L = float(parameters[key])
                 elif key == 'G':
                     G = float(parameters[key])
                 elif key == 'R_I':
                     R_I = float(parameters[key])
+                elif key == 'E_L':
+                    E_L = float(parameters[key])
+                elif key == 'delta_theta_s':
+                    delta_theta_s = float(parameters[key])
+                elif key == 'b_s':
+                    b_s = float(parameters[key])
+                elif key == 'f_v':
+                    f_v = float(parameters[key])
+                elif key == 'delta_V':
+                    delta_V = float(parameters[key])
+                elif key == 'f_I':
+                    f_I = float(parameters[key])
+                elif key == 'b_v':
+                    b_v = float(parameters[key])
+                elif key == 'a_v':
+                    a_v = float(parameters[key])
+                elif key == 'theta_inf':
+                    theta_inf = float(parameters[key])
                 elif key == 'N':
                     N = int(parameters[key])
                 elif key == 'w_mean':
@@ -51,6 +67,7 @@ class GLIF(nn.Module):
         self.R_I = nn.Parameter(T(N * [R_I]), requires_grad=True)
         self.f_v = nn.Parameter(T(N * [f_v]), requires_grad=True)
         self.f_I = nn.Parameter(T(N * [f_I]), requires_grad=True)
+        # self.I_A = nn.Parameter(T(N * [I_A]), requires_grad=True)
         # self.C_m = T(N * [C_m])
         # self.G = T(N * [G])
         # self.R_I = T(R_I)
@@ -60,11 +77,17 @@ class GLIF(nn.Module):
         self.delta_V = T(delta_V)
         self.I_A = T(I_A)
 
+    def reset(self):
+        self.reset_hidden_state()
+        for p in self.parameters():
+            if hasattr(p, 'reset_parameters'):
+                p.reset_parameters()
+                print('DEBUG: reset_parameters(), p: {}'.format(p))
+
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()
         self.g = self.g.clone().detach()
         self.spiked = self.spiked.clone().detach()
-
         self.theta_s = self.theta_s.clone().detach()
         self.theta_v = self.theta_v.clone().detach()
         self.I_additive = self.I_additive.clone().detach()

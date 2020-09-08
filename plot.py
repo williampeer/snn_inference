@@ -71,11 +71,14 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
     for neuron_i in range(target_spike_times.shape[1]):
         if target_spike_times[:, neuron_i].nonzero().sum() > 0:
             plt.plot(torch.reshape(target_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
-                     neuron_i + 0.9, '.g', markersize=4.0, label='Target')
+                     neuron_i + 0.9, '.g', markersize=4.0-0.04*int(neuron_i/10), label='Target')
 
     plt.xlabel('Time (ms)')
     plt.ylabel('Neuron')
-    plt.yticks(range(1, neuron_i + 2))
+    if neuron_i > 20:
+        plt.yticks(range(int((neuron_i+1)/10), neuron_i + 1, int((neuron_i+1)/10)))
+    else:
+        plt.yticks(range(1, neuron_i + 2))
     plt.ylim(0, neuron_i+2)
     if not title:
         title = 'Spiketrains side by side'
@@ -350,7 +353,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     xs = np.linspace(1, r1.shape[0], r1.shape[0])
     plt.bar(xs-0.2, r1, yerr=r1_std, width=0.4)
     plt.bar(xs+0.2, r2, yerr=r2_std, width=0.4)
-    plt.legend(['Fitted model', 'Sleep model'])
+    plt.legend(['Fitted model', 'Target model'])
     r_max = np.max([np.array(r1), np.array(r2)])
     rstd_max = np.max([np.array(r1_std), np.array(r2_std)])
     summed_max = r_max + rstd_max

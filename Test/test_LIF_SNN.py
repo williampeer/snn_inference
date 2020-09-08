@@ -2,7 +2,7 @@ import torch
 
 import model_util
 import spike_metrics
-from Models.LIF_new import LIF
+from Models.LIF import LIF
 from experiments import poisson_input, zip_dicts, randomise_parameters
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
