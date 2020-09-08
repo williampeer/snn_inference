@@ -4,7 +4,7 @@ from torch import tensor
 
 
 class Izhikevich(nn.Module):
-    def __init__(self, device, parameters, N=3, a=0.02, b=0.25, c=-65., d=8., tau_g=6.5, w_mean=0.2, w_var=0.3):
+    def __init__(self, device, parameters, N=3, a=0.02, b=0.25, c=-65., d=8., tau_g=6.5, w_mean=0.2, w_var=0.3, R_I=6.0):
         super(Izhikevich, self).__init__()
         # self.device = device
 
@@ -27,6 +27,8 @@ class Izhikevich(nn.Module):
                     c = float(parameters[key])
                 elif key == 'd':
                     d = float(parameters[key])
+                elif key == 'R_I':
+                    R_I = float(parameters[key])
 
         __constants__ = ['spike_threshold', 'N']
         self.spike_threshold = tensor(30.)
@@ -56,8 +58,7 @@ class Izhikevich(nn.Module):
         # self.tau_g = tensor(tau_g)  # synaptic conductance decay constant
         self.tau_g = nn.Parameter(tau_g * torch.ones((self.N,)), requires_grad=True)
 
-        self.pre_spike_sensitivity = tensor(6.0)
-        # self.pre_spike_sensitivity = nn.Parameter(tensor(4.0), requires_grad=True)
+        self.R_I = tensor(R_I)
 
         # self.to(self.device)
 
@@ -69,21 +70,18 @@ class Izhikevich(nn.Module):
 
     def forward(self, x_in):
         I = torch.add(self.w.matmul(self.g), x_in)
-        # these constants may be set to free params
-        # dv = tensor(0.04) * torch.pow(self.v, 2) + tensor(5.) * self.v + tensor(140.) - self.u + I
-        dv = torch.add(tensor(0.04) * torch.pow(self.v, 2) + tensor(5.) * self.v + tensor(140.) - self.u, I)
-        self.v = self.v + dv
-        # dv = tensor(0.04) * torch.pow(self.v, 2) + tensor(5.) * self.v + tensor(140.) - self.u + I
-        # self.v = self.v + 0.5 * dv
 
-        self.spiked = torch.sigmoid(self.pre_spike_sensitivity * torch.sub(self.v, self.spike_threshold))
-        spiked = (self.v >= self.spike_threshold).float()
+        dv = tensor(0.04) * torch.pow(self.v, 2) + tensor(5.) * self.v + tensor(140.) - self.u + I * self.R_I
+        v_next = self.v + dv
+
+        self.spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
+        spiked = (v_next >= self.spike_threshold).float()
         not_spiked = (spiked - 1.) / -1.  # not op.
 
         dg = - torch.div(self.g, self.tau_g)
         du = torch.mul(torch.abs(self.a), torch.sub(torch.mul(torch.abs(self.b), self.v), self.u))
 
-        self.v = not_spiked * self.v + spiked * self.c
+        self.v = not_spiked * v_next + spiked * self.c
         self.u = not_spiked * (self.u + du) + spiked * self.d
         self.g = not_spiked * (self.g + dg) + spiked * torch.ones((self.N,))
 
@@ -91,7 +89,8 @@ class Izhikevich(nn.Module):
 
 
 class IzhikevichStable(nn.Module):
-    def __init__(self, device, parameters, N=3, a=0.02, b=0.25, c=-65., d=8., tau_g=6.5, w_mean=0.2, w_var=0.3):
+    def __init__(self, device, parameters, N=3, a=0.02, b=0.25, c=-65., d=8., tau_g=6.5, w_mean=0.2, w_var=0.3,
+                 R_I=6.0):
         super(IzhikevichStable, self).__init__()
         # self.device = device
 
@@ -114,6 +113,8 @@ class IzhikevichStable(nn.Module):
                     c = float(parameters[key])
                 elif key == 'd':
                     d = float(parameters[key])
+                elif key == 'R_I':
+                    R_I = float(parameters[key])
 
         __constants__ = ['spike_threshold', 'N']
         self.spike_threshold = tensor(30.)
@@ -125,8 +126,6 @@ class IzhikevichStable(nn.Module):
         self.g = torch.zeros((self.N,))
 
         rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
-        # self.non_recurrence_mask = torch.ones_like(rand_ws) - torch.eye(self.N, self.N)
-        # ws = torch.mul(self.non_recurrence_mask, rand_ws)
         self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
 
         self.a = tensor(N * [a])
@@ -141,8 +140,7 @@ class IzhikevichStable(nn.Module):
         self.tau_g = tensor(tau_g)  # synaptic conductance decay constant
         # self.tau_g = nn.Parameter(tau_g * torch.ones((self.N,)), requires_grad=True)
 
-        self.pre_spike_sensitivity = tensor(6.0)
-        # self.pre_spike_sensitivity = nn.Parameter(tensor(6.0), requires_grad=True)
+        self.R_I = tensor(R_I)
 
         # self.to(self.device)
 
@@ -154,30 +152,27 @@ class IzhikevichStable(nn.Module):
 
     def forward(self, x_in):
         I = torch.add(self.w.matmul(self.g), x_in)
-        # these constants may be set to free params
-        dv = tensor(0.04) * torch.pow(self.v, 2) + tensor(5.) * self.v + tensor(140.) - self.u + I
-        self.v = self.v + dv
-        # dv = tensor(0.04) * torch.pow(self.v, 2) + tensor(5.) * self.v + tensor(140.) - self.u + I
-        # self.v = self.v + 0.5 * dv
 
-        self.spiked = torch.sigmoid(self.pre_spike_sensitivity * torch.sub(self.v, self.spike_threshold))
-        spiked = (self.v >= self.spike_threshold).float()
+        dv = tensor(0.04) * torch.pow(self.v, 2) + tensor(5.) * self.v + tensor(140.) - self.u + I * self.R_I
+        v_next = self.v + dv
+
+        self.spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
+        spiked = (v_next >= self.spike_threshold).float()
         not_spiked = (spiked - 1.) / -1.  # not op.
 
         dg = - torch.div(self.g, self.tau_g)
         du = torch.mul(torch.abs(self.a), torch.sub(torch.mul(torch.abs(self.b), self.v), self.u))
 
-        self.v = not_spiked * self.v + spiked * self.c
+        self.v = not_spiked * v_next + spiked * self.c
         self.u = not_spiked * (self.u + du) + spiked * self.d
         self.g = not_spiked * (self.g + dg) + spiked * torch.ones((self.N,))
 
         return self.v, self.spiked
 
 
-
 # for instance weights only as free param.
 class IzhikevichWeightsOnly(nn.Module):
-    def __init__(self, device, parameters, N=3, a=0.02, b=0.25, c=-65., d=8., tau_g=6.5, w_mean=0.2, w_var=0.3):
+    def __init__(self, device, parameters, N=3, a=0.02, b=0.25, c=-65., d=8., tau_g=6.5, w_mean=0.2, w_var=0.3, R_I=6.0):
         super(IzhikevichWeightsOnly, self).__init__()
         # self.device = device
 
@@ -200,6 +195,8 @@ class IzhikevichWeightsOnly(nn.Module):
                     c = float(parameters[key])
                 elif key == 'd':
                     d = float(parameters[key])
+                elif key == 'R_I':
+                    R_I = float(parameters[key])
 
         __constants__ = ['spike_threshold', 'N']
         self.spike_threshold = tensor(30.)
@@ -227,8 +224,7 @@ class IzhikevichWeightsOnly(nn.Module):
         self.tau_g = tensor(tau_g)  # synaptic conductance decay constant
         # self.tau_g = nn.Parameter(tau_g * torch.ones((self.N,)), requires_grad=True)
 
-        self.pre_spike_sensitivity = tensor(6.0)
-        # self.pre_spike_sensitivity = nn.Parameter(tensor(4.0), requires_grad=True)
+        self.R_I = tensor(R_I)
 
         # self.to(self.device)
 
@@ -240,20 +236,18 @@ class IzhikevichWeightsOnly(nn.Module):
 
     def forward(self, x_in):
         I = torch.add(self.w.matmul(self.g), x_in)
-        # these constants may be set to free params
-        dv = tensor(0.04) * torch.pow(self.v, 2) + tensor(5.) * self.v + tensor(140.) - self.u + I
-        self.v = self.v + dv
-        # dv = tensor(0.04) * torch.pow(self.v, 2) + tensor(5.) * self.v + tensor(140.) - self.u + I
-        # self.v = self.v + 0.5 * dv
 
-        self.spiked = torch.sigmoid(self.pre_spike_sensitivity * torch.sub(self.v, self.spike_threshold))
-        spiked = (self.v >= self.spike_threshold).float()
+        dv = tensor(0.04) * torch.pow(self.v, 2) + tensor(5.) * self.v + tensor(140.) - self.u + I * self.R_I
+        v_next = self.v + dv
+
+        self.spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
+        spiked = (v_next >= self.spike_threshold).float()
         not_spiked = (spiked - 1.) / -1.  # not op.
 
         dg = - torch.div(self.g, self.tau_g)
         du = torch.mul(torch.abs(self.a), torch.sub(torch.mul(torch.abs(self.b), self.v), self.u))
 
-        self.v = not_spiked * self.v + spiked * self.c
+        self.v = not_spiked * v_next + spiked * self.c
         self.u = not_spiked * (self.u + du) + spiked * self.d
         self.g = not_spiked * (self.g + dg) + spiked * torch.ones((self.N,))
 

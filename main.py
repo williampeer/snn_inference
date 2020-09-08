@@ -1,6 +1,11 @@
 import sys
 import Constants as C
-from Models import LIF, Izhikevich, BaselineSNN
+from Models.Izhikevich import Izhikevich, IzhikevichStable
+from Models.LIF import LIF_complex, LIF
+from Models.LIF_ASC import LIF_ASC
+from Models.LIF_R import LIF_R
+from Models.LIF_R_ASC import LIF_R_ASC
+from Models.GLIF import GLIF
 
 
 def main(argv):
@@ -8,26 +13,30 @@ def main(argv):
 
     # Default values
     data_bin_size = 4000; target_bin_size = 1
-    learn_rate = 0.04; train_iters = 2; N_exp = 1; batch_size = 400; tau_van_rossum = 2.0
-    input_coefficient = 1.0
-    rows_per_train_iter = 400
+    learn_rate = 0.01; train_iters = 10; N_exp = 3; batch_size = 400; tau_van_rossum = 5.0
+    rows_per_train_iter = 1600
     optimiser = 'Adam'
     # optimiser = 'SGD'
-    exp_type = 'RetrieveFitted'
+    # exp_type = 'RetrieveFitted'
     # exp_type = 'DataDriven'
-    # exp_type = 'Synthetic'
+    exp_type = 'Synthetic'
     # exp_type = 'SanityCheck'
-    initial_poisson_rate = 0.5
-    # model_type_str = Izhikevich.IzhikevichStable.__name__
-    model_type_str = LIF.LIF_complex.__name__
-    # model_type_str = BaselineSNN.BaselineSNN.__name__
+    initial_poisson_rate = 0.4
+    # model_type_str = LIF.__name__
+    # model_type_str = LIF_complex.__name__
+    # model_type_str = LIF_R.__name__
+    # model_type_str = LIF_ASC.__name__
+    # model_type_str = LIF_R_ASC.__name__
+    model_type_str = GLIF.__name__
+    # model_type_str = IzhikevichStable.__name__
+    # model_type_str = BaselineSNN.__name__
     # loss_fn = 'van_rossum_dist'
-    loss_fn = 'van_rossum_dist_per_node'
+    loss_fn = 'poisson_nll'
     data_set = None
     # data_set = 'exp147'
     evaluate_step = 1
-    # fitted_model_path = None
-    fitted_model_path = '/Users/william/data/sleep_data/LIF_sleep_model/LIF_sleep_model.pt'
+    fitted_model_path = None
+    # fitted_model_path = '/Users/william/data/sleep_data/LIF_sleep_model/LIF_sleep_model.pt'
     # fitted_model_path = '/Users/william/data/sleep_data/Izhikevich_sleep_model/Izhikevich_sleep_model.pt'
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -36,7 +45,7 @@ def main(argv):
     for i, opt in enumerate(opts):
         if opt == '-h':
             print('main.py -s <script> -lr <learning-rate> -ti <training-iterations> -N <number-of-experiments> '
-                  '-bs <batch-size> -tvr <van-rossum-time-constant> -ic <input-coefficient> '
+                  '-bs <batch-size> -tvr <van-rossum-time-constant> '
                   '-rpti <rows-per-training-iteration> -optim <optimiser> -ipr <initial-poisson-rate> '
                   '-mt <model-type> -lfn <loss-fn> -ds <data-set> -es <evaluate-step> -fmp <fitted-model-path>')
             sys.exit()
@@ -52,8 +61,6 @@ def main(argv):
             batch_size = int(args[i])
         elif opt in ("-tvr", "--van-rossum-time-constant"):
             tau_van_rossum = float(args[i])
-        elif opt in ("-ic", "--input-coefficient"):
-            input_coefficient = float(args[i])
         elif opt in ("-rpti", "--rows-per-training-iteration"):
             rows_per_train_iter = int(args[i])
         elif opt in ("-optim", "--optimiser"):
@@ -73,8 +80,8 @@ def main(argv):
 
     constants = C.Constants(data_bin_size=data_bin_size, target_bin_size=target_bin_size, learn_rate=learn_rate,
                             train_iters=train_iters, N_exp=N_exp, batch_size=batch_size, tau_van_rossum=tau_van_rossum,
-                            input_coefficient=input_coefficient, rows_per_train_iter=rows_per_train_iter,
-                            optimiser=optimiser, initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, data_set=data_set,
+                            rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
+                            initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, data_set=data_set,
                             evaluate_step=evaluate_step, fitted_model_path=fitted_model_path)
 
     EXP_TYPE = None
@@ -83,7 +90,8 @@ def main(argv):
     except:
         print('Script type not supported.')
 
-    models = [BaselineSNN.BaselineSNN, LIF.LIF, LIF.LIF_complex, Izhikevich.Izhikevich, Izhikevich.IzhikevichStable]
+    models = [LIF, LIF_complex, Izhikevich, IzhikevichStable,
+              LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     model_class = None
     for _, c in enumerate(models):
         if model_type_str == c.__name__:

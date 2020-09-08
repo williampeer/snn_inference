@@ -1,6 +1,6 @@
 import data_util
 import main
-from Models.LIF import LIF_pulse_syn, LIF
+from Models.LIF import LIF
 from experiments import *
 from model_util import generate_model_data
 from plot import *

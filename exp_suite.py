@@ -6,8 +6,12 @@ import Log
 import data_util
 from Constants import ExperimentType
 from Models.BaselineSNN import BaselineSNN
-from Models.Izhikevich import Izhikevich, IzhikevichWeightsOnly, IzhikevichStable
+from Models.Izhikevich import Izhikevich, IzhikevichStable
 from Models.LIF import LIF, LIF_complex
+from Models.LIF_ASC import LIF_ASC
+from Models.LIF_R import LIF_R
+from Models.LIF_R_ASC import LIF_R_ASC
+from Models.GLIF import GLIF
 from eval import evaluate_likelihood
 from experiments import *
 from fit import *
@@ -65,8 +69,9 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
     parameters[p_i + 1] = [current_rate.clone().detach().numpy()]
 
     model_optim = constants.optimiser(list(model.parameters()), lr=constants.learn_rate)
-    poisson_rates_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
-    optims = [model_optim, poisson_rates_optim]
+    # poisson_rates_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
+    # optims = [model_optim, poisson_rates_optim]
+    optims = [model_optim]
 
     train_losses = []; test_losses = []; prev_spike_arr_index = 0
     for train_i in range(constants.train_iters):
@@ -97,7 +102,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
 
             test_loss = evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
                                             tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num)
+                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num, constants=constants)
             logger.log(['test loss', test_loss], '')
             test_losses.append(test_loss)
 
@@ -146,8 +151,9 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
     fitted_parameters[p_i + 1] = [current_rate.clone().detach().numpy()]
 
     model_optim = constants.optimiser(list(model.parameters()), lr=constants.learn_rate)
-    poisson_rate_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
-    optims = [model_optim, poisson_rate_optim]
+    # poisson_rate_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
+    # optims = [model_optim, poisson_rate_optim]
+    optims = [model_optim]
 
     train_losses = []; test_losses = []
     for train_i in range(constants.train_iters):
@@ -162,7 +168,6 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
         logger.log(['avg train loss', avg_train_loss])
         train_losses.append(avg_train_loss)
         model.reset_hidden_state()
-        current_rate = current_rate.clone().detach()
 
         last_train_iter = (train_i == constants.train_iters - 1)
         if train_i % constants.evaluate_step == 0 or last_train_iter:
@@ -172,7 +177,7 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
             test_inputs = poisson_input(rate=current_rate, t=constants.rows_per_train_iter, N=model.N)
             test_loss = evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
                                             tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num)
+                                            exp_type=exp_type, train_i=train_i, exp_num=exp_num, constants=constants)
             logger.log(['test loss', test_loss], '')
             test_losses.append(test_loss)
 
@@ -184,13 +189,20 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
             logger.log('-', 'parameter #{} gradient: {}'.format(param_i, param.grad))
             fitted_parameters[param_i].append(param.clone().detach().numpy())
         fitted_parameters[param_i+1].append(current_rate.clone().detach().numpy())
+        logger.log('-', 'rates: {}'.format(current_rate))
+        logger.log('-', 'rates gradient: {}'.format(current_rate.grad))
 
     final_parameters = {}
     for param_i, param in enumerate(list(model.parameters())):
         logger.log('-', 'parameter #{}: {}'.format(param_i, param))
         logger.log('-', 'parameter #{} gradient: {}'.format(param_i, param.grad))
         final_parameters[param_i] = param.clone().detach().numpy()
-    fitted_parameters[param_i + 1].append(current_rate.clone().detach().numpy())
+    final_parameters[param_i + 1] = current_rate.clone().detach().numpy()
+
+    for ctr in range(len(fitted_parameters)):
+        print('fitted_parameters param #{}:'.format(ctr))
+        for ij in range(len(fitted_parameters[ctr])):
+            print(fitted_parameters[ctr][ij])
 
     stats_training_iterations(fitted_parameters, model, train_losses, test_losses, constants, logger, exp_type.name,
                               target_parameters=target_parameters, exp_num=exp_num)
@@ -202,12 +214,22 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
     # return model_parameters, target_parameters
 
 
-def run_exp_loop(logger, constants, exp_type, model_class, params_model, params_gen):
+def run_exp_loop(logger, constants, exp_type, model_class, free_parameters, static_init_parameters, experiment_type):
     all_recovered_params = {}; recovered_parameters = None
     target_parameters = False
     for exp_i in range(constants.N_exp):
         torch.manual_seed(exp_i)
         np.random.seed(exp_i)
+
+        if experiment_type in [ExperimentType.SanityCheck]:
+            params_gen = zip_dicts(free_parameters, static_init_parameters).copy()
+            params_model = zip_dicts(free_parameters, static_init_parameters).copy()
+        else:
+            params_gen = zip_dicts(randomise_parameters(free_parameters, coeff=torch.tensor(0.05)),
+                                   static_init_parameters).copy()
+            params_model = zip_dicts(randomise_parameters(free_parameters, coeff=torch.tensor(0.25)),
+                                     static_init_parameters).copy()
+
         if exp_type is ExperimentType.DataDriven:
             recovered_parameters = fit_model_to_data(logger, constants, model_class, params_model,
                                                      data_set=constants.data_set, exp_type=exp_type, exp_num=exp_i)
@@ -236,10 +258,9 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
     logger = Log.Logger(experiment_type, constants, prefix=model_class.__name__)
     logger.log([constants.__str__()], 'Starting exp. with the listed hyperparameters.')
 
-    if model_class in [LIF, LIF_complex]:
-        static_init_parameters = {'N': 12, 'w_mean': 0.1, 'w_var': 0.3, 'pre_activation_coefficient': 2.0,
-                             'post_activation_coefficient': 100.0}
-        free_parameters = {'tau_m': 2.0, 'tau_g': 2.0, 'v_rest': -60.0}
+    if model_class in [LIF, LIF_complex, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
+        static_init_parameters = {'N': 12}
+        free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.5, 'tau_g': 4.0, 'v_rest': -60.0}
 
     elif model_class in [Izhikevich, IzhikevichStable]:
         static_init_parameters = {'N': 12, 'w_mean': 0.1, 'w_var': 0.2, 'a': 0.1, 'b': 0.25}
@@ -248,18 +269,11 @@ def start_exp(constants, model_class, experiment_type=ExperimentType.DataDriven)
     elif model_class is BaselineSNN:
         static_init_parameters = {'N': 12, 'w_mean': 0.6, 'w_var': 0.7}
         free_parameters = {}
-        if experiment_type == ExperimentType.SanityCheck:
-            static_init_parameters['w_var'] = 0.0
+        # if experiment_type == ExperimentType.SanityCheck:
+        #     static_init_parameters['w_var'] = 0.0
 
     else:
         logger.log([], 'Model class not supported.')
         sys.exit(1)
 
-    if experiment_type in [ExperimentType.Synthetic]:
-        params_gen = zip_dicts(randomise_parameters(free_parameters, torch.tensor(0.5)), static_init_parameters).copy()
-        params_model = zip_dicts(randomise_parameters(free_parameters, torch.tensor(0.5)), static_init_parameters).copy()
-    else:
-        params_gen = zip_dicts(free_parameters, static_init_parameters).copy()
-        params_model = zip_dicts(free_parameters, static_init_parameters).copy()
-
-    run_exp_loop(logger, constants, experiment_type, model_class, params_model, params_gen)
+    run_exp_loop(logger, constants, experiment_type, model_class, free_parameters, static_init_parameters, experiment_type)
