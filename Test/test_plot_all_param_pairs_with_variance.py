@@ -40,6 +40,6 @@ for param_i, param in enumerate(list(model.parameters())):
 #                                    custom_title="Average inferred parameters across experiments [{}, {}]".format('test', 'None'),
 #                                    logger=False)
 
-plot_all_param_pairs_with_variance(recovered_parameters, target_params=target_parameters,
+plot_all_param_pairs_with_variance(recovered_parameters, target_params=target_parameters, param_names=model.parameter_names,
                                    exp_type='default', uuid='test_uuid', fname='test_param_pairs_new',
                                    custom_title='Test plot_all_param_pairs_with_variance_new', logger=False)

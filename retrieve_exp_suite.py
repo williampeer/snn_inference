@@ -28,6 +28,7 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
                                              uuid=constants.UUID,
                                              exp_type=exp_type_str,
                                              target_params=target_parameters,
+                                             param_names=model.parameter_names,
                                              custom_title='Inferred parameters across training iterations',
                                              fname='inferred_param_trajectories_{}_exp_num_{}'.format(model.__class__.__name__, exp_num),
                                              logger=logger)
@@ -166,8 +167,9 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, gen_mode
     # TODO: Fixme
     plot_all_param_pairs_with_variance(all_recovered_params,
                                        uuid=constants.UUID,
-                                       exp_type=ExperimentType.RetrieveFitted,
+                                       exp_type=ExperimentType.RetrieveFitted.name,
                                        target_params=target_parameters,
+                                       param_names=gen_model.parameter_names,
                                        custom_title="Average inferred parameters across experiments [{}, {}]".format(
                                                model_class.__name__, constants.optimiser),
                                        logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))

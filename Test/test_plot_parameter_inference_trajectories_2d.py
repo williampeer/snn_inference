@@ -43,6 +43,6 @@ for param_i, param in enumerate(list(model.parameters())):
 #                                    custom_title="Average inferred parameters across experiments [{}, {}]".format('test', 'None'),
 #                                    logger=False)
 
-plot_parameter_inference_trajectories_2d(recovered_parameters, target_params=target_parameters,
+plot_parameter_inference_trajectories_2d(recovered_parameters, target_params=target_parameters, param_names=model.parameter_names,
                                          exp_type='default', uuid='test_trajectories', fname='test_plot_parameter_inference_trajectories_2d',
                                          custom_title='Test plot_parameter_inference_trajectories_2d', logger=False)

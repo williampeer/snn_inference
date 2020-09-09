@@ -77,6 +77,8 @@ class GLIF(nn.Module):
         self.delta_V = T(delta_V)
         self.I_A = T(I_A)
 
+        self.parameter_names = ['w', 'C_m', 'G', 'R_I', 'f_v', 'f_I']
+
     def reset(self):
         self.reset_hidden_state()
         for p in self.parameters():
