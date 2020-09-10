@@ -358,6 +358,7 @@ def decompose_param_pair_trajectory_plot(param_2D, target_params, xlabel, ylabel
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     [axi.set_axis_off() for axi in axs.ravel()]
+    dot_msize = 5.0
 
     for i in range(num_of_parameters):
         for j in range(i + 1, num_of_parameters):
@@ -367,11 +368,11 @@ def decompose_param_pair_trajectory_plot(param_2D, target_params, xlabel, ylabel
                 p_len = len(params_by_exp[i])
                 colors = cm.rainbow(np.linspace(0, 1, p_len))
                 for p_i in range(p_len):
-                    cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='x')
-                cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray')
+                    cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
+                # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
 
                 if target_params:  # and len(target_params) >= np.max([i, j]):
-                    cur_ax.plot(target_params[0][i], target_params[0][j], 'o', color='black', markersize=4.)
+                    cur_ax.plot(target_params[0][i], target_params[0][j], 'x', color='gray', markersize=0.8 * dot_msize)
             except:
                 print('WARN: Failed to plot trajectory for params: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
 
