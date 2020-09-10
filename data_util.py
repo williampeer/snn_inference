@@ -2,22 +2,31 @@ import scipy.io as sio
 import numpy as np
 import torch
 
-# NOTE: This is just a sample implementation for how one might import and handle experiments containing a sparse
-#   representation (two vectors) of a spike train, consisting of two vectors with the spike times, and node indices.
+# NOTE: This is an implementation for sparse representations (two vectors) of a spike trains,
+#   represented by two vectors; the spike times, and node indices.
 
-exp_names = ['exp108', 'exp109', 'exp124', 'exp126', 'exp138', 'exp146', 'exp147']
 # prefix = '/home/william/'  # Ubuntu
 prefix = '/Users/william/'  # OS X
 # prefix = '/home/williampeer/'  # server
-path = 'data/sleep_data/'
+path = 'data/target_data/'
 matlab_export = 'matlab_export/'
 
 
-def load_data(exp_num):
-    cur_fname = exp_names[exp_num] + '.mat'
+def load_sparse_data(full_path):
+    exp_data = sio.loadmat(full_path)['DATA']
 
-    exp_data = sio.loadmat(prefix + path + cur_fname)['DATA']
+    spike_indices = exp_data['clu'][0][0]  # index of the spiking neurons
+    spike_times = exp_data['res'][0][0]  # spike times
 
+    node_indices = np.unique(spike_indices)
+
+    return node_indices, spike_times, spike_indices
+
+
+def load_sparse_data_matlab_format(fname):
+    exp_data = sio.loadmat(prefix + path + fname)['DATA']
+
+    # Custom Matlab-compatible format
     spike_indices = exp_data['clu'][0][0]  # index of the spiking neurons
     spike_times = exp_data['res'][0][0]  # spike times
     qual = exp_data['qual'][0][0]  # neuronal decoding quality
@@ -25,7 +34,7 @@ def load_data(exp_num):
 
     satisfactory_quality_node_indices = np.unique(spike_indices)
 
-    return satisfactory_quality_node_indices, spike_times, spike_indices, states
+    return satisfactory_quality_node_indices, spike_times, spike_indices, qual, states
 
 
 def convert_to_sparse_vectors(spiketrain, t_offset):
@@ -44,15 +53,18 @@ def convert_to_sparse_vectors(spiketrain, t_offset):
     return spike_indices, spike_times
 
 
-def save_spiketrain_in_matlab_format(fname, spike_indices, spike_times):
+def save_spiketrain_in_sparse_matlab_format(fname, spike_indices, spike_times):
     exp_data = {}
     exp_data['clu'] = np.reshape(spike_indices, (-1, 1))
     exp_data['res'] = np.reshape(spike_times, (-1, 1))
     mat_data = {'DATA': exp_data}
-    sio.savemat(file_name=prefix + path + matlab_export + fname, mdict=mat_data)
+
+    # sio.savemat(file_name=prefix + path + matlab_export + fname, mdict=mat_data)
+    # sio.savemat(file_name='/Users/william/repos/pnmf-fork/data/' + fname, mdict=mat_data)
+    sio.savemat(file_name=prefix + path + fname, mdict=mat_data)
 
 
-def get_spike_array(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):
+def get_spike_train_matrix(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):
     spikes = torch.zeros((advance_by_t_steps, node_numbers.shape[0]))
 
     prev_spike_time = spike_times[index_last_step]

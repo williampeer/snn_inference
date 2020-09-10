@@ -328,8 +328,12 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
 
             cur_p_i = np.array(param_means[plot_i])
             cur_p_j = np.array(param_means[plot_j])
-            name_i = param_names[plot_i]
-            name_j = param_names[plot_j]
+            if param_names:
+                name_i = param_names[plot_i]
+                name_j = param_names[plot_j]
+            else:
+                name_i = 'p_{}'.format(plot_i)
+                name_j = 'p_{}'.format(plot_j)
             # silently fail for 3D params (weights)
             if len(cur_p_i.shape) == 2:
                 cur_tar = False
@@ -439,8 +443,12 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
 
             cur_p_i = np.array(param_means[plot_i])
             cur_p_j = np.array(param_means[plot_j])
-            name_i = param_names[plot_i]
-            name_j = param_names[plot_j]
+            if param_names:
+                name_i = param_names[plot_i]
+                name_j = param_names[plot_j]
+            else:
+                name_i = 'p_{}'.format(plot_i)
+                name_j = 'p_{}'.format(plot_j)
 
             # silently fail for 3D params (weights)
             if len(cur_p_i.shape) == 2:

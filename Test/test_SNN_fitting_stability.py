@@ -25,7 +25,7 @@ def test_stability_with_matching_configurations_deprecated(model, gen_model, rat
     avg_batch_loss = fit_mini_batches(model=model, inputs=gen_inputs,
                                       target_spiketrain=gen_spiketrain, tau_van_rossum=tau_vr,
                                       current_rate=poisson_rate, batch_size=500, uuid='test_SNN_fitting_stability_deprecated',
-                                      optimisers=optims, logger=TestLog.TestLogger())
+                                      optimiser=optims, logger=TestLog.TestLogger())
 
     for param_i, param in enumerate(list(model.parameters())):
         # print('parameter #{}: {}'.format(param_i, param))
@@ -65,7 +65,7 @@ def test_stability_with_matching_configurations(model, gen_model, rate_factor, t
         avg_batch_loss = fit_mini_batches(model=model, inputs=None,
                                           target_spiketrain=gen_spiketrain, tau_van_rossum=tau_vr,
                                           current_rate=model_rate, batch_size=500, uuid='test_SNN_fitting_stability',
-                                          optimisers=optims, logger=TestLog.TestLogger())
+                                          optimiser=optims, logger=TestLog.TestLogger())
         model_rate = model_rate.clone().detach()  # reset
 
         # for param_i, param in enumerate(list(model.parameters())):

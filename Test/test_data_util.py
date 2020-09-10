@@ -1,11 +1,11 @@
-from data_util import load_data, get_spike_array, sample_state_input, transform_states
+from data_util import load_data, get_spike_train_matrix, sample_state_input, transform_states
 
 satisfactory_quality_node_indices, spike_times, spike_indices, states = load_data(4)
 
 t_steps = 120000
-_, sut_spikes = get_spike_array(index_last_step=0, advance_by_t_steps=t_steps,
-                             spike_times=spike_times, spike_indices=spike_indices,
-                             node_numbers=satisfactory_quality_node_indices)
+_, sut_spikes = get_spike_train_matrix(index_last_step=0, advance_by_t_steps=t_steps,
+                                       spike_times=spike_times, spike_indices=spike_indices,
+                                       node_numbers=satisfactory_quality_node_indices)
 
 assert sut_spikes.sum() > 0
 print('#spikes: {}'.format(sut_spikes.sum()))

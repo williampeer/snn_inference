@@ -9,7 +9,7 @@ from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from eval import evaluate_likelihood
+from eval import evaluate_loss
 from experiments import *
 from fit import *
 from plot import *
@@ -80,7 +80,7 @@ def recover_model_parameters(logger, constants, model_class, params_model, gen_m
 
         avg_train_loss = fit_mini_batches(model, inputs=None, target_spiketrain=targets,
                                           tau_van_rossum=T(constants.tau_van_rossum), current_rate=current_rate,
-                                          batch_size=constants.batch_size, optimisers=optims, loss_fn=constants.loss_fn,
+                                          batch_size=constants.batch_size, optimiser=optims, loss_fn=constants.loss_fn,
                                           train_i=train_i, logger=logger)
         logger.log(['avg train loss', avg_train_loss])
         train_losses.append(avg_train_loss)
@@ -92,10 +92,10 @@ def recover_model_parameters(logger, constants, model_class, params_model, gen_m
             targets = generate_synthetic_data(gen_model, poisson_rate=gen_rate, t=constants.rows_per_train_iter)
 
             test_inputs = poisson_input(rate=current_rate, t=constants.rows_per_train_iter, N=model.N)
-            test_loss = evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
-                                            tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                            exp_type=ExperimentType.RetrieveFitted, train_i=train_i, exp_num=exp_num,
-                                            constants=constants)
+            test_loss = evaluate_loss(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
+                                      tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
+                                      exp_type=ExperimentType.RetrieveFitted, train_i=train_i, exp_num=exp_num,
+                                      constants=constants)
             logger.log(['test loss', test_loss], '')
             test_losses.append(test_loss)
 

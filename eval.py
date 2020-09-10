@@ -5,7 +5,7 @@ import spike_metrics
 from plot import *
 
 
-def evaluate_likelihood(model, inputs, target_spiketrain, tau_van_rossum, uuid, label='', exp_type=None, train_i=None, exp_num=None, constants=None):
+def evaluate_loss(model, inputs, target_spiketrain, tau_van_rossum, uuid, label='', exp_type=None, train_i=None, exp_num=None, constants=None):
     assert (inputs.shape[0] == target_spiketrain.shape[0]), "inputs and targets should have same shape. inputs shape: {}, targets shape: {}"\
         .format(inputs.shape, target_spiketrain.shape)
 

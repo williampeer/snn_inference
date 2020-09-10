@@ -11,8 +11,8 @@ def test_stat_plots():
     node_indices, spike_times, spike_indices, states = data_util.load_data(4)
     assert len(node_indices) == N, "should have the same number of nodes. len(node_indices): {}, N: {}".format(len(node_indices), N)
 
-    _, s1 = data_util.get_spike_array(index_last_step=0, advance_by_t_steps=t, spike_times=spike_times,
-                                   spike_indices=spike_indices, node_numbers=node_indices)
+    _, s1 = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=t, spike_times=spike_times,
+                                             spike_indices=spike_indices, node_numbers=node_indices)
 
     model = torch.load('./IzhikevichStable_sample.pt')['model']
     model.reset_hidden_state()
