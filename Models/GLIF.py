@@ -54,7 +54,7 @@ class GLIF(nn.Module):
         self.b_v = T(b_v)
         self.theta_inf = T(theta_inf)
 
-        self.v = torch.zeros((self.N,))
+        self.v = E_L * torch.ones((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
         self.theta_s = T(30.) * torch.ones((self.N,))

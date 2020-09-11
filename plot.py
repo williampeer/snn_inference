@@ -287,11 +287,11 @@ def decompose_param_plot(param_2D, target_params, xlabel, ylabel, path, custom_t
                                   extent=[x_min, x_max, y_min, y_max],
                                   cmap='Blues')
                 if target_params:  # and len(target_params) >= np.max([i, j]):
-                    cur_ax.plot(target_params[0][i], target_params[0][j], 'oy', markersize=2.0)
+                    cur_ax.plot(target_params[0][i], target_params[0][j], 'or', markersize=2.8)
             except ArithmeticError:
                 cur_ax.plot(params_by_exp[i], params_by_exp[j], 'xb', markersize=3.5)
                 if target_params:  # and len(target_params) >= np.max([i, j]):
-                    cur_ax.plot(target_params[0][i], target_params[0][j], 'oy', markersize=2.0)
+                    cur_ax.plot(target_params[0][i], target_params[0][j], 'or', markersize=2.8)
             except:
                 print('WARN: Failed to calculate KDE for param.s: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
 

@@ -1,8 +1,7 @@
 import torch
-from torch.nn.functional import poisson_nll_loss
 
 import model_util
-import spike_metrics
+from eval import calculate_loss
 from experiments import poisson_input
 
 
@@ -30,16 +29,8 @@ def fit_mini_batches(model, inputs, target_spiketrain, current_rate, optimiser, 
             cur_inputs = poisson_input(rate=current_rate, t=batch_size, N=model.N)
             spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, cur_inputs)
 
-        if constants.loss_fn.__contains__('van_rossum_dist'):
-            loss = spike_metrics.van_rossum_dist(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(), tau=tau_vr)
-        elif constants.loss_fn.__contains__('poisson_nll'):
-            loss = poisson_nll_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach())
-        elif constants.loss_fn.__contains__('van_rossum_squared'):
-            loss = spike_metrics.van_rossum_squared_distance(spikes, target_spiketrain[batch_size*batch_i:batch_size*(batch_i+1)].detach(), tau=tau_vr)
-        elif constants.loss_fn.__contains__('mse'):
-            loss = spike_metrics.mse(spikes, target_spiketrain[batch_size*batch_i:batch_size*(batch_i+1)].detach())
-        else:
-            raise NotImplementedError("Loss function not supported.")
+        loss = calculate_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(),
+                                         loss_fn=constants.loss_fn, tau_vr = tau_vr)
 
         sut_tar_sum = target_spiketrain[batch_size*batch_i:batch_size*(batch_i+1)].sum()
         print('DEBUG. # target spikes in batch: {}'.format(sut_tar_sum))

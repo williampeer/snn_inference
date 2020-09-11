@@ -57,7 +57,7 @@ def convergence_check(validation_losses):
     return val_diff >= 0.
 
 
-def fit_model_to_data(logger, constants, model_class, params_model, exp_num):
+def fit_model_to_data(logger, constants, model_class, params_model, exp_num, target_parameters=False):
     node_indices, spike_times, spike_indices = data_util.load_sparse_data(constants.data_path)
     params_model['N'] = len(node_indices)
 
@@ -123,7 +123,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num):
 
     model.load_state_dict(prev_state_dict)
     stats_training_iterations(parameters, model, train_losses, validation_losses, constants, logger, ExperimentType.DataDriven.name,
-                              target_parameters=False, exp_num=exp_num, train_i=train_i)
+                              target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
 
     test_loss_detached = torch.tensor(validation_losses).clone().detach()
     train_loss_detached = torch.tensor(train_losses).clone().detach()
@@ -132,9 +132,8 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num):
     return parameters, train_loss_detached, test_loss_detached, train_i
 
 
-def run_exp_loop(logger, constants, model_class, free_model_parameters):
+def run_exp_loop(logger, constants, model_class, free_model_parameters, target_parameters=False):
     all_recovered_params = {}
-    target_parameters = False
     for exp_i in range(constants.N_exp):
         torch.manual_seed(exp_i)
         np.random.seed(exp_i)
@@ -142,7 +141,7 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters):
         params_model = randomise_parameters(free_model_parameters, coeff=torch.tensor(0.1))
 
         recovered_parameters, train_losses, test_losses, train_i = \
-            fit_model_to_data(logger, constants, model_class, params_model, exp_num=exp_i)
+            fit_model_to_data(logger, constants, model_class, params_model, exp_num=exp_i, target_parameters=target_parameters)
 
         if train_i >= constants.train_iters:
             # TODO: Sanity check firing rate?
@@ -167,7 +166,7 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters):
                                        logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
 
 
-def start_exp(constants, model_class):
+def start_exp(constants, model_class, target_parameters=False):
     logger = Log.Logger(ExperimentType.RetrieveFitted, constants, prefix=model_class.__name__)
     logger.log([constants.__str__()], 'Starting exp. with the listed hyperparameters.')
 
@@ -179,4 +178,4 @@ def start_exp(constants, model_class):
         logger.log([], 'Model class not supported.')
         sys.exit(1)
 
-    run_exp_loop(logger, constants, model_class, free_parameters)
+    run_exp_loop(logger, constants, model_class, free_parameters, target_parameters)

@@ -1,8 +1,9 @@
 import sys
 
+import torch
+
 import Constants as C
 from Models.GLIF import GLIF
-from TargetModels import SleepModelWrappers
 
 
 def main(argv):
@@ -11,16 +12,22 @@ def main(argv):
     # Default values
     learn_rate = 0.01; N_exp = 5; tau_van_rossum = 4.0
 
-    # max_train_iters = 100; batch_size = 10; rows_per_train_iter = 400; loss_fn = 'poisson_nll'
+    max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'kl_div'
+    # max_train_iters = 200; batch_size = 10; rows_per_train_iter = 400; loss_fn = 'poisson_nll'
     # max_train_iters = 100; batch_size = 10; rows_per_train_iter = 100; loss_fn = 'poisson_nll'
-    max_train_iters = 100; batch_size = 400; rows_per_train_iter = 1600; loss_fn = 'van_rossum_dist'
+    # max_train_iters = 100; batch_size = 400; rows_per_train_iter = 1600; loss_fn = 'van_rossum_dist'
 
     optimiser = 'Adam'
     initial_poisson_rate = 0.6
 
     evaluate_step = 1
     # data_path = None
-    data_path = '/Users/william/data/target_data/generated_spike_train_random_glif_model_t_300s_rate_0_6.mat'
+    prefix = '/Users/william/data/target_data/'
+    data_path = prefix + 'generated_spike_train_random_glif_model_t_300s_rate_0_6.mat'
+    target_params_dict = torch.load(prefix + 'generated_spike_train_random_glif_model_t_300s_rate_0_6_params.pt')
+    target_parameters = {}
+    for param_i, param in enumerate(target_params_dict.values()):
+        target_parameters[param_i] = [param.clone().detach().numpy()]
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
@@ -61,7 +68,7 @@ def main(argv):
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     models = [GLIF]
     for m_class in models:
-        fit_to_data_exp_suite.start_exp(constants=constants, model_class=m_class)
+        fit_to_data_exp_suite.start_exp(constants=constants, model_class=m_class, target_parameters=target_parameters)
 
 
 if __name__ == "__main__":

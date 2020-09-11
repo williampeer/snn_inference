@@ -2,6 +2,7 @@ import sys
 
 import numpy as np
 
+from IO import save_model_params
 from TargetModels import TargetModels
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_to_sparse_vectors
 from experiments import generate_synthetic_data
@@ -58,6 +59,7 @@ def main(argv):
     model_name = fname.split('.pt')[0]
     save_fname = 'generated_spike_train_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
     save_spiketrain_in_sparse_matlab_format(fname=save_fname, spike_indices=spike_indices, spike_times=spike_times)
+    save_model_params(model, 'exported_model_params', fname=save_fname.replace('.mat', '_params'))
 
 
 if __name__ == "__main__":

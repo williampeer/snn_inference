@@ -23,6 +23,22 @@ def load_sparse_data(full_path):
     return node_indices, spike_times, spike_indices
 
 
+def convert_sparse_data_to_spike_times_dict(node_indices, spike_times, spike_indices):
+    node_spike_times = {}
+    for i in range(len(node_indices)):
+        node_index = int(node_indices[i])
+        node_spike_times[node_index] = np.array([])
+
+    for j in range(len(spike_indices)):
+        node_index = int(spike_indices[j])
+        # if node_spike_times.__contains__(node_index):
+        node_spike_times[node_index] = np.concatenate((node_spike_times[node_index], spike_times[j]), axis=None)
+        # else:
+        #     node_spike_times[node_index] = [(spike_times[j])]
+
+    return node_spike_times
+
+
 def load_sparse_data_matlab_format(fname):
     exp_data = sio.loadmat(prefix + path + fname)['DATA']
 
