@@ -25,8 +25,9 @@ run(800*ms)
 sut = spikemon_LIF_grp.spike_trains()
 print('spikemon spike trains:', sut)
 
-prefix = '/Users/william/data/target_data/'
-data_path = prefix + 'generated_spike_train_random_glif_model_t_300s_rate_0_6.mat'
+# prefix = '/Users/william/data/target_data/'
+target_data_path = data_util.prefix + data_util.path
+data_path = target_data_path + 'generated_spike_train_random_glif_model_t_300s_rate_0_6.mat'
 node_indices, spike_times, spike_indices = data_util.load_sparse_data(data_path)
 spike_times_dict = data_util.convert_sparse_data_to_spike_times_dict(node_indices, spike_times, spike_indices)
 print('spike times from loaded data:', spike_times_dict)
