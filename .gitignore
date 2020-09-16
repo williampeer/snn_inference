@@ -24,6 +24,7 @@ __pycache__
 !pycharm/sleep_data/results/*
 !pycharm/sleep_data/results/*/*
 
+*.csv
 *.txt
 *.pt
 ._*.mat

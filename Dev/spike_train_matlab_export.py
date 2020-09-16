@@ -1,11 +1,13 @@
 import sys
 
 import numpy as np
+import torch
 
 from IO import save_model_params
 from TargetModels import TargetModels
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_to_sparse_vectors
-from experiments import generate_synthetic_data
+from experiments import generate_synthetic_data, poisson_input
+from model_util import generate_model_data
 
 
 def main(argv):
@@ -45,21 +47,38 @@ def main(argv):
 
     spike_indices = np.array([], dtype='int8')
     spike_times = np.array([], dtype='float32')
+    input_indices = np.array([], dtype='int8')
+    input_times = np.array([], dtype='float32')
     print('Simulating data..')
     for t_i in range(interval_range):
         model.reset_hidden_state()
-        spiketrain = generate_synthetic_data(model, poisson_rate, t=interval_size)
+        # spiketrain = generate_synthetic_data(model, poisson_rate, t=interval_size)
+        gen_input = poisson_input(rate=poisson_rate, t=t, N=model.N)
+        _, gen_spiketrain = generate_model_data(model=model, inputs=gen_input)
+        # for gen spiketrain this may be thresholded to binary values:
+        gen_spiketrain = torch.round(gen_spiketrain)
+
+        inputs = gen_input.clone().detach()
+        spiketrain = gen_spiketrain.clone().detach()
+
         # plot_spiketrain(spiketrain, 'Plot imported SNN', 'plot_imported_model')
         cur_spike_indices, cur_spike_times = convert_to_sparse_vectors(spiketrain, t_offset=t_i*interval_size)
+        cur_input_indices, cur_input_times = convert_to_sparse_vectors(inputs, t_offset=t_i*interval_size)
         spike_indices = np.append(spike_indices, cur_spike_indices)
         spike_times = np.append(spike_times, cur_spike_times)
+        input_indices = np.append(input_indices, cur_input_indices)
+        input_times = np.append(input_times, cur_input_times)
         print('{} seconds ({:.2f} min) simulated.'.format(interval_size * (t_i+1)/1000., interval_size * (t_i+1)/(60.*1000)))
 
     fname = model_path.split('/')[-1]
     model_name = fname.split('.pt')[0]
-    save_fname = 'generated_spike_train_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
-    save_spiketrain_in_sparse_matlab_format(fname=save_fname, spike_indices=spike_indices, spike_times=spike_times)
-    save_model_params(model, 'exported_model_params', fname=save_fname.replace('.mat', '_params'))
+    save_fname_input = 'poisson_inputs_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
+    save_spiketrain_in_sparse_matlab_format(fname=save_fname_input, spike_indices=input_indices, spike_times=input_times)
+    save_model_params(model, 'exported_model_params', fname=save_fname_input.replace('.mat', '_params'))
+
+    save_fname_output = 'generated_spike_train_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
+    save_spiketrain_in_sparse_matlab_format(fname=save_fname_output, spike_indices=spike_indices, spike_times=spike_times)
+    save_model_params(model, 'exported_model_params', fname=save_fname_output.replace('.mat', '_params'))
 
 
 if __name__ == "__main__":

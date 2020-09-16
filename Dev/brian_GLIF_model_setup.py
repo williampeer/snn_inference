@@ -1,7 +1,4 @@
 from brian2 import *
-from brian2modelfitting import *
-
-import data_util
 
 start_scope()
 tau = 1*ms  # "Fixes" units
@@ -52,13 +49,3 @@ S.connect()
 S.I_syn = 0 * mA
 S.w = np.reshape(rand_ws, (-1,))
 print('S.w', S.w)
-
-spikemon_LIF_grp = SpikeMonitor(neurons[:], 'v', record=True)
-
-neurons.I_ext = 80 * mA
-
-run(100*ms)
-
-sut = spikemon_LIF_grp.spike_trains()
-print('spikemon spike trains:', sut)
-
