@@ -167,7 +167,10 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, target_p
 
 
 def start_exp(constants, model_class, target_parameters=False):
-    logger = Log.Logger(ExperimentType.RetrieveFitted, constants, prefix=model_class.__name__)
+    log_fname = model_class.__name__ + '{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'.\
+        format(ExperimentType.DataDriven.name, '{:1.3f}'.format(constants.learn_rate).replace('.', '_'), constants.batch_size,
+               constants.train_iters, constants.rows_per_train_iter, constants.UUID)
+    logger = Log.Logger(log_fname)
     logger.log([constants.__str__()], 'Starting exp. with the listed hyperparameters.')
 
     if model_class in [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
