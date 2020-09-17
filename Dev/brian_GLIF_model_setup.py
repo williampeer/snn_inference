@@ -46,6 +46,8 @@ w_mean = 0.3; w_var = 0.5
 rand_ws = (w_mean - w_var) + 2 * w_var * np.random.random((N, N))
 S = Synapses(neurons, neurons, model=synapses, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='euler')
 S.connect()
-S.I_syn = 0 * mA
+# S.I_syn = 0 * mA
 S.w = np.reshape(rand_ws, (-1,))
 print('S.w', S.w)
+spikemon = SpikeMonitor(neurons[:], 'v', record=True)
+# store()
