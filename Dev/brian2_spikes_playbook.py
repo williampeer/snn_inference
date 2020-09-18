@@ -14,7 +14,8 @@ dv/dt = (E_L - v + R_m * I)/tau : volt
 I : amp
 '''
 
-LIF_grp = NeuronGroup(3, eqs_LIF, threshold='v>30*mV', reset='v=E_L', method='euler')
+N = 3
+LIF_grp = NeuronGroup(N, eqs_LIF, threshold='v>30*mV', reset='v=E_L', method='euler')
 # G_LIF.v = c
 spikemon_LIF_grp = SpikeMonitor(LIF_grp[:], 'v', record=True)
 
@@ -25,9 +26,5 @@ run(800*ms)
 sut = spikemon_LIF_grp.spike_trains()
 print('spikemon spike trains:', sut)
 
-# prefix = '/Users/william/data/target_data/'
-target_data_path = data_util.prefix + data_util.path
-data_path = target_data_path + 'generated_spike_train_random_glif_model_t_300s_rate_0_6.mat'
-node_indices, spike_times, spike_indices = data_util.load_sparse_data(data_path)
-spike_times_dict = data_util.convert_sparse_data_to_spike_times_dict(node_indices, spike_times, spike_indices)
-print('spike times from loaded data:', spike_times_dict)
+res = data_util.convert_brian_spike_train_dict_to_boolean_matrix(sut, t_max=800)
+print('res', res)

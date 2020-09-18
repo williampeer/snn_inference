@@ -9,13 +9,13 @@ dtheta_v/dt = (a_v * (v - E_L) - b_v * (theta_v - theta_inf))/tau : volt
 dtheta_s/dt = (- b_s * theta_s)/tau : volt
 I_syn_tot : amp
 I_ext : amp
+E_L : volt
+R_I : ohm
 '''
 
-N = 3
+N = 12
 # Parameters
 G = 0.7
-E_L = -65. * mV
-R_I = 1. * ohm
 C_m = 1.
 b_s = 0.3
 b_v = 0.5
@@ -36,18 +36,24 @@ neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>30*mV', reset=reset, met
 neurons.v = -65. * mV
 neurons.theta_v = 1 * mV
 neurons.theta_s = 30. * mV
+neurons.E_L = -65. * mV
+neurons.R_I = 18. * ohm
 
-synapses = '''
+synapse_eqs = '''
 dI_syn/dt = -f_I * I_syn/tau : amp (clock-driven)
 I_syn_tot_post = w * I_syn : amp (summed)
 w : 1
 '''
 w_mean = 0.3; w_var = 0.5
 rand_ws = (w_mean - w_var) + 2 * w_var * np.random.random((N, N))
-S = Synapses(neurons, neurons, model=synapses, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='euler')
-S.connect()
-# S.I_syn = 0 * mA
-S.w = np.reshape(rand_ws, (-1,))
-print('S.w', S.w)
+synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='euler')
+synapses.connect()
+synapses.w = np.reshape(rand_ws, (-1,))
+print('S.w', synapses.w)
 spikemon = SpikeMonitor(neurons[:], 'v', record=True)
-# store()
+store()
+
+# S.I_syn = 8. * mA
+# run(100*ms)
+# print('spikemon.spike_trains()', spikemon.spike_trains())
+# print('spikemon.num_spikes', spikemon.num_spikes)

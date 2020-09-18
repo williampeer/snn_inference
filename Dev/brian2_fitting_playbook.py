@@ -5,30 +5,18 @@ from brian2modelfitting import *
 from brian2 import *
 
 from Log import Logger
+from experiments import poisson_input
 
-target_data_path = data_util.prefix + data_util.path
-output_fname = 'generated_spike_train_random_glif_model_t_300s_rate_0_6.mat'
-output_data_path = target_data_path + output_fname
-input_data_path = target_data_path + 'poisson_inputs_random_glif_model_t_300s_rate_0_6.mat'
+from Dev.setup_data_for_brian import *
 
-logger = Logger('brian2_fitting_playbook_' + output_fname.replace('.mat', ''))
-
-time_interval = 4000
-logger.log({'time_bin': time_interval}, 'Starting exp.')
-# time_bin = 60000
-in_node_indices, input_times, input_indices = data_util.load_sparse_data(output_data_path)
-_, first_inputs = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=time_interval, spike_times=input_times,
-                                                   spike_indices=input_indices, node_numbers=in_node_indices)
-first_inputs = first_inputs.numpy()
-spike_node_indices, spike_times, spike_indices = data_util.load_sparse_data(output_data_path)
-_, first_outputs = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=time_interval, spike_times=spike_times,
-                                                    spike_indices=spike_indices, node_numbers=spike_node_indices)
-first_outputs = first_outputs.numpy()
+# logger = Logger('brian2_fitting_playbook_' + output_fname.replace('.mat', ''))
+logger = Logger('brian2_fitting_playbook_poisson_input_' + output_fname.replace('.mat', ''))
 
 for neuron_index in range(0, 12):
     # neuron_index = 0
-    current_first_inputs = np.reshape(first_inputs[:, neuron_index], (-1, 1))
-    current_first_outputs = np.reshape(first_outputs[:, neuron_index], (-1, 1))
+    # current_first_inputs = np.reshape(first_inputs[:, neuron_index], (-1, 1))
+    current_inputs = poisson_input(0.6, t=time_interval, N=1).numpy()
+    current_outputs = np.reshape(targets[:, neuron_index], (-1, 1))
 
     # E_L = -60.; b_s = 0.4; b_v = 0.5; a_v = 0.5; delta_theta_s = 25.; delta_V = 12.; theta_innf = -25.
     tau = 1*ms
@@ -56,7 +44,7 @@ for neuron_index in range(0, 12):
     init_params = {'C_m': 1.5, 'G': 0.8, 'R_I': 18., 'f_v': 0.14,
                    'delta_theta_s': 25., 'b_s': 0.4, 'delta_V': 12.,
                    'b_v': 0.5, 'a_v': 0.5, 'theta_innf': -25.}
-    sf = b2f.fitter.SpikeFitter(GLIF_eqs, input=current_first_inputs, output=current_first_outputs, dt=0.5 * ms, reset=reset,
+    sf = b2f.fitter.SpikeFitter(GLIF_eqs, input=current_inputs, output=current_outputs, dt=0.5 * ms, reset=reset,
                                 threshold='v>30', refractory=False,
                                 n_samples=100, method='euler', param_init=init_params,
                                 penalty=None, use_units=True)
@@ -68,7 +56,7 @@ for neuron_index in range(0, 12):
     for attr in attr_fitter:
         assert hasattr(sf, attr)
 
-    results, error = sf.fit(n_rounds=2,
+    results, error = sf.fit(n_rounds=1,
                             # optimizer=SkoptOptimizer(),
                             # optimizer=SkoptOptimizer(method='GP', acq_func='LCB'),
                             optimizer=NevergradOptimizer(),
