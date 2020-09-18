@@ -5,7 +5,7 @@ class Logger:
     def __init__(self, log_fname):
         self.fname = './Logs/' + log_fname + '.txt'
 
-    def log(self, params=[], log_str=''):
+    def log(self, log_str='', params=[]):
         prefix = '[{}]'.format(dt.datetime.now())
         if len(params) > 0:
             prefix = prefix + ' ---------- parameters: {}'.format(params)
