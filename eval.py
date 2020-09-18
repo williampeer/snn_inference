@@ -32,17 +32,17 @@ def evaluate_loss(model, inputs, target_spiketrain, tau_van_rossum, uuid, label=
     return loss
 
 
-def calculate_loss(input, target, loss_fn, tau_vr):
+def calculate_loss(output, target, loss_fn, tau_vr=None):
     if loss_fn.__contains__('van_rossum_dist'):
-        loss = spike_metrics.van_rossum_dist(input, target, tau_vr)
+        loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
     elif loss_fn.__contains__('poisson_nll'):
-        loss = poisson_nll_loss(input, target)
+        loss = poisson_nll_loss(output, target)
     elif loss_fn.__contains__('kl_div'):
-        loss = kl_div(input, target, reduction='batchmean')
+        loss = kl_div(output, target, reduction='batchmean')
     elif loss_fn.__contains__('van_rossum_squared'):
-        loss = spike_metrics.van_rossum_squared_distance(input, target, tau_vr)
+        loss = spike_metrics.van_rossum_squared_distance(output, target, tau_vr)
     elif loss_fn.__contains__('mse'):
-        loss = spike_metrics.mse(input, target)
+        loss = spike_metrics.mse(output, target)
     else:
         raise NotImplementedError("Loss function not supported.")
 
