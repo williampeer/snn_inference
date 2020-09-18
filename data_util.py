@@ -23,36 +23,6 @@ def load_sparse_data(full_path):
     return node_indices, spike_times, spike_indices
 
 
-def convert_sparse_data_to_spike_times_dict(node_indices, spike_times, spike_indices):
-    node_spike_times = {}
-    for i in range(len(node_indices)):
-        node_index = int(node_indices[i])
-        node_spike_times[node_index] = np.array([])
-
-    for j in range(len(spike_indices)):
-        node_index = int(spike_indices[j])
-        # if node_spike_times.__contains__(node_index):
-        node_spike_times[node_index] = np.concatenate((node_spike_times[node_index], spike_times[j]), axis=None)
-        # else:
-        #     node_spike_times[node_index] = [(spike_times[j])]
-
-    return node_spike_times
-
-
-def load_sparse_data_matlab_format(fname):
-    exp_data = sio.loadmat(prefix + path + fname)['DATA']
-
-    # Custom Matlab-compatible format
-    spike_indices = exp_data['clu'][0][0]  # index of the spiking neurons
-    spike_times = exp_data['res'][0][0]  # spike times
-    qual = exp_data['qual'][0][0]  # neuronal decoding quality
-    states = exp_data['score'][0][0]  # state
-
-    satisfactory_quality_node_indices = np.unique(spike_indices)
-
-    return satisfactory_quality_node_indices, spike_times, spike_indices, qual, states
-
-
 def convert_to_sparse_vectors(spiketrain, t_offset):
     assert spiketrain.shape[0] > spiketrain.shape[1], "assuming bins x nodes (rows as timesteps). spiketrain.shape: {}".format(spiketrain.shape)
 
@@ -141,3 +111,28 @@ def transform_to_population_spiking(spikes, kernel_indices):
                 convolved_spikes[t_i, pop_i] += spikes[t_i, kernel_indices[pop_i][idx]]
 
     return torch.min(convolved_spikes, torch.tensor(1.0))
+
+
+# def load_sparse_data_matlab_format(fname):
+#     exp_data = sio.loadmat(prefix + path + fname)['DATA']
+#
+#     # Custom Matlab-compatible format
+#     spike_indices = exp_data['clu'][0][0]  # index of the spiking neurons
+#     spike_times = exp_data['res'][0][0]  # spike times
+#     qual = exp_data['qual'][0][0]  # neuronal decoding quality
+#     states = exp_data['score'][0][0]  # state
+#
+#     satisfactory_quality_node_indices = np.unique(spike_indices)
+#
+#     return satisfactory_quality_node_indices, spike_times, spike_indices, qual, states
+
+
+def convert_brian_spike_train_dict_to_boolean_matrix(brian_spike_train, t_max):
+    keys = brian_spike_train.keys()
+    res = np.zeros((int(t_max), len(keys)))
+    for i, k in enumerate(keys):
+        node_spike_times = brian_spike_train[k]
+        import brian2
+        node_spike_times = np.array(node_spike_times/brian2.msecond, dtype=np.int)
+        res[node_spike_times, i] = 1.
+    return res
