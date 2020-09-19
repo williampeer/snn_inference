@@ -46,7 +46,7 @@ class GLIF(nn.Module):
 
         __constants__ = ['N', 'E_L', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
         self.N = N
-        self.E_L = T(N * [E_L])
+        # self.E_L = T(N * [E_L])
 
         self.delta_theta_s = T(delta_theta_s)
         self.b_s = T(b_s)
@@ -63,7 +63,7 @@ class GLIF(nn.Module):
 
         rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
         self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
-        # self.E_L = nn.Parameter(T(N * [E_L]), requires_grad=True)
+        self.E_L = nn.Parameter(T(N * [E_L]), requires_grad=True)
         self.C_m = nn.Parameter(T(N * [C_m]), requires_grad=True)
         self.G = nn.Parameter(T(N * [G]), requires_grad=True)
         self.R_I = nn.Parameter(T(N * [R_I]), requires_grad=True)

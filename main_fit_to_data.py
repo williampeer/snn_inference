@@ -3,6 +3,7 @@ import sys
 import torch
 
 import Constants as C
+import data_util
 from Models.GLIF import GLIF
 
 
@@ -10,21 +11,22 @@ def main(argv):
     print('Argument List:', str(argv))
 
     # Default values
-    learn_rate = 0.01; N_exp = 5; tau_van_rossum = 4.0
+    learn_rate = 0.005; N_exp = 5; tau_van_rossum = 4.0
 
-    max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'kl_div'
+    # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'kl_div'
     # max_train_iters = 200; batch_size = 10; rows_per_train_iter = 400; loss_fn = 'poisson_nll'
     # max_train_iters = 100; batch_size = 10; rows_per_train_iter = 100; loss_fn = 'poisson_nll'
-    # max_train_iters = 100; batch_size = 400; rows_per_train_iter = 1600; loss_fn = 'van_rossum_dist'
+    max_train_iters = 100; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'van_rossum_dist'
 
     optimiser = 'Adam'
     initial_poisson_rate = 0.6
 
     evaluate_step = 1
     # data_path = None
-    prefix = '/Users/william/data/target_data/'
-    data_path = prefix + 'generated_spike_train_random_glif_model_t_300s_rate_0_6.mat'
-    target_params_dict = torch.load(prefix + 'generated_spike_train_random_glif_model_t_300s_rate_0_6_params.pt')
+    # prefix = '/Users/william/data/target_data/'
+    target_data_path = data_util.prefix + data_util.path
+    data_path = target_data_path + 'generated_spike_train_random_glif_model_t_300s_rate_0_6.mat'
+    target_params_dict = torch.load(target_data_path + 'generated_spike_train_random_glif_model_t_300s_rate_0_6_params.pt')
     target_parameters = {}
     for param_i, param in enumerate(target_params_dict.values()):
         target_parameters[param_i] = [param.clone().detach().numpy()]
