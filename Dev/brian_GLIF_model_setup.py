@@ -14,6 +14,7 @@ R_I : ohm
 G : 1
 f_v : 1
 C_m : 1
+f_I : 1
 '''
 
 N = 12
@@ -42,11 +43,17 @@ neurons.G = 0.8
 neurons.C_m = 1.5
 neurons.f_v = 0.14
 
+in_eqs = '''
+I_in : amp
+'''
+in_grp = SpikeGeneratorGroup(N, array([]), array([])*ms)  # placeholder arrays
+feedforward = Synapses(in_grp, neurons, model=in_eqs, on_pre='I_ext = I_in')
+feedforward.connect(j='i')
+
 synapse_eqs = '''
 dI_syn/dt = -f_I * I_syn/tau : amp (clock-driven)
 I_syn_tot_post = w * I_syn : amp (summed)
 w : 1
-f_I : 1
 '''
 w_mean = 0.3; w_var = 0.5
 rand_ws = (w_mean - w_var) + 2 * w_var * np.random.random((N, N))
