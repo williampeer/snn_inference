@@ -1,7 +1,7 @@
 from brian2 import *
 
 start_scope()
-tau = 1*ms  # "Fixes" units
+tau = 10*ms  # "Fixes" units
 
 GLIF_eqs = '''
 dv/dt = ((G * (E_L - v) + R_I * (I_ext + I_syn_tot)) / C_m)/tau : volt
@@ -19,7 +19,6 @@ f_I : 1
 
 N = 12
 # Parameters
-C_m = 1.
 b_s = 0.3
 b_v = 0.5
 a_v = 0.5
@@ -37,10 +36,10 @@ neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>30*mV', reset=reset, met
 neurons.v = -65. * mV
 neurons.theta_v = 1 * mV
 neurons.theta_s = 30. * mV
-neurons.E_L = -65. * mV
+neurons.E_L = -70. * mV
 neurons.R_I = 18. * ohm
 neurons.G = 0.8
-neurons.C_m = 1.5
+neurons.C_m = 1.6
 neurons.f_v = 0.14
 
 in_eqs = '''
@@ -61,11 +60,18 @@ synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn -
 synapses.connect()
 synapses.w = np.reshape(rand_ws, (-1,))
 synapses.f_I = 0.4
-print('S.w', synapses.w)
+# print('S.w', synapses.w)
 spikemon = SpikeMonitor(neurons[:], 'v', record=True)
 store()
 
-# S.I_syn = 8. * mA
-# run(100*ms)
+neurons.I_ext = 8. * mA
+run(30*ms)
 # print('spikemon.spike_trains()', spikemon.spike_trains())
-# print('spikemon.num_spikes', spikemon.num_spikes)
+print('spikemon.num_spikes', spikemon.num_spikes)
+
+import gf_metric
+sut=gf_metric.get_spikes(spikemon)
+# print(sut)
+
+gf=gf_metric.compute_gamma_factor(spikemon, spikemon, time=30*ms, dt_=1*ms)
+print('gf', gf)

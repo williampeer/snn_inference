@@ -22,13 +22,17 @@ def run_simulation(w, C_m, G, R_I, f_v, f_I, E_L, t_interval=4000*ms):
 
     in_grp.set_spikes(np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))
 
-    # TODO: multi-objective optimization(?)
     run(t_interval)
     print('num spikes:', spikemon.num_spikes)
+
+    # TODO: Gamma factor
+
+    # TODO: Multi-objective
     brian_model_spike_train = data_util.convert_brian_spike_train_dict_to_boolean_matrix(spikemon.spike_trains(), t_max=t_interval/ms)
     brian_model_spike_train = torch.tensor(brian_model_spike_train)
-    # return np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='van_rossum_dist', tau_vr=3.0))
-    return np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='poisson_nll'))
+    van_rossum_dist = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='van_rossum_dist', tau_vr=3.0))
+    poisson_nll = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='poisson_nll'))
+
 
 
 N = 12
@@ -41,6 +45,7 @@ instrum = ng.p.Instrumentation(w=ng.p.Array(shape=(N**2,)).set_bounds(-1., 1.),
                                E_L=ng.p.Array(init=-65. * np.ones((N,))).set_bounds(-90., -30.))
 
 optimizer = ng.optimizers.DE(parametrization=instrum, budget=10)
+# TODO: PSO, NGO, CMA(?)
 logger = Logger(log_fname='brian2_network_nevergrad_optimization')
 logger.log('setup experiment with the optimizer {}'.format(optimizer.__str__()))
 recommendation = optimizer.minimize(run_simulation)  # best value
