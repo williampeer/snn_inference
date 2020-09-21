@@ -48,11 +48,11 @@ class GLIF(nn.Module):
         self.N = N
         # self.E_L = T(N * [E_L])
 
-        self.delta_theta_s = T(delta_theta_s)
-        self.b_s = T(b_s)
-        self.a_v = T(a_v)
-        self.b_v = T(b_v)
-        self.theta_inf = T(theta_inf)
+        # self.delta_theta_s = T(delta_theta_s)
+        # self.b_s = T(b_s)
+        # self.a_v = T(a_v)
+        # self.b_v = T(b_v)
+        # self.theta_inf = T(theta_inf)
 
         self.v = E_L * torch.ones((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
@@ -69,15 +69,16 @@ class GLIF(nn.Module):
         self.R_I = nn.Parameter(T(N * [R_I]), requires_grad=True)
         self.f_v = nn.Parameter(T(N * [f_v]), requires_grad=True)
         self.f_I = nn.Parameter(T(N * [f_I]), requires_grad=True)
-        # self.I_A = nn.Parameter(T(N * [I_A]), requires_grad=True)
-        # self.C_m = T(N * [C_m])
-        # self.G = T(N * [G])
-        # self.R_I = T(R_I)
-        # self.f_v = T(f_v)
-        # self.f_I = T(f_I)
 
-        self.delta_V = T(delta_V)
-        self.I_A = T(I_A)
+        self.delta_theta_s = nn.Parameter(T(N * [delta_theta_s]), requires_grad=True)
+        self.b_s = nn.Parameter(T(N * [b_s]), requires_grad=True)
+        self.a_v = nn.Parameter(T(N * [a_v]), requires_grad=True)
+        self.b_v = nn.Parameter(T(N * [b_v]), requires_grad=True)
+        self.theta_inf = nn.Parameter(T(N * [theta_inf]), requires_grad=True)
+        # self.delta_V = T(delta_V)
+        # self.I_A = T(I_A)
+        self.delta_V = nn.Parameter(T(N * [delta_V]), requires_grad=True)
+        self.I_A = nn.Parameter(T(N * [I_A]), requires_grad=True)
 
     def reset(self):
         self.reset_hidden_state()
