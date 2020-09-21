@@ -1,7 +1,7 @@
 from brian2 import *
 
 start_scope()
-tau = 10*ms  # "Fixes" units
+tau = 1*ms  # "Fixes" units
 
 GLIF_eqs = '''
 dv/dt = ((G * (E_L - v) + R_I * (I_ext + I_syn_tot)) / C_m)/tau : volt

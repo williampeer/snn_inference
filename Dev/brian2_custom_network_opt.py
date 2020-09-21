@@ -8,10 +8,8 @@ from Log import Logger
 from eval import calculate_loss
 from gf_metric import compute_gamma_factor_for_lists, get_spikes
 
-targets = torch.tensor(targets)
 
-
-def run_simulation_multiobjective(w, C_m, G, R_I, f_v, f_I, E_L, t_interval=4000*ms):
+def run_simulation_multiobjective(w, C_m, G, R_I, f_v, f_I, E_L, t_interval=time_interval*ms):
     restore()
 
     synapses.w = w
@@ -29,11 +27,17 @@ def run_simulation_multiobjective(w, C_m, G, R_I, f_v, f_I, E_L, t_interval=4000
     print('#spikes in simulation:', spikemon.num_spikes)
 
     m_spike_times = get_spikes(spikemon)
+    _, target_spike_times = data_util.get_spike_times_list(index_last_step=int(0.6 * np.random.rand() * spike_times.shape[0]),
+                                                           advance_by_t_steps=time_interval, spike_times=spike_times,
+                                                           spike_indices=spike_indices, node_numbers=spike_node_indices)
     t_spike_times = data_util.scale_spike_times(target_spike_times)  # ms to seconds
     gf = compute_gamma_factor_for_lists(m_spike_times, t_spike_times, time=t_interval, delta=1*ms)
 
     brian_model_spike_train = data_util.convert_brian_spike_train_dict_to_boolean_matrix(spikemon.spike_trains(), t_max=t_interval/ms)
     brian_model_spike_train = torch.tensor(brian_model_spike_train, dtype=torch.float)
+    _, targets = data_util.get_spike_train_matrix(index_last_step=int(0.6 * np.random.rand() * spike_times.shape[0]),
+                                                  advance_by_t_steps=time_interval, spike_times=spike_times,
+                                                  spike_indices=spike_indices, node_numbers=spike_node_indices)
     vr_dist = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='van_rossum_dist', tau_vr=3.0))
     poisson_nll = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='poisson_nll'))
     return [vr_dist, poisson_nll, gf]
@@ -58,11 +62,20 @@ def run_simulation_gamma_factor(w, C_m, G, R_I, f_v, f_I, E_L, t_interval=4000*m
 
     if loss_fn == 'gamma_factor':
         m_spike_times = get_spikes(spikemon)
+        _, target_spike_times = data_util.get_spike_times_list(
+            index_last_step=int(0.6 * np.random.rand() * spike_times.shape[0]),
+            advance_by_t_steps=time_interval, spike_times=spike_times,
+            spike_indices=spike_indices, node_numbers=spike_node_indices)
         t_spike_times = data_util.scale_spike_times(target_spike_times)  # ms to seconds
-        return compute_gamma_factor_for_lists(m_spike_times, t_spike_times, time=t_interval, delta=1*ms)
+        return compute_gamma_factor_for_lists(m_spike_times, t_spike_times, time=t_interval, delta=1 * ms)
     elif loss_fn in ['van_rossum_dist', 'poisson_nll', 'kl_div']:
-        brian_model_spike_train = data_util.convert_brian_spike_train_dict_to_boolean_matrix(spikemon.spike_trains(), t_max=t_interval/ms)
+        brian_model_spike_train = data_util.convert_brian_spike_train_dict_to_boolean_matrix(spikemon.spike_trains(),
+                                                                                             t_max=t_interval / ms)
         brian_model_spike_train = torch.tensor(brian_model_spike_train, dtype=torch.float)
+        _, targets = data_util.get_spike_train_matrix(
+            index_last_step=int(0.6 * np.random.rand() * spike_times.shape[0]),
+            advance_by_t_steps=time_interval, spike_times=spike_times,
+            spike_indices=spike_indices, node_numbers=spike_node_indices)
         return np.float(calculate_loss(brian_model_spike_train, targets, loss_fn=loss_fn, tau_vr=3.0))
 
 
