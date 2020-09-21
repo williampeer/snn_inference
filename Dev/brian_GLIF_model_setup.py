@@ -33,20 +33,21 @@ theta_s = theta_s - b_s * theta_s + delta_theta_s
 '''
 
 neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>30*mV', reset=reset, method='euler')
-# neurons.v = -65. * mV
-# neurons.theta_v = 1 * mV
-# neurons.theta_s = 30. * mV
-# neurons.E_L = -70. * mV
-# neurons.R_I = 18. * ohm
-# neurons.G = 0.8
-# neurons.C_m = 1.6
-# neurons.f_v = 0.14
+neurons.v = -80. * mV
+neurons.theta_v = 1 * mV
+neurons.theta_s = 30. * mV
+neurons.E_L = -80. * mV
+neurons.R_I = 10. * ohm
+neurons.G = 0.2
+neurons.C_m = 1.
+neurons.f_v = 0.04
 
 in_eqs = '''
-I_in : amp
+dI_in/dt = -I_in/tau : amp (clock-driven)
+I_ext_post = I_in : amp (summed)
 '''
 in_grp = SpikeGeneratorGroup(N, array([]), array([])*ms)  # placeholder arrays
-feedforward = Synapses(in_grp, neurons, model=in_eqs, on_pre='I_ext = I_in')
+feedforward = Synapses(in_grp, neurons, model=in_eqs, on_pre='I_in = 1 * mA')
 feedforward.connect(j='i')
 
 synapse_eqs = '''
@@ -59,7 +60,7 @@ synapses.connect()
 # w_mean = 0.3; w_var = 0.5
 # rand_ws = (w_mean - w_var) + 2 * w_var * np.random.random((N, N))
 # synapses.w = np.reshape(rand_ws, (-1,))
-# synapses.f_I = 0.4
-# print('S.w', synapses.w)
+synapses.f_I = 0.
+print('S.w', synapses.w)
 
-store()
+store('init')
