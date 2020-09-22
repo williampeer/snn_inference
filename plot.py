@@ -262,7 +262,7 @@ def plot_parameter_pair_with_variance(p1_means, p2_means, target_params, path, x
         if not logger:
             print('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means))
         else:
-            logger.log(['plot.plot_parameter_pair_with_variance'], 'WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means))
+            logger.log('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means), ['plot.plot_parameter_pair_with_variance'])
 
 
 def decompose_param_plot(param_2D, target_params, xlabel, ylabel, path, custom_title=False):
@@ -419,8 +419,8 @@ def param_pair_trajectory_plot(p1_means, p2_means, target_params, path, xlabel='
         if not logger:
             print('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means))
         else:
-            logger.log(['plot.plot_parameter_pair_with_variance'],
-                       'WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means))
+            logger.log('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means),
+                       ['plot.plot_parameter_pair_with_variance'])
 
 
 def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):

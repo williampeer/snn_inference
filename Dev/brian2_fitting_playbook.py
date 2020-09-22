@@ -66,4 +66,4 @@ for neuron_index in range(0, 12):
                             E_L=[-65., -52.],
                             b_v=[0.01, 0.99], a_v=[0.01, 0.99],
                             b_s=[0.1, 0.9], delta_theta_s=[1., 30.], theta_innf=[-40., -1.])
-    logger.log(params=results, log_str='Fitted neuron #{}, error:{}'.format(neuron_index, error))
+    logger.log(parameters=results, log_str='Fitted neuron #{}, error:{}'.format(neuron_index, error))

@@ -42,7 +42,7 @@ def run_simulation_multiobjective(w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, 
     vr_dist = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='van_rossum_dist', tau_vr=tau_vr))
     poisson_nll = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='poisson_nll'))
 
-    logger.log('current losses, rand_sample_index: {}'.format(rand_sample_index), params=[vr_dist, poisson_nll, gf])
+    logger.log('current losses, rand_sample_index: {}'.format(rand_sample_index), parameters=[vr_dist, poisson_nll, gf])
     return [vr_dist, poisson_nll, gf]
 
 

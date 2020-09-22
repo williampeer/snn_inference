@@ -1,6 +1,5 @@
-import numpy as np
+import Log
 from Models.GLIF import GLIF
-from Test.TestLog import TestLogger
 from plot import plot_all_param_pairs_with_variance
 
 param_sim = {}
@@ -30,4 +29,4 @@ for i in range(1,11):
     w_names.append('w_\{{}\}'.format(i))
 plot_all_param_pairs_with_variance(param_means=weights_dict, target_params=False, param_names=w_names, exp_type='default',
                                    uuid='test_plot_weights', fname='test_weights_plot',
-                                   custom_title='Test plot weights as KDEs', logger=TestLogger())
+                                   custom_title='Test plot weights as KDEs', logger=Log.Logger('test'))

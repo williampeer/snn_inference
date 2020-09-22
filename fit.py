@@ -46,7 +46,7 @@ def fit_mini_batches(model, inputs, target_spiketrain, current_rate, optimiser, 
     # plot_losses_nodes(batch_losses, uuid, exp_type_str, 'Batch loss')
     avg_batch_loss = torch.mean(torch.tensor(batch_losses))
 
-    logger.log({'train_i': train_i}, 'avg_batch_loss: {}'.format(avg_batch_loss))
+    logger.log('avg_batch_loss: {}'.format(avg_batch_loss), {'train_i': train_i})
     del loss, spikes, inputs, cur_inputs, batch_losses
 
     return float(avg_batch_loss.clone().detach().data)

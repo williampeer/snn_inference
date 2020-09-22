@@ -2,9 +2,9 @@ import sys
 
 import torch
 
+import Log
 import plot
 import stats
-from Test.TestLog import TestLogger
 
 
 def main(argv):
@@ -86,7 +86,7 @@ def main(argv):
                                                 exp_type=plot_data['exp_type'], uuid='export',
                                                 fname='export_{}'.format(save_fname),
                                                 custom_title='',
-                                                logger=TestLogger())
+                                                logger=Log.Logger('test'))
 
 
 
