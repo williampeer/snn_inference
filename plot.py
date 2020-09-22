@@ -286,11 +286,11 @@ def decompose_param_plot(param_2D, target_params, xlabel, ylabel, path, custom_t
                                   origin='lower', aspect='auto',
                                   extent=[x_min, x_max, y_min, y_max],
                                   cmap='Blues')
-                if target_params:  # and len(target_params) >= np.max([i, j]):
+                if target_params and len(target_params) >= np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'or', markersize=2.8)
             except ArithmeticError:
                 cur_ax.plot(params_by_exp[i], params_by_exp[j], 'xb', markersize=3.5)
-                if target_params:  # and len(target_params) >= np.max([i, j]):
+                if target_params and len(target_params) >= np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'or', markersize=2.8)
             except:
                 print('WARN: Failed to calculate KDE for param.s: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
@@ -323,7 +323,7 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
     for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
         for plot_j in range(plot_i + 1, number_of_parameters):
             cur_tar_params = False
-            if target_params:  # and len(target_params) > np.max([plot_i, plot_j]):
+            if target_params and len(target_params) > np.max([plot_i, plot_j]):
                 cur_tar_params = [target_params[plot_i], target_params[plot_j]]
 
             cur_p_i = np.array(param_means[plot_i])
@@ -337,13 +337,13 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
             # silently fail for 3D params (weights)
             if len(cur_p_i.shape) == 2:
                 cur_tar = False
-                if target_params:  # and len(target_params) > plot_i:
+                if target_params and len(target_params) > plot_i:
                     cur_tar = target_params[plot_i]
                 decompose_param_plot(cur_p_i, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}_{}'.format(name_i, name_j),
                                      custom_title=custom_title)
             if len(cur_p_j.shape) == 2:
                 cur_tar = False
-                if target_params:  # and len(target_params) > plot_j:
+                if target_params and len(target_params) > plot_j:
                     cur_tar = target_params[plot_j]
                 decompose_param_plot(cur_p_j, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}_{}'.format(name_i, name_j),
                                      custom_title=custom_title)
@@ -375,7 +375,7 @@ def decompose_param_pair_trajectory_plot(param_2D, target_params, xlabel, ylabel
                     cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
                 # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
 
-                if target_params:  # and len(target_params) >= np.max([i, j]):
+                if target_params and len(target_params) >= np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'x', color='gray', markersize=0.8 * dot_msize)
             except:
                 print('WARN: Failed to plot trajectory for params: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
@@ -401,7 +401,7 @@ def param_pair_trajectory_plot(p1_means, p2_means, target_params, path, xlabel='
             plt.scatter(p1_means[p_i], p2_means[p_i], color=colors[p_i], marker='x', alpha=0.5)
         plt.plot(p1_means, p2_means, color='gray')
 
-        if target_params:  # and len(target_params) >= np.max([i, j]):
+        if target_params and len(target_params) >= np.max([i, j]):
             plt.plot(p1_means, p2_means, 'S', markersize=4.)
 
         plt.xlabel(xlabel)
@@ -438,7 +438,7 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
     for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
         for plot_j in range(plot_i + 1, number_of_parameters):
             cur_tar_params = False
-            if target_params:  # and len(target_params) > np.max([plot_i, plot_j]):
+            if target_params and len(target_params) > np.max([plot_i, plot_j]):
                 cur_tar_params = [target_params[plot_i], target_params[plot_j]]
 
             cur_p_i = np.array(param_means[plot_i])
@@ -453,12 +453,12 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
             # silently fail for 3D params (weights)
             if len(cur_p_i.shape) == 2:
                 cur_tar = False
-                if target_params:  # and len(target_params) > plot_i:
+                if target_params and len(target_params) > plot_i:
                     cur_tar = target_params[plot_i]
                 decompose_param_pair_trajectory_plot(cur_p_i, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}'.format(plot_i))
             if len(cur_p_j.shape) == 2:
                 cur_tar = False
-                if target_params:  # and len(target_params) > plot_j:
+                if target_params and len(target_params) > plot_j:
                     cur_tar = target_params[plot_j]
                 decompose_param_pair_trajectory_plot(cur_p_j, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}'.format(plot_j))
             if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
