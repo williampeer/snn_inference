@@ -20,7 +20,9 @@ def fit_mini_batches(model, inputs, target_spiketrain, current_rate, optimiser, 
     for batch_i in range(batch_N):
         print('batch #{}'.format(batch_i))
 
-        model.reset_hidden_state()
+        # model.reset_hidden_state()
+        model.reset()
+        # model.load_state_dict(model.state_dict())
         current_rate = current_rate.clone().detach()
 
         if inputs is not None:

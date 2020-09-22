@@ -4,7 +4,7 @@ from torch import tensor as T
 
 
 class GLIF(nn.Module):
-    parameter_names = ['w', 'C_m', 'G', 'R_I', 'f_v', 'f_I']
+    parameter_names = ['w', 'E_L', 'C_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
 
     def __init__(self, device, parameters, C_m=1., G=0.7, R_I=18., E_L=-60., N=10, w_mean=0.55, w_var=0.65,
                  delta_theta_s=30., b_s=0.3, f_v=0.15, delta_V=12., f_I=0.3, I_A=1., b_v=0.5, a_v=0.5, theta_inf=-20):

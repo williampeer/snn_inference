@@ -14,6 +14,7 @@ from eval import evaluate_loss
 from experiments import *
 from fit import *
 from plot import *
+from memory_profiler import profile
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -57,6 +58,21 @@ def convergence_check(validation_losses):
     return val_diff >= 0.
 
 
+def overall_gradients_mean(gradients, train_i, loss_fn):
+    mean_logger = Log.Logger('gradients_mean_log')
+    full_logger = Log.Logger('gradients_full_log')
+
+    avg_grads = []
+    for i, grads in enumerate(gradients):
+        avg_grads.append(torch.mean(grads))
+    overall_mean = torch.mean(torch.tensor(avg_grads))
+    mean_logger.log('avg_grads: {}, train_i: {}, loss_fn: {}'.format(avg_grads, train_i, loss_fn))
+    mean_logger.log('overall_mean: {}'.format(overall_mean))
+
+    full_logger.log('train_i: {}, loss_fn: {}, gradients'.format(train_i, loss_fn), gradients)
+    return float(overall_mean.clone().detach())
+
+
 def fit_model_to_data(logger, constants, model_class, params_model, exp_num, target_parameters=False):
     node_indices, spike_times, spike_indices = data_util.load_sparse_data(constants.data_path)
     params_model['N'] = len(node_indices)
@@ -75,8 +91,9 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
 
     optim = constants.optimiser(list(model.parameters()), lr=constants.learn_rate)
 
-    prev_state_dict = model.state_dict()
+    # prev_state_dict = model.state_dict()
     train_losses = []; validation_losses = []; prev_spike_index = 0; train_i = 0; converged = False
+    initial_grads_mean = -1.
     while not (converged and (train_i < constants.train_iters)):
         logger.log('training iteration #{}'.format(train_i), [ExperimentType.DataDriven])
         prev_spike_index, targets = data_util.get_spike_train_matrix(index_last_step=prev_spike_index,
@@ -84,7 +101,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
                                                                      spike_times=spike_times, spike_indices=spike_indices,
                                                                      node_numbers=node_indices)
 
-        prev_state_dict = model.state_dict()
+        # prev_state_dict = model.state_dict()
         avg_train_loss = fit_mini_batches(model, inputs=None, target_spiketrain=targets, current_rate=current_rate,
                                           optimiser=optim, constants=constants, train_i=train_i, logger=logger)
         logger.log(parameters=['avg train loss', avg_train_loss])
@@ -99,9 +116,14 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         # parameters[param_i + 1].append(current_rate.clone().detach().numpy())
         # gradients.append(current_rate.grad)
 
-        # converged = convergence_check(gradients)
+        # grads_mean = overall_gradients_mean(gradients, train_i, constants.loss_fn)
+        # if initial_grads_mean < 0.:
+        #     initial_grads_mean = grads_mean
+        # converged = abs(grads_mean) <= 0.2 * abs(initial_grads_mean)
 
-        model.reset_hidden_state()
+        # model.reset_hidden_state()
+        model.reset()
+        # model.load_state_dict(model.state_dict())
         current_rate = current_rate.clone().detach()
 
         # if train_i % constants.evaluate_step == 0 or (converged or (train_i+1 >= constants.train_iters)):
@@ -116,12 +138,16 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
                                         exp_type=ExperimentType.DataDriven, train_i=train_i, exp_num=exp_num, constants=constants)
         logger.log(parameters=['validation loss', validation_loss])
         validation_losses.append(validation_loss)
-        converged = convergence_check(validation_losses)
+        # converged = convergence_check(validation_losses)
 
-        model.reset_hidden_state()
+        # model.reset_hidden_state()
+        model.reset()
+        # model.load_state_dict(model.state_dict())
         current_rate = current_rate.clone().detach()
+        train_i += 1
+        # del targets, validation_inputs, validation_loss
 
-    model.load_state_dict(prev_state_dict)
+    # model.load_state_dict(prev_state_dict)
     stats_training_iterations(parameters, model, train_losses, validation_losses, constants, logger, ExperimentType.DataDriven.name,
                               target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
 
@@ -132,6 +158,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
     return parameters, train_loss_detached, test_loss_detached, train_i
 
 
+@profile
 def run_exp_loop(logger, constants, model_class, free_model_parameters, target_parameters=False):
     all_recovered_params = {}
     for exp_i in range(constants.N_exp):
