@@ -81,11 +81,10 @@ class GLIF(nn.Module):
         self.I_A = nn.Parameter(T(N * [I_A]), requires_grad=True)
 
     def reset(self):
-        self.reset_hidden_state()
         for p in self.parameters():
-            if hasattr(p, 'reset_parameters'):
-                p.reset_parameters()
-                print('DEBUG: reset_parameters(), p: {}'.format(p))
+            p.grad = None
+            # print('DEBUG: p: {}, p.grad: {}'.format(p, p.grad))
+        self.reset_hidden_state()
 
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()

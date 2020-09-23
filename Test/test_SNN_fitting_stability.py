@@ -22,9 +22,9 @@ def test_stability_with_matching_configurations_deprecated(model, gen_model, rat
         plot_neuron(gen_membrane_potentials[:, neur_ind].data, title='Generative neuron model #{}'.format(neur_ind),
                     fname_ext='_test_1_neuron_{}'.format(neur_ind))
 
-    avg_batch_loss = fit_mini_batches(model=model, inputs=gen_inputs,
+    avg_batch_loss = fit_mini_batches(model=model, gen_inputs=gen_inputs,
                                       target_spiketrain=gen_spiketrain,
-                                      current_rate=poisson_rate,
+                                      poisson_input_rate=poisson_rate,
                                       optimiser=optims,
                                       constants=Constants(0, 0, 0, 500, tau_vr, 0.6, 2000, optim, 'van_rossum_dist', 1))
 
@@ -63,7 +63,7 @@ def test_stability_with_matching_configurations(model, gen_model, rate_factor, t
         #                 fname_ext='_test_2_neuron_{}'.format(neur_ind))
         del gen_membrane_potentials, targets, gen_inputs
 
-        avg_batch_loss = fit_mini_batches(model=model, inputs=None, target_spiketrain=gen_spiketrain, current_rate=model_rate,
+        avg_batch_loss = fit_mini_batches(model=model, gen_inputs=None, target_spiketrain=gen_spiketrain, poisson_input_rate=model_rate,
                                           optimiser=optims,
                                           constants=Constants(0, 0, 0, 500, tau_vr, model_rate, 2000, optim, 'van_rossum_dist', 1))
         model_rate = model_rate.clone().detach()  # reset

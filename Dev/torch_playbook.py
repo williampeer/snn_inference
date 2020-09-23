@@ -7,10 +7,10 @@ from experiments import poisson_input
 from model_util import feed_inputs_sequentially_return_spiketrain
 
 
-class LIF_test(nn.Module):
+class test_LIF(nn.Module):
     def __init__(self, C_m=1.0, tau_g=2.0, E_L=-65., N=4, w_mean=0.15, w_var=0.25, R_I=42.):
 
-        super(LIF_test, self).__init__()
+        super(test_LIF, self).__init__()
 
         __constants__ = ['spike_threshold', 'N']
         self.spike_threshold = T(30.)
@@ -60,7 +60,7 @@ def custom_fn(input_rate):
 def train_model():
     rate = torch.tensor(0.6, requires_grad=True)
     sut_grads = []
-    model = LIF_test()
+    model = test_LIF()
     input_variables = []
     model_inputs = custom_fn(input_variables)
     poisson_inputs = poisson_input(rate, t=time_interval, N=4)

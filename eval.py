@@ -9,7 +9,7 @@ def evaluate_loss(model, inputs, target_spiketrain, tau_van_rossum, uuid, label=
     assert (inputs.shape[0] == target_spiketrain.shape[0]), "inputs and targets should have same shape. inputs shape: {}, targets shape: {}"\
         .format(inputs.shape, target_spiketrain.shape)
 
-    membrane_potentials, model_spiketrain = model_util.feed_inputs_sequentially_return_spikes_and_potentials(model, inputs)
+    model_spiketrain = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs)
 
     print('-- sanity-checks --')
     print('model:')
@@ -29,7 +29,11 @@ def evaluate_loss(model, inputs, target_spiketrain, tau_van_rossum, uuid, label=
                                   exp_type=exp_type_str, title='Spiketrains test set ({}, loss: {:.3f})'.format(label, loss),
                                   fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))
 
-    return loss
+    model_spiketrain = None
+    model.reset()
+    np_loss = loss.clone().detach().numpy()
+    loss = None
+    return np_loss
 
 
 def calculate_loss(output, target, loss_fn, tau_vr=None):

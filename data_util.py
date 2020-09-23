@@ -150,7 +150,9 @@ def convert_sparse_spike_train_to_matrix(spike_times, node_indices, unique_node_
 
 
 def get_spike_times_list(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):
-    res = len(node_numbers) * [[]]
+    res = []
+    for _ in range(len(node_numbers)):
+        res.append([])
 
     prev_spike_time = spike_times[index_last_step]
 
