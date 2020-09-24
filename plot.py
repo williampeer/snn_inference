@@ -319,7 +319,7 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
         fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
     path = full_path + fname
 
-    number_of_parameters = len(param_names)
+    number_of_parameters = min(len(param_names), len(param_means))
     for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
         for plot_j in range(plot_i + 1, number_of_parameters):
             cur_tar_params = False
@@ -434,7 +434,7 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
         fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
     path = full_path + fname
 
-    number_of_parameters = len(param_names)
+    number_of_parameters = min(len(param_names), len(param_means))
     for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
         for plot_j in range(plot_i + 1, number_of_parameters):
             cur_tar_params = False

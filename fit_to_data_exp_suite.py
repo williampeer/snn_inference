@@ -1,7 +1,5 @@
 import sys
 
-from torch import tensor as T
-
 import Log
 import data_util
 from Constants import ExperimentType
@@ -14,7 +12,6 @@ from eval import evaluate_loss
 from experiments import *
 from fit import fit_mini_batches, release_computational_graph
 from plot import *
-from memory_profiler import profile
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -27,7 +24,7 @@ verbose = True
 
 def stats_training_iterations(model_parameters, model, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
     parameter_names = model.parameter_names
-    parameter_names.append('p_\{rate\}')
+    parameter_names.append('p_rate')
     plot_parameter_inference_trajectories_2d(model_parameters,
                                              uuid=constants.UUID,
                                              exp_type=exp_type_str,
@@ -75,7 +72,6 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
     return float(overall_mean.clone().detach())
 
 
-# @profile
 def fit_model_to_data(logger, constants, model_class, params_model, exp_num, target_parameters=False):
     node_indices, spike_times, spike_indices = data_util.load_sparse_data(constants.data_path)
     params_model['N'] = len(node_indices)
@@ -88,9 +84,11 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
     parameters = {}
+    # poisson_rates = []
     for p_i, key in enumerate(model.state_dict()):
         parameters[p_i] = [model.state_dict()[key].numpy()]
     parameters[p_i + 1] = [poisson_input_rate.clone().detach().numpy()]
+    # poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
     optim_params = list(model.parameters())
     optim_params.append(poisson_input_rate)
@@ -116,15 +114,10 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         for p_i, key in enumerate(cur_params):
             parameters[p_i].append(cur_params[key].clone().detach().numpy())
         parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
+        # poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
         max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
         converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean)
-
-        # gradients = []
-        # for param_i, param in enumerate(list(model.parameters())):
-        #     logger.log('parameter #{} gradient: {}'.format(param_i, param.grad))
-        #     gradients.append(param.grad)
-        # gradients.append(current_rate.grad)
 
         # if train_i % constants.evaluate_step == 0 or (converged or (train_i+1 >= constants.train_iters)):
         prev_spike_index, targets = data_util.get_spike_train_matrix(index_last_step=prev_spike_index,
@@ -143,14 +136,12 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         targets = None; validation_inputs = None; validation_loss = None
         train_i += 1
 
-    # model.load_state_dict(prev_state_dict)
     stats_training_iterations(parameters, model, train_losses, validation_losses, constants, logger, ExperimentType.DataDriven.name,
                               target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
     model = None
     return parameters, train_losses, validation_losses, train_i
 
 
-# @profile
 def run_exp_loop(logger, constants, model_class, free_model_parameters, target_parameters=False):
     all_recovered_params = {}
     for exp_i in range(constants.N_exp):
@@ -174,7 +165,7 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, target_p
                 all_recovered_params[key].append(recovered_parameters[key])
 
     parameter_names = model_class.parameter_names
-    parameter_names.append('p_\{rate\}')
+    parameter_names.append('p_rate')
     plot_all_param_pairs_with_variance(all_recovered_params,
                                        uuid=constants.UUID,
                                        exp_type=ExperimentType.RetrieveFitted.name,

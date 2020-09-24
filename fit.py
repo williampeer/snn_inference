@@ -1,6 +1,5 @@
-import torch
 import numpy as np
-from memory_profiler import profile
+import torch
 
 import model_util
 from eval import calculate_loss
@@ -13,7 +12,6 @@ def release_computational_graph(model, rate_parameter, inputs):
     inputs.grad = None
 
 
-# @profile
 def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimiser, constants, train_i=None, logger=None):
     if gen_inputs is not None:
         assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
