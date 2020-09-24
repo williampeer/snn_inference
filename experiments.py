@@ -1,9 +1,18 @@
 import torch
+import numpy as np
 
 from model_util import generate_model_data
 
 # torch.backends.cudnn.deterministic = True
 # torch.backends.cudnn.benchmark = False
+
+
+def draw_from_uniform(parameters, parameter_intervals, N):
+    new_dict = {}
+    for i, k in enumerate(parameters):
+        low = parameter_intervals[k][0]; high = parameter_intervals[k][1]
+        new_dict[k] = np.random.uniform(low, high, N)
+    return new_dict
 
 
 def randomise_parameters(initial_parameters, coeff=torch.tensor(0.5)):

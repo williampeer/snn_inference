@@ -148,8 +148,9 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, target_p
         torch.manual_seed(exp_i)
         np.random.seed(exp_i)
 
-        # TODO: uniform for intervals across trials? for comparison w gradient-free nevergrad approaches.
-        params_model = randomise_parameters(free_model_parameters, coeff=torch.tensor(0.1))
+        node_indices, _, _ = data_util.load_sparse_data(constants.data_path)
+        num_neurons = len(node_indices)
+        params_model = draw_from_uniform(free_model_parameters, model_class.parameter_intervals, num_neurons)
 
         recovered_parameters, train_losses, test_losses, train_i = \
             fit_model_to_data(logger, constants, model_class, params_model, exp_num=exp_i, target_parameters=target_parameters)
@@ -184,9 +185,8 @@ def start_exp(constants, model_class, target_parameters=False):
     logger.log('Starting exp. with listed hyperparameters.', [constants.__str__()])
 
     if model_class in [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
-        free_parameters = {'w_mean': 0.3, 'w_var': 0.5, 'C_m': 1.5, 'G': 0.8, 'R_I': 18., 'E_L': -60.,
-                           'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 12., 'f_I': 0.4, 'I_A': 1.,
-                           'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
+        free_parameters = {'C_m': 1.5, 'G': 0.8, 'R_I': 18., 'E_L': -60., 'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14,
+                           'delta_V': 12., 'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
     else:
         logger.log('Model class not supported.')
         sys.exit(1)
