@@ -1,15 +1,15 @@
-from torch.nn.functional import poisson_nll_loss
+from torch.nn.functional import poisson_nll_loss, kl_div
 
 import model_util
 import spike_metrics
 from plot import *
 
 
-def evaluate_likelihood(model, inputs, target_spiketrain, tau_van_rossum, uuid, label='', exp_type=None, train_i=None, exp_num=None, constants=None):
+def evaluate_loss(model, inputs, target_spiketrain, tau_van_rossum, uuid, label='', exp_type=None, train_i=None, exp_num=None, constants=None):
     assert (inputs.shape[0] == target_spiketrain.shape[0]), "inputs and targets should have same shape. inputs shape: {}, targets shape: {}"\
         .format(inputs.shape, target_spiketrain.shape)
 
-    membrane_potentials, model_spiketrain = model_util.feed_inputs_sequentially_return_spikes_and_potentials(model, inputs)
+    model_spiketrain = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs)
 
     print('-- sanity-checks --')
     print('model:')
@@ -18,14 +18,7 @@ def evaluate_likelihood(model, inputs, target_spiketrain, tau_van_rossum, uuid, 
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
 
-    if constants.loss_fn.__contains__('van_rossum_dist'):
-        loss = float(spike_metrics.van_rossum_dist(model_spiketrain, target_spiketrain, tau=tau_van_rossum).detach().data)
-    elif constants.loss_fn.__contains__('poisson_nll'):
-        loss = float(poisson_nll_loss(model_spiketrain, target_spiketrain).detach().data)
-    elif constants.loss_fn.__contains__('van_rossum_squared'):
-        loss = float(spike_metrics.van_rossum_squared_distance(model_spiketrain, target_spiketrain, tau=tau_van_rossum).detach().data)
-    elif constants.loss_fn.__contains__('mse'):
-        loss = float(spike_metrics.mse(model_spiketrain, target_spiketrain).detach().data)
+    loss = calculate_loss(model_spiketrain, target_spiketrain, loss_fn=constants.loss_fn, tau_vr=tau_van_rossum)
     print('loss:', loss)
 
     if exp_type is None:
@@ -35,6 +28,24 @@ def evaluate_likelihood(model, inputs, target_spiketrain, tau_van_rossum, uuid, 
     plot_spiketrains_side_by_side(model_spiketrain, target_spiketrain, uuid=uuid,
                                   exp_type=exp_type_str, title='Spiketrains test set ({}, loss: {:.3f})'.format(label, loss),
                                   fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))
+    np_loss = loss.clone().detach().numpy()
+    loss = None
+    return np_loss
+
+
+def calculate_loss(output, target, loss_fn, tau_vr=None):
+    if loss_fn.__contains__('van_rossum_dist'):
+        loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
+    elif loss_fn.__contains__('poisson_nll'):
+        loss = poisson_nll_loss(output, target)
+    elif loss_fn.__contains__('kl_div'):
+        loss = kl_div(output, target, reduction='batchmean')
+    elif loss_fn.__contains__('van_rossum_squared'):
+        loss = spike_metrics.van_rossum_squared_distance(output, target, tau_vr)
+    elif loss_fn.__contains__('mse'):
+        loss = spike_metrics.mse(output, target)
+    else:
+        raise NotImplementedError("Loss function not supported.")
 
     return loss
 
@@ -47,11 +58,3 @@ def sanity_checks(spiketrain):
 
     print('# silent neurons: ', silent_neurons)
     print('spikes per neuron:', neuron_spikes)
-
-
-# def eval_parameters_1d(recovered_params_list, target_params, uuid, custom_title=False):
-#     assert len(recovered_params_list) == len(target_params), \
-#         "p.1: {}, p.2: {}".format(len(recovered_params_list[0]), len(target_params))
-#
-#     for param_i, parameters in enumerate(recovered_params_list.values()):
-#         plot_fitted_vs_target_parameters(parameters, target_params[param_i].data, uuid, custom_title=custom_title)

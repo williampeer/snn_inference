@@ -2,30 +2,25 @@ import scipy.io as sio
 import numpy as np
 import torch
 
-# NOTE: This is just a sample implementation for how one might import and handle experiments containing a sparse
-#   representation (two vectors) of a spike train, consisting of two vectors with the spike times, and node indices.
+# NOTE: This is an implementation for sparse representations (two vectors) of a spike trains,
+#   represented by two vectors; the spike times, and node indices.
 
-exp_names = ['exp108', 'exp109', 'exp124', 'exp126', 'exp138', 'exp146', 'exp147']
-# prefix = '/home/william/'  # Ubuntu
-prefix = '/Users/william/'  # OS X
+prefix = '/home/william/'  # Ubuntu
+# prefix = '/Users/william/'  # OS X
 # prefix = '/home/williampeer/'  # server
-path = 'data/sleep_data/'
+path = 'data/target_data/'
 matlab_export = 'matlab_export/'
 
 
-def load_data(exp_num):
-    cur_fname = exp_names[exp_num] + '.mat'
-
-    exp_data = sio.loadmat(prefix + path + cur_fname)['DATA']
+def load_sparse_data(full_path):
+    exp_data = sio.loadmat(full_path)['DATA']
 
     spike_indices = exp_data['clu'][0][0]  # index of the spiking neurons
     spike_times = exp_data['res'][0][0]  # spike times
-    qual = exp_data['qual'][0][0]  # neuronal decoding quality
-    states = exp_data['score'][0][0]  # state
 
-    satisfactory_quality_node_indices = np.unique(spike_indices)
+    node_indices = np.unique(spike_indices)
 
-    return satisfactory_quality_node_indices, spike_times, spike_indices, states
+    return node_indices, spike_times, spike_indices
 
 
 def convert_to_sparse_vectors(spiketrain, t_offset):
@@ -36,23 +31,28 @@ def convert_to_sparse_vectors(spiketrain, t_offset):
     for ms_i in range(spiketrain.shape[0]):
         for node_i in range(spiketrain.shape[1]):
             if spiketrain[ms_i][node_i] != 0:
-                assert spiketrain[ms_i][node_i] == 1, \
-                    "found element that was neither 0 nor 1. row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
+                assert spiketrain[ms_i][node_i] in range(10), \
+                    "element out of range(0,5). row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
+                # assert spiketrain[ms_i][node_i] == 1, \
+                #     "found element that was neither 0 nor 1. row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
                 spike_times = np.append(spike_times, np.float32(float(ms_i) +t_offset))
                 spike_indices = np.append(spike_indices, np.int8(node_i))
 
     return spike_indices, spike_times
 
 
-def save_spiketrain_in_matlab_format(fname, spike_indices, spike_times):
+def save_spiketrain_in_sparse_matlab_format(fname, spike_indices, spike_times):
     exp_data = {}
     exp_data['clu'] = np.reshape(spike_indices, (-1, 1))
     exp_data['res'] = np.reshape(spike_times, (-1, 1))
     mat_data = {'DATA': exp_data}
-    sio.savemat(file_name=prefix + path + matlab_export + fname, mdict=mat_data)
+
+    # sio.savemat(file_name=prefix + path + matlab_export + fname, mdict=mat_data)
+    # sio.savemat(file_name='/Users/william/repos/pnmf-fork/data/' + fname, mdict=mat_data)
+    sio.savemat(file_name=prefix + path + fname, mdict=mat_data)
 
 
-def get_spike_array(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):
+def get_spike_train_matrix(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):
     spikes = torch.zeros((advance_by_t_steps, node_numbers.shape[0]))
 
     prev_spike_time = spike_times[index_last_step]
@@ -113,3 +113,59 @@ def transform_to_population_spiking(spikes, kernel_indices):
                 convolved_spikes[t_i, pop_i] += spikes[t_i, kernel_indices[pop_i][idx]]
 
     return torch.min(convolved_spikes, torch.tensor(1.0))
+
+
+# def load_sparse_data_matlab_format(fname):
+#     exp_data = sio.loadmat(prefix + path + fname)['DATA']
+#
+#     # Custom Matlab-compatible format
+#     spike_indices = exp_data['clu'][0][0]  # index of the spiking neurons
+#     spike_times = exp_data['res'][0][0]  # spike times
+#     qual = exp_data['qual'][0][0]  # neuronal decoding quality
+#     states = exp_data['score'][0][0]  # state
+#
+#     satisfactory_quality_node_indices = np.unique(spike_indices)
+#
+#     return satisfactory_quality_node_indices, spike_times, spike_indices, qual, states
+
+
+def convert_brian_spike_train_dict_to_boolean_matrix(brian_spike_train, t_max):
+    keys = brian_spike_train.keys()
+    res = np.zeros((int(t_max), len(keys)))
+    for i, k in enumerate(keys):
+        node_spike_times = brian_spike_train[k]
+        import brian2
+        node_spike_times = np.array(node_spike_times/brian2.msecond, dtype=np.int)
+        res[node_spike_times, i] = 1.
+    return res
+
+
+def convert_sparse_spike_train_to_matrix(spike_times, node_indices, unique_node_indices):
+    res = {}
+    for j in range(len(unique_node_indices)):
+        res[int(unique_node_indices[j])] = np.array([])
+    for i in range(len(spike_times)):
+        res[int(node_indices[i])] = np.concatenate((res[int(node_indices[i])], np.array(spike_times[i])))
+    return res
+
+
+def get_spike_times_list(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):
+    res = []
+    for _ in range(len(node_numbers)):
+        res.append([])
+
+    prev_spike_time = spike_times[index_last_step]
+
+    next_step = index_last_step+1
+    while spike_times[next_step] < prev_spike_time + advance_by_t_steps:
+        cur_node_index = int(spike_indices[next_step])
+        res[cur_node_index] = np.concatenate((res[cur_node_index], spike_times[next_step]))
+        next_step = next_step+1
+
+    return next_step, res
+
+
+def scale_spike_times(spike_times_list, div=1000.):
+    for n_i in range(len(spike_times_list)):
+        spike_times_list[n_i] = spike_times_list[n_i] / div
+    return  spike_times_list

@@ -8,7 +8,7 @@ import IO
 class Constants:
     def __init__(self, learn_rate, train_iters, N_exp, batch_size, tau_van_rossum,
                  initial_poisson_rate, rows_per_train_iter, optimiser, loss_fn, evaluate_step,
-                 data_set=None, fitted_model_path=None, data_bin_size=None, target_bin_size=None):
+                 data_set=None, data_path=None, fitted_model_path=None, data_bin_size=None, target_bin_size=None):
         if data_bin_size is not None:
             self.data_bin_size = int(data_bin_size)
         else:
@@ -20,6 +20,7 @@ class Constants:
             self.target_bin_size = None
 
         self.data_set = data_set
+        self.data_path = data_path
         self.fitted_model_path = fitted_model_path
 
         self.learn_rate = float(learn_rate)

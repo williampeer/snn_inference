@@ -4,7 +4,6 @@ import torch
 
 import plot
 import stats
-from Test.TestLog import TestLogger
 
 
 def main(argv):

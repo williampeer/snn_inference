@@ -46,12 +46,12 @@ class Izhikevich(nn.Module):
 
         # self.a = T(N * [a])
         # self.b = T(N * [b])
-        self.a = nn.Parameter(tensor(N * [a]), requires_grad=True)
         # self.a = nn.Parameter(tensor(a), requires_grad=True)
         # self.b = nn.Parameter(tensor(b), requires_grad=True)
-        self.b = nn.Parameter(tensor(N * [b]), requires_grad=True)
         # self.c = T(N * [c])
         # self.d = T(N * [d])
+        self.a = nn.Parameter(tensor(N * [a]), requires_grad=True)
+        self.b = nn.Parameter(tensor(N * [b]), requires_grad=True)
         self.c = nn.Parameter(tensor(N * [c]), requires_grad=True)
         self.d = nn.Parameter(tensor(N * [d]), requires_grad=True)
 
@@ -60,6 +60,7 @@ class Izhikevich(nn.Module):
 
         self.R_I = tensor(R_I)
 
+        self.parameter_names = ['w', 'a', 'b', 'c', 'd', '\\tau_g']
         # self.to(self.device)
 
     def reset_hidden_state(self):

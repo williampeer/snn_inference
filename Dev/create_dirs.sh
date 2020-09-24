@@ -19,4 +19,5 @@ mkdir Test/Logs
 mkdir Test/figures/default
 mkdir Test/saved/plot_data
 
+mkdir ~/data/sleep_data/
 mkdir ~/data/sleep_data/matlab_export/

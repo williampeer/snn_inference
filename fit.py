@@ -1,65 +1,67 @@
 import torch
-from torch.nn.functional import poisson_nll_loss
+import numpy as np
+from memory_profiler import profile
 
 import model_util
-import spike_metrics
+from eval import calculate_loss
 from experiments import poisson_input
 
 
-def fit_mini_batches(model, inputs, target_spiketrain, tau_van_rossum, current_rate, batch_size,
-                     optimisers, loss_fn='van_rossum_dist', train_i=None, logger=None):
-    if inputs is not None:
-        assert inputs.shape[0] == target_spiketrain.shape[0], \
-            "inputs shape: {}, target spiketrain shape: {}".format(inputs.shape, target_spiketrain.shape)
+def release_computational_graph(model, rate_parameter, inputs):
+    model.reset()
+    rate_parameter.grad = None
+    inputs.grad = None
 
+
+# @profile
+def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimiser, constants, train_i=None, logger=None):
+    if gen_inputs is not None:
+        assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
+            "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
+
+    tau_vr = torch.tensor(constants.tau_van_rossum)
+    batch_size = constants.batch_size
     batch_N = int(target_spiketrain.shape[0]/batch_size)
     assert batch_N > 0, "batch_N was not above zero. batch_N: {}".format(batch_N)
     print('num. of batches of size {}: {}'.format(batch_size, batch_N))
-    batch_losses = []
-    loss = None; cur_inputs = None; loss_per_node = False
+    batch_losses = []; avg_abs_grads = []
+    for _ in range(len(list(model.parameters()))+1):
+        avg_abs_grads.append([])
     for batch_i in range(batch_N):
         print('batch #{}'.format(batch_i))
 
-        model.reset_hidden_state()
-        # current_rate = current_rate.clone().detach()
-        # current_rate = torch.abs(current_rate.clone().detach())
-
-        if inputs is not None:
-            spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs[batch_size*batch_i:batch_size*(batch_i+1)])
+        if gen_inputs is not None:
+            current_inputs = gen_inputs[batch_size * batch_i:batch_size * (batch_i + 1)]
+            current_inputs.retain_grad()
+            spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, current_inputs)
         else:
-            cur_inputs = poisson_input(rate=current_rate, t=batch_size, N=model.N)
-            spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, cur_inputs)
+            current_inputs = poisson_input(rate=poisson_input_rate, t=batch_size, N=model.N)
+            current_inputs.retain_grad()
+            spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, current_inputs)
 
-        if loss_fn.__contains__('van_rossum_dist'):
-            loss = spike_metrics.van_rossum_dist(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(), tau=tau_van_rossum)
-        elif loss_fn.__contains__('poisson_nll'):
-            loss = poisson_nll_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach())
-        elif loss_fn.__contains__('van_rossum_squared'):
-            loss = spike_metrics.van_rossum_squared_distance(spikes, target_spiketrain[batch_size*batch_i:batch_size*(batch_i+1)].detach(), tau=tau_van_rossum)
-        elif loss_fn.__contains__('mse'):
-            loss = spike_metrics.mse(spikes, target_spiketrain[batch_size*batch_i:batch_size*(batch_i+1)].detach())
-        else:
-            raise NotImplementedError("Loss function not supported.")
-
-        sut_tar_sum = target_spiketrain[batch_size*batch_i:batch_size*(batch_i+1)].sum()
-        print('DEBUG. # target spikes in batch: {}'.format(sut_tar_sum))
+        loss = calculate_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(),
+                              loss_fn=constants.loss_fn, tau_vr = tau_vr)
         print('batch loss: {}'.format(loss))
+        batch_losses.append(float(loss.clone().detach().data))
 
-        for optim in optimisers:
-            optim.zero_grad()
+        optimiser.zero_grad()
+        loss.backward(retain_graph=True)  # TODO: look into mem. leak. V - verify
+        poisson_input_rate.grad = torch.mean(current_inputs.grad)
 
-        loss.backward(retain_graph=True)
-        batch_losses.append(loss.clone().detach().data)
+        # retain grads
+        for p_i, param in enumerate(list(model.parameters())):
+            avg_abs_grads[p_i].append(np.mean(np.abs(param.grad.clone().detach().numpy())))
+        avg_abs_grads[p_i+1].append(np.abs(poisson_input_rate.grad.clone().detach().numpy()))
 
-        for optim in optimisers:
-            # print('stepping with optimiser: {}'.format(optim))
-            optim.step()
-            print('DEBUG: Stepping in optim.')
+        optimiser.step()
 
-    # plot_losses_nodes(batch_losses, uuid, exp_type_str, 'Batch loss')
-    avg_batch_loss = torch.mean(torch.tensor(batch_losses))
+        release_computational_graph(model, poisson_input_rate, current_inputs)
+        spikes = None; loss = None; current_inputs = None
 
-    logger.log({'train_i': train_i}, 'avg_batch_loss: {}'.format(avg_batch_loss))
-    del loss, spikes, inputs, cur_inputs, batch_losses
+    avg_batch_loss = np.mean(np.asarray(batch_losses, dtype=np.float))
 
-    return float(avg_batch_loss.clone().detach().data)
+    logger.log('avg_batch_loss: {}'.format(avg_batch_loss), {'train_i': train_i})
+    logger.log(parameters=[train_i, avg_abs_grads])
+    gen_inputs = None
+
+    return avg_batch_loss, np.mean(np.asarray(avg_abs_grads, dtype=np.float))

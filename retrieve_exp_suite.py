@@ -1,7 +1,5 @@
 import sys
 
-from torch import tensor as T
-
 import Log
 from Constants import ExperimentType
 from Models.GLIF import GLIF
@@ -9,7 +7,7 @@ from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from eval import evaluate_likelihood
+from eval import evaluate_loss
 from experiments import *
 from fit import *
 from plot import *
@@ -24,21 +22,22 @@ verbose = True
 
 
 def stats_training_iterations(model_parameters, model, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num):
-    plot_all_param_pairs_with_variance(model_parameters,
-                                       uuid=constants.UUID,
-                                       exp_type=exp_type_str,
-                                       target_params=target_parameters,
-                                       custom_title='Inferred parameters across training iterations',
-                                       fname='inferred_params_{}_exp_num_{}'.format(model.__class__.__name__, exp_num),
-                                       logger=logger)
+    plot_parameter_inference_trajectories_2d(model_parameters,
+                                             uuid=constants.UUID,
+                                             exp_type=exp_type_str,
+                                             target_params=target_parameters,
+                                             param_names=model.parameter_names,
+                                             custom_title='Inferred parameters across training iterations',
+                                             fname='inferred_param_trajectories_{}_exp_num_{}'.format(model.__class__.__name__, exp_num),
+                                             logger=logger)
 
     plot_losses(training_loss=train_losses, test_loss=test_losses, test_loss_step=constants.evaluate_step, uuid=constants.UUID, exp_type=exp_type_str,
                 custom_title='Loss ({}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__, constants.learn_rate),
                 fname='training_and_test_loss_exp_{}_loss_fn_{}'.format(exp_num, constants.loss_fn))
 
-    logger.log('', 'train_losses: #{}'.format(train_losses))
+    logger.log('train_losses: #{}'.format(train_losses))
     mean_test_loss = torch.mean(torch.tensor(test_losses)).data
-    logger.log(['mean test loss: {}'.format(mean_test_loss)], 'test_losses: #{}'.format(test_losses))
+    logger.log('test_losses: #{}'.format(test_losses), ['mean test loss: {}'.format(mean_test_loss)])
 
     cur_fname = '{}_exp_num_{}_data_set_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, constants.data_set, mean_test_loss, constants.UUID)
     IO.save(model, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
@@ -46,8 +45,9 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
     del model, mean_test_loss
 
 
+@profile
 def recover_model_parameters(logger, constants, model_class, params_model, gen_model, exp_num=None):
-    logger.log([model_class.__name__], 'gen model parameters: {}'.format(gen_model.parameters()))
+    logger.log('gen model parameters: {}'.format(gen_model.parameters()), [model_class.__name__])
     gen_rate = torch.tensor(constants.initial_poisson_rate)
     if model_class.__name__ == gen_model.__class__.__name__:
         target_parameters = {}
@@ -59,7 +59,7 @@ def recover_model_parameters(logger, constants, model_class, params_model, gen_m
 
     params_model['N'] = gen_model.N
     model = model_class(device=device, parameters=params_model)
-    logger.log([model_class.__name__], 'initial model parameters: {}'.format(params_model))
+    logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     current_rate = torch.tensor(constants.initial_poisson_rate)  # * torch.rand((1,))[0]
     fitted_parameters = {}
     for p_i, param in enumerate(list(model.parameters())):
@@ -69,7 +69,7 @@ def recover_model_parameters(logger, constants, model_class, params_model, gen_m
     model_optim = constants.optimiser(list(model.parameters()), lr=constants.learn_rate)
     # poisson_rate_optim = constants.optimiser([current_rate], lr=constants.learn_rate)
     # optims = [model_optim, poisson_rate_optim]
-    optims = [model_optim]
+    # optims = [model_optim]
 
     train_losses = []; test_losses = []
     for train_i in range(constants.train_iters):
@@ -77,11 +77,9 @@ def recover_model_parameters(logger, constants, model_class, params_model, gen_m
         targets = generate_synthetic_data(gen_model, poisson_rate=gen_rate, t=constants.rows_per_train_iter)
         # assert targets.sum() > gen_model.N, "target model should not be silent. spikes in target spike train: {}".format(targets.sum())
 
-        avg_train_loss = fit_mini_batches(model, inputs=None, target_spiketrain=targets,
-                                          tau_van_rossum=T(constants.tau_van_rossum), current_rate=current_rate,
-                                          batch_size=constants.batch_size, optimisers=optims, loss_fn=constants.loss_fn,
-                                          train_i=train_i, logger=logger)
-        logger.log(['avg train loss', avg_train_loss])
+        avg_train_loss = fit_mini_batches(model, gen_inputs=None, target_spiketrain=targets, poisson_input_rate=current_rate,
+                                          optimiser=model_optim, constants=constants, train_i=train_i, logger=logger)
+        logger.log(parameters=['avg train loss', avg_train_loss])
         train_losses.append(avg_train_loss)
         model.reset_hidden_state()
 
@@ -91,30 +89,30 @@ def recover_model_parameters(logger, constants, model_class, params_model, gen_m
             targets = generate_synthetic_data(gen_model, poisson_rate=gen_rate, t=constants.rows_per_train_iter)
 
             test_inputs = poisson_input(rate=current_rate, t=constants.rows_per_train_iter, N=model.N)
-            test_loss = evaluate_likelihood(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
-                                            tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                            exp_type=ExperimentType.RetrieveFitted, train_i=train_i, exp_num=exp_num,
-                                            constants=constants)
-            logger.log(['test loss', test_loss], '')
+            test_loss = evaluate_loss(model, inputs=test_inputs, target_spiketrain=targets, uuid=constants.UUID,
+                                      tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
+                                      exp_type=ExperimentType.RetrieveFitted, train_i=train_i, exp_num=exp_num,
+                                      constants=constants)
+            logger.log(parameters=['test loss', test_loss])
             test_losses.append(test_loss)
 
             model.reset_hidden_state()
             current_rate = current_rate.clone().detach()
 
         for param_i, param in enumerate(list(model.parameters())):
-            logger.log('-', 'parameter #{}: {}'.format(param_i, param))
-            logger.log('-', 'parameter #{} gradient: {}'.format(param_i, param.grad))
+            logger.log('parameter #{}: {}'.format(param_i, param))
+            logger.log('parameter #{} gradient: {}'.format(param_i, param.grad))
             fitted_parameters[param_i].append(param.clone().detach().numpy())
         fitted_parameters[param_i+1].append(current_rate.clone().detach().numpy())
-        logger.log('-', 'rates: {}'.format(current_rate))
-        logger.log('-', 'rates gradient: {}'.format(current_rate.grad))
+        logger.log('rates: {}'.format(current_rate))
+        # logger.log('rates gradient: {}'.format(current_rate.grad))
 
     final_parameters = {}
     for param_i, param in enumerate(list(model.parameters())):
-        logger.log('-', 'parameter #{}: {}'.format(param_i, param))
-        logger.log('-', 'parameter #{} gradient: {}'.format(param_i, param.grad))
+        logger.log('parameter #{}: {}'.format(param_i, param))
+        logger.log('parameter #{} gradient: {}'.format(param_i, param.grad))
         final_parameters[param_i] = param.clone().detach().numpy()
-    final_parameters[param_i + 1] = current_rate.clone().detach().numpy()
+    # final_parameters[param_i + 1] = current_rate.clone().detach().numpy()
 
     for ctr in range(len(fitted_parameters)):
         print('fitted_parameters param #{}:'.format(ctr))
@@ -124,13 +122,14 @@ def recover_model_parameters(logger, constants, model_class, params_model, gen_m
     stats_training_iterations(fitted_parameters, model, train_losses, test_losses, constants, logger, ExperimentType.RetrieveFitted.name,
                               target_parameters=target_parameters, exp_num=exp_num)
 
+    test_loss_detached = torch.tensor(test_losses).clone().detach()
     train_loss_detached = torch.tensor(train_losses).clone().detach()
     # del model, train_losses, test_losses  # cleanup
     del model, train_losses, test_losses  # cleanup
 
-    return final_parameters, target_parameters, train_loss_detached
+    return final_parameters, target_parameters, train_loss_detached, test_loss_detached
 
-
+@profile
 def run_exp_loop(logger, constants, model_class, free_model_parameters, gen_model):
     all_recovered_params = {}; recovered_parameters = None
     target_parameters = False
@@ -144,11 +143,15 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, gen_mode
         gen_model.reset()
         params_model = randomise_parameters(free_model_parameters, coeff=torch.tensor(0.1))
 
-        recovered_parameters, target_parameters, train_losses = recover_model_parameters(logger, constants, model_class, params_model, gen_model=gen_model, exp_num=exp_i)
-        # convergence_criterion = train_losses[-1] < train_losses[0] * 0.85 or while_ctr >= 10  # TODO: Sanity check firing rate
+        recovered_parameters, target_parameters, train_losses, test_losses = \
+            recover_model_parameters(logger, constants, model_class, params_model, gen_model=gen_model, exp_num=exp_i)
+
+        # TODO: Sanity check firing rate
+        # convergence_criterion = train_losses[-1] < train_losses[0] * 0.9 or while_ctr >= 10
         # if while_ctr >= 10:
         #     print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, while_ctr: {}, train_losses{}'
         #           .format(exp_i, while_ctr, train_losses))
+        #     break / return
 
         for p_i, p in enumerate(recovered_parameters.values()):
             if exp_i == 0:
@@ -159,18 +162,22 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, gen_mode
         # Note: Test losses, avg. firing rates?, ++
 
     # TODO: Fixme
-    # plot_all_param_pairs_with_variance_new(all_recovered_params,
-    #                                    uuid=constants.UUID,
-    #                                    exp_type=exp_type.name,
-    #                                    target_params=target_parameters,
-    #                                    custom_title="Average inferred parameters across experiments [{}, {}]".format(
-    #                                            model_class.__name__, constants.optimiser),
-    #                                    logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
+    plot_all_param_pairs_with_variance(all_recovered_params,
+                                       uuid=constants.UUID,
+                                       exp_type=ExperimentType.RetrieveFitted.name,
+                                       target_params=target_parameters,
+                                       param_names=gen_model.parameter_names,
+                                       custom_title="Average inferred parameters across experiments [{}, {}]".format(
+                                               model_class.__name__, constants.optimiser),
+                                       logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
 
 
 def start_exp(constants, model_class, gen_model):
-    logger = Log.Logger(ExperimentType.RetrieveFitted, constants, prefix=model_class.__name__)
-    logger.log([constants.__str__()], 'Starting exp. with the listed hyperparameters.')
+    log_fname = model_class.__name__ + '{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'. \
+        format(ExperimentType.RetrieveFitted.name, '{:1.3f}'.format(constants.learn_rate).replace('.', '_'),
+               constants.batch_size, constants.train_iters, constants.rows_per_train_iter, constants.UUID)
+    logger = Log.Logger(log_fname)
+    logger.log('Starting exp. with the listed hyperparameters.', [constants.__str__()])
 
     spike_train = generate_synthetic_data(gen_model, constants.initial_poisson_rate, t=400)
     assert spike_train.sum() > gen_model.N, \
@@ -183,7 +190,7 @@ def start_exp(constants, model_class, gen_model):
                            'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 12., 'f_I': 0.4, 'I_A': 1.,
                            'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
     else:
-        logger.log([], 'Model class not supported.')
+        logger.log('Model class not supported.')
         sys.exit(1)
 
     run_exp_loop(logger, constants, model_class, free_parameters, gen_model=gen_model)
