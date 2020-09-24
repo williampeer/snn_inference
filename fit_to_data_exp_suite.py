@@ -26,15 +26,17 @@ verbose = True
 
 
 def stats_training_iterations(model_parameters, model, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
-    # plot_parameter_inference_trajectories_2d(model_parameters,
-    #                                          uuid=constants.UUID,
-    #                                          exp_type=exp_type_str,
-    #                                          target_params=target_parameters,
-    #                                          param_names=model.parameter_names,
-    #                                          custom_title='Inferred parameters across training iterations',
-    #                                          fname='inferred_param_trajectories_{}_exp_num_{}_train_iters_{}'
-    #                                          .format(model.__class__.__name__, exp_num, train_i),
-    #                                          logger=logger)
+    parameter_names = model.parameter_names
+    parameter_names.append('p_\{rate\}')
+    plot_parameter_inference_trajectories_2d(model_parameters,
+                                             uuid=constants.UUID,
+                                             exp_type=exp_type_str,
+                                             target_params=target_parameters,
+                                             param_names=parameter_names,
+                                             custom_title='Inferred parameters across training iterations',
+                                             fname='inferred_param_trajectories_{}_exp_num_{}_train_iters_{}'
+                                             .format(model.__class__.__name__, exp_num, train_i),
+                                             logger=logger)
 
     plot_losses(training_loss=train_losses, test_loss=test_losses, test_loss_step=constants.evaluate_step, uuid=constants.UUID, exp_type=exp_type_str,
                 custom_title='Loss ({}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__, constants.learn_rate),
@@ -73,7 +75,7 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
     return float(overall_mean.clone().detach())
 
 
-@profile
+# @profile
 def fit_model_to_data(logger, constants, model_class, params_model, exp_num, target_parameters=False):
     node_indices, spike_times, spike_indices = data_util.load_sparse_data(constants.data_path)
     params_model['N'] = len(node_indices)
@@ -87,7 +89,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
     parameters = {}
     for p_i, key in enumerate(model.state_dict()):
-        parameters[key] = [model.state_dict()[key].numpy()]
+        parameters[p_i] = [model.state_dict()[key].numpy()]
     parameters[p_i + 1] = [poisson_input_rate.clone().detach().numpy()]
 
     optim_params = list(model.parameters())
@@ -95,7 +97,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
     optim = constants.optimiser(optim_params, lr=constants.learn_rate)
 
     train_losses = []; validation_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
-    initial_grads_mean = -1.
+    max_grads_mean = np.float(0.)
     while not converged and (train_i < constants.train_iters):
         logger.log('training iteration #{}'.format(train_i), [ExperimentType.DataDriven])
         prev_spike_index, targets = data_util.get_spike_train_matrix(index_last_step=prev_spike_index,
@@ -103,19 +105,21 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
                                                                      spike_times=spike_times, spike_indices=spike_indices,
                                                                      node_numbers=node_indices)
 
-        avg_train_loss, grads_mean = fit_mini_batches(model, gen_inputs=None, target_spiketrain=targets,
-                                                      poisson_input_rate=poisson_input_rate, optimiser=optim,
-                                                      constants=constants, train_i=train_i, logger=logger)
-        logger.log(parameters=[avg_train_loss, grads_mean])
+        avg_train_loss, abs_grads_mean = fit_mini_batches(model, gen_inputs=None, target_spiketrain=targets,
+                                                          poisson_input_rate=poisson_input_rate, optimiser=optim,
+                                                          constants=constants, train_i=train_i, logger=logger)
+        logger.log(parameters=[avg_train_loss, abs_grads_mean])
         train_losses.append(avg_train_loss)
 
         cur_params = model.state_dict()
         logger.log('current parameters {}'.format(cur_params))
         for p_i, key in enumerate(cur_params):
-            parameters[key].append(cur_params[key].numpy())
+            parameters[p_i].append(cur_params[key].clone().detach().numpy())
         parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
 
-        converged = abs(grads_mean) <= 0.2 * abs(initial_grads_mean)
+        max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
+        converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean)
+
         # gradients = []
         # for param_i, param in enumerate(list(model.parameters())):
         #     logger.log('parameter #{} gradient: {}'.format(param_i, param.grad))
@@ -146,7 +150,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
     return parameters, train_losses, validation_losses, train_i
 
 
-@profile
+# @profile
 def run_exp_loop(logger, constants, model_class, free_model_parameters, target_parameters=False):
     all_recovered_params = {}
     for exp_i in range(constants.N_exp):
@@ -169,14 +173,16 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, target_p
             else:
                 all_recovered_params[key].append(recovered_parameters[key])
 
-    # plot_all_param_pairs_with_variance(all_recovered_params,
-    #                                    uuid=constants.UUID,
-    #                                    exp_type=ExperimentType.RetrieveFitted.name,
-    #                                    target_params=target_parameters,
-    #                                    param_names=model_class.parameter_names,
-    #                                    custom_title="Average inferred parameters across experiments [{}, {}]".format(
-    #                                        model_class.__name__, constants.optimiser),
-    #                                    logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
+    parameter_names = model_class.parameter_names
+    parameter_names.append('p_\{rate\}')
+    plot_all_param_pairs_with_variance(all_recovered_params,
+                                       uuid=constants.UUID,
+                                       exp_type=ExperimentType.RetrieveFitted.name,
+                                       target_params=target_parameters,
+                                       param_names=parameter_names,
+                                       custom_title="Average inferred parameters across experiments [{}, {}]".format(
+                                           model_class.__name__, constants.optimiser),
+                                       logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
 
 
 def start_exp(constants, model_class, target_parameters=False):

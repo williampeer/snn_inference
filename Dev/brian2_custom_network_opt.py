@@ -46,14 +46,14 @@ def run_simulation_multiobjective(w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, 
     return [vr_dist, poisson_nll, gf]
 
 
-def run_simulation_for(w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf, I_A, loss_fn, t_interval=4000*ms):
+def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf, I_A, loss_fn, t_interval=4000*ms):
     restore('init')
 
     synapses.set_states({ 'w': w })
     neurons.set_states({'f_I': f_I, 'C_m': C_m, 'G': G, 'R_I': R_I * ohm, 'f_v': f_v, 'E_L': E_L * mV,
                         'b_s': b_s, 'b_v': b_v, 'a_v': a_v, 'delta_theta_s': delta_theta_s * mV, 'delta_V': delta_V * mV, 'theta_inf': theta_inf * mV, 'I_A': I_A*mA})
 
-    in_grp.set_spikes(np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))
+    in_grp.set_spikes(np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))  # TODO: "fix"
     spikemon = SpikeMonitor(neurons[:], 'v', record=True)
 
     run(t_interval)

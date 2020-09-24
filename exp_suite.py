@@ -81,8 +81,8 @@ def fit_model_to_data(logger, constants, model_class, params_model, data_set='ex
                                                                          spike_times=spike_times, spike_indices=spike_indices,
                                                                          node_numbers=node_indices)
 
-        avg_train_loss = fit_mini_batches(model, inputs=None, target_spiketrain=targets,
-                                          tau_van_rossum=T(constants.tau_van_rossum), current_rate=current_rate,
+        avg_train_loss = fit_mini_batches(model, gen_inputs=None, target_spiketrain=targets,
+                                          tau_van_rossum=T(constants.tau_van_rossum), poisson_input_rate=current_rate,
                                           batch_size=constants.batch_size, uuid=constants.UUID,
                                           optimiser=optims, loss_fn=constants.loss_fn, exp_type_str=exp_type.name,
                                           exp_num=exp_num, train_i=train_i, logger=logger)
@@ -160,8 +160,8 @@ def recover_model_parameters(logger, constants, model_class, params_model, param
         gen_model.reset_hidden_state()
         targets = generate_synthetic_data(gen_model, poisson_rate=gen_rate, t=constants.rows_per_train_iter)
 
-        avg_train_loss = fit_mini_batches(model, inputs=None, target_spiketrain=targets,
-                                          tau_van_rossum=T(constants.tau_van_rossum), current_rate=current_rate,
+        avg_train_loss = fit_mini_batches(model, gen_inputs=None, target_spiketrain=targets,
+                                          tau_van_rossum=T(constants.tau_van_rossum), poisson_input_rate=current_rate,
                                           batch_size=constants.batch_size, uuid=constants.UUID,
                                           optimiser=optims, loss_fn=constants.loss_fn, exp_type_str=exp_type.name,
                                           exp_num=exp_num, train_i=train_i, logger=logger)

@@ -9,10 +9,10 @@ def main(argv):
     print('Argument List:', str(argv))
 
     # Default values
-    learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0
+    learn_rate = 0.001; N_exp = 3; tau_van_rossum = 4.0
 
-    train_iters = 40; batch_size = 200; rows_per_train_iter = 400; loss_fn = 'poisson_nll'
-    # train_iters = 40; batch_size = 100; rows_per_train_iter = 400; loss_fn = 'van_rossum_dist'
+    # train_iters = 40; batch_size = 200; rows_per_train_iter = 400; loss_fn = 'poisson_nll'
+    train_iters = 40; batch_size = 400; rows_per_train_iter = 800; loss_fn = 'van_rossum_dist'
     # train_iters = 20; batch_size = 200; rows_per_train_iter = 800; loss_fn = 'van_rossum_dist'
 
     optimiser = 'Adam'

@@ -28,9 +28,6 @@ def evaluate_loss(model, inputs, target_spiketrain, tau_van_rossum, uuid, label=
     plot_spiketrains_side_by_side(model_spiketrain, target_spiketrain, uuid=uuid,
                                   exp_type=exp_type_str, title='Spiketrains test set ({}, loss: {:.3f})'.format(label, loss),
                                   fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))
-
-    model_spiketrain = None
-    model.reset()
     np_loss = loss.clone().detach().numpy()
     loss = None
     return np_loss

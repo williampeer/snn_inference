@@ -13,7 +13,7 @@ def release_computational_graph(model, rate_parameter, inputs):
     inputs.grad = None
 
 
-@profile
+# @profile
 def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimiser, constants, train_i=None, logger=None):
     if gen_inputs is not None:
         assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
@@ -24,9 +24,9 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
     batch_N = int(target_spiketrain.shape[0]/batch_size)
     assert batch_N > 0, "batch_N was not above zero. batch_N: {}".format(batch_N)
     print('num. of batches of size {}: {}'.format(batch_size, batch_N))
-    batch_losses = []; avg_grads = []
+    batch_losses = []; avg_abs_grads = []
     for _ in range(len(list(model.parameters()))+1):
-        avg_grads.append([])
+        avg_abs_grads.append([])
     for batch_i in range(batch_N):
         print('batch #{}'.format(batch_i))
 
@@ -50,8 +50,8 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
 
         # retain grads
         for p_i, param in enumerate(list(model.parameters())):
-            avg_grads[p_i].append(np.mean(param.grad.clone().detach().numpy()))
-        avg_grads[p_i+1].append(poisson_input_rate.grad.clone().detach().numpy())
+            avg_abs_grads[p_i].append(np.mean(np.abs(param.grad.clone().detach().numpy())))
+        avg_abs_grads[p_i+1].append(np.abs(poisson_input_rate.grad.clone().detach().numpy()))
 
         optimiser.step()
 
@@ -61,6 +61,7 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
     avg_batch_loss = np.mean(np.asarray(batch_losses, dtype=np.float))
 
     logger.log('avg_batch_loss: {}'.format(avg_batch_loss), {'train_i': train_i})
+    logger.log(parameters=[train_i, avg_abs_grads])
     gen_inputs = None
 
-    return avg_batch_loss, np.mean(np.asarray(avg_grads, dtype=np.float))
+    return avg_batch_loss, np.mean(np.asarray(avg_abs_grads, dtype=np.float))

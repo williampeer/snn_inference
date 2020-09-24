@@ -11,12 +11,12 @@ def main(argv):
     print('Argument List:', str(argv))
 
     # Default values
-    learn_rate = 0.001; N_exp = 2; tau_van_rossum = 4.0
+    learn_rate = 0.01; N_exp = 2; tau_van_rossum = 4.0
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'kl_div'
     # max_train_iters = 200; batch_size = 10; rows_per_train_iter = 400; loss_fn = 'poisson_nll'
     # max_train_iters = 40; batch_size = 10; rows_per_train_iter = 200; loss_fn = 'poisson_nll'
-    max_train_iters = 5; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'van_rossum_dist'
+    max_train_iters = 20; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'van_rossum_dist'
 
     optimiser = 'Adam'
     initial_poisson_rate = 0.6
