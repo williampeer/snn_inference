@@ -2,6 +2,9 @@ import torch
 
 
 # an approximation using torch.where
+from stats import mean_firing_rate
+
+
 def torch_van_rossum_convolution(spikes, tau):
     decay_kernel = torch.exp(-torch.tensor(1.) / tau)
     convolved_spiketrain = spikes.clone()
@@ -32,3 +35,9 @@ def van_rossum_squared_distance(s1, s2, tau):
     c1 = torch_van_rossum_convolution(spikes=s1, tau=tau)
     c2 = torch_van_rossum_convolution(spikes=s2, tau=tau)
     return mse(c1, c2)
+
+
+def firing_rate_distance(s1, s2):
+    mean_rates1 = s1.sum(axis=0) / (s1.shape[0])
+    mean_rates2 = s2.sum(axis=0) / (s2.shape[0])
+    return torch.sqrt(torch.pow(torch.sub(mean_rates1, mean_rates2), 2).sum() + 1e-18)

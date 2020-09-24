@@ -44,10 +44,13 @@ def calculate_loss(output, target, loss_fn, tau_vr=None):
         loss = spike_metrics.van_rossum_squared_distance(output, target, tau_vr)
     elif loss_fn.__contains__('mse'):
         loss = spike_metrics.mse(output, target)
+    elif loss_fn.__contains__('firing_rate_distance'):
+        loss = spike_metrics.firing_rate_distance(output, target)
     else:
         raise NotImplementedError("Loss function not supported.")
 
-    return loss
+    # return loss
+    return loss + 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
 
 # --------------------------------------------------------
 

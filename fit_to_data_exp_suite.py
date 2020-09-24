@@ -23,21 +23,21 @@ verbose = True
 
 
 def stats_training_iterations(model_parameters, model, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
-    parameter_names = model.parameter_names
-    parameter_names.append('p_rate')
-    plot_parameter_inference_trajectories_2d(model_parameters,
-                                             uuid=constants.UUID,
-                                             exp_type=exp_type_str,
-                                             target_params=target_parameters,
-                                             param_names=parameter_names,
-                                             custom_title='Inferred parameters across training iterations',
-                                             fname='inferred_param_trajectories_{}_exp_num_{}_train_iters_{}'
-                                             .format(model.__class__.__name__, exp_num, train_i),
-                                             logger=logger)
-
-    plot_losses(training_loss=train_losses, test_loss=test_losses, test_loss_step=constants.evaluate_step, uuid=constants.UUID, exp_type=exp_type_str,
-                custom_title='Loss ({}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__, constants.learn_rate),
-                fname='training_and_test_loss_exp_{}_loss_fn_{}'.format(exp_num, constants.loss_fn))
+    if constants.plot_flag:
+        parameter_names = model.parameter_names
+        parameter_names.append('p_rate')
+        plot_parameter_inference_trajectories_2d(model_parameters,
+                                                 uuid=constants.UUID,
+                                                 exp_type=exp_type_str,
+                                                 target_params=target_parameters,
+                                                 param_names=parameter_names,
+                                                 custom_title='Inferred parameters across training iterations',
+                                                 fname='inferred_param_trajectories_{}_exp_num_{}_train_iters_{}'
+                                                 .format(model.__class__.__name__, exp_num, train_i),
+                                                 logger=logger)
+        plot_losses(training_loss=train_losses, test_loss=test_losses, test_loss_step=constants.evaluate_step, uuid=constants.UUID, exp_type=exp_type_str,
+                    custom_title='Loss ({}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__, constants.learn_rate),
+                    fname='training_and_test_loss_exp_{}_loss_fn_{}'.format(exp_num, constants.loss_fn))
 
     logger.log('train_losses: #{}'.format(train_losses))
     mean_test_loss = torch.mean(torch.tensor(test_losses)).clone().detach().numpy()
@@ -116,9 +116,6 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
         # poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
-        max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
-        converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean)
-
         # if train_i % constants.evaluate_step == 0 or (converged or (train_i+1 >= constants.train_iters)):
         prev_spike_index, targets = data_util.get_spike_train_matrix(index_last_step=prev_spike_index,
                                                                      advance_by_t_steps=constants.rows_per_train_iter,
@@ -131,6 +128,9 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
                                         exp_type=ExperimentType.DataDriven, train_i=train_i, exp_num=exp_num, constants=constants)
         logger.log(parameters=['validation loss', validation_loss])
         validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
+
+        max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
+        converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean)  # and validation_loss <= 0.8 * np.max(validation_losses)
 
         release_computational_graph(model, poisson_input_rate, validation_inputs)
         targets = None; validation_inputs = None; validation_loss = None
@@ -167,7 +167,8 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, target_p
 
     parameter_names = model_class.parameter_names
     parameter_names.append('p_rate')
-    plot_all_param_pairs_with_variance(all_recovered_params,
+    if constants.plot_flag:
+        plot_all_param_pairs_with_variance(all_recovered_params,
                                        uuid=constants.UUID,
                                        exp_type=ExperimentType.RetrieveFitted.name,
                                        target_params=target_parameters,

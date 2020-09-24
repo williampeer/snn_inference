@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
-from torch import tensor as T
+from torch import FloatTensor as FT
 
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_intervals = {'w': [-1., 1.], 'E_L': [-90., -30.], 'C_m': [1., 3.], 'G': [0.01, 0.99], 'R_I': [15., 30.],
+    parameter_intervals = {'w': [-1., 1.], 'E_L': [-90., -30.], 'C_m': [1., 3.], 'G': [0.01, 0.99], 'R_I': [15., 25.],
                            'f_v': [0.01, 0.99], 'f_I': [0.01, 0.99], 'delta_theta_s': [1., 40.], 'b_s': [0.01, 0.9],
                            'a_v': [0.01, 0.9], 'b_v': [0.01, 0.9], 'theta_inf': [-25., 0.], 'delta_V': [0.01, 35.],
                            'I_A': [0.5, 10.]}
@@ -18,85 +18,86 @@ class GLIF(nn.Module):
         if parameters:
             for key in parameters.keys():
                 if key == 'C_m':
-                    C_m = T(parameters[key])
+                    C_m = FT(parameters[key])
                 elif key == 'G':
-                    G = T(parameters[key])
+                    G = FT(parameters[key])
                 elif key == 'R_I':
-                    R_I = T(parameters[key])
+                    R_I = FT(parameters[key])
                 elif key == 'E_L':
-                    E_L = T(parameters[key])
+                    E_L = FT(parameters[key])
                 elif key == 'delta_theta_s':
-                    delta_theta_s = T(parameters[key])
+                    delta_theta_s = FT(parameters[key])
                 elif key == 'b_s':
-                    b_s = T(parameters[key])
+                    b_s = FT(parameters[key])
                 elif key == 'f_v':
-                    f_v = T(parameters[key])
+                    f_v = FT(parameters[key])
                 elif key == 'delta_V':
-                    delta_V = T(parameters[key])
+                    delta_V = FT(parameters[key])
                 elif key == 'f_I':
-                    f_I = T(parameters[key])
+                    f_I = FT(parameters[key])
                 elif key == 'b_v':
-                    b_v = T(parameters[key])
+                    b_v = FT(parameters[key])
                 elif key == 'a_v':
-                    a_v = T(parameters[key])
+                    a_v = FT(parameters[key])
                 elif key == 'theta_inf':
-                    theta_inf = T(parameters[key])
+                    theta_inf = FT(parameters[key])
                 elif key == 'N':
                     N = int(parameters[key])
                 elif key == 'w_mean':
-                    w_mean = T(parameters[key])
+                    w_mean = FT(parameters[key])
                 elif key == 'w_var':
-                    w_var = T(parameters[key])
+                    w_var = FT(parameters[key])
+                elif key == 'I_A':
+                    I_A = FT(parameters[key])
 
         __constants__ = ['N', 'E_L', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
         self.N = N
-        # self.E_L = T(N * [E_L])
+        # self.E_L = FT(N * [E_L])
 
-        # self.delta_theta_s = T(delta_theta_s)
-        # self.b_s = T(b_s)
-        # self.a_v = T(a_v)
-        # self.b_v = T(b_v)
-        # self.theta_inf = T(theta_inf)
+        # self.delta_theta_s = FT(delta_theta_s)
+        # self.b_s = FT(b_s)
+        # self.a_v = FT(a_v)
+        # self.b_v = FT(b_v)
+        # self.theta_inf = FT(theta_inf)
 
         self.v = E_L * torch.ones((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
-        self.theta_s = T(30.) * torch.ones((self.N,))
+        self.theta_s = 30. * torch.ones((self.N,))
         self.theta_v = torch.ones((self.N,))
         self.I_additive = torch.zeros((self.N,))
 
         rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
-        self.w = nn.Parameter(rand_ws, requires_grad=True)
+        self.w = nn.Parameter(FT(rand_ws), requires_grad=True)
+        self.E_L = nn.Parameter(FT(E_L), requires_grad=True)
+        self.C_m = nn.Parameter(FT(C_m), requires_grad=True)
+        self.G = nn.Parameter(FT(G), requires_grad=True)
+        self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
+        self.f_v = nn.Parameter(FT(f_v), requires_grad=True)
+        self.f_I = nn.Parameter(FT(f_I), requires_grad=True)
+        self.delta_theta_s = nn.Parameter(FT(delta_theta_s), requires_grad=True)
+        self.b_s = nn.Parameter(FT(b_s), requires_grad=True)
+        self.a_v = nn.Parameter(FT(a_v), requires_grad=True)
+        self.b_v = nn.Parameter(FT(b_v), requires_grad=True)
+        self.theta_inf = nn.Parameter(FT(theta_inf), requires_grad=True)
+        self.delta_V = nn.Parameter(FT(delta_V), requires_grad=True)
+        self.I_A = nn.Parameter(FT(I_A), requires_grad=True)
         self.w.clamp(-1., 1.)
-        self.E_L = nn.Parameter(torch.ones(N,) * E_L, requires_grad=True)
         self.E_L.clamp(-90., -30.)
-        self.C_m = nn.Parameter(torch.ones(N,) * C_m, requires_grad=True)
         self.C_m.clamp(1., 3.)
-        self.G = nn.Parameter(torch.ones(N,) * G, requires_grad=True)
         self.G.clamp(0.01, 0.99)
-        self.R_I = nn.Parameter(torch.ones(N,) * R_I, requires_grad=True)
         self.R_I.clamp(15., 30.)
-        self.f_v = nn.Parameter(torch.ones(N,) * f_v, requires_grad=True)
         self.f_v.clamp(0.01, 0.99)
-        self.f_I = nn.Parameter(torch.ones(N,) * f_I, requires_grad=True)
         self.f_I.clamp(0.01, 0.99)
-
-        self.delta_theta_s = nn.Parameter(torch.ones(N,) * delta_theta_s, requires_grad=True)
         self.delta_theta_s.clamp(1., 40.)
-        self.b_s = nn.Parameter(torch.ones(N,) * b_s, requires_grad=True)
         self.b_s.clamp(0.01, 0.9)
-        self.a_v = nn.Parameter(torch.ones(N,) * a_v, requires_grad=True)
         self.a_v.clamp(0.01, 0.9)
-        self.b_v = nn.Parameter(torch.ones(N,) * b_v, requires_grad=True)
         self.b_v.clamp(0.01, 0.9)
-        self.theta_inf = nn.Parameter(torch.ones(N,) * theta_inf, requires_grad=True)
         self.theta_inf.clamp(-25., 0)
-        # self.delta_V = T(delta_V)
-        # self.I_A = T(I_A)
-        self.delta_V = nn.Parameter(torch.ones(N,) * delta_V, requires_grad=True)
         self.delta_V.clamp(0.01, 35.)
-        self.I_A = nn.Parameter(torch.ones(N,) * I_A, requires_grad=True)
         self.I_A.clamp(0.5, 10.)
+        # self.I_A = FT(I_A)
+        # self.delta_V = FT(delta_V)
 
     def reset(self):
         for p in self.parameters():
