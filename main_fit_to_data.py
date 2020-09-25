@@ -12,14 +12,15 @@ def main(argv):
 
     # Default values
     # learn_rate = 0.001; N_exp = 20; tau_van_rossum = 4.0; plot_flag = True
-    learn_rate = 0.005; N_exp = 4; tau_van_rossum = 4.0; plot_flag = False
+    learn_rate = 0.001; N_exp = 6; tau_van_rossum = 4.0; plot_flag = False
 
-    # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'kl_div'
-    # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'firing_rate_distance'
+    # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'kl_div'
+    # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'firing_rate_distance'
+    # max_train_iters = 100; batch_size = 20; rows_per_train_iter = 300; loss_fn = 'poisson_nll'
+    max_train_iters = 100; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'van_rossum_dist'
+    max_train_iters = 50
+
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
-    # max_train_iters = 200; batch_size = 10; rows_per_train_iter = 400; loss_fn = 'poisson_nll'
-    # max_train_iters = 40; batch_size = 20; rows_per_train_iter = 200; loss_fn = 'poisson_nll'
-    max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'van_rossum_dist'
 
     optimiser = 'Adam'
     initial_poisson_rate = 0.6

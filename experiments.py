@@ -11,7 +11,7 @@ def draw_from_uniform(parameters, parameter_intervals, N):
     new_dict = {}
     for i, k in enumerate(parameters):
         low = parameter_intervals[k][0]; high = parameter_intervals[k][1]
-        new_dict[k] = np.random.uniform(low, high, N)
+        new_dict[k] = torch.FloatTensor(np.random.uniform(low, high, N))
     return new_dict
 
 

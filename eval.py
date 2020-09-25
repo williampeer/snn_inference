@@ -39,7 +39,7 @@ def calculate_loss(output, target, loss_fn, tau_vr=None):
     elif loss_fn.__contains__('poisson_nll'):
         loss = poisson_nll_loss(output, target)
     elif loss_fn.__contains__('kl_div'):
-        loss = kl_div(output, target, reduction='batchmean')
+        loss = kl_div(output, target)
     elif loss_fn.__contains__('van_rossum_squared'):
         loss = spike_metrics.van_rossum_squared_distance(output, target, tau_vr)
     elif loss_fn.__contains__('mse'):
@@ -50,7 +50,7 @@ def calculate_loss(output, target, loss_fn, tau_vr=None):
         raise NotImplementedError("Loss function not supported.")
 
     # return loss
-    return loss + 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
+    return loss + spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
 
 # --------------------------------------------------------
 

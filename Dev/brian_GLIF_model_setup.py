@@ -40,23 +40,23 @@ theta_s = theta_s - b_s * theta_s + delta_theta_s
 '''
 
 neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>30*mV', reset=reset, method='euler')
-neurons.v = -80. * mV
-neurons.theta_v = 1 * mV
-neurons.theta_s = 30. * mV
-neurons.E_L = -80. * mV
-neurons.R_I = 10. * ohm
-neurons.G = 0.2
-neurons.C_m = 1.
-neurons.f_v = 0.04
-neurons.f_I = 0.
-
-neurons.b_s = 0.1
-neurons.b_v = 0.1
-neurons.a_v = 0.1
-neurons.delta_theta_s = 10. * mV
-neurons.delta_V = 5. * mV
-neurons.theta_inf = 5. * mV
-neurons.I_A = 2. * mA
+# neurons.v = -80. * mV
+# neurons.theta_v = 1 * mV
+# neurons.theta_s = 30. * mV
+# neurons.E_L = -80. * mV
+# neurons.R_I = 10. * ohm
+# neurons.G = 0.2
+# neurons.C_m = 1.
+# neurons.f_v = 0.04
+# neurons.f_I = 0.
+#
+# neurons.b_s = 0.1
+# neurons.b_v = 0.1
+# neurons.a_v = 0.1
+# neurons.delta_theta_s = 10. * mV
+# neurons.delta_V = 5. * mV
+# neurons.theta_inf = 5. * mV
+# neurons.I_A = 2. * mA
 
 in_eqs = '''
 dI_in/dt = -I_in/tau : amp (clock-driven)
@@ -78,4 +78,4 @@ synapses.connect()
 # synapses.w = np.reshape(rand_ws, (-1,))
 print('S.w', synapses.w)
 
-store('init')
+# store('init')

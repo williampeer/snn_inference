@@ -339,13 +339,13 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
                 cur_tar = False
                 if target_params and len(target_params) > plot_i:
                     cur_tar = target_params[plot_i]
-                decompose_param_plot(cur_p_i, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}_{}'.format(name_i, name_j),
+                decompose_param_plot(cur_p_i, cur_tar, xlabel=name_i, ylabel=name_i, path=path+'_param_{}_{}'.format(name_i, name_j),
                                      custom_title=custom_title)
             if len(cur_p_j.shape) == 2:
                 cur_tar = False
                 if target_params and len(target_params) > plot_j:
                     cur_tar = target_params[plot_j]
-                decompose_param_plot(cur_p_j, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}_{}'.format(name_i, name_j),
+                decompose_param_plot(cur_p_j, cur_tar, xlabel=name_j, ylabel=name_j, path=path+'_param_{}_{}'.format(name_i, name_j),
                                      custom_title=custom_title)
             if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
                 plot_parameter_pair_with_variance(cur_p_i, cur_p_j, target_params=cur_tar_params,

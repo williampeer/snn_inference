@@ -39,12 +39,18 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
 
         loss = calculate_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(),
                               loss_fn=constants.loss_fn, tau_vr = tau_vr)
-        print('batch loss: {}'.format(loss))
-        batch_losses.append(float(loss.clone().detach().data))
 
         optimiser.zero_grad()
-        loss.backward(retain_graph=True)  # TODO: look into mem. leak. V - verify
+
+        if torch.isnan(loss).sum() > 0:
+            logger.log('**** WARN: loss contained NaN values. assuming vanishing gradients and setting the loss elements to zero. loss: {}'.format(loss))
+        # loss[nan_mask] = 0.
+
+        loss.backward(retain_graph=True)
         poisson_input_rate.grad = torch.mean(current_inputs.grad)
+
+        print('batch loss: {}'.format(loss))
+        batch_losses.append(float(loss.clone().detach().data))
 
         # retain grads
         for p_i, param in enumerate(list(model.parameters())):
@@ -58,6 +64,7 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
 
     avg_batch_loss = np.mean(np.asarray(batch_losses, dtype=np.float))
 
+    logger.log('batch losses: {}'.format(batch_losses))
     logger.log('avg_batch_loss: {}'.format(avg_batch_loss), {'train_i': train_i})
     logger.log(parameters=[train_i, avg_abs_grads])
     gen_inputs = None

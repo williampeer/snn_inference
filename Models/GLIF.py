@@ -5,12 +5,12 @@ from torch import FloatTensor as FT
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_intervals = {'w': [-1., 1.], 'E_L': [-90., -30.], 'C_m': [1., 3.], 'G': [0.01, 0.99], 'R_I': [15., 25.],
+    parameter_intervals = {'w': [-1., 1.], 'E_L': [-90., -30.], 'C_m': [1., 2.], 'G': [0.01, 0.99], 'R_I': [12., 28.],
                            'f_v': [0.01, 0.99], 'f_I': [0.01, 0.99], 'delta_theta_s': [1., 40.], 'b_s': [0.01, 0.9],
                            'a_v': [0.01, 0.9], 'b_v': [0.01, 0.9], 'theta_inf': [-25., 0.], 'delta_V': [0.01, 35.],
                            'I_A': [0.5, 10.]}
 
-    def __init__(self, device, parameters, C_m=1., G=0.7, R_I=18., E_L=-60., N=10, w_mean=0.3, w_var=0.6,
+    def __init__(self, device, N, parameters, C_m=1., G=0.7, R_I=18., E_L=-60., w_mean=0.2, w_var=0.4,
                  delta_theta_s=30., b_s=0.3, f_v=0.15, delta_V=12., f_I=0.3, I_A=1., b_v=0.5, a_v=0.5, theta_inf=-20.):
         super(GLIF, self).__init__()
         # self.device = device
@@ -18,37 +18,35 @@ class GLIF(nn.Module):
         if parameters:
             for key in parameters.keys():
                 if key == 'C_m':
-                    C_m = FT(parameters[key])
+                    C_m = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'G':
-                    G = FT(parameters[key])
+                    G = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'R_I':
-                    R_I = FT(parameters[key])
+                    R_I = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'E_L':
-                    E_L = FT(parameters[key])
+                    E_L = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'delta_theta_s':
-                    delta_theta_s = FT(parameters[key])
+                    delta_theta_s = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'b_s':
-                    b_s = FT(parameters[key])
+                    b_s = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'f_v':
-                    f_v = FT(parameters[key])
+                    f_v = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'delta_V':
-                    delta_V = FT(parameters[key])
+                    delta_V = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'f_I':
-                    f_I = FT(parameters[key])
+                    f_I = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'b_v':
-                    b_v = FT(parameters[key])
+                    b_v = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'a_v':
-                    a_v = FT(parameters[key])
+                    a_v = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'theta_inf':
-                    theta_inf = FT(parameters[key])
-                elif key == 'N':
-                    N = int(parameters[key])
+                    theta_inf = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'w_mean':
-                    w_mean = FT(parameters[key])
+                    w_mean = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'w_var':
-                    w_var = FT(parameters[key])
+                    w_var = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'I_A':
-                    I_A = FT(parameters[key])
+                    I_A = FT(torch.ones((N,)) * parameters[key])
 
         __constants__ = ['N', 'E_L', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
         self.N = N

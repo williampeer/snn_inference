@@ -2,15 +2,14 @@ import torch
 
 import model_util
 import spike_metrics
-from Models import TargetModels
-from Models.GLIF import GLIF
-from experiments import poisson_input, zip_dicts
+from TargetModels import TargetModels
+from experiments import poisson_input
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
 # static_parameters = {'N': 10}
 # free_parameters = {'w_mean': 0.2, 'w_var': 0.3}
 # snn = GLIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
-snn = TargetModels.random_glif_model(N = 500)
+snn = TargetModels.random_glif_model(N = 12)
 
 inputs = poisson_input(0.5, t=1000, N=snn.N)
 membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)

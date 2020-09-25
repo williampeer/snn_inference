@@ -24,11 +24,11 @@ def van_rossum_dist(spikes, target_spikes, tau):
 
 def euclid_dist(spikes1, spikes2):
     # sqrt((s1 - s2) ** 2)
-    return torch.sqrt(torch.pow(torch.sub(spikes1, spikes2), 2).sum() + 1e-18)  # avoid sqrt(0) -> NaN
+    return torch.sqrt(torch.pow(torch.sub(spikes1, spikes2), 2).sum() + 1e-18) / (spikes1.shape[0] * spikes1.shape[1])
 
 
 def mse(s1, s2):
-    return torch.pow(torch.sub(s1, s2), 2).sum()
+    return torch.pow(torch.sub(s1, s2), 2).sum()  / (s1.shape[0] * s1.shape[1])
 
 
 def van_rossum_squared_distance(s1, s2, tau):
@@ -38,6 +38,6 @@ def van_rossum_squared_distance(s1, s2, tau):
 
 
 def firing_rate_distance(s1, s2):
-    mean_rates1 = s1.sum(axis=0) / (s1.shape[0])
-    mean_rates2 = s2.sum(axis=0) / (s2.shape[0])
-    return torch.sqrt(torch.pow(torch.sub(mean_rates1, mean_rates2), 2).sum() + 1e-18)
+    mean_rates1 = s1.sum(axis=0)
+    mean_rates2 = s2.sum(axis=0)
+    return torch.sqrt(torch.pow(torch.sub(mean_rates1, mean_rates2), 2).sum() + 1e-18) / (s1.shape[0] * s1.shape[1])

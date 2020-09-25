@@ -74,15 +74,16 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
 
 def fit_model_to_data(logger, constants, model_class, params_model, exp_num, target_parameters=False):
     node_indices, spike_times, spike_indices = data_util.load_sparse_data(constants.data_path)
-    params_model['N'] = len(node_indices)
+    # params_model['N'] = len(node_indices)
 
     assert constants.train_iters * constants.rows_per_train_iter <= spike_times[-1], \
         "should have enough rows. desired: {}, spikes_times[-1]: {}".format(
             constants.train_iters * constants.rows_per_train_iter, spike_times[-1])
 
-    model = model_class(device=device, parameters=params_model)
+    model = model_class(device=device, N=len(node_indices), parameters=params_model)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
+    poisson_input_rate.clamp(0.01, 1.0)
     parameters = {}
     # poisson_rates = []
     for p_i, key in enumerate(model.state_dict()):
@@ -96,7 +97,8 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
 
     train_losses = []; validation_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
     max_grads_mean = np.float(0.)
-    while not converged and (train_i < constants.train_iters):
+    while not converged and (train_i < constants.train_iters) and \
+            prev_spike_index+1 < len(spike_times) and constants.rows_per_train_iter < spike_times[-1] - spike_times[prev_spike_index+1]:
         logger.log('training iteration #{}'.format(train_i), [ExperimentType.DataDriven])
         prev_spike_index, targets = data_util.get_spike_train_matrix(index_last_step=prev_spike_index,
                                                                      advance_by_t_steps=constants.rows_per_train_iter,
@@ -130,7 +132,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
 
         max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
-        converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean)  # and validation_loss <= 0.8 * np.max(validation_losses)
+        # converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean)  # and validation_loss <= 0.8 * np.max(validation_losses)
 
         release_computational_graph(model, poisson_input_rate, validation_inputs)
         targets = None; validation_inputs = None; validation_loss = None
@@ -142,7 +144,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
     return parameters, train_losses, validation_losses, train_i
 
 
-def run_exp_loop(logger, constants, model_class, free_model_parameters, target_parameters=False):
+def run_exp_loop(logger, constants, model_class, free_model_parameters, static_parameters, target_parameters=False):
     all_recovered_params = {}
     for exp_i in range(constants.N_exp):
         torch.manual_seed(exp_i)
@@ -151,6 +153,7 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, target_p
         node_indices, _, _ = data_util.load_sparse_data(constants.data_path)
         num_neurons = len(node_indices)
         params_model = draw_from_uniform(free_model_parameters, model_class.parameter_intervals, num_neurons)
+        params_model = zip_dicts(params_model, static_parameters)
 
         recovered_parameters, train_losses, test_losses, train_i = \
             fit_model_to_data(logger, constants, model_class, params_model, exp_num=exp_i, target_parameters=target_parameters)
@@ -186,10 +189,12 @@ def start_exp(constants, model_class, target_parameters=False):
     logger.log('Starting exp. with listed hyperparameters.', [constants.__str__()])
 
     if model_class in [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
-        free_parameters = {'C_m': 1.5, 'G': 0.8, 'R_I': 18., 'E_L': -60., 'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14,
-                           'delta_V': 12., 'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
+        # free_parameters = {'C_m': 1.5, 'G': 0.8, 'E_L': -60., 'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14,
+        #                    'delta_V': 12., 'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
+        free_parameters = {'C_m', 'G', 'E_L', 'delta_theta_s', 'b_s', 'f_v', 'delta_V', 'f_I', 'I_A', 'b_v', 'a_v', 'theta_inf'}
+        static_parameters = {'R_I': 18.}
     else:
         logger.log('Model class not supported.')
         sys.exit(1)
 
-    run_exp_loop(logger, constants, model_class, free_parameters, target_parameters)
+    run_exp_loop(logger, constants, model_class, free_parameters, static_parameters, target_parameters)

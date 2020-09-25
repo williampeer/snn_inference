@@ -1,23 +1,69 @@
 import torch
 
-from Dev.brian_GLIF_model_setup import *
+from brian2 import *
 from Dev.setup_data_for_brian import *
 from Log import Logger
 from eval import calculate_loss
 from gf_metric import compute_gamma_factor_for_lists, get_spikes
 
 logger = Logger(log_fname='brian2_network_nevergrad_optimization')
-tau_vr = 4.0
+N = 12; tau_vr = 4.0
+
+GLIF_eqs = '''
+dv/dt = ((G * (E_L - v) + R_I * (I_ext + I_syn_tot)) / C_m)/tau : volt
+dtheta_v/dt = (a_v * (v - E_L) - b_v * (theta_v - theta_inf))/tau : volt
+dtheta_s/dt = (- b_s * theta_s)/tau : volt
+I_syn_tot : amp
+I_ext : amp
+E_L : volt
+R_I : ohm
+G : 1
+f_v : 1
+C_m : 1
+f_I : 1
+b_s : 1
+b_v : 1
+a_v : 1
+delta_theta_s : volt
+delta_V : volt
+theta_inf : volt
+I_A : amp
+'''
+
+reset = '''
+v = E_L + f_v * (v - E_L) - delta_V
+theta_s = theta_s - b_s * theta_s + delta_theta_s
+'''
+
+in_eqs = '''
+dI_in/dt = -I_in/tau : amp (clock-driven)
+I_ext_post = I_in : amp (summed)
+'''
+
+synapse_eqs = '''
+dI_syn/dt = -f_I * I_syn/tau : amp (clock-driven)
+I_syn_tot_post = w * I_syn : amp (summed)
+w : 1
+'''
 
 
 def run_simulation_multiobjective(w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf, I_A, t_interval=time_interval*ms):
-    restore('init')
+    start_scope()
+    tau = 1*ms
 
-    synapses.set_states({ 'w': w })
-    neurons.set_states({ 'f_I': f_I, 'C_m': C_m, 'G': G, 'R_I': R_I*ohm, 'f_v': f_v, 'E_L': E_L*mV,
-                         'b_s': b_s, 'b_v': b_v, 'a_v': a_v, 'delta_theta_s': delta_theta_s * mV, 'delta_V': delta_V * mV, 'theta_inf': theta_inf * mV, 'I_A': I_A*mA})
+    neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>30*mV', reset=reset, method='euler')
+    neurons.set_states({'f_I': f_I, 'C_m': C_m, 'G': G, 'R_I': R_I*ohm, 'f_v': f_v, 'E_L': E_L*mV, 'b_s': b_s, 'b_v': b_v,
+                        'a_v': a_v, 'delta_theta_s': delta_theta_s * mV, 'delta_V': delta_V * mV, 'theta_inf': theta_inf * mV, 'I_A': I_A*mA})
 
-    in_grp.set_spikes(np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))
+    in_grp = SpikeGeneratorGroup(N, np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))
+    feedforward = Synapses(in_grp, neurons, model=in_eqs, on_pre='I_in = 1 * mA')
+    feedforward.connect(j='i')
+    # in_grp.set_spikes(np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))
+
+    synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='euler')
+    synapses.connect()
+    synapses.set_states({'w': w})
+
     spikemon = SpikeMonitor(neurons[:], 'v', record=True)
 
     run(t_interval)
@@ -47,13 +93,25 @@ def run_simulation_multiobjective(w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, 
 
 
 def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf, I_A, loss_fn, t_interval=4000*ms):
-    restore('init')
+    # restore('init')
+    start_scope()
+    tau = 1 * ms
 
-    synapses.set_states({ 'w': w })
-    neurons.set_states({'f_I': f_I, 'C_m': C_m, 'G': G, 'R_I': R_I * ohm, 'f_v': f_v, 'E_L': E_L * mV,
-                        'b_s': b_s, 'b_v': b_v, 'a_v': a_v, 'delta_theta_s': delta_theta_s * mV, 'delta_V': delta_V * mV, 'theta_inf': theta_inf * mV, 'I_A': I_A*mA})
+    neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>30*mV', reset=reset, method='euler')
+    neurons.set_states(
+        {'f_I': f_I, 'C_m': C_m, 'G': G, 'R_I': R_I * ohm, 'f_v': f_v, 'E_L': E_L * mV, 'b_s': b_s, 'b_v': b_v,
+         'a_v': a_v, 'delta_theta_s': delta_theta_s * mV, 'delta_V': delta_V * mV, 'theta_inf': theta_inf * mV,
+         'I_A': I_A * mA})
 
-    in_grp.set_spikes(np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))  # TODO: "fix"
+    in_grp = SpikeGeneratorGroup(N, np.reshape(input_indices, (-1,)), np.reshape(input_times * ms, (-1,)))
+    feedforward = Synapses(in_grp, neurons, model=in_eqs, on_pre='I_in = 1 * mA')
+    feedforward.connect(j='i')
+    # in_grp.set_spikes(np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))
+
+    synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='euler')
+    synapses.connect()
+    synapses.set_states({'w': w})
+
     spikemon = SpikeMonitor(neurons[:], 'v', record=True)
 
     run(t_interval)

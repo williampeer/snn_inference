@@ -1,3 +1,5 @@
+import torch
+
 import data_util
 
 target_data_path = data_util.prefix + data_util.path
@@ -13,3 +15,9 @@ in_node_indices, input_times, input_indices = data_util.load_sparse_data(input_d
 spike_node_indices, spike_times, spike_indices = data_util.load_sparse_data(output_data_path)
 next_target_index_list = 0
 next_target_index = 0
+
+target_params_dict = torch.load(target_data_path + 'generated_spike_train_random_glif_model_t_300s_rate_0_6_params.pt')
+target_parameters = {}
+for param_i, param in enumerate(target_params_dict.values()):
+    target_parameters[param_i] = [param.clone().detach().numpy()]
+print('target_params_dict:', target_params_dict)
