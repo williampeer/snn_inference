@@ -16,7 +16,7 @@ snn = TargetModels.glif1(N = 12); ext_name = '1'
 # snn = TargetModels.glif_slower_more_synchronous(N = 12); ext_name = 'glif_slower_more_synchronous'
 # snn = TargetModels.glif_larger(); ext_name = 'glif_larger'
 
-inputs = poisson_input(0.6, t=1000, N=snn.N)
+inputs = poisson_input(0.2, t=1000, N=snn.N)
 membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
 print('#spikes: {}'.format(spikes.sum()))
 plot_neuron(membrane_potentials.data, title='GLIF neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_GLIF_poisson_input' + '_' + ext_name)

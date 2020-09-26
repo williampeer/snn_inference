@@ -6,11 +6,12 @@ from Log import Logger
 from experiments import zip_dicts
 from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
 
-num_exps = 20; budget = 1000
-# num_exps = 3; budget = 2
+# num_exps = 20; budget = 1000
+num_exps = 3; budget = 40
 
 params_by_optim = {}
-for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimizers.NGO]:
+# for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimizers.NGO]:
+for optim in [ng.optimizers.DE]:
     for loss_fn in ['van_rossum_dist', 'poisson_nll', 'gamma_factor']:
         UUID = IO.dt_descriptor()
         current_plottable_params_for_optim = {}
@@ -19,7 +20,7 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
         for exp_i in range(num_exps):
             N = 12
             w_mean = 0.3; w_var = 0.5; rand_ws = (w_mean - w_var) + 2 * w_var * np.random.random((N ** 2))
-            instrum = ng.p.Instrumentation(rate=ng.p.Scalar(init=0.6).set_bounds(0.1, 1.),
+            instrum = ng.p.Instrumentation(rate=ng.p.Scalar(init=20.).set_bounds(1., 80.),
                                            w=ng.p.Array(init=rand_ws).set_bounds(-1., 1.),
                                            E_L=ng.p.Array(init=-65. * np.ones((N,))).set_bounds(-90., -30.),
                                            C_m=ng.p.Array(init=1.5 * np.ones((N,))).set_bounds(1., 3.),

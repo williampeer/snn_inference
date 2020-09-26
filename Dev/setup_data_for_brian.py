@@ -42,4 +42,4 @@ for param_i, key in enumerate(target_params_dict):
     if key not in ['loss_fn', 'rate', 'w']:
         target_parameters[index_ctr] = [target_params_dict[key].clone().detach().numpy()]
         index_ctr += 1
-print('target_parameters:', target_parameters)
+# print('target_parameters:', target_parameters)

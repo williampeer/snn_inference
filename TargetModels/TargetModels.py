@@ -11,7 +11,7 @@ def glif1(N = 12):
     free_parameters = {'w_mean': 0.2, 'w_var': 0.4, 'C_m': 1.35, 'G': 0.75, 'R_I': 18., 'E_L': -58., 'delta_theta_s': 25.,
                        'b_s': 0.4, 'f_v': 0.14, 'delta_V': 12., 'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
     randomised_params = randomise_parameters(free_parameters, coeff=T(0.2))
-    print('randomised_params', randomised_params)
+    # print('randomised_params', randomised_params)
 
     return GLIF(device='cpu', parameters=randomised_params, N=N)
 
