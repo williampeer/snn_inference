@@ -1,18 +1,18 @@
 import nevergrad as ng
 
+import IO
 from Dev.brian2_custom_network_opt import *
 from Log import Logger
 from experiments import zip_dicts
-from plot import plot_all_param_pairs_with_variance
+from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
 
 num_exps = 20; budget = 1000
-loss_fn='van_rossum_dist'
-# loss_fn='poisson_nll'
-# loss_fn='gamma_factor'
+# num_exps = 3; budget = 2
 
 params_by_optim = {}
 for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimizers.NGO]:
     for loss_fn in ['van_rossum_dist', 'poisson_nll', 'gamma_factor']:
+        UUID = IO.dt_descriptor()
         current_plottable_params_for_optim = {}
         other_params_for_optim = {}
         exp_min_losses = []
@@ -37,7 +37,7 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
                                            I_A=ng.p.Array(init=2. * np.ones((N,))).set_bounds(0.5, 4.),
                                            loss_fn=loss_fn)
 
-            optimizer = optim(parametrization=instrum, budget=budget, num_workers=3)
+            optimizer = optim(parametrization=instrum, budget=budget)
 
             logger = Logger(log_fname='brian2_network_nevergrad_optimization_budget_{}'.format(budget))
             logger.log('setup experiment with the optimizer {}'.format(optimizer.__str__()))
@@ -46,6 +46,7 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
 
             logger.log('recommendation.value: {}'.format(recommendation.value))
             fitted_params = recommendation.value[1]
+            cur_plot_params = {}
             exp_min_losses.append(recommendation.loss)
             index_ctr = 0
             for p_i, key in enumerate(fitted_params):
@@ -54,6 +55,7 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
                         current_plottable_params_for_optim[index_ctr] = [np.copy(fitted_params[key])]
                     else:
                         current_plottable_params_for_optim[index_ctr].append(np.copy(fitted_params[key]))
+                    cur_plot_params[key] = np.copy(fitted_params[key])
                     index_ctr += 1
                 else:
                     if exp_i == 0:
@@ -61,16 +63,26 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
                     else:
                         other_params_for_optim[key].append(np.copy(fitted_params[key]))
 
+            model_spike_train = get_spike_train_for(fitted_params['rate'], other_params_for_optim['w'][exp_i], cur_plot_params.copy())
+
+            _, targets = data_util.get_spike_train_matrix(
+                index_last_step=int(0.6 * np.random.rand() * spike_times.shape[0]),
+                advance_by_t_steps=time_interval, spike_times=spike_times,
+                spike_indices=spike_indices, node_numbers=spike_node_indices)
+            plot_spiketrains_side_by_side(model_spike_train, targets, exp_type='single_objective_optim', uuid=UUID,
+                                          title='Spike trains model and target ({}, loss: {})'.format(optim.name, recommendation.loss),
+                                          fname='spike_trains_optim_{}_exp_num_{}'.format(optim.name, exp_i))
+
 
 
         params_by_optim[optim.name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
 
         plot_all_param_pairs_with_variance(current_plottable_params_for_optim,
-                                           exp_type='nevergrad',
-                                           uuid='single_objective_optim',
+                                           exp_type='single_objective_optim',
+                                           uuid=UUID,
                                            target_params=target_parameters,
                                            param_names=list(fitted_params.keys())[2:],
-                                           custom_title="KDEs for values across experiments ({})".format(optim.name),
+                                           custom_title="KDE projection of 2D model parameter".format(optim.name),
                                            logger=logger, fname='single_objective_KDE_optim_{}'.format(optim.name))
 
         torch.save(params_by_optim, './saved/single_objective_optim/fitted_params_optim_{}_loss_fn_{}_budget_{}.pt'.format(optim, loss_fn, budget))

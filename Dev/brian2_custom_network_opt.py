@@ -1,6 +1,5 @@
-import torch
-
 from brian2 import *
+
 from Dev.setup_data_for_brian import *
 from Log import Logger
 from eval import calculate_loss
@@ -13,8 +12,8 @@ GLIF_eqs = '''
 dv/dt = ((G * (E_L - v) + R_I * (I_ext + I_syn_tot)) / C_m)/tau : volt
 dtheta_v/dt = (a_v * (v - E_L) - b_v * (theta_v - theta_inf))/tau : volt
 dtheta_s/dt = (- b_s * theta_s)/tau : volt
-I_syn_tot : amp
 I_ext : amp
+I_syn_tot : amp
 E_L : volt
 R_I : ohm
 G : 1
@@ -47,7 +46,7 @@ w : 1
 '''
 
 
-def run_simulation_multiobjective(w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf, I_A, t_interval=time_interval*ms):
+def run_simulation_multiobjective(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf, I_A, t_interval=time_interval*ms):
     start_scope()
     tau = 1*ms
 
@@ -55,10 +54,10 @@ def run_simulation_multiobjective(w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, 
     neurons.set_states({'f_I': f_I, 'C_m': C_m, 'G': G, 'R_I': R_I*ohm, 'f_v': f_v, 'E_L': E_L*mV, 'b_s': b_s, 'b_v': b_v,
                         'a_v': a_v, 'delta_theta_s': delta_theta_s * mV, 'delta_V': delta_V * mV, 'theta_inf': theta_inf * mV, 'I_A': I_A*mA})
 
-    in_grp = SpikeGeneratorGroup(N, np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))
-    feedforward = Synapses(in_grp, neurons, model=in_eqs, on_pre='I_in = 1 * mA')
+    # PoissonInput(neurons, 'I_ext', N=N, rate=rate, weight=1*mA)
+    poisson_input_grp = PoissonGroup(N, rate/tau)
+    feedforward = Synapses(poisson_input_grp, neurons, model=in_eqs, on_pre='I_in = 1 * mA')
     feedforward.connect(j='i')
-    # in_grp.set_spikes(np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))
 
     synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='euler')
     synapses.connect()
@@ -68,6 +67,7 @@ def run_simulation_multiobjective(w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, 
 
     run(t_interval)
     silent_model = spikemon.num_spikes == 0
+    print('DEBUG: spikemon.num_spikes: {}'.format(spikemon.num_spikes))
     if silent_model:
         logger.log("------------- WARN: no spikes in spikes observed")
         return [12 * 10 * neurons.v.shape[0], 20., 20.]
@@ -103,10 +103,9 @@ def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
          'a_v': a_v, 'delta_theta_s': delta_theta_s * mV, 'delta_V': delta_V * mV, 'theta_inf': theta_inf * mV,
          'I_A': I_A * mA})
 
-    in_grp = SpikeGeneratorGroup(N, np.reshape(input_indices, (-1,)), np.reshape(input_times * ms, (-1,)))
-    feedforward = Synapses(in_grp, neurons, model=in_eqs, on_pre='I_in = 1 * mA')
+    poisson_input_grp = PoissonGroup(N, rate/tau)
+    feedforward = Synapses(poisson_input_grp, neurons, model=in_eqs, on_pre='I_in = 1 * mA')
     feedforward.connect(j='i')
-    # in_grp.set_spikes(np.reshape(input_indices, (-1,)), np.reshape(input_times*ms, (-1,)))
 
     synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='euler')
     synapses.connect()
@@ -115,6 +114,7 @@ def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
     spikemon = SpikeMonitor(neurons[:], 'v', record=True)
 
     run(t_interval)
+    print('DEBUG: spikemon.num_spikes: {}'.format(spikemon.num_spikes))
     if spikemon.num_spikes == 0:
         logger.log("------------- WARN: no spikes in spikes observed")
         return np.inf
@@ -140,3 +140,32 @@ def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
         loss = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn=loss_fn, tau_vr=tau_vr))
         logger.log('loss_fn: {}, loss: {:3.3f}'.format(loss_fn, loss))
         return loss
+
+
+def get_spike_train_for(rate, weights, neurons_params):
+    start_scope()
+    tau = 1*ms
+
+    neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>30*mV', reset=reset, method='euler')
+    neurons_params['R_I'] = neurons_params['R_I'] * ohm
+    neurons_params['delta_theta_s'] = neurons_params['delta_theta_s'] * mV
+    neurons_params['delta_V'] = neurons_params['delta_V'] * mV
+    neurons_params['theta_inf'] = neurons_params['theta_inf'] * mV
+    neurons_params['E_L'] = neurons_params['E_L'] * mV
+    neurons_params['I_A'] = neurons_params['I_A'] * mA
+    neurons.set_states(neurons_params)
+
+    poisson_input_grp = PoissonGroup(N, rate/tau)
+    feedforward = Synapses(poisson_input_grp, neurons, model=in_eqs, on_pre='I_in = 1 * mA')
+    feedforward.connect(j='i')
+
+    synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='euler')
+    synapses.connect()
+    synapses.set_states({'w': weights})
+
+    spikemon = SpikeMonitor(neurons[:], 'v', record=True)
+
+    run(time_interval*ms)
+
+    return torch.tensor(data_util.convert_brian_spike_train_dict_to_boolean_matrix(spikemon.spike_trains(), t_max=time_interval), dtype=torch.float32)
+

@@ -33,7 +33,7 @@ def main(argv):
     target_params_dict = torch.load(target_data_path + 'generated_spike_train_random_glif_model_t_300s_rate_0_6_params.pt')
     target_parameters = {}
     for param_i, param in enumerate(target_params_dict.values()):
-        target_parameters[param_i] = [param.clone().detach().numpy()]
+        target_parameters[param_i] = param.clone().detach().numpy()
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
