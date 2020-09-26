@@ -18,7 +18,7 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
     exp_min_losses = []
     for exp_i in range(num_exps):
         w_mean = 0.3; w_var = 0.5; rand_ws = (w_mean - w_var) + 2 * w_var * np.random.random((N ** 2))
-        instrum = ng.p.Instrumentation(rate=ng.p.Scalar(init=20.).set_bounds(1., 80.),
+        instrum = ng.p.Instrumentation(rate=ng.p.Scalar(init=60.).set_bounds(1., 80.),
                                        w=ng.p.Array(init=rand_ws).set_bounds(-1., 1.),
                                        E_L=ng.p.Array(init=-65. * np.ones((N,))).set_bounds(-90., -30.),
                                        C_m=ng.p.Array(init=1.5 * np.ones((N,))).set_bounds(1., 3.),
@@ -35,7 +35,7 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
                                        delta_V=ng.p.Array(init=6. * np.ones((N,))).set_bounds(0.01, 35.),
                                        I_A=ng.p.Array(init=2. * np.ones((N,))).set_bounds(0.5, 4.))
 
-        optimizer = optim(parametrization=instrum, budget=budget, num_workers=3)
+        optimizer = optim(parametrization=instrum, budget=budget)
 
         logger = Logger(log_fname='brian2_network_nevergrad_multiobjective_optimization_budget_{}'.format(budget))
         logger.log('setup experiment with the optimizer {}'.format(optimizer.__str__()))
