@@ -10,8 +10,10 @@ from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_si
 num_exps = 3; budget = 40
 
 params_by_optim = {}
-# for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimizers.NGO]:
-for optim in [ng.optimizers.DE]:
+optim_names = ['DE', 'CMA', 'PSO', 'NGO']; optim_ctr = 0
+for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimizers.NGO]:
+    cur_optim_name = optim_names[optim_ctr]
+    optim_ctr += 1
     for loss_fn in ['van_rossum_dist', 'poisson_nll', 'gamma_factor']:
         UUID = IO.dt_descriptor()
         current_plottable_params_for_optim = {}
@@ -71,20 +73,20 @@ for optim in [ng.optimizers.DE]:
                 advance_by_t_steps=time_interval, spike_times=spike_times,
                 spike_indices=spike_indices, node_numbers=spike_node_indices)
             plot_spiketrains_side_by_side(model_spike_train, targets, exp_type='single_objective_optim', uuid=UUID,
-                                          title='Spike trains model and target ({}, loss: {})'.format(optim.name, recommendation.loss),
-                                          fname='spike_trains_optim_{}_exp_num_{}'.format(optim.name, exp_i))
+                                          title='Spike trains model and target ({}, loss: {})'.format(cur_optim_name, recommendation.loss),
+                                          fname='spike_trains_optim_{}_exp_num_{}'.format(cur_optim_name, exp_i))
 
 
 
-        params_by_optim[optim.name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
+        params_by_optim[cur_optim_name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
 
         plot_all_param_pairs_with_variance(current_plottable_params_for_optim,
                                            exp_type='single_objective_optim',
                                            uuid=UUID,
                                            target_params=target_parameters,
                                            param_names=list(fitted_params.keys())[2:],
-                                           custom_title="KDE projection of 2D model parameter".format(optim.name),
-                                           logger=logger, fname='single_objective_KDE_optim_{}'.format(optim.name))
+                                           custom_title="KDE projection of 2D model parameter".format(cur_optim_name),
+                                           logger=logger, fname='single_objective_KDE_optim_{}'.format(cur_optim_name))
 
         torch.save(params_by_optim, './saved/single_objective_optim/fitted_params_optim_{}_loss_fn_{}_budget_{}.pt'.format(optim, loss_fn, budget))
         torch.save(exp_min_losses, './saved/single_objective_optim/min_losses_optim_{}_loss_fn_{}_budget_{}.pt'.format(optim, loss_fn, budget))

@@ -355,13 +355,46 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
             #                                       custom_title=custom_title, logger=logger)
 
 
-def decompose_param_pair_trajectory_plot(param_2D, target_params, xlabel, ylabel, path):
+# def decompose_param_pair_trajectory_plot(param_2D, target_params, xlabel, ylabel, path):
+#     params_by_exp = np.array(param_2D).T
+#     num_of_parameters = params_by_exp.shape[0]
+#
+#     fig, axs = plt.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1)
+#     plt.xlabel(xlabel)
+#     plt.ylabel(ylabel)
+#     [axi.set_axis_off() for axi in axs.ravel()]
+#     dot_msize = 5.0
+#
+#     for i in range(num_of_parameters):
+#         for j in range(i + 1, num_of_parameters):
+#             # 2D plot between p_i and p_j
+#             cur_ax = axs[i, j - 1]
+#             try:
+#                 p_len = len(params_by_exp[i])
+#                 colors = cm.rainbow(np.linspace(0, 1, p_len))
+#                 for p_i in range(p_len):
+#                     cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
+#                 # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
+#
+#                 if target_params and len(target_params) >= np.max([i, j]):
+#                     cur_ax.plot(target_params[0][i], target_params[0][j], 'x', color='gray', markersize=0.8 * dot_msize)
+#             except:
+#                 print('WARN: Failed to plot trajectory for params: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
+#
+#     fig.suptitle('GD trajectories between neurons for parameters ${} x {}$'.format(xlabel, ylabel))
+#
+#     if not path:
+#         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
+#     # plt.show()
+#     fig.savefig(path)
+#     plt.close()
+def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     params_by_exp = np.array(param_2D).T
     num_of_parameters = params_by_exp.shape[0]
 
     fig, axs = plt.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+    plt.xlabel(name)
+    plt.ylabel(name)
     [axi.set_axis_off() for axi in axs.ravel()]
     dot_msize = 5.0
 
@@ -369,19 +402,19 @@ def decompose_param_pair_trajectory_plot(param_2D, target_params, xlabel, ylabel
         for j in range(i + 1, num_of_parameters):
             # 2D plot between p_i and p_j
             cur_ax = axs[i, j - 1]
-            try:
-                p_len = len(params_by_exp[i])
-                colors = cm.rainbow(np.linspace(0, 1, p_len))
-                for p_i in range(p_len):
-                    cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
-                # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
+            # try:
+            p_len = len(params_by_exp[i])
+            colors = cm.rainbow(np.linspace(0, 1, p_len))
+            for p_i in range(p_len):
+                cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
+            # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
 
-                if target_params and len(target_params) >= np.max([i, j]):
-                    cur_ax.plot(target_params[0][i], target_params[0][j], 'x', color='gray', markersize=0.8 * dot_msize)
-            except:
-                print('WARN: Failed to plot trajectory for params: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
+            if current_targets is not False:
+                cur_ax.plot(current_targets[i], current_targets[j], 'x', color='black', markersize=0.8 * dot_msize)
+            # except:
+            #     print('WARN: Failed to plot trajectory for params: {}, {}. targets: {}, i: {}, j: {}'.format(params_by_exp[i], params_by_exp[j], current_targets, i, j))
 
-    fig.suptitle('GD trajectories between neurons for parameters ${} x {}$'.format(xlabel, ylabel))
+    fig.suptitle('GD trajectory-projections for parameter ${}$'.format(name))
 
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
@@ -402,8 +435,8 @@ def param_pair_trajectory_plot(p1_means, p2_means, target_params, path, xlabel='
             plt.scatter(p1_means[p_i], p2_means[p_i], color=colors[p_i], marker='x', alpha=0.5)
         plt.plot(p1_means, p2_means, color='gray')
 
-        if target_params and len(target_params) >= np.max([i, j]):
-            plt.plot(p1_means, p2_means, 'S', markersize=4.)
+        # if target_params:
+        # plt.plot(p1_means, p2_means, 'S', markersize=4.)
 
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
@@ -436,37 +469,70 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
     path = full_path + fname
 
     number_of_parameters = min(len(param_names), len(param_means))
-    for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
-        for plot_j in range(plot_i + 1, number_of_parameters):
-            cur_tar_params = False
-            if target_params and len(target_params) > np.max([plot_i, plot_j]):
-                cur_tar_params = [target_params[plot_i], target_params[plot_j]]
+    for i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
+        # for plot_j in range(plot_i + 1, number_of_parameters):
+        current_targets = False
+        if target_params and target_params.__contains__(i):
+            current_targets = target_params[i]
 
-            cur_p_i = np.array(param_means[plot_i])
-            cur_p_j = np.array(param_means[plot_j])
-            if param_names:
-                name_i = param_names[plot_i]
-                name_j = param_names[plot_j]
-            else:
-                name_i = 'p_{}'.format(plot_i)
-                name_j = 'p_{}'.format(plot_j)
+        cur_p = np.array(param_means[i])
+        if param_names:
+            name = param_names[i]
+        else:
+            name = 'p_{}'.format(i)
 
-            # silently fail for 3D params (weights)
-            if len(cur_p_i.shape) == 2:
-                cur_tar = False
-                if target_params and len(target_params) > plot_i:
-                    cur_tar = target_params[plot_i]
-                decompose_param_pair_trajectory_plot(cur_p_i, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}'.format(plot_i))
-            if len(cur_p_j.shape) == 2:
-                cur_tar = False
-                if target_params and len(target_params) > plot_j:
-                    cur_tar = target_params[plot_j]
-                decompose_param_pair_trajectory_plot(cur_p_j, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}'.format(plot_j))
-            if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
-                param_pair_trajectory_plot(cur_p_i, cur_p_j, target_params=cur_tar_params,
-                                           path=path+'_i_j_{}_{}'.format(plot_i, plot_j),
-                                           xlabel=name_i, ylabel=name_j,
-                                           custom_title=custom_title, logger=logger)
+        # silently fail for 3D params (weights)
+        if len(cur_p.shape) == 2:
+            decompose_param_pair_trajectory_plot(cur_p, current_targets, name=name, path=path+'_param_{}'.format(i))
+        # if len(cur_p.shape) == 1:
+        #     param_pair_trajectory_plot(cur_p, cur_p, target_params=cur_tar,
+        #                                path=path+'_i_{}'.format(i),
+        #                                xlabel=name, ylabel=name,
+        #                                custom_title=custom_title, logger=logger)
+
+# def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):
+#     full_path = './figures/' + exp_type + '/' + uuid + '/'
+#     IO.makedir_if_not_exists(full_path)
+#
+#     data = {'param_means': param_means, 'target_params': target_params, 'exp_type': exp_type, 'uuid': uuid, 'custom_title': custom_title, 'fname': fname}
+#     IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_parameter_inference_trajectories_2d')
+#
+#     if not fname:
+#         fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
+#     path = full_path + fname
+#
+#     number_of_parameters = min(len(param_names), len(param_means))
+#     for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
+#         for plot_j in range(plot_i + 1, number_of_parameters):
+#             cur_tar_params = False
+#             if target_params and len(target_params) > np.max([plot_i, plot_j]):
+#                 cur_tar_params = [target_params[plot_i], target_params[plot_j]]
+#
+#             cur_p_i = np.array(param_means[plot_i])
+#             cur_p_j = np.array(param_means[plot_j])
+#             if param_names:
+#                 name_i = param_names[plot_i]
+#                 name_j = param_names[plot_j]
+#             else:
+#                 name_i = 'p_{}'.format(plot_i)
+#                 name_j = 'p_{}'.format(plot_j)
+#
+#             # silently fail for 3D params (weights)
+#             if len(cur_p_i.shape) == 2:
+#                 cur_tar = False
+#                 if target_params and len(target_params) > plot_i:
+#                     cur_tar = target_params[plot_i]
+#                 decompose_param_pair_trajectory_plot(cur_p_i, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}'.format(plot_i))
+#             if len(cur_p_j.shape) == 2:
+#                 cur_tar = False
+#                 if target_params and len(target_params) > plot_j:
+#                     cur_tar = target_params[plot_j]
+#                 decompose_param_pair_trajectory_plot(cur_p_j, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}'.format(plot_j))
+#             if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
+#                 param_pair_trajectory_plot(cur_p_i, cur_p_j, target_params=cur_tar_params,
+#                                            path=path+'_i_j_{}_{}'.format(plot_i, plot_j),
+#                                            xlabel=name_i, ylabel=name_j,
+#                                            custom_title=custom_title, logger=logger)
 
 
 def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname):
