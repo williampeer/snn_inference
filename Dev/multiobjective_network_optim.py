@@ -5,7 +5,7 @@ from Dev.brian2_custom_network_opt import *
 import nevergrad as ng
 
 from experiments import zip_dicts
-from plot import plot_all_param_pairs_with_variance
+from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
 
 num_exps = 20; budget = 3000
 
@@ -43,6 +43,7 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
         recommendation = optimizer.minimize(multiobjective_fn, verbosity=2)
         logger.log('recommendation.value: {}'.format(recommendation.value))
         fitted_params = recommendation.value[1]
+        cur_plot_params = {}
         exp_min_losses.append(recommendation.loss)
         index_ctr = 0
         for p_i, key in enumerate(fitted_params):
@@ -51,12 +52,24 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
                     current_plottable_params_for_optim[index_ctr] = [np.copy(fitted_params[key])]
                 else:
                     current_plottable_params_for_optim[index_ctr].append(np.copy(fitted_params[key]))
+                cur_plot_params[key] = np.copy(fitted_params[key])
                 index_ctr += 1
             else:
                 if exp_i == 0:
                     other_params_for_optim[key] = [np.copy(fitted_params[key])]
                 else:
                     other_params_for_optim[key].append(np.copy(fitted_params[key]))
+
+        model_spike_train = get_spike_train_for(fitted_params['rate'], other_params_for_optim['w'][exp_i],
+                                                cur_plot_params.copy())
+
+        _, targets = data_util.get_spike_train_matrix(
+            index_last_step=int(0.6 * np.random.rand() * spike_times.shape[0]),
+            advance_by_t_steps=time_interval, spike_times=spike_times,
+            spike_indices=spike_indices, node_numbers=spike_node_indices)
+        plot_spiketrains_side_by_side(model_spike_train, targets, exp_type='single_objective_optim', uuid=UUID,
+                                      title='Spike trains model and target ({}, loss: {})'.format(optim.name, recommendation.loss),
+                                      fname='spike_trains_optim_{}_exp_num_{}'.format(optim.name, exp_i))
 
     params_by_optim[optim.name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
 

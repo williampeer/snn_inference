@@ -265,7 +265,7 @@ def plot_parameter_pair_with_variance(p1_means, p2_means, target_params, path, x
             logger.log('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means), ['plot.plot_parameter_pair_with_variance'])
 
 
-def decompose_param_plot(param_2D, target_params, xlabel, ylabel, path, custom_title=False):
+def decompose_param_plot(param_2D, target_params, name, path, custom_title=False):
     params_by_exp = np.array(param_2D).T
     num_of_parameters = params_by_exp.shape[0]
     # print('in decompose_param_plot.. params_by_exp: {}'.format(params_by_exp))
@@ -277,8 +277,8 @@ def decompose_param_plot(param_2D, target_params, xlabel, ylabel, path, custom_t
         for j in range(i + 1, num_of_parameters):
             # 2D plot KDE between p_i and p_j
             cur_ax = axs[i,j-1]
-            cur_ax.set_xlabel(xlabel)
-            cur_ax.set_ylabel(ylabel)
+            cur_ax.set_xlabel(name)
+            cur_ax.set_ylabel(name)
             try:
                 Z, Xgrid, x_min, x_max, y_min, y_max = calculate_kde(params_by_exp[i], params_by_exp[j], False)
 
@@ -286,17 +286,17 @@ def decompose_param_plot(param_2D, target_params, xlabel, ylabel, path, custom_t
                                   origin='lower', aspect='auto',
                                   extent=[x_min, x_max, y_min, y_max],
                                   cmap='Blues')
-                if target_params and len(target_params) >= np.max([i, j]):
+                if target_params and len(target_params[0]) > np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'or', markersize=2.8)
             except ArithmeticError:
                 cur_ax.plot(params_by_exp[i], params_by_exp[j], 'xb', markersize=3.5)
-                if target_params and len(target_params) >= np.max([i, j]):
+                if target_params and len(target_params) > np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'or', markersize=2.8)
             except:
                 print('WARN: Failed to calculate KDE for param.s: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
 
     if custom_title:
-        fig.suptitle(custom_title + ' for parameters ${} x {}$'.format(xlabel, ylabel))
+        fig.suptitle(custom_title + ' ${}$'.format(name))
     else:
         fig.suptitle('Decomposed KDEs between neurons for parameters ${} x {}$'.format(xlabel, ylabel))
 
@@ -320,38 +320,39 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
     path = full_path + fname
 
     number_of_parameters = min(len(param_names), len(param_means))
-    for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
-        for plot_j in range(plot_i + 1, number_of_parameters):
-            cur_tar_params = False
-            if target_params and len(target_params) > np.max([plot_i, plot_j]):
-                cur_tar_params = [target_params[plot_i], target_params[plot_j]]
+    for i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
+        # for plot_j in range(plot_i + 1, number_of_parameters):
+        #     cur_tar_params = False
+        #     if target_params and len(target_params) > i:
+        #         cur_tar_params = target_params[i]
 
-            cur_p_i = np.array(param_means[plot_i])
-            cur_p_j = np.array(param_means[plot_j])
+            cur_p = np.array(param_means[i])
+            # cur_p_j = np.array(param_means[plot_j])
+            name = '{}'.format(i)
             if param_names:
-                name_i = param_names[plot_i]
-                name_j = param_names[plot_j]
+                name = param_names[i]
+                # name_j = param_names[plot_j]
             else:
-                name_i = 'p_{}'.format(plot_i)
-                name_j = 'p_{}'.format(plot_j)
-            # silently fail for 3D params (weights)
-            if len(cur_p_i.shape) == 2:
+                name_i = 'p_{}'.format(i)
+                # name_j = 'p_{}'.format(plot_j)
+            # silently fail for 1D and 3D params
+            if len(cur_p.shape) == 2:
                 cur_tar = False
-                if target_params and len(target_params) > plot_i:
-                    cur_tar = target_params[plot_i]
-                decompose_param_plot(cur_p_i, cur_tar, xlabel=name_i, ylabel=name_i, path=path+'_param_{}_{}'.format(name_i, name_j),
+                if target_params and len(target_params) > i:
+                    cur_tar = target_params[i]
+                decompose_param_plot(cur_p, cur_tar, name=name, path=path+'_param_{}'.format(name),
                                      custom_title=custom_title)
-            if len(cur_p_j.shape) == 2:
-                cur_tar = False
-                if target_params and len(target_params) > plot_j:
-                    cur_tar = target_params[plot_j]
-                decompose_param_plot(cur_p_j, cur_tar, xlabel=name_j, ylabel=name_j, path=path+'_param_{}_{}'.format(name_i, name_j),
-                                     custom_title=custom_title)
-            if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
-                plot_parameter_pair_with_variance(cur_p_i, cur_p_j, target_params=cur_tar_params,
-                                                  path=path+'_i_j_{}_{}'.format(name_i, name_j),
-                                                  xlabel=name_i, ylabel=name_j,
-                                                  custom_title=custom_title, logger=logger)
+            # if len(cur_p_j.shape) == 2:
+            #     cur_tar = False
+            #     if target_params and len(target_params) > plot_j:
+            #         cur_tar = target_params[plot_j]
+            #     decompose_param_plot(cur_p_j, cur_tar, name=name_j, path=path+'_param_{}'.format(name_i),
+            #                          custom_title=custom_title)
+            # if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
+            #     plot_parameter_pair_with_variance(cur_p_i, cur_p_j, target_params=cur_tar_params,
+            #                                       path=path+'_i_j_{}_{}'.format(name_i, name_j),
+            #                                       xlabel=name_i, ylabel=name_j,
+            #                                       custom_title=custom_title, logger=logger)
 
 
 def decompose_param_pair_trajectory_plot(param_2D, target_params, xlabel, ylabel, path):
