@@ -24,7 +24,7 @@ def van_rossum_dist(spikes, target_spikes, tau):
 
 def euclid_dist(spikes1, spikes2):
     # sqrt((s1 - s2) ** 2)
-    return torch.sqrt(torch.pow(torch.sub(spikes1, spikes2), 2).sum() + 1e-18) / (spikes1.shape[0] * spikes1.shape[1])
+    return torch.sqrt(torch.pow(torch.sub(spikes1, spikes2), 2).sum() + 1e-18) / (spikes1.shape[1])
 
 
 def mse(s1, s2):

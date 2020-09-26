@@ -152,7 +152,7 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, static_p
 
         node_indices, _, _ = data_util.load_sparse_data(constants.data_path)
         num_neurons = len(node_indices)
-        params_model = draw_from_uniform(free_model_parameters, model_class.parameter_intervals, num_neurons)
+        params_model = draw_from_uniform(free_model_parameters, model_class.parameter_init_intervals, num_neurons)
         params_model = zip_dicts(params_model, static_parameters)
 
         recovered_parameters, train_losses, test_losses, train_i = \

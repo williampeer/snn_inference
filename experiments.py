@@ -15,12 +15,16 @@ def draw_from_uniform(parameters, parameter_intervals, N):
     return new_dict
 
 
-def randomise_parameters(initial_parameters, coeff=torch.tensor(0.5)):
+def randomise_parameters(initial_parameters, coeff=torch.tensor(0.5), N_dim=None):
     res = initial_parameters.copy()
     for key in initial_parameters.keys():
         # rand_sign = round(torch.randn())*2 -1
-        rand_sign = 2*torch.randint(0, 1, (1,))[0] -1
-        res[key] = res[key] + rand_sign * coeff * torch.randn((1,))[0] * res[key]
+        if N_dim is not None:
+            rand_sign = 2 * torch.randint(0, 1, (1,))[0] - 1
+            res[key] = res[key] + rand_sign * coeff * torch.randn((int(N_dim),)) * res[key]
+        else:
+            rand_sign = 2 * torch.randint(0, 1, (1,))[0] - 1
+            res[key] = res[key] + rand_sign * coeff * torch.randn((1,))[0] * res[key]
 
     return res
 

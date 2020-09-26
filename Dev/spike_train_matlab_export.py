@@ -38,7 +38,7 @@ def main(argv):
 
     # model = torch.load(model_path)['model']
     # model = SleepModelWrappers.glif_sleep_model()
-    model = TargetModels.random_glif_model()
+    model = TargetModels.glif1()
     print('Loaded model.')
 
     interval_size = 4000
