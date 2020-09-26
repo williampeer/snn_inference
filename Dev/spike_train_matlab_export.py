@@ -17,8 +17,10 @@ def main(argv):
     args = [arg for arg in argv if not arg.startswith("-")]
 
     t = 5 * 60 * 1000
-    poisson_rate = 0.6
-    model_path = 'random_glif_model'
+    poisson_rate = 0.4
+    model_path = 'random_glif_1_model'
+    model = TargetModels.glif1()
+    print('Loaded model.')
     # model_path = '/Users/william/repos/snn_inference/saved/09-03_15-28-46-381/GLIF_exp_num_1_data_set_None_mean_loss_1.017_uuid_09-03_15-28-46-381.pt'
 
     for i, opt in enumerate(opts):
@@ -38,8 +40,6 @@ def main(argv):
 
     # model = torch.load(model_path)['model']
     # model = SleepModelWrappers.glif_sleep_model()
-    model = TargetModels.glif1()
-    print('Loaded model.')
 
     interval_size = 4000
     interval_range = int(t/interval_size)
@@ -74,11 +74,11 @@ def main(argv):
     model_name = fname.split('.pt')[0]
     save_fname_input = 'poisson_inputs_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
     save_spiketrain_in_sparse_matlab_format(fname=save_fname_input, spike_indices=input_indices, spike_times=input_times)
-    save_model_params(model, 'exported_model_params', fname=save_fname_input.replace('.mat', '_params'))
+    save_model_params(model, fname=save_fname_input.replace('.mat', '_params'))
 
     save_fname_output = 'generated_spike_train_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
     save_spiketrain_in_sparse_matlab_format(fname=save_fname_output, spike_indices=spike_indices, spike_times=spike_times)
-    save_model_params(model, 'exported_model_params', fname=save_fname_output.replace('.mat', '_params'))
+    save_model_params(model, fname=save_fname_output.replace('.mat', '_params'))
 
 
 if __name__ == "__main__":

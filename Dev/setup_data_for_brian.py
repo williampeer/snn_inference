@@ -18,6 +18,9 @@ next_target_index = 0
 
 target_params_dict = torch.load(target_data_path + 'generated_spike_train_random_glif_model_t_300s_rate_0_6_params.pt')
 target_parameters = {}
-for param_i, param in enumerate(target_params_dict.values()):
-    target_parameters[param_i] = [param.clone().detach().numpy()]
-print('target_params_dict:', target_params_dict)
+index_ctr = 0
+for param_i, key in enumerate(target_params_dict):
+    if key not in ['loss_fn', 'rate', 'w']:
+        target_parameters[index_ctr] = [target_params_dict[key].clone().detach().numpy()]
+        index_ctr += 1
+print('target_parameters:', target_parameters)

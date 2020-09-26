@@ -2,6 +2,8 @@ import torch
 import os
 from datetime import datetime
 
+import data_util
+
 PATH = './saved/'
 PLOT_PATH = 'plot_data/'
 fname_ext = '.pt'
@@ -18,10 +20,11 @@ def save_entire_model(model, uuid, fname='test_model'):
     torch.save(model, PATH+uuid+'/'+fname+fname_ext)
 
 
-def save_model_params(model, uuid, fname='test_model_params'):
-    makedir_if_not_exists(PATH + uuid)
+def save_model_params(model, fname='test_model_params'):
+    full_path = data_util.prefix + data_util.path
+    makedir_if_not_exists(full_path)
 
-    torch.save(model.state_dict(), PATH+uuid+'/'+fname+fname_ext)
+    torch.save(model.state_dict(), full_path+'/'+fname+fname_ext)
 
 
 def save(model, loss, uuid, fname='test_exp_dict'):
