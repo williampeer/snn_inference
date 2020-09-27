@@ -1,6 +1,7 @@
 import scipy.io as sio
 import numpy as np
 import torch
+import brian2
 
 # NOTE: This is an implementation for sparse representations (two vectors) of a spike trains,
 #   represented by two vectors; the spike times, and node indices.
@@ -134,10 +135,16 @@ def convert_brian_spike_train_dict_to_boolean_matrix(brian_spike_train, t_max):
     res = np.zeros((int(t_max), len(keys)))
     for i, k in enumerate(keys):
         node_spike_times = brian_spike_train[k]
-        import brian2
         node_spike_times = np.array(node_spike_times/brian2.msecond, dtype=np.int)
         res[node_spike_times, i] = 1.
     return res
+
+
+def convert_brian_spike_train_to_matlab_format(brian_spike_train):
+    spike_indices = np.array([], dtype='int8')
+    spike_times = np.array([], dtype='float32')
+
+    pass
 
 
 def convert_sparse_spike_train_to_matrix(spike_times, node_indices, unique_node_indices):

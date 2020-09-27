@@ -161,7 +161,7 @@ def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
         return loss
 
 
-def get_spike_train_for(rate, weights, neurons_params):
+def get_spike_train_for(rate, weights, neurons_params, run_time=time_interval):
     # start_scope()
     # tau = 1*ms
     restore()
@@ -187,7 +187,7 @@ def get_spike_train_for(rate, weights, neurons_params):
     # spikemon = SpikeMonitor(neurons[:], 'v', record=True)
     mon_in = SpikeMonitor(poisson_input_grp[:], record=True)
 
-    run(time_interval*ms)
+    run(run_time*ms)
     print('spikes:', spikemon.num_spikes)
     print('mon_in spikes:', mon_in.num_spikes)
     # print(synapses.get_states())
@@ -195,3 +195,20 @@ def get_spike_train_for(rate, weights, neurons_params):
     # print(neurons.get_states())
 
     return torch.tensor(data_util.convert_brian_spike_train_dict_to_boolean_matrix(spikemon.spike_trains(), t_max=time_interval), dtype=torch.float32)
+
+
+def get_spike_train_for_matlab_export(rate, weights, neurons_params, run_time=5*60*1000):
+    restore()
+
+    neurons.set_states(neurons_params)
+
+    poisson_input_grp.rates = rate * Hz
+
+    synapses.set_states({'w': weights})
+
+    # spikemon = SpikeMonitor(neurons[:], 'v', record=True)
+
+    run(run_time * ms)
+    print('spikes:', spikemon.num_spikes)
+
+    return spikemon.spike_trains()

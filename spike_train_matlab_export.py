@@ -4,9 +4,8 @@ import numpy as np
 import torch
 
 from IO import save_model_params
-from TargetModels import TargetModels
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_to_sparse_vectors
-from experiments import generate_synthetic_data, poisson_input
+from experiments import poisson_input
 from model_util import generate_model_data
 
 
@@ -18,11 +17,16 @@ def main(argv):
 
     t = 5 * 60 * 1000
     poisson_rate = 0.6
-    model_path = 'random_glif_3_model'
-    model_path = 'glif_slower_rate_async_2'
-    model = TargetModels.glif_slower_rate_async()
-    print('Loaded model.')
-    # model_path = '/Users/william/repos/snn_inference/saved/09-03_15-28-46-381/GLIF_exp_num_1_data_set_None_mean_loss_1.017_uuid_09-03_15-28-46-381.pt'
+    # model_path = 'random_glif_3_model'
+    # model_path = 'glif_slower_rate_async_2'
+    # model = TargetModels.glif_slower_rate_async()
+    # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_0_data_set_None_mean_loss_4.094_uuid_09-27_14-44-54-444.pt'
+    # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_1_data_set_None_mean_loss_4.492_uuid_09-27_14-44-54-444.pt'
+    # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_2_data_set_None_mean_loss_4.055_uuid_09-27_14-44-54-444.pt'
+    # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_3_data_set_None_mean_loss_4.095_uuid_09-27_14-44-54-444.pt'
+    # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_5_data_set_None_mean_loss_11.479_uuid_09-27_14-44-54-444.pt'
+    # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_6_data_set_None_mean_loss_7.588_uuid_09-27_14-44-54-444.pt'
+    model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_7_data_set_None_mean_loss_3.913_uuid_09-27_14-44-54-444.pt'
 
     for i, opt in enumerate(opts):
         if opt == '-h':
@@ -39,8 +43,8 @@ def main(argv):
         print('No path to load model from specified.')
         sys.exit(1)
 
-    # model = torch.load(model_path)['model']
-    # model = SleepModelWrappers.glif_sleep_model()
+    model = torch.load(model_path)['model']
+    print('Loaded model.')
 
     interval_size = 4000
     interval_range = int(t/interval_size)
@@ -73,9 +77,9 @@ def main(argv):
 
     fname = model_path.split('/')[-1]
     model_name = fname.split('.pt')[0]
-    save_fname_input = 'poisson_inputs_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
-    save_spiketrain_in_sparse_matlab_format(fname=save_fname_input, spike_indices=input_indices, spike_times=input_times)
-    save_model_params(model, fname=save_fname_input.replace('.mat', '_params'))
+    # save_fname_input = 'poisson_inputs_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
+    # save_spiketrain_in_sparse_matlab_format(fname=save_fname_input, spike_indices=input_indices, spike_times=input_times)
+    # save_model_params(model, fname=save_fname_input.replace('.mat', '_params'))
 
     save_fname_output = 'generated_spike_train_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
     save_spiketrain_in_sparse_matlab_format(fname=save_fname_output, spike_indices=spike_indices, spike_times=spike_times)
