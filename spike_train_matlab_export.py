@@ -18,8 +18,9 @@ def main(argv):
 
     t = 5 * 60 * 1000
     poisson_rate = 0.6
-    model_path = 'random_glif_1_model'
-    model = TargetModels.glif1()
+    model_path = 'random_glif_3_model'
+    model_path = 'glif_slower_rate_async_2'
+    model = TargetModels.glif_slower_rate_async()
     print('Loaded model.')
     # model_path = '/Users/william/repos/snn_inference/saved/09-03_15-28-46-381/GLIF_exp_num_1_data_set_None_mean_loss_1.017_uuid_09-03_15-28-46-381.pt'
 

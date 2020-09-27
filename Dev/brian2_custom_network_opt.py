@@ -105,10 +105,10 @@ def run_simulation_multiobjective(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v,
                                                   advance_by_t_steps=time_interval, spike_times=spike_times,
                                                   spike_indices=spike_indices, node_numbers=spike_node_indices)
     vr_dist = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='van_rossum_dist', tau_vr=tau_vr))
-    poisson_nll = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='poisson_nll'))
+    # poisson_nll = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn='poisson_nll'))
 
-    logger.log('current losses, rand_sample_index: {}'.format(rand_sample_index), parameters=[vr_dist, poisson_nll, gf])
-    return [vr_dist, poisson_nll, gf]
+    logger.log('current losses, rand_sample_index: {}'.format(rand_sample_index), parameters=[vr_dist, gf])
+    return [vr_dist, gf]
 
 
 def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf, I_A, loss_fn, t_interval=4000*ms):

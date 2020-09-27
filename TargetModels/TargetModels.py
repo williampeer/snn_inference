@@ -16,14 +16,14 @@ def glif1(N = 12):
     return GLIF(device='cpu', parameters=randomised_params, N=N)
 
 
-def glif2(N = 12):  # one silent neuron
+def glif2(N = 12):  # CHAOTIC
     torch.manual_seed(1234)
     np.random.seed(1234)
 
     free_parameters = {'w_mean': 0.1, 'w_var': 0.5, 'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.3, 'delta_V': 12.,
                        'b_v': 0.4, 'a_v': 0.4, 'theta_inf': -18., 'E_L': -57., 'C_m': 1.35, 'G': 0.7, 'I_A': 2.5, 'f_I': 0.3}
     randomised_params = randomise_parameters(free_parameters, coeff=T(0.1), N_dim=N)
-    perturb_less_dict = {'R_I': 19.}
+    perturb_less_dict = {'R_I': 18.}
     randomised_R_I = randomise_parameters(perturb_less_dict, coeff=T(0.02), N_dim=N)
     randomised_params = zip_dicts(randomised_params, randomised_R_I)
     print('randomised_params', randomised_params)
@@ -31,11 +31,11 @@ def glif2(N = 12):  # one silent neuron
     return GLIF(device='cpu', parameters=randomised_params, N=N)
 
 
-def glif3(N = 12):
+def glif3(N = 12):  # CHAOTIC
     torch.manual_seed(1234)
     np.random.seed(1234)
-    free_parameters = {'w_mean': 0.13, 'w_var': 0.33, 'C_m': 1.14, 'G': 0.82, 'R_I': 24., 'E_L': -67., 'delta_theta_s': 15.,
-                       'b_s': 0.4, 'f_v': 0.3, 'delta_V': 10., 'f_I': 0.25, 'I_A': 1.5, 'b_v': 0.4, 'a_v': 0.35, 'theta_inf': -15.}
+    free_parameters = {'w_mean': 0.13, 'w_var': 0.33, 'C_m': 1.14, 'G': 0.82, 'R_I': 17., 'E_L': -60., 'delta_theta_s': 15.,
+                       'b_s': 0.4, 'f_v': 0.3, 'delta_V': 10., 'f_I': 0.22, 'I_A': 2.5, 'b_v': 0.4, 'a_v': 0.35, 'theta_inf': -17.}
     randomised_params = randomise_parameters(free_parameters, coeff=T(0.1), N_dim=N)
     print('randomised_params', randomised_params)
 
