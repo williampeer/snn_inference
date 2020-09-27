@@ -17,7 +17,7 @@ def main(argv):
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'kl_div'
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'firing_rate_distance'
     # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 300; loss_fn = 'poisson_nll'
-    max_train_iters = 15; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
+    max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
     # max_train_iters = 5
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
@@ -26,12 +26,12 @@ def main(argv):
     initial_poisson_rate = 0.6  # per ms
 
     # evaluate_step = 1
-    evaluate_step = int(max(max_train_iters/15, 1))
+    evaluate_step = int(max(max_train_iters/10, 1))
     # data_path = None
     # prefix = '/Users/william/data/target_data/'
     target_data_path = data_util.prefix + data_util.path
-    data_path = target_data_path + 'generated_spike_train_random_glif_model_t_300s_rate_0_6.mat'
-    target_params_dict = torch.load(target_data_path + 'generated_spike_train_random_glif_model_t_300s_rate_0_6_params.pt')
+    data_path = target_data_path + 'generated_spike_train_random_glif_1_model_t_300s_rate_0_6.mat'
+    target_params_dict = torch.load(target_data_path + 'generated_spike_train_random_glif_1_model_t_300s_rate_0_6_params.pt')
     target_parameters = {}
     for param_i, param in enumerate(target_params_dict.values()):
         target_parameters[param_i-1] = param.clone().detach().numpy()
