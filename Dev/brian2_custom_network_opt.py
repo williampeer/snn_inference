@@ -148,7 +148,7 @@ def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
         loss = compute_gamma_factor_for_lists(m_spike_times, t_spike_times, time=t_interval, delta=1 * ms)
         logger.log('loss_fn: gamma_factor, loss: {:3.3f}'.format(loss))
         return loss
-    elif loss_fn in ['van_rossum_dist', 'poisson_nll', 'kl_div']:
+    elif loss_fn in ['van_rossum_dist', 'poisson_nll', 'kl_div', 'vrdfrd']:
         brian_model_spike_train = data_util.convert_brian_spike_train_dict_to_boolean_matrix(spikemon.spike_trains(),
                                                                                              t_max=t_interval / ms)
         brian_model_spike_train = torch.tensor(brian_model_spike_train, dtype=torch.float)
