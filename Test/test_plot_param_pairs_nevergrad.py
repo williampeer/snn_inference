@@ -4,7 +4,7 @@ import Log
 from plot import plot_all_param_pairs_with_variance
 
 current_params_for_optim = torch.load('/home/william/repos/snn_inference/Dev/saved/test/test.pt')
-target_parameters = torch.load('/home/william/repos/snn_inference/Dev/saved/exported_model_params/generated_spike_train_random_glif_model_t_300s_rate_0_6_params.pt')
+target_parameters = torch.load('/home/william/repos/snn_inference/Dev/saved/exported_model_params/generated_spike_train_random_glif_1_model_t_300s_rate_0_6_params.pt')
 param_names = ['f_I', 'C_m', 'G', 'R_I', 'f_v', 'E_L', 'b_s', 'b_v', 'a_v', 'delta_theta_s', 'delta_V', 'theta_inf', 'I_A']
 optim_name = 'DE'
 
