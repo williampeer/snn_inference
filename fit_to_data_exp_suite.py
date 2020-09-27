@@ -85,11 +85,11 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
     poisson_input_rate.clamp(0.01, 1.0)
     parameters = {}
-    # poisson_rates = []
     for p_i, key in enumerate(model.state_dict()):
         parameters[p_i] = [model.state_dict()[key].numpy()]
-    parameters[p_i + 1] = [poisson_input_rate.clone().detach().numpy()]
-    # poisson_rates.append(poisson_input_rate.clone().detach().numpy())
+    # parameters[p_i + 1] = [poisson_input_rate.clone().detach().numpy()]
+    poisson_rates = []
+    poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
     optim_params = list(model.parameters())
     optim_params.append(poisson_input_rate)
@@ -115,8 +115,8 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         logger.log('current parameters {}'.format(cur_params))
         for p_i, key in enumerate(cur_params):
             parameters[p_i].append(cur_params[key].clone().detach().numpy())
-        parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
-        # poisson_rates.append(poisson_input_rate.clone().detach().numpy())
+        # parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
+        poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
         # if train_i % constants.evaluate_step == 0 or (converged or (train_i+1 >= constants.train_iters)):
         prev_spike_index, targets = data_util.get_spike_train_matrix(index_last_step=prev_spike_index,
@@ -132,7 +132,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
 
         max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
-        # converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean)  # and validation_loss <= 0.8 * np.max(validation_losses)
+        converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
 
         release_computational_graph(model, poisson_input_rate, validation_inputs)
         targets = None; validation_inputs = None; validation_loss = None
@@ -140,12 +140,15 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
 
     stats_training_iterations(parameters, model, train_losses, validation_losses, constants, logger, ExperimentType.DataDriven.name,
                               target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
+    final_model_parameters = {}
+    for p_i, key in enumerate(model.state_dict()):
+        final_model_parameters[p_i] = [model.state_dict()[key].numpy()]
     model = None
-    return parameters, train_losses, validation_losses, train_i
+    return final_model_parameters, train_losses, validation_losses, train_i, poisson_rates
 
 
 def run_exp_loop(logger, constants, model_class, free_model_parameters, static_parameters, target_parameters=False):
-    all_recovered_params = {}
+    recovered_param_per_exp = {}; poisson_rate_per_exp = []
     for exp_i in range(constants.N_exp):
         torch.manual_seed(exp_i)
         np.random.seed(exp_i)
@@ -155,7 +158,7 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, static_p
         params_model = draw_from_uniform(free_model_parameters, model_class.parameter_init_intervals, num_neurons)
         params_model = zip_dicts(params_model, static_parameters)
 
-        recovered_parameters, train_losses, test_losses, train_i = \
+        recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
             fit_model_to_data(logger, constants, model_class, params_model, exp_num=exp_i, target_parameters=target_parameters)
 
         if train_i >= constants.train_iters:
@@ -164,14 +167,15 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, static_p
 
         for p_i, key in enumerate(recovered_parameters):
             if exp_i == 0:
-                all_recovered_params[key] = [recovered_parameters[key]]
+                recovered_param_per_exp[key] = [recovered_parameters[key]]
             else:
-                all_recovered_params[key].append(recovered_parameters[key])
+                recovered_param_per_exp[key].append(recovered_parameters[key])
+        poisson_rate_per_exp.append(poisson_rates)
 
     parameter_names = model_class.parameter_names
     parameter_names.append('p_rate')
     if constants.plot_flag:
-        plot_all_param_pairs_with_variance(all_recovered_params,
+        plot_all_param_pairs_with_variance(recovered_param_per_exp,
                                        uuid=constants.UUID,
                                        exp_type=ExperimentType.RetrieveFitted.name,
                                        target_params=target_parameters,

@@ -11,21 +11,22 @@ def main(argv):
     print('Argument List:', str(argv))
 
     # Default values
-    # learn_rate = 0.001; N_exp = 20; tau_van_rossum = 4.0; plot_flag = True
-    learn_rate = 0.001; N_exp = 6; tau_van_rossum = 4.0; plot_flag = False
+    learn_rate = 0.001; N_exp = 20; tau_van_rossum = 4.0; plot_flag = True
+    # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'kl_div'
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'firing_rate_distance'
-    # max_train_iters = 100; batch_size = 20; rows_per_train_iter = 300; loss_fn = 'poisson_nll'
-    max_train_iters = 100; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'van_rossum_dist'
-    max_train_iters = 50
+    # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 300; loss_fn = 'poisson_nll'
+    max_train_iters = 15; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
+    # max_train_iters = 5
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 
     optimiser = 'Adam'
-    initial_poisson_rate = 0.6
+    initial_poisson_rate = 0.6  # per ms
 
-    evaluate_step = 1
+    # evaluate_step = 1
+    evaluate_step = int(max(max_train_iters/15, 1))
     # data_path = None
     # prefix = '/Users/william/data/target_data/'
     target_data_path = data_util.prefix + data_util.path
@@ -33,7 +34,7 @@ def main(argv):
     target_params_dict = torch.load(target_data_path + 'generated_spike_train_random_glif_model_t_300s_rate_0_6_params.pt')
     target_parameters = {}
     for param_i, param in enumerate(target_params_dict.values()):
-        target_parameters[param_i] = param.clone().detach().numpy()
+        target_parameters[param_i-1] = param.clone().detach().numpy()
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
