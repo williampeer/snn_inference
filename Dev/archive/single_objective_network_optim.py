@@ -6,7 +6,7 @@ from Log import Logger
 from experiments import zip_dicts
 from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
 
-num_exps = 20; budget = 500
+num_exps = 5; budget = 500
 # num_exps = 3; budget = 40
 
 params_by_optim = {}

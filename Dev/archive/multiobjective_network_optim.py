@@ -7,7 +7,7 @@ import nevergrad as ng
 from experiments import zip_dicts
 from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
 
-num_exps = 20; budget = 500
+num_exps = 5; budget = 500
 # num_exps = 3; budget = 40
 
 params_by_optim = {}
@@ -71,7 +71,7 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
             index_last_step=int(0.6 * np.random.rand() * spike_times.shape[0]),
             advance_by_t_steps=time_interval, spike_times=spike_times,
             spike_indices=spike_indices, node_numbers=spike_node_indices)
-        plot_spiketrains_side_by_side(model_spike_train, targets, exp_type='single_objective_optim', uuid=UUID,
+        plot_spiketrains_side_by_side(model_spike_train, targets, exp_type='multiobjective_optim', uuid=UUID,
                                       title='Spike trains model and target ({}, loss: {})'.format(cur_optim_name, recommendation.loss),
                                       fname='spike_trains_optim_{}_exp_num_{}'.format(cur_optim_name, exp_i))
 

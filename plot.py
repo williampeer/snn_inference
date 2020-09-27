@@ -592,7 +592,7 @@ def bar_plot_all_neuron_rates(rates, stds, bin_size, exp_type, uuid, fname, lege
     plt.close()
 
 
-def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_size):
+def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_size, custom_title=False, custom_label=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists(full_path)
 
@@ -601,8 +601,14 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_siz
 
     a = plt.imshow(corrs, cmap="PuOr", vmin=-1, vmax=1)
     cbar = plt.colorbar(a)
-    cbar.set_label("correlation coeff.")
-    plt.title('Pairwise spike correlations (interval: {} ms)'.format(bin_size))
+    if custom_label is not False:
+        cbar.set_label(custom_label)
+    else:
+        cbar.set_label("correlation coeff.")
+    if custom_title is not False:
+        plt.title(custom_title)
+    else:
+        plt.title('Pairwise spike correlations (interval: {} ms)'.format(bin_size))
     plt.xticks(np.arange(0, len(corrs)))
     plt.yticks(np.arange(0, len(corrs)))
     plt.ylabel(axes[0])
