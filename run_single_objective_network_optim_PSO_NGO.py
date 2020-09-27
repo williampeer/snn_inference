@@ -13,7 +13,7 @@ def main(argv):
     output_fnames_rate_0_6 = ['generated_spike_train_random_glif_1_model_t_300s_rate_0_6.mat',
                               'generated_spike_train_random_glif_2_model_t_300s_rate_0_6.mat',
                               'generated_spike_train_random_glif_3_model_t_300s_rate_0_6.mat',
-                              'generated_spike_train_random_glif_slower_more_synchronous_model_t_300s_rate_0_6.mat',
+                              'generated_spike_train_glif_slower_rate_async_t_300s_rate_0_6.mat',
                               'generated_spike_train_random_glif_slower_more_synchronous_model_t_300s_rate_0_6.mat']
     output_fnames_rate_0_4 = []
     target_params_rate_0_6 = []
@@ -60,8 +60,8 @@ def main(argv):
                 index_ctr += 1
         # print('target_parameters:', target_parameters)
 
-        num_exps = 20; budget = 1000
-        # num_exps = 4; budget = 2
+        # num_exps = 20; budget = 1000
+        num_exps = 4; budget = 2
         params_by_optim = {}
         optim_names = ['PSO', 'NGO']; optim_ctr = 0
         for optim in [ng.optimizers.PSO, ng.optimizers.NGO]:
