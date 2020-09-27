@@ -13,7 +13,7 @@ def main(argv):
     output_fnames_rate_0_6 = ['generated_spike_train_random_glif_1_model_t_300s_rate_0_6.mat',
                               'generated_spike_train_random_glif_2_model_t_300s_rate_0_6.mat',
                               'generated_spike_train_random_glif_3_model_t_300s_rate_0_6.mat',
-                              'generated_spike_train_random_glif_slower_more_synchronous_model_t_300s_rate_0_6.mat',
+                              'generated_spike_train_glif_slower_rate_async_t_300s_rate_0_6.mat',
                               'generated_spike_train_random_glif_slower_more_synchronous_model_t_300s_rate_0_6.mat']
     output_fnames_rate_0_4 = []
     target_params_rate_0_6 = []
