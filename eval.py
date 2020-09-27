@@ -50,7 +50,7 @@ def calculate_loss(output, target, loss_fn, tau_vr=None):
         raise NotImplementedError("Loss function not supported.")
 
     # return loss
-    return loss + spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
+    return loss + 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
 
 # --------------------------------------------------------
 
