@@ -140,11 +140,19 @@ def convert_brian_spike_train_dict_to_boolean_matrix(brian_spike_train, t_max):
     return res
 
 
-def convert_brian_spike_train_to_matlab_format(brian_spike_train):
+def convert_brian_spike_train_to_matlab_format(brian_spikes):
     spike_indices = np.array([], dtype='int8')
     spike_times = np.array([], dtype='float32')
 
-    pass
+    all_spikes_mat = np.array([])
+    all_nodes_mat = np.array([])
+    for n_i in brian_spikes.keys():
+        spike_times_ms = brian_spikes[n_i]/brian2.ms
+        np.concatenate((all_spikes_mat, spike_times_ms))
+        np.concatenate((all_nodes_mat, n_i * np.ones_like(spike_times_ms)))
+
+    # ind = np.argsort(a[:, 1])
+    # a = a[ind]
 
 
 def convert_sparse_spike_train_to_matrix(spike_times, node_indices, unique_node_indices):
