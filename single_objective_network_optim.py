@@ -14,7 +14,8 @@ optim_names = ['DE', 'CMA', 'PSO', 'NGO']; optim_ctr = 0
 for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimizers.NGO]:
     cur_optim_name = optim_names[optim_ctr]
     optim_ctr += 1
-    for loss_fn in ['van_rossum_dist', 'poisson_nll', 'gamma_factor']:
+    # for loss_fn in ['van_rossum_dist', 'poisson_nll', 'gamma_factor']:
+    for loss_fn in ['vrdfrd']:
         UUID = IO.dt_descriptor()
         current_plottable_params_for_optim = {}
         other_params_for_optim = {}

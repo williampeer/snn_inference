@@ -46,11 +46,22 @@ def calculate_loss(output, target, loss_fn, tau_vr=None):
         loss = spike_metrics.mse(output, target)
     elif loss_fn.__contains__('firing_rate_distance'):
         loss = spike_metrics.firing_rate_distance(output, target)
+    elif loss_fn.__contains__('kldfrd'):
+        kld_loss = kl_div(output, target, tau_vr)
+        frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
+        loss = kld_loss + frd_loss
+    elif loss_fn.__contains__('pnllfrd'):
+        pnll_loss = poisson_nll_loss(output, target, tau_vr)
+        frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
+        loss = pnll_loss + frd_loss
+    elif loss_fn.__contains__('vrdfrd'):
+        vrd_loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
+        frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
+        loss = vrd_loss + frd_loss
     else:
         raise NotImplementedError("Loss function not supported.")
 
-    # return loss
-    return loss + 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
+    return loss
 
 # --------------------------------------------------------
 
