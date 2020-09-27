@@ -62,8 +62,8 @@ def main(argv):
                 index_ctr += 1
         # print('target_parameters:', target_parameters)
 
-        # num_exps = 20; budget = 1000
-        num_exps = 4; budget = 2
+        num_exps = 20; budget = 1000
+        # num_exps = 4; budget = 2
         params_by_optim = {}
         optim_names = ['PSO', 'NGO']; optim_ctr = 0
         for optim in [ng.optimizers.PSO, ng.optimizers.NGO]:
@@ -144,8 +144,8 @@ def main(argv):
                                                    custom_title="KDE projection of 2D model parameter".format(cur_optim_name),
                                                    logger=logger, fname='single_objective_KDE_optim_{}'.format(cur_optim_name))
 
-                torch.save(params_by_optim, './saved/single_objective_optim/fitted_params_optim_{}_loss_fn_{}_budget_{}.pt'.format(optim, loss_fn, budget))
-                torch.save(exp_min_losses, './saved/single_objective_optim/min_losses_optim_{}_loss_fn_{}_budget_{}.pt'.format(optim, loss_fn, budget))
+                torch.save(params_by_optim, './saved/single_objective_optim/fitted_params_optim_{}_loss_fn_{}_budget_{}.pt'.format(cur_optim_name, loss_fn, budget))
+                torch.save(exp_min_losses, './saved/single_objective_optim/min_losses_optim_{}_loss_fn_{}_budget_{}.pt'.format(cur_optim_name, loss_fn, budget))
 
 
 if __name__ == "__main__":
