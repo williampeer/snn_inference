@@ -38,8 +38,10 @@ def main(argv):
             rate_num = int(args[i])
     if rate_num == 0:
         output_fnames = output_fnames_rate_0_6
+        target_params = target_params_rate_0_6
     elif rate_num == 1:
         output_fnames = output_fnames_rate_0_4
+        target_params = target_params_rate_0_4
     else:
         raise NotImplementedError()
 
@@ -51,7 +53,7 @@ def main(argv):
         # _, sample_targets = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=time_interval,
         #                                                      spike_times=spike_times, spike_indices=spike_indices,
         #                                                      node_numbers=spike_node_indices)
-        target_params_dict = torch.load(target_data_path + target_params_rate_0_6[model_num])
+        target_params_dict = torch.load(target_data_path + target_params[model_num])
         target_parameters = {}
         index_ctr = 0
         for param_i, key in enumerate(target_params_dict):
