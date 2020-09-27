@@ -4,6 +4,7 @@ import torch
 
 import Constants as C
 import data_util
+import fit_to_data_exp_suite
 from Models.GLIF import GLIF
 
 
@@ -33,20 +34,30 @@ def main(argv):
     # data_path = None
     # prefix = '/Users/william/data/target_data/'
     target_data_path = data_util.prefix + data_util.path
-    data_path = target_data_path + 'generated_spike_train_random_glif_1_model_t_300s_rate_0_6.mat'
-    target_params_dict = torch.load(target_data_path + 'generated_spike_train_random_glif_1_model_t_300s_rate_0_6_params.pt')
-    target_parameters = {}
-    for param_i, param in enumerate(target_params_dict.values()):
-        target_parameters[param_i-1] = param.clone().detach().numpy()
+
+    tmn = 0
+    trn = 0
+    output_fnames_rate_0_6 = ['generated_spike_train_random_glif_1_model_t_300s_rate_0_6.mat',
+                              'generated_spike_train_random_glif_2_model_t_300s_rate_0_6.mat',
+                              'generated_spike_train_random_glif_3_model_t_300s_rate_0_6.mat',
+                              'generated_spike_train_glif_slower_rate_async_t_300s_rate_0_6.mat',
+                              'generated_spike_train_random_glif_slower_more_synchronous_model_t_300s_rate_0_6.mat']
+    output_fnames_rate_0_4 = []
+    target_params_rate_0_6 = []
+    target_params_rate_0_4 = []
+    for fn in output_fnames_rate_0_6:
+        output_fnames_rate_0_4.append(fn.replace('_6', '_4'))
+        target_params_rate_0_6.append(fn.replace('.mat', '_params.pt'))
+        target_params_rate_0_4.append(fn.replace('_6.mat', '_4_params.pt'))
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
-
     for i, opt in enumerate(opts):
         if opt == '-h':
             print('main.py -s <script> -lr <learning-rate> -ti <training-iterations> -N <number-of-experiments> '
                   '-bs <batch-size> -tvr <van-rossum-time-constant> -rpti <rows-per-training-iteration> '
-                  '-optim <optimiser> -ipr <initial-poisson-rate> -es <evaluate-step>')
+                  '-optim <optimiser> -ipr <initial-poisson-rate> -es <evaluate-step> -tmn <target-model-number> '
+                  '-trn <target-rate-number>')
             sys.exit()
         elif opt in ("-lr", "--learning-rate"):
             learn_rate = float(args[i])
@@ -70,17 +81,36 @@ def main(argv):
             data_path = args[i]
         elif opt in ("-sp", "--should-plot"):
             plot_flag = bool(args[i])
+        elif opt in ("-tmn", "--target-model-number"):
+            tmn = int(args[i])
+        elif opt in ("-trn", "--target-rate-number"):
+            trn = int(args[i])
 
-    constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
-                            tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
-                            initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
-                            data_path=data_path, plot_flag=plot_flag)
+    if trn == 0:
+        output_fnames = output_fnames_rate_0_6
+        target_fnames = target_params_rate_0_6
+    elif trn == 1:
+        output_fnames = output_fnames_rate_0_4
+        target_fnames = target_params_rate_0_4
+    else:
+        raise NotImplementedError()
 
-    import fit_to_data_exp_suite
-    # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
-    models = [GLIF]
-    for m_class in models:
-        fit_to_data_exp_suite.start_exp(constants=constants, model_class=m_class, target_parameters=target_parameters)
+    for f_i in range(len(output_fnames[tmn])):
+        data_path = target_data_path + output_fnames[f_i]
+        target_params_dict = torch.load(target_data_path + target_fnames[f_i])
+        target_parameters = {}
+        for param_i, param in enumerate(target_params_dict.values()):
+            target_parameters[param_i-1] = param.clone().detach().numpy()
+
+        constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
+                                tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
+                                initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
+                                data_path=data_path, plot_flag=plot_flag)
+
+        # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+        models = [GLIF]
+        for m_class in models:
+            fit_to_data_exp_suite.start_exp(constants=constants, model_class=m_class, target_parameters=target_parameters)
 
 
 if __name__ == "__main__":
