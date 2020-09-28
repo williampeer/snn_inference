@@ -54,41 +54,40 @@ def main(argv):
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
     for i, opt in enumerate(opts):
-        pass
-    if opt == '-h':
-        print('main.py -s <script> -lr <learning-rate> -ti <training-iterations> -N <number-of-experiments> '
-              '-bs <batch-size> -tvr <van-rossum-time-constant> -rpti <rows-per-training-iteration> '
-              '-optim <optimiser> -ipr <initial-poisson-rate> -es <evaluate-step> -tmn <target-model-number> '
-              '-trn <target-rate-number>')
-        sys.exit()
-    elif opt in ("-lr", "--learning-rate"):
-        learn_rate = float(args[i])
-    elif opt in ("-ti", "--training-iterations"):
-        max_train_iters = int(args[i])
-    elif opt in ("-N", "--numbers-of-experiments"):
-        N_exp = int(args[i])
-    elif opt in ("-bs", "--batch-size"):
-        batch_size = int(args[i])
-    elif opt in ("-tvr", "--van-rossum-time-constant"):
-        tau_van_rossum = float(args[i])
-    elif opt in ("-rpti", "--rows-per-training-iteration"):
-        rows_per_train_iter = int(args[i])
-    elif opt in ("-optim", "--optimiser"):
-        optimiser = str(args[i])
-    elif opt in ("-ipr", "--initial-poisson-rate"):
-        initial_poisson_rate = float(args[i])
-    elif opt in ("-es", "--evaluate-step"):
-        evaluate_step = int(args[i])
-    elif opt in ("-dp", "--data-path"):
-        data_path = args[i]
-    elif opt in ("-sp", "--should-plot"):
-        plot_flag = bool(args[i])
-    elif opt in ("-tmn", "--target-model-number"):
-        tmn = int(args[i])
-    elif opt in ("-trn", "--target-rate-number"):
-        trn = int(args[i])
-    elif opt in ("-ss", "--start-seed"):
-        start_seed = int(args[i])
+        if opt == '-h':
+            print('main.py -s <script> -lr <learning-rate> -ti <training-iterations> -N <number-of-experiments> '
+                  '-bs <batch-size> -tvr <van-rossum-time-constant> -rpti <rows-per-training-iteration> '
+                  '-optim <optimiser> -ipr <initial-poisson-rate> -es <evaluate-step> -tmn <target-model-number> '
+                  '-trn <target-rate-number>')
+            sys.exit()
+        elif opt in ("-lr", "--learning-rate"):
+            learn_rate = float(args[i])
+        elif opt in ("-ti", "--training-iterations"):
+            max_train_iters = int(args[i])
+        elif opt in ("-N", "--numbers-of-experiments"):
+            N_exp = int(args[i])
+        elif opt in ("-bs", "--batch-size"):
+            batch_size = int(args[i])
+        elif opt in ("-tvr", "--van-rossum-time-constant"):
+            tau_van_rossum = float(args[i])
+        elif opt in ("-rpti", "--rows-per-training-iteration"):
+            rows_per_train_iter = int(args[i])
+        elif opt in ("-optim", "--optimiser"):
+            optimiser = str(args[i])
+        elif opt in ("-ipr", "--initial-poisson-rate"):
+            initial_poisson_rate = float(args[i])
+        elif opt in ("-es", "--evaluate-step"):
+            evaluate_step = int(args[i])
+        elif opt in ("-dp", "--data-path"):
+            data_path = args[i]
+        elif opt in ("-sp", "--should-plot"):
+            plot_flag = bool(args[i])
+        elif opt in ("-tmn", "--target-model-number"):
+            tmn = int(args[i])
+        elif opt in ("-trn", "--target-rate-number"):
+            trn = int(args[i])
+        elif opt in ("-ss", "--start-seed"):
+            start_seed = int(args[i])
 
     if trn == 0:
         output_fnames = output_fnames_rate_0_6

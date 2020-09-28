@@ -168,7 +168,7 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, static_p
                   .format(exp_i, train_i, train_losses, test_losses))
 
         for p_i, key in enumerate(recovered_parameters):
-            if exp_i == 0:
+            if exp_i == constants.start_seed:
                 recovered_param_per_exp[key] = [recovered_parameters[key]]
             else:
                 recovered_param_per_exp[key].append(recovered_parameters[key])
