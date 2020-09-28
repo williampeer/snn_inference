@@ -3,6 +3,7 @@ import sys
 import Log
 import data_util
 from Constants import ExperimentType
+from IO import save_poisson_rates
 from Models.GLIF import GLIF
 from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
@@ -160,6 +161,7 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, static_p
 
         recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
             fit_model_to_data(logger, constants, model_class, params_model, exp_num=exp_i, target_parameters=target_parameters)
+        logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
 
         if train_i >= constants.train_iters:
             print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
@@ -170,8 +172,10 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, static_p
                 recovered_param_per_exp[key] = [recovered_parameters[key]]
             else:
                 recovered_param_per_exp[key].append(recovered_parameters[key])
-        poisson_rate_per_exp.append(poisson_rates)
+        poisson_rate_per_exp.append(poisson_rates[-1])
 
+    logger.log('poisson_rate_per_exp', poisson_rate_per_exp)
+    save_poisson_rates(poisson_rate_per_exp, uuid=constants.UUID, fname='poisson_rates_per_exp.pt')
     parameter_names = model_class.parameter_names
     parameter_names.append('p_rate')
     if constants.plot_flag:

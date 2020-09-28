@@ -27,6 +27,12 @@ def save_model_params(model, fname='test_model_params'):
     torch.save(model.state_dict(), full_path+'/'+fname+fname_ext)
 
 
+def save_poisson_rates(rates, uuid, fname='default_poisson_rates'):
+    makedir_if_not_exists(PATH + uuid)
+
+    torch.save(rates, PATH+uuid+'/'+fname+fname_ext)
+
+
 def save(model, loss, uuid, fname='test_exp_dict'):
     makedir_if_not_exists(PATH + uuid)
 
