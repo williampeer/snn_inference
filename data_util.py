@@ -6,9 +6,9 @@ import brian2
 # NOTE: This is an implementation for sparse representations (two vectors) of a spike trains,
 #   represented by two vectors; the spike times, and node indices.
 
-# prefix = '/home/william/'  # Ubuntu
+prefix = '/home/william/'  # Ubuntu
 # prefix = '/Users/william/'  # OS X
-prefix = '/home/williampeer/'  # server
+# prefix = '/home/williampeer/'  # server
 path = 'data/target_data/'
 matlab_export = 'matlab_export/'
 
@@ -144,15 +144,13 @@ def convert_brian_spike_train_to_matlab_format(brian_spikes):
     spike_indices = np.array([], dtype='int8')
     spike_times = np.array([], dtype='float32')
 
-    all_spikes_mat = np.array([])
-    all_nodes_mat = np.array([])
     for n_i in brian_spikes.keys():
-        spike_times_ms = brian_spikes[n_i]/brian2.ms
-        np.concatenate((all_spikes_mat, spike_times_ms))
-        np.concatenate((all_nodes_mat, n_i * np.ones_like(spike_times_ms)))
+        spike_times_ms = np.round(brian_spikes[n_i]/brian2.ms)
+        spike_times = np.concatenate((spike_times, spike_times_ms))
+        spike_indices = np.concatenate((spike_indices, n_i * np.ones_like(spike_times_ms, dtype='int8')))
 
-    # ind = np.argsort(a[:, 1])
-    # a = a[ind]
+    indices_sorted = np.argsort(spike_times)
+    return spike_times[indices_sorted], spike_indices[indices_sorted]
 
 
 def convert_sparse_spike_train_to_matrix(spike_times, node_indices, unique_node_indices):
