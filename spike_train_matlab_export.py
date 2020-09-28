@@ -16,7 +16,6 @@ def main(argv):
     args = [arg for arg in argv if not arg.startswith("-")]
 
     t = 5 * 60 * 1000
-    poisson_rate = 0.6
     # model_path = 'random_glif_3_model'
     # model_path = 'glif_slower_rate_async_2'
     # model = TargetModels.glif_slower_rate_async()
@@ -26,7 +25,9 @@ def main(argv):
     # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_3_data_set_None_mean_loss_4.095_uuid_09-27_14-44-54-444.pt'
     # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_5_data_set_None_mean_loss_11.479_uuid_09-27_14-44-54-444.pt'
     # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_6_data_set_None_mean_loss_7.588_uuid_09-27_14-44-54-444.pt'
-    model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_7_data_set_None_mean_loss_3.913_uuid_09-27_14-44-54-444.pt'
+    # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_7_data_set_None_mean_loss_3.913_uuid_09-27_14-44-54-444.pt'
+    # model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_9_data_set_None_mean_loss_14.875_uuid_09-27_14-44-54-444.pt'
+    model_path = '/home/william/repos/snn_inference/saved/09-27_14-44-54-444/GLIF_exp_num_11_data_set_None_mean_loss_9.290_uuid_09-27_14-44-54-444.pt'
 
     for i, opt in enumerate(opts):
         if opt == '-h':
@@ -36,14 +37,14 @@ def main(argv):
             model_path = args[i]
         elif opt in ("-t", "--time"):
             t = int(args[i])
-        elif opt in ("-r", "--poisson-rate"):
-            poisson_rate = float(args[i])
 
     if model_path is None:
         print('No path to load model from specified.')
         sys.exit(1)
 
-    model = torch.load(model_path)['model']
+    exp_res = torch.load(model_path)
+    model = exp_res['model']
+    poisson_rate = exp_res['rate']
     print('Loaded model.')
 
     interval_size = 4000
