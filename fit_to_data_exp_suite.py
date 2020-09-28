@@ -23,7 +23,7 @@ verbose = True
 # ---------------------------------------
 
 
-def stats_training_iterations(model_parameters, model, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
+def stats_training_iterations(model_parameters, model, poisson_rate, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
     if constants.plot_flag:
         parameter_names = model.parameter_names
         parameter_names.append('p_rate')
@@ -45,7 +45,7 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
     logger.log('test_losses: #{}'.format(test_losses), ['mean test loss: {}'.format(mean_test_loss)])
 
     cur_fname = '{}_exp_num_{}_data_set_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, constants.data_set, mean_test_loss, constants.UUID)
-    IO.save(model, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
+    IO.save(model, rate=poisson_rate, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
 
     del model, mean_test_loss
 
@@ -139,8 +139,8 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         targets = None; validation_inputs = None; validation_loss = None
         train_i += 1
 
-    stats_training_iterations(parameters, model, train_losses, validation_losses, constants, logger, ExperimentType.DataDriven.name,
-                              target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
+    stats_training_iterations(parameters, model, poisson_input_rate, train_losses, validation_losses, constants, logger,
+                              ExperimentType.DataDriven.name, target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
     final_model_parameters = {}
     for p_i, key in enumerate(model.state_dict()):
         final_model_parameters[p_i] = [model.state_dict()[key].numpy()]
