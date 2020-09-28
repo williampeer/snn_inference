@@ -90,5 +90,5 @@ for optim in [ng.optimizers.DE, ng.optimizers.CMA, ng.optimizers.PSO, ng.optimiz
                                            custom_title="KDE projection of 2D model parameter".format(cur_optim_name),
                                            logger=logger, fname='single_objective_KDE_optim_{}'.format(cur_optim_name))
 
-        torch.save(params_by_optim, './saved/single_objective_optim/fitted_params_optim_{}_loss_fn_{}_budget_{}.pt'.format(optim, loss_fn, budget))
-        torch.save(exp_min_losses, './saved/single_objective_optim/min_losses_optim_{}_loss_fn_{}_budget_{}.pt'.format(optim, loss_fn, budget))
+        torch.save(params_by_optim, './saved/single_objective_optim/fitted_params_optim_{}_loss_fn_{}_budget_{}.pt'.format(cur_optim_name, loss_fn, budget))
+        torch.save(exp_min_losses, './saved/single_objective_optim/min_losses_optim_{}_loss_fn_{}_budget_{}.pt'.format(cur_optim_name, loss_fn, budget))

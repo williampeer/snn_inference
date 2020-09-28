@@ -150,7 +150,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
 
 def run_exp_loop(logger, constants, model_class, free_model_parameters, static_parameters, target_parameters=False):
     recovered_param_per_exp = {}; poisson_rate_per_exp = []
-    for exp_i in range(constants.N_exp):
+    for exp_i in range(constants.start_seed, constants.start_seed+constants.N_exp):
         torch.manual_seed(exp_i)
         np.random.seed(exp_i)
 
