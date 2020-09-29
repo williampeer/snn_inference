@@ -78,8 +78,8 @@ def main(argv):
             initial_poisson_rate = float(args[i])
         elif opt in ("-es", "--evaluate-step"):
             evaluate_step = int(args[i])
-        elif opt in ("-dp", "--data-path"):
-            data_path = args[i]
+        elif opt in ("-lfn", "--loss-function"):
+            loss_fn = args[i]
         elif opt in ("-sp", "--should-plot"):
             plot_flag = bool(args[i])
         # elif opt in ("-tmn", "--target-model-number"):

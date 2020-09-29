@@ -266,6 +266,7 @@ def plot_parameter_pair_with_variance(p1_means, p2_means, target_params, path, x
             logger.log('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means), ['plot.plot_parameter_pair_with_variance'])
 
 
+# TODO: fix spaghetti-implementation
 def decompose_param_plot(param_2D, target_params, name, path, custom_title=False):
     params_by_exp = np.array(param_2D).T
     num_of_parameters = params_by_exp.shape[0]
@@ -308,6 +309,7 @@ def decompose_param_plot(param_2D, target_params, name, path, custom_title=False
     plt.close()
 
 
+# TODO: fix spaghetti-implementation
 def plot_all_param_pairs_with_variance(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger, export_flag=False):
     if export_flag:
         full_path = data_util.prefix + 'data/export/' + exp_type + '/'
@@ -399,6 +401,7 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
 #     # plt.show()
 #     fig.savefig(path)
 #     plt.close()
+# TODO: fix spaghetti-implementation
 def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     params_by_exp = np.array(param_2D).T
     num_of_parameters = params_by_exp.shape[0]
@@ -434,6 +437,7 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     plt.close()
 
 
+# TODO: fix spaghetti-implementation
 def param_pair_trajectory_plot(p1_means, p2_means, target_params, path, xlabel='Parameter 1', ylabel='Parameter 2',
                                custom_title=False, logger=False):
     try:
@@ -468,6 +472,7 @@ def param_pair_trajectory_plot(p1_means, p2_means, target_params, path, xlabel='
                        ['plot.plot_parameter_pair_with_variance'])
 
 
+# TODO: fix spaghetti-implementation
 def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists(full_path)
@@ -501,6 +506,7 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
         #                                xlabel=name, ylabel=name,
         #                                custom_title=custom_title, logger=logger)
 
+# TODO: fix spaghetti-implementation
 # def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):
 #     full_path = './figures/' + exp_type + '/' + uuid + '/'
 #     IO.makedir_if_not_exists(full_path)
