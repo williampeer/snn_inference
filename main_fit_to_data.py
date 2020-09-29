@@ -18,11 +18,11 @@ def main(argv):
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'firing_rate_distance'
-    # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 300; loss_fn = 'poisson_nll'
+    # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
-    # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 300; loss_fn = 'pnllfrd'
+    # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
     max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
@@ -34,15 +34,15 @@ def main(argv):
     # evaluate_step = int(max(max_train_iters/10, 1))
     # data_path = None
     # prefix = '/Users/william/data/target_data/'
-    target_data_path = data_util.prefix + data_util.path
+    target_data_folder_path = data_util.prefix + data_util.path
 
-    tmn = 0
+    # tmn = 0
     trn = 0
     output_fnames_rate_0_6 = ['generated_spike_train_random_glif_1_model_t_300s_rate_0_6.mat',
                               'generated_spike_train_random_glif_2_model_t_300s_rate_0_6.mat',
                               'generated_spike_train_random_glif_3_model_t_300s_rate_0_6.mat',
                               'generated_spike_train_glif_slower_rate_async_t_300s_rate_0_6.mat',
-                              'generated_spike_train_random_glif_slower_more_synchronous_model_t_300s_rate_0_6.mat']
+                              'generated_spike_train_glif_slower_more_synchronous_model_t_300s_rate_0_6.mat']
     output_fnames_rate_0_4 = []
     target_params_rate_0_6 = []
     target_params_rate_0_4 = []
@@ -82,8 +82,8 @@ def main(argv):
             data_path = args[i]
         elif opt in ("-sp", "--should-plot"):
             plot_flag = bool(args[i])
-        elif opt in ("-tmn", "--target-model-number"):
-            tmn = int(args[i])
+        # elif opt in ("-tmn", "--target-model-number"):
+        #     tmn = int(args[i])
         elif opt in ("-trn", "--target-rate-number"):
             trn = int(args[i])
         elif opt in ("-ss", "--start-seed"):
@@ -98,9 +98,9 @@ def main(argv):
     else:
         raise NotImplementedError()
 
-    for f_i in range(len(output_fnames[tmn])):
-        data_path = target_data_path + output_fnames[f_i]
-        target_params_dict = torch.load(target_data_path + target_fnames[f_i])
+    for f_i in range(len(output_fnames)):
+        data_path = target_data_folder_path + output_fnames[f_i]
+        target_params_dict = torch.load(target_data_folder_path + target_fnames[f_i])
         target_parameters = {}
         for param_i, param in enumerate(target_params_dict.values()):
             target_parameters[param_i-1] = param.clone().detach().numpy()
