@@ -10,8 +10,9 @@ from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_si
 def main(argv):
     print('Argument List:', str(argv))
 
-    num_exps = 10; budget = 10000
+    num_exps = 10; budget = 5000
     optim_name = 'DE'
+    loss_fn = 'vrdfrd'
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
@@ -25,6 +26,8 @@ def main(argv):
             num_exps = int(args[i])
         elif opt in ("-o", "--optim"):
             optim_name = args[i]
+        elif opt in ("-lfn", "--loss-function"):
+            loss_fn = args[i]
 
     if optim_name == 'DE':
         optim = ng.optimizers.DE
@@ -38,7 +41,6 @@ def main(argv):
         raise NotImplementedError()
 
     params_by_optim = {}
-    loss_fn = 'vrdfrd'
     UUID = IO.dt_descriptor()
     current_plottable_params_for_optim = {}
     other_params_for_optim = {}
@@ -69,7 +71,7 @@ def main(argv):
         logger = Logger(log_fname='brian2_network_nevergrad_optimization_budget_{}'.format(budget))
         logger.log('setup experiment with the optimizer {}'.format(optimizer.__str__()))
 
-        recommendation = optimizer.minimize(run_simulation_for, verbosity=2)
+        recommendation = optimizer.minimize(run_simulation_for)
 
         logger.log('recommendation.value: {}'.format(recommendation.value))
         fitted_params = recommendation.value[1]

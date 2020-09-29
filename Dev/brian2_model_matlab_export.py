@@ -2,13 +2,12 @@ import torch
 
 import data_util
 from Dev.brian2_custom_network_opt import get_spike_train_for_matlab_export
-from IO import save_model_params
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_brian_spike_train_to_matlab_format
 from experiments import zip_dicts
 
-dict_path = '/home/william/repos/archives_snn_inference/archive (3)/saved/single_objective_optim/fitted_params_optim_DE_loss_fn_vrdfrd_budget_1000.pt'
+dict_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/single_objective_optim/fitted_params_optim_CMA_loss_fn_vrdfrd_budget_1000.pt'
 
-optim_name = 'DE'
+optim_name = 'CMA'
 params_by_optim = torch.load(dict_path)[optim_name]
 print('Loaded models dict.')
 
@@ -22,6 +21,9 @@ def convert_integer_indexed_to_named_params(d):
 
 
 model_parameters = convert_integer_indexed_to_named_params(params_by_optim)
+
+# print(len(model_parameters['E_L']))
+# TODO: easy to program importing fnames.
 for exp_i in range(len(model_parameters['E_L'])):
     print('Processing exp num {}'.format(exp_i))
     weights = params_by_optim['w'][exp_i]
