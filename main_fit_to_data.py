@@ -108,7 +108,7 @@ def main(argv):
         constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
                                 tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
                                 initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
-                                data_path=data_path, plot_flag=plot_flag, start_seed=start_seed)
+                                data_path=data_path, plot_flag=plot_flag, start_seed=start_seed, target_fname=target_fnames[f_i])
 
         # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         models = [GLIF]

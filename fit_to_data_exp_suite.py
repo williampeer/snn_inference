@@ -181,7 +181,7 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, static_p
     if constants.plot_flag:
         plot_all_param_pairs_with_variance(recovered_param_per_exp,
                                        uuid=constants.UUID,
-                                       exp_type=ExperimentType.RetrieveFitted.name,
+                                       exp_type=ExperimentType.DataDriven.name,
                                        target_params=target_parameters,
                                        param_names=parameter_names,
                                        custom_title="Average inferred parameters across experiments [{}, {}]".format(

@@ -5,6 +5,7 @@ import matplotlib.cm as cm
 from scipy.stats import gaussian_kde
 
 import IO
+import data_util
 
 
 def plot_spiketrain(spike_history, title, uuid, exp_type='default', fname='spiketrain_test'):
@@ -298,7 +299,7 @@ def decompose_param_plot(param_2D, target_params, name, path, custom_title=False
     if custom_title:
         fig.suptitle(custom_title + ' ${}$'.format(name))
     else:
-        fig.suptitle('Decomposed KDEs between neurons for parameters ${} x {}$'.format(xlabel, ylabel))
+        fig.suptitle('Decomposed KDEs between neurons for parameter ${}$'.format(name))
 
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
@@ -307,8 +308,15 @@ def decompose_param_plot(param_2D, target_params, name, path, custom_title=False
     plt.close()
 
 
-def plot_all_param_pairs_with_variance(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):
-    full_path = './figures/' + exp_type + '/' + uuid + '/'
+def plot_all_param_pairs_with_variance(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger, export_flag=False):
+    if export_flag:
+        full_path = data_util.prefix + 'data/export/' + exp_type + '/'
+        IO.makedir_if_not_exists(full_path)
+        full_path = data_util.prefix + 'data/export/' + exp_type + '/' + uuid + '/'
+    else:
+        full_path = './figures/' + exp_type + '/' + uuid + '/'
+        IO.makedir_if_not_exists(full_path)
+        full_path = './figures/' + exp_type + '/'
     IO.makedir_if_not_exists(full_path)
 
     data = {'param_means': param_means, 'param_names': param_names, 'target_params': target_params, 'exp_type': exp_type,
@@ -340,8 +348,11 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
                 cur_tar = False
                 if target_params and len(target_params) > i:
                     cur_tar = target_params[i]
-                decompose_param_plot(cur_p, cur_tar, name=name, path=path+'_param_{}'.format(name),
-                                     custom_title=custom_title)
+                if path.__contains__('.eps'):
+                    p_split = path.split('.eps')
+                    decompose_param_plot(cur_p, cur_tar, name=name, path=p_split[0]+'_param_{}'.format(name)+'.eps', custom_title=custom_title)
+                else:
+                    decompose_param_plot(cur_p, cur_tar, name=name, path=path+'_param_{}'.format(name), custom_title=custom_title)
             # if len(cur_p_j.shape) == 2:
             #     cur_tar = False
             #     if target_params and len(target_params) > plot_j:
