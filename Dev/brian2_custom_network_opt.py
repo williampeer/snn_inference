@@ -49,7 +49,7 @@ dI_syn/dt = -f_I * I_syn/tau : 1 (clock-driven)
 w : 1
 '''
 
-neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>30', reset=reset, method='exact')
+neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>theta_s + theta_v', reset=reset, method='exact')
 
 synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='exact')
 synapses.connect(condition=True)
