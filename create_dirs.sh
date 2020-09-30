@@ -13,6 +13,8 @@ mkdir figures/single_objective_optim
 mkdir figures/multiobjective_optim
 
 mkdir saved/plot_data
+mkdir saved/plot_data/single_objective_optim
+mkdir saved/single_objective_optim
 
 mkdir Test/saved
 mkdir Test/figures
