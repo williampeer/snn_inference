@@ -13,7 +13,7 @@ def main(argv):
 
     # Default values
     start_seed = 0
-    learn_rate = 0.001; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
+    learn_rate = 0.001; N_exp = 20; tau_van_rossum = 4.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kl_div'
