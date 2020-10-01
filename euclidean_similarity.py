@@ -8,13 +8,20 @@ def euclidean_similarity(mp, tp):
         tp = tp.clone().detach().numpy()
     # mp = mp/mp.shape[0]
     # tp = tp/tp.shape[0]
-    # normalise
-    abs_max = np.max([np.max(np.abs(mp)), np.max(np.abs(tp))])
-    mp = mp/abs_max
-    tp = tp/abs_max
+    # normalise to unit length
+    # abs_max = np.max([np.max(np.abs(mp)), np.max(np.abs(tp))])
+    # mp = mp/abs_max
+    # tp = tp/abs_max
+    u_len_norm = np.max([np.sqrt(np.power(mp, 2).sum()), np.sqrt(np.power(tp, 2).sum())])
+    mp = np.abs(mp) / u_len_norm
+    tp = np.abs(tp) / u_len_norm
     # div by pop size?
     euclid_dist = np.sqrt(np.power(tp-mp, 2).sum())
-    return 1 / (1. + euclid_dist)
+    # return euclid_dist
+    # max_euclid_dist = np.sqrt(mp.shape[0])
+    # return 1. - euclid_dist / max_euclid_dist
+    # return 1 / (1. + 10**euclid_dist)
+    return 1. - euclid_dist
 
 
 def mean_euclidean_similarity(ps1, ps2):

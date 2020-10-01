@@ -4,7 +4,11 @@ from nmf_results import *
 
 
 def geodesic_similarity(m1, m2):
-    return 1. - 2./ np.pi * np.arccos(np.inner(m1, m2))
+    u_len_norm = np.max([np.sqrt(np.power(m1, 2).sum()), np.sqrt(np.power(m2, 2).sum())])
+    m1 = np.abs(m1) / u_len_norm
+    m2 = np.abs(m2) / u_len_norm
+
+    return 1. - np.arccos(np.inner(m1, m2)) * 2./ np.pi
 
 
 def brute_force_max_geodesic_similarity(m1, m2):
@@ -22,3 +26,19 @@ def brute_force_max_geodesic_similarity(m1, m2):
     similarities.append(np.mean([s[0][2], s[1][0], s[2][1]]))
     similarities.append(np.mean([s[0][2], s[1][1], s[2][0]]))
     return np.max(similarities)
+
+
+def mean_geodesic_similarity(ps1, ps2):
+    similarities = []
+    for key in ps1:
+        cp1 = ps1[key]
+        if str(cp1.__class__).__contains__('torch.Tensor'):
+            cp1 = cp1.clone().detach().numpy()
+        cp2 = ps2[key]
+        if str(cp2.__class__).__contains__('torch.Tensor'):
+            cp2 = cp2.clone().detach().numpy()
+        # cp1 = np.abs(cp1)
+        # cp2 = np.abs(cp2)
+
+        similarities.append(geodesic_similarity(cp1, cp2))
+    return np.mean(similarities)

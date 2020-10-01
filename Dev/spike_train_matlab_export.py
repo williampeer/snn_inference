@@ -16,13 +16,15 @@ def main(argv):
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
 
-    t = 1 * 60 * 1000
+    t = 60 * 1000
     # t = 15 * 60 * 1000
     # model_path = 'glif1'
     # model = TargetModels.glif1()
     # poisson_rate = 0.4
-    # TODO: easy to program importing fnames.
-    model_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/09-30_19-59-56-324/GLIF_exp_num_9_data_set_None_mean_loss_4.194_uuid_09-30_19-59-56-324.pt'
+    loss_fn = 'kl_div'
+    cur_model_descr = 'glif2'
+    model_path = '/home/william/repos/archives_snn_inference/archive (6)/saved/09-29_08-47-29-521/GLIF_exp_num_4_data_set_None_mean_loss_3.824_uuid_09-29_08-47-29-521.pt'
+    # model_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/10-01_02-00-06-808/GLIF_exp_num_19_data_set_None_mean_loss_-0.000_uuid_10-01_02-00-06-808.pt'
 
     for i, opt in enumerate(opts):
         if opt == '-h':
@@ -71,16 +73,18 @@ def main(argv):
         spike_times = np.append(spike_times, cur_spike_times)
         print('{} seconds ({:.2f} min) simulated.'.format(interval_size * (t_i+1)/1000., interval_size * (t_i+1)/(60.*1000)))
 
-    fname = model_path.split('/')[-1]
-    model_name = fname.split('.pt')[0]
+    # fname = model_path.split('/')[-1]
+    # model_name = fname.split('.pt')[0]
     # save_fname_input = 'poisson_inputs_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
     # save_spiketrain_in_sparse_matlab_format(fname=save_fname_input, spike_indices=input_indices, spike_times=input_times)
     # save_model_params(model, fname=save_fname_input.replace('.mat', '_params'))
 
-    save_fname_output = 'generated_spike_train_{}_t_{:.0f}s_rate_{:1.2f}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
+    exp_num = model_path.split('exp_num_')[1].split('_data_set')[0]
+    save_fname_output = 'generated_spike_train_{}_fit_{}_exp_num_{}'.format(cur_model_descr, loss_fn, exp_num).replace('.', '_') + '.mat'
     save_spiketrain_in_sparse_matlab_format(fname=save_fname_output, spike_indices=spike_indices, spike_times=spike_times)
     save_model_params(model, fname=save_fname_output.replace('.mat', '_params'))
 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+    sys.exit(0)

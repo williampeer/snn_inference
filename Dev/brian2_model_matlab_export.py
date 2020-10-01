@@ -5,9 +5,16 @@ from Dev.brian2_custom_network_opt import get_spike_train_for_matlab_export
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_brian_spike_train_to_matlab_format
 from experiments import zip_dicts
 
-dict_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/single_objective_optim/params_by_optim_optim_DE_loss_fn_vrdfrd_budget_2000.pt'
+# dict_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/single_objective_optim/params_by_optim_optim_DE_loss_fn_vrdfrd_budget_2000.pt'
+# dict_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/single_objective_optim/params_by_optim_optim_DE_loss_fn_van_rossum_dist_budget_2000.pt'
+# dict_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/single_objective_optim/params_by_optim_optim_DE_loss_fn_poisson_nll_budget_2000.pt'
+# dict_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/single_objective_optim/params_by_optim_optim_DE_loss_fn_gamma_factor_budget_2000.pt'
 
-optim_name = 'DE'
+# dict_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/single_objective_optim/params_by_optim_optim_CMA_loss_fn_vrdfrd_budget_2000.pt'
+# dict_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/single_objective_optim/params_by_optim_optim_CMA_loss_fn_van_rossum_dist_budget_2000.pt'
+dict_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/single_objective_optim/params_by_optim_optim_CMA_loss_fn_poisson_nll_budget_2000.pt'
+
+optim_name = 'CMA'
 params_by_optim = torch.load(dict_path)[optim_name]
 print('Loaded models dict.')
 
