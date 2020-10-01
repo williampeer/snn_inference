@@ -4,14 +4,12 @@ from nmf_results import *
 
 
 def geodesic_similarity(m1, m2):
-    # inner_prod = np.inner(m1, m2)
-    # inner_prod[inner_prod > 1.] = 1.
     return 1. - 2./ np.pi * np.arccos(np.inner(m1, m2))
 
 
 def brute_force_max_geodesic_similarity(m1, m2):
-    assert m1.shape[0] == 3 and m1.shape[1] == 12, "shape expected to be (12,3)"
-    assert m2.shape[0] == 3 and m2.shape[1] == 12, "shape expected to be (12,3)"
+    assert m1.shape[0] == 3 and m1.shape[1] == 12, "shape expected to be (3,12)"
+    assert m2.shape[0] == 3 and m2.shape[1] == 12, "shape expected to be (3,12)"
     s = geodesic_similarity(m1, m2)
     assert s.shape[0] == 3 and s.shape[1] == 3, "similarity combos should then be (3,3). similarities shape: {}".format(s)
 
