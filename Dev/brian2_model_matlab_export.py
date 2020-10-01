@@ -5,9 +5,9 @@ from Dev.brian2_custom_network_opt import get_spike_train_for_matlab_export
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_brian_spike_train_to_matlab_format
 from experiments import zip_dicts
 
-dict_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/single_objective_optim/fitted_params_optim_CMA_loss_fn_vrdfrd_budget_1000.pt'
+dict_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/single_objective_optim/params_by_optim_optim_DE_loss_fn_vrdfrd_budget_2000.pt'
 
-optim_name = 'CMA'
+optim_name = 'DE'
 params_by_optim = torch.load(dict_path)[optim_name]
 print('Loaded models dict.')
 
@@ -28,6 +28,8 @@ for exp_i in range(len(model_parameters['E_L'])):
     print('Processing exp num {}'.format(exp_i))
     weights = params_by_optim['w'][exp_i]
     rate = params_by_optim['rate'][exp_i]
+    loss_fn = params_by_optim['loss_fn'][exp_i]
+
     current_model_parameters = {}
     for i, k in enumerate(model_parameters):
         current_model_parameters[k] = model_parameters[k][exp_i]
@@ -38,7 +40,8 @@ for exp_i in range(len(model_parameters['E_L'])):
     fname = dict_path.split('/')[-1]  # TODO: double check
     model_name = fname.split('.pt')[0]
 
-    save_fname_output = 'spikes_brian_{}_rate_{:2.2f}_exp_{}'.format(model_name, rate, exp_i).replace('.', '_') + '.mat'
+    # save_fname_output = 'spikes_brian_{}_rate_{:2.2f}_exp_{}'.format(model_name, rate, exp_i).replace('.', '_') + '.mat'
+    save_fname_output = 'spikes_brian_{}_exp_{}'.format(model_name, exp_i).replace('.', '_') + '.mat'
     save_spiketrain_in_sparse_matlab_format(fname=save_fname_output, spike_indices=node_spike_indices, spike_times=spike_times)
 
     combined_model_params = {'w': weights, 'rate': rate}

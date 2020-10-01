@@ -133,7 +133,8 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
 
         max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
-        converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
+        # converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
+        converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss <= 0.8 * np.max(validation_losses)
 
         release_computational_graph(model, poisson_input_rate, validation_inputs)
         targets = None; validation_inputs = None; validation_loss = None

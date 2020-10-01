@@ -16,23 +16,13 @@ def main(argv):
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
 
-    t = 5 * 60 * 1000
-    model_path = 'glif_slower_more_synchronous'
-    model = TargetModels.glif_slower_more_synchronous()
-    poisson_rate = 0.6
+    t = 1 * 60 * 1000
+    # t = 15 * 60 * 1000
+    # model_path = 'glif1'
+    # model = TargetModels.glif1()
+    # poisson_rate = 0.4
     # TODO: easy to program importing fnames.
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_0_data_set_None_mean_loss_2.929_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_2_data_set_None_mean_loss_2.997_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_3_data_set_None_mean_loss_3.697_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_4_data_set_None_mean_loss_2.982_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_5_data_set_None_mean_loss_2.846_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_6_data_set_None_mean_loss_6.513_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_7_data_set_None_mean_loss_4.080_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_8_data_set_None_mean_loss_3.252_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_11_data_set_None_mean_loss_4.194_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_14_data_set_None_mean_loss_3.004_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_17_data_set_None_mean_loss_3.011_uuid_09-28_14-13-16-244.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (4)/saved/09-28_14-13-16-244/GLIF_exp_num_18_data_set_None_mean_loss_2.879_uuid_09-28_14-13-16-244.pt'
+    model_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/09-30_19-59-56-324/GLIF_exp_num_9_data_set_None_mean_loss_4.194_uuid_09-30_19-59-56-324.pt'
 
     for i, opt in enumerate(opts):
         if opt == '-h':
@@ -47,9 +37,9 @@ def main(argv):
         print('No path to load model from specified.')
         sys.exit(1)
 
-    # exp_res = torch.load(model_path)
-    # model = exp_res['model']
-    # poisson_rate = exp_res['rate']
+    exp_res = torch.load(model_path)
+    model = exp_res['model']
+    poisson_rate = exp_res['rate']
     print('Loaded model.')
 
     interval_size = 4000

@@ -197,7 +197,7 @@ def get_spike_train_for(rate, weights, neurons_params, run_time=time_interval):
     return torch.tensor(data_util.convert_brian_spike_train_dict_to_boolean_matrix(spikemon.spike_trains(), t_max=time_interval), dtype=torch.float32)
 
 
-def get_spike_train_for_matlab_export(rate, weights, neurons_params, run_time=5*60*1000):
+def get_spike_train_for_matlab_export(rate, weights, neurons_params, run_time=60*1000):
     restore()
 
     neurons.set_states(neurons_params)
