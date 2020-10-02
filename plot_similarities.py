@@ -2,35 +2,41 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def bar_plot_similarities(similarities_per_exp, legends=False):
-    xs = np.linspace(1, similarities_per_exp[0].shape[0], similarities_per_exp[0].shape[0])
-    width = 0.8/len(similarities_per_exp)
+def bar_plot_similarities(similarities_per_lfn, xticks=False, legends=False, title=False):
+    xs = np.linspace(0.2, len(similarities_per_lfn)-0.8, len(similarities_per_lfn))
+    width = 0.15
 
-    for i in range(len(similarities_per_exp)):
-        sim_exp = similarities_per_exp[i]
-        if len(sim_exp)>0:
-            print('plotting i: {}'.format(i))
-            plt.bar(xs-width+i*width, np.mean(sim_exp), yerr=np.std(sim_exp), width=width)
-        else:
-            print('(i: {}) empty similarity measure: {}'.format(i, sim_exp))
+    for i in range(len(similarities_per_lfn)):
+        sim_exp_lfn = similarities_per_lfn[i]
+        for j in range(len(sim_exp_lfn)):
+            similarities_for_lfn_and_model = sim_exp_lfn[j]
+            if len(similarities_for_lfn_and_model)>0:
+                # print('plotting i,j: {},{}'.format(i,j))
+                plt.bar(i+j*width, np.mean(similarities_for_lfn_and_model), yerr=np.std(similarities_for_lfn_and_model), width=width, color=['C0', 'C1', 'C2', 'C3'][j])
+            else:
+                print('(i,j: {},{}) empty similarity measure: {}'.format(i, j, similarities_for_lfn_and_model))
 
     if legends:
         plt.legend(legends)
 
     plt.ylim(0., 0.7)
-    plt.xticks(xs)
+    # plt.xticks(xs)
+    plt.xticks(xs, xticks)
 
     plt.xlabel('Algorithm')
     plt.ylabel('Similarity')
-    plt.title('Geodesic similarities per algorithm')
+    if title:
+        plt.title(title)
+    else:
+        plt.title('Geodesic similarity per experiment')
 
     plt.show()
     # plt.savefig(fname=fname)
     # plt.close()
 
 
-similarities = []
-for i in range(10):
-    similarities.append(np.random.rand(int(10 * np.random.rand())))
-
-bar_plot_similarities(similarities)
+# similarities = []
+# for i in range(10):
+#     similarities.append(np.random.rand(int(10 * np.random.rand())))
+#
+# bar_plot_similarities(similarities)
