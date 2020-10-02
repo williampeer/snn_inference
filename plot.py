@@ -30,6 +30,7 @@ def plot_spiketrain(spike_history, title, uuid, exp_type='default', fname='spike
     plt.title(title)
 
     full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
     # plt.show()
@@ -86,6 +87,7 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
     plt.title(title)
 
     full_path = './figures/' + exp_type + '/' +  uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
     fig.savefig(fname=full_path + fname)
     # plt.show()
@@ -131,6 +133,7 @@ def plot_all_spiketrains(spikes_arr, uuid, exp_type='default', title=False, fnam
     plt.title(title)
 
     full_path = './figures/' + exp_type + '/' +  uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
     fig.savefig(fname=full_path + fname)
     # plt.show()
@@ -176,6 +179,7 @@ def plot_losses(training_loss, test_loss, test_loss_step, uuid, exp_type='defaul
         plt.title('Training and test set loss')
 
     full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
     # plt.show()
@@ -200,6 +204,7 @@ def plot_losses_nodes(batch_loss_per_node, uuid, exp_type='default', custom_titl
         plt.title('Batch loss')
 
     full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
     # plt.show()
@@ -313,10 +318,12 @@ def decompose_param_plot(param_2D, target_params, name, path, custom_title=False
 def plot_all_param_pairs_with_variance(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger, export_flag=False):
     if export_flag:
         full_path = data_util.prefix + 'data/export/' + exp_type + '/'
+        IO.makedir_if_not_exists(data_util.prefix + 'data/export/')
         IO.makedir_if_not_exists(full_path)
         full_path = data_util.prefix + 'data/export/' + exp_type + '/' + uuid + '/'
     else:
         full_path = './figures/' + exp_type + '/' + uuid + '/'
+        IO.makedir_if_not_exists('./figures/' + exp_type + '/')
         IO.makedir_if_not_exists(full_path)
         full_path = './figures/' + exp_type + '/'
     IO.makedir_if_not_exists(full_path)
@@ -475,6 +482,7 @@ def param_pair_trajectory_plot(p1_means, p2_means, target_params, path, xlabel='
 # TODO: fix spaghetti-implementation
 def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
 
     data = {'param_means': param_means, 'target_params': target_params, 'exp_type': exp_type, 'uuid': uuid, 'custom_title': custom_title, 'fname': fname}
@@ -554,6 +562,7 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
 
 def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
 
     data = {'r1': r1, 'r2': r2, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
@@ -578,6 +587,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
 
 def bar_plot_all_neuron_rates(rates, stds, bin_size, exp_type, uuid, fname, legends):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
 
     data = {'rates': rates, 'stds': stds, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
@@ -611,6 +621,7 @@ def bar_plot_all_neuron_rates(rates, stds, bin_size, exp_type, uuid, fname, lege
 
 def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_size, custom_title=False, custom_label=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
 
     data = {'corrs': corrs, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
