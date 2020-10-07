@@ -88,12 +88,12 @@ def main(argv):
         for exp_i in range(num_exps):
             N = 12
             w_mean = 0.3; w_var = 0.5; rand_ws = (w_mean - w_var) + 2 * w_var * np.random.random((N ** 2))
-            instrum = ng.p.Instrumentation(rate=ng.p.Scalar(init=4.).set_bounds(0.1, 60.),
+            instrum = ng.p.Instrumentation(rate=ng.p.Scalar(init=4.).set_bounds(1., 20.),
                                            w=ng.p.Array(init=rand_ws).set_bounds(-1., 1.),
                                            E_L=ng.p.Array(init=-65. * np.ones((N,))).set_bounds(-90., -37.),
                                            C_m=ng.p.Array(init=1.5 * np.ones((N,))).set_bounds(1., 3.),
                                            G=ng.p.Array(init=0.8 * np.ones((N,))).set_bounds(0.01, 0.99),
-                                           R_I=ng.p.Array(init=10. * np.ones((N,))).set_bounds(6., 24.),
+                                           R_I=ng.p.Array(init=10. * np.ones((N,))).set_bounds(12., 24.),
                                            f_v=ng.p.Array(init=0.14 * np.ones((N,))).set_bounds(0.01, 0.99),
                                            f_I=ng.p.Array(init=0.4 * np.ones((N,))).set_bounds(0.01, 0.99),
 
