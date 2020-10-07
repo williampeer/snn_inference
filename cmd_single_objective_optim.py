@@ -93,7 +93,7 @@ def main(argv):
                                            E_L=ng.p.Array(init=-65. * np.ones((N,))).set_bounds(-90., -37.),
                                            C_m=ng.p.Array(init=1.5 * np.ones((N,))).set_bounds(1., 3.),
                                            G=ng.p.Array(init=0.8 * np.ones((N,))).set_bounds(0.01, 0.99),
-                                           R_I=ng.p.Array(init=10. * np.ones((N,))).set_bounds(12., 24.),
+                                           R_I=ng.p.Array(init=16. * np.ones((N,))).set_bounds(12., 24.),
                                            f_v=ng.p.Array(init=0.14 * np.ones((N,))).set_bounds(0.01, 0.99),
                                            f_I=ng.p.Array(init=0.4 * np.ones((N,))).set_bounds(0.01, 0.99),
 
