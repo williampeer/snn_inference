@@ -90,10 +90,10 @@ def main(argv):
             w_mean = 0.3; w_var = 0.5; rand_ws = (w_mean - w_var) + 2 * w_var * np.random.random((N ** 2))
             instrum = ng.p.Instrumentation(rate=ng.p.Scalar(init=4.).set_bounds(1., 40.),
                                            w=ng.p.Array(init=rand_ws).set_bounds(-1., 1.),
-                                           E_L=ng.p.Array(init=-65. * np.ones((N,))).set_bounds(-80., -37.),  # -90. in 0710 runs
+                                           E_L=ng.p.Array(init=-65. * np.ones((N,))).set_bounds(-80., -37.),
                                            C_m=ng.p.Array(init=1.5 * np.ones((N,))).set_bounds(1., 3.),
                                            G=ng.p.Array(init=0.8 * np.ones((N,))).set_bounds(0.01, 0.99),
-                                           R_I=ng.p.Array(init=16. * np.ones((N,))).set_bounds(80., 140.),
+                                           R_I=ng.p.Array(init=100. * np.ones((N,))).set_bounds(80., 140.),
                                            f_v=ng.p.Array(init=0.14 * np.ones((N,))).set_bounds(0.01, 0.99),
                                            f_I=ng.p.Array(init=0.4 * np.ones((N,))).set_bounds(0.01, 0.99),
 

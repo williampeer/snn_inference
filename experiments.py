@@ -48,10 +48,10 @@ def release_computational_graph(model, rate_parameter, inputs=None):
     model.reset()
     if hasattr(rate_parameter, 'grad'):
         rate_parameter.grad = None
-        print('debug in hasattr(rate_parameter, \'grad\')')
+        # print('debug in hasattr(rate_parameter, \'grad\')')
     if inputs is not None and hasattr(inputs, 'grad'):
         inputs.grad = None
-        print('debug in inputs is not None and hasattr(inputs, \'grad\')')
+        # print('debug in inputs is not None and hasattr(inputs, \'grad\')')
 
 
 def generate_synthetic_data(gen_model, poisson_rate, t):
