@@ -3,13 +3,7 @@ import torch
 
 import model_util
 from eval import calculate_loss
-from experiments import poisson_input
-
-
-def release_computational_graph(model, rate_parameter, inputs):
-    model.reset()
-    rate_parameter.grad = None
-    inputs.grad = None
+from experiments import poisson_input, release_computational_graph
 
 
 def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimiser, constants, train_i=None, logger=None):
@@ -69,4 +63,4 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
     logger.log(parameters=[train_i, avg_abs_grads])
     gen_inputs = None
 
-    return avg_batch_loss, np.mean(np.asarray(avg_abs_grads, dtype=np.float))
+    return avg_batch_loss, np.mean(np.asarray(avg_abs_grads, dtype=np.float)), batch_losses[-1]

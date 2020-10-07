@@ -5,7 +5,7 @@ from torch import FloatTensor as FT
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-70., -37.], 'C_m': [1., 2.], 'G': [0.2, 0.9], 'R_I': [16., 20.],
+    parameter_init_intervals = {'E_L': [-70., -37.], 'C_m': [1., 2.], 'G': [0.2, 0.9], 'R_I': [100., 120.],
                                 'f_v': [0.2, 0.4], 'f_I': [0.1, 0.4], 'delta_theta_s': [6., 15.], 'b_s': [0.2, 0.4],
                                 'a_v': [0.2, 0.5], 'b_v': [0.1, 0.5], 'theta_inf': [-25., 0.], 'delta_V': [6., 16.],
                                 'I_A': [0.5, 3.]}
@@ -81,10 +81,10 @@ class GLIF(nn.Module):
         self.delta_V = nn.Parameter(FT(delta_V), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A), requires_grad=True)
         self.w.clamp(-1., 1.)
-        self.E_L.clamp(-90., -30.)
+        self.E_L.clamp(-80., -37.)
         self.C_m.clamp(1., 3.)
         self.G.clamp(0.01, 0.99)
-        self.R_I.clamp(12., 30.)
+        self.R_I.clamp(80., 140.)
         self.f_v.clamp(0.01, 0.99)
         self.f_I.clamp(0.01, 0.99)
         self.delta_theta_s.clamp(6., 30.)
@@ -112,7 +112,8 @@ class GLIF(nn.Module):
         self.I_additive = self.I_additive.clone().detach()
 
     def forward(self, x_in):
-        I = (x_in + self.w.matmul(self.I_additive))
+        # I = (x_in + self.w.matmul(self.I_additive))
+        I = torch.sigmoid(x_in + self.w.matmul(self.I_additive))
         # I = torch.relu(x_in + self.w.matmul(self.I_additive))
 
         dv = (I * self.R_I - self.G * (self.v - self.E_L)) / self.C_m

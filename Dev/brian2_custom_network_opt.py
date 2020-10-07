@@ -14,7 +14,7 @@ tau = 1 * ms
 N = 12; tau_vr = 4.0
 
 GLIF_eqs = '''
-dv/dt = ((G * (E_L - v) + R_I * (I_ext + I_syn_tot)) / C_m)/tau : 1
+dv/dt = (G * (E_L - v) + R_I*1/(1+exp(-(I_ext + I_syn_tot)) ) / C_m)/tau : 1
 dtheta_v/dt = (a_v * (v - E_L) - b_v * (theta_v - theta_inf))/tau : 1
 dtheta_s/dt = (- b_s * theta_s)/tau : 1
 I_ext : 1
@@ -56,7 +56,7 @@ synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn -
 synapses.connect(condition=True)
 
 poisson_input_grp = PoissonGroup(N, 30.*Hz)
-feedforward = Synapses(poisson_input_grp, neurons, model=in_eqs, on_pre='I_in = 12', method='exact')
+feedforward = Synapses(poisson_input_grp, neurons, model=in_eqs, on_pre='I_in = 1', method='exact')
 feedforward.connect(j='i')
 
 spikemon = SpikeMonitor(neurons[:], 'v', record=True)

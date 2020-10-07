@@ -8,9 +8,8 @@ from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from eval import evaluate_loss
-from experiments import *
-from fit import fit_mini_batches, release_computational_graph
+from experiments import generate_synthetic_data, draw_from_uniform, zip_dicts, release_computational_graph
+from fit import fit_mini_batches
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)
@@ -72,18 +71,12 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
     return float(overall_mean.clone().detach())
 
 
-def fit_model_to_data(logger, constants, model_class, params_model, exp_num, target_parameters=False):
-    node_indices, spike_times, spike_indices = data_util.load_sparse_data(constants.data_path)
-    # params_model['N'] = len(node_indices)
-
-    assert constants.train_iters * constants.rows_per_train_iter <= spike_times[-1], \
-        "should have enough rows. desired: {}, spikes_times[-1]: {}".format(
-            constants.train_iters * constants.rows_per_train_iter, spike_times[-1])
-
-    model = model_class(device=device, N=len(node_indices), parameters=params_model)
+def fit_model_to_target_model(logger, constants, model_class, params_model, exp_num, target_model, target_parameters):
+    params_model['N'] = target_model.N
+    model = model_class(device=device, N=target_model.N, parameters=params_model)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
-    poisson_input_rate.clamp(0.01, 1.0)
+    poisson_input_rate.clamp(1., 40.)
     parameters = {}
     for p_i, key in enumerate(model.state_dict()):
         parameters[p_i] = [model.state_dict()[key].numpy()]
@@ -97,17 +90,14 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
 
     train_losses = []; validation_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
     max_grads_mean = np.float(0.)
-    while not converged and (train_i < constants.train_iters) and \
-            prev_spike_index+1 < len(spike_times) and constants.rows_per_train_iter < spike_times[-1] - spike_times[prev_spike_index+1]:
+    while not converged and (train_i < constants.train_iters):
         logger.log('training iteration #{}'.format(train_i), [ExperimentType.DataDriven])
-        prev_spike_index, targets = data_util.get_spike_train_matrix(index_last_step=prev_spike_index,
-                                                                     advance_by_t_steps=constants.rows_per_train_iter,
-                                                                     spike_times=spike_times, spike_indices=spike_indices,
-                                                                     node_numbers=node_indices)
 
-        avg_train_loss, abs_grads_mean = fit_mini_batches(model, gen_inputs=None, target_spiketrain=targets,
-                                                          poisson_input_rate=poisson_input_rate, optimiser=optim,
-                                                          constants=constants, train_i=train_i, logger=logger)
+        targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter)
+
+        avg_train_loss, abs_grads_mean, last_loss = fit_mini_batches(model, gen_inputs=None, target_spiketrain=targets,
+                                                                     poisson_input_rate=poisson_input_rate, optimiser=optim,
+                                                                     constants=constants, train_i=train_i, logger=logger)
         logger.log(parameters=[avg_train_loss, abs_grads_mean])
         train_losses.append(avg_train_loss)
 
@@ -119,15 +109,12 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
         # if train_i % constants.evaluate_step == 0 or (converged or (train_i+1 >= constants.train_iters)):
-        prev_spike_index, targets = data_util.get_spike_train_matrix(index_last_step=prev_spike_index,
-                                                                     advance_by_t_steps=constants.rows_per_train_iter,
-                                                                     spike_times=spike_times,
-                                                                     spike_indices=spike_indices,
-                                                                     node_numbers=node_indices)
-        validation_inputs = poisson_input(rate=poisson_input_rate, t=constants.rows_per_train_iter, N=model.N)
-        validation_loss = evaluate_loss(model, inputs=validation_inputs, target_spiketrain=targets, uuid=constants.UUID,
-                                        tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-                                        exp_type=ExperimentType.DataDriven, train_i=train_i, exp_num=exp_num, constants=constants)
+        # targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter)
+
+        # validation_loss = evaluate_loss(model, inputs=None, target_spiketrain=targets, uuid=constants.UUID,
+        #                                 tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
+        #                                 exp_type=ExperimentType.DataDriven, train_i=train_i, exp_num=exp_num, constants=constants)
+        validation_loss = last_loss
         logger.log(parameters=['validation loss', validation_loss])
         validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
 
@@ -135,8 +122,8 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
         # converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
         converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss <= 0.8 * np.max(validation_losses)
 
-        release_computational_graph(model, poisson_input_rate, validation_inputs)
-        targets = None; validation_inputs = None; validation_loss = None
+        release_computational_graph(model, poisson_input_rate)
+        targets = None; validation_loss = None
         train_i += 1
 
     stats_training_iterations(parameters, model, poisson_input_rate, train_losses, validation_losses, constants, logger,
@@ -148,19 +135,23 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num, tar
     return final_model_parameters, train_losses, validation_losses, train_i, poisson_rates
 
 
-def run_exp_loop(logger, constants, model_class, free_model_parameters, static_parameters, target_parameters=False):
+def run_exp_loop(logger, constants, model_class, free_model_parameters, static_parameters, target_model):
+    target_parameters = {}
+    for param_i, key in enumerate(target_model.state_dict()):
+        target_parameters[param_i - 1] = target_model.state_dict()[key].clone().detach().numpy()
+
     recovered_param_per_exp = {}; poisson_rate_per_exp = []
     for exp_i in range(constants.start_seed, constants.start_seed+constants.N_exp):
         torch.manual_seed(exp_i)
         np.random.seed(exp_i)
+        target_model.load_state_dict(target_model.state_dict())
 
-        node_indices, _, _ = data_util.load_sparse_data(constants.data_path)
-        num_neurons = len(node_indices)
+        num_neurons = int(target_model.v.shape[0])
         params_model = draw_from_uniform(free_model_parameters, model_class.parameter_init_intervals, num_neurons)
         params_model = zip_dicts(params_model, static_parameters)
 
         recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
-            fit_model_to_data(logger, constants, model_class, params_model, exp_num=exp_i, target_parameters=target_parameters)
+            fit_model_to_target_model(logger, constants, model_class, params_model, exp_num=exp_i, target_model=target_model, target_parameters=target_parameters)
         logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
 
         if train_i >= constants.train_iters:
@@ -189,7 +180,7 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, static_p
                                        logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
 
 
-def start_exp(constants, model_class, target_parameters=False):
+def start_exp(constants, model_class, target_model):
     log_fname = model_class.__name__ + '{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'.\
         format(ExperimentType.DataDriven.name, '{:1.3f}'.format(constants.learn_rate).replace('.', '_'), constants.batch_size,
                constants.train_iters, constants.rows_per_train_iter, constants.UUID)
@@ -205,4 +196,4 @@ def start_exp(constants, model_class, target_parameters=False):
         logger.log('Model class not supported.')
         sys.exit(1)
 
-    run_exp_loop(logger, constants, model_class, free_parameters, static_parameters, target_parameters)
+    run_exp_loop(logger, constants, model_class, free_parameters, static_parameters, target_model)

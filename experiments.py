@@ -39,8 +39,19 @@ def zip_dicts(a, b):
     return res
 
 
+# Assumes rate in Hz
 def poisson_input(rate, t, N):
-    return torch.poisson(rate * torch.ones((int(t), N)))  # t x N
+    return torch.poisson((rate/1000.) * torch.ones((int(t), N)))  # t x N
+
+
+def release_computational_graph(model, rate_parameter, inputs=None):
+    model.reset()
+    if hasattr(rate_parameter, 'grad'):
+        rate_parameter.grad = None
+        print('debug in hasattr(rate_parameter, \'grad\')')
+    if inputs is not None and hasattr(inputs, 'grad'):
+        inputs.grad = None
+        print('debug in inputs is not None and hasattr(inputs, \'grad\')')
 
 
 def generate_synthetic_data(gen_model, poisson_rate, t):
@@ -48,7 +59,8 @@ def generate_synthetic_data(gen_model, poisson_rate, t):
     _, gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)
     # for gen spiketrain this may be thresholded to binary values:
     gen_spiketrain = torch.round(gen_spiketrain)
-    del gen_input
+    release_computational_graph(gen_model, poisson_rate, gen_input)
+    gen_spiketrain.grad = None
 
     return gen_spiketrain.clone().detach()
 

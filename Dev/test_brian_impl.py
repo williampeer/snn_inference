@@ -1,9 +1,10 @@
 from Dev.setup_data_for_brian import *
 from Dev.brian2_custom_network_opt import *
+from TargetModels import TargetModels
 from plot import plot_spiketrains_side_by_side
 
 model_num = 0
-target_params_dict = torch.load(target_data_path + target_params_rate_0_6[model_num])
+target_params_dict = TargetModels.glif1().state_dict()
 neuron_params = {}
 for param_i, key in enumerate(target_params_dict):
     if key not in ['loss_fn', 'rate', 'w']:
@@ -17,7 +18,7 @@ spike_node_indices, spike_times, spike_indices = data_util.load_sparse_data(outp
 next_target_index_list = 0
 next_target_index = 0
 
-spike_train = get_spike_train_for(2., np.reshape(target_params_dict['w'].clone().detach().numpy(), (-1,)), neuron_params)
+spike_train = get_spike_train_for(12., np.reshape(target_params_dict['w'].clone().detach().numpy(), (-1,)), neuron_params)
 
 next_target_index, sample_targets = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=time_interval,
                                                      spike_times=spike_times, spike_indices=spike_indices,
