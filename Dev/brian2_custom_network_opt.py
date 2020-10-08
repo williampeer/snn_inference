@@ -66,7 +66,7 @@ store()
 
 
 def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf, I_A, loss_fn,
-                       target_model, target_rate, t_interval=4000*ms):
+                       target_model, target_rate, time_interval=4000):
     restore()
 
     neurons.set_states(
@@ -78,7 +78,7 @@ def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
 
     synapses.set_states({'w': w})
 
-    run(t_interval)
+    run(time_interval*ms)
     print('DEBUG: spikemon.num_spikes: {}'.format(spikemon.num_spikes))
     if spikemon.num_spikes == 0:
         logger.log("------------- WARN: no spikes in spikes observed")
@@ -96,9 +96,9 @@ def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
     #     return loss
     elif loss_fn in ['van_rossum_dist', 'poisson_nll', 'kl_div', 'vrdfrd']:
         brian_model_spike_train = data_util.convert_brian_spike_train_dict_to_boolean_matrix(spikemon.spike_trains(),
-                                                                                             t_max=t_interval / ms)
+                                                                                             t_max=time_interval)
         brian_model_spike_train = torch.tensor(brian_model_spike_train, dtype=torch.float)
-        targets = generate_synthetic_data(target_model, target_rate, t_interval/ms)
+        targets = generate_synthetic_data(target_model, target_rate, time_interval)
         loss = np.float(calculate_loss(brian_model_spike_train, targets, loss_fn=loss_fn, tau_vr=tau_vr))
         logger.log('loss_fn: {}, loss: {:3.3f}'.format(loss_fn, loss))
         return loss

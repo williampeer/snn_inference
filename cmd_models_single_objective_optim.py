@@ -22,6 +22,8 @@ def main(argv):
     loss_fn = 'poisson_nll'
     target_rate = 10.; time_interval = 4000
 
+    logger = Logger(log_fname='nevergrad_optimization_{}_budget_{}_{}'.format(optim_name, budget, loss_fn))
+
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
     for i, opt in enumerate(opts):
@@ -50,13 +52,21 @@ def main(argv):
 
     target_params_ctr = 0
     for target_model_name in target_fnames:
-        t_interval = time_interval*ms
         if target_model_name == 'glif_1':
             target_model = TargetModels.glif1()
+        elif target_model_name == 'glif_2':
+            target_model = TargetModels.glif2()
+        elif target_model_name == 'glif_3':
+            target_model = TargetModels.glif3()
+        elif target_model_name == 'glif_async':
+            target_model = TargetModels.glif_async()
+        elif target_model_name == 'glif_slow_sync':
+            target_model = TargetModels.glif_slower_more_synchronous()
         else:
             raise NotImplementedError('Target model not implemented. Supplied name: {}'.format(target_model_name))
 
         # target_params_dict = torch.load(target_data_path + all_target_fnames[target_params_ctr])
+        logger.log('Target model: {}'.format(target_model_name))
         target_params_ctr += 1
         target_parameters = {}
         index_ctr = 0
@@ -92,17 +102,15 @@ def main(argv):
                                            I_A=ng.p.Array(init=2. * np.ones((N,))).set_bounds(0.5, 4.),
 
                                            loss_fn=loss_fn, target_model=target_model, target_rate=target_rate,
-                                           t_interval = t_interval)
+                                           time_interval=time_interval)
 
             optimizer = optim(parametrization=instrum, budget=budget)
 
-            logger = Logger(log_fname='brian2_network_nevergrad_optimization_budget_{}'.format(budget))
             logger.log('setup experiment with the optimizer {}'.format(optimizer.__str__()))
 
             recommendation = optimizer.minimize(run_simulation_for)
 
             recommended_params = recommendation.value[1]
-            del recommended_params['spike_times'], recommended_params['spike_indices'], recommended_params['spike_node_indices']
 
             logger.log('recommendation.value: {}'.format(recommended_params))
 
@@ -110,7 +118,7 @@ def main(argv):
             min_loss_per_exp.append(recommendation.loss)
             index_ctr = 0
             for p_i, key in enumerate(recommended_params):
-                if key in ['spike_times', 'spike_indices', 'spike_node_indices']:
+                if key in ['target_model', 'target_rate', 'time_interval']:
                     pass
                 elif key not in ['loss_fn', 'rate', 'w']:
                     if exp_i == 0:
@@ -127,18 +135,18 @@ def main(argv):
 
             model_spike_train = get_spike_train_for(recommended_params['rate'], other_params_for_optim['w'][exp_i], cur_plot_params.copy())
 
-            targets = generate_synthetic_data(target_model, target_rate, t_interval)
+            targets = generate_synthetic_data(target_model, target_rate, time_interval)
             plot_spiketrains_side_by_side(model_spike_train, targets, exp_type='single_objective_optim', uuid=UUID,
                                           title='Spike trains model and target ({}, loss: {})'.format(optim_name, recommendation.loss),
                                           fname='spike_trains_optim_{}_exp_num_{}'.format(optim_name, exp_i))
 
             torch.save(recommended_params.copy(),
-                       './saved/single_objective_optim/fitted_params_optim_{}_loss_fn_{}_budget_{}_exp_{}.pt'.format(
-                           optim_name, loss_fn, budget, exp_i))
+                       './saved/single_objective_optim/fitted_params_{}_optim_{}_loss_fn_{}_budget_{}_exp_{}.pt'.format(
+                           target_model_name, optim_name, loss_fn, budget, exp_i))
 
         params_by_optim[optim_name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
-        torch.save(params_by_optim, './saved/single_objective_optim/params_by_optim_{}_loss_fn_{}_budget_{}.pt'.format(optim_name, loss_fn, budget))
-        torch.save(min_loss_per_exp, './saved/single_objective_optim/min_losses_optim_{}_loss_fn_{}_budget_{}.pt'.format(optim_name, loss_fn, budget))
+        torch.save(params_by_optim, './saved/single_objective_optim/params_tm_{}_by_optim_{}_loss_fn_{}_budget_{}.pt'.format(target_model_name, optim_name, loss_fn, budget))
+        torch.save(min_loss_per_exp, './saved/single_objective_optim/min_losses_tm_{}_optim_{}_loss_fn_{}_budget_{}.pt'.format(target_model_name, optim_name, loss_fn, budget))
 
         plot_all_param_pairs_with_variance(current_plottable_params_for_optim,
                                            exp_type='single_objective_optim',
@@ -146,7 +154,7 @@ def main(argv):
                                            target_params=target_parameters,
                                            param_names=list(recommended_params.keys())[2:],
                                            custom_title="KDE projection of 2D model parameter".format(optim_name),
-                                           logger=logger, fname='single_objective_KDE_optim_{}'.format(optim_name))
+                                           logger=logger, fname='single_objective_KDE_optim_{}_target_model_{}'.format(optim_name, target_model_name))
 
 
 if __name__ == "__main__":

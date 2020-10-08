@@ -8,6 +8,7 @@ from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
+from eval import evaluate_loss
 from experiments import generate_synthetic_data, draw_from_uniform, zip_dicts, release_computational_graph
 from fit import fit_mini_batches
 from plot import *
@@ -109,12 +110,12 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
         # if train_i % constants.evaluate_step == 0 or (converged or (train_i+1 >= constants.train_iters)):
-        # targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter)
-
-        # validation_loss = evaluate_loss(model, inputs=None, target_spiketrain=targets, uuid=constants.UUID,
-        #                                 tau_van_rossum=constants.tau_van_rossum, label='train i: {}'.format(train_i),
-        #                                 exp_type=ExperimentType.DataDriven, train_i=train_i, exp_num=exp_num, constants=constants)
-        validation_loss = last_loss
+        targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter/2.)
+        validation_loss = evaluate_loss(model, inputs=None, p_rate=poisson_input_rate.clone().detach(),
+                                        target_spiketrain=targets, label='train i: {}'.format(train_i),
+                                        exp_type=ExperimentType.DataDriven, train_i=train_i, exp_num=exp_num,
+                                        constants=constants)
+        # validation_loss = last_loss
         logger.log(parameters=['validation loss', validation_loss])
         validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
 
@@ -122,7 +123,6 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         # converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
         converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss <= 0.8 * np.max(validation_losses)
 
-        release_computational_graph(model, poisson_input_rate)
         targets = None; validation_loss = None
         train_i += 1
 
@@ -190,8 +190,9 @@ def start_exp(constants, model_class, target_model):
     if model_class in [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
         # free_parameters = {'C_m': 1.5, 'G': 0.8, 'E_L': -60., 'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14,
         #                    'delta_V': 12., 'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
-        free_parameters = {'C_m', 'G', 'E_L', 'delta_theta_s', 'b_s', 'f_v', 'delta_V', 'f_I', 'I_A', 'b_v', 'a_v', 'theta_inf'}
-        static_parameters = {'R_I': 18.}
+        free_parameters = {'C_m', 'G', 'E_L', 'delta_theta_s', 'b_s', 'f_v', 'delta_V', 'f_I', 'I_A', 'b_v', 'a_v', 'theta_inf', 'R_I'}
+        # static_parameters = {'R_I': 110.}
+        static_parameters = {}
     else:
         logger.log('Model class not supported.')
         sys.exit(1)
