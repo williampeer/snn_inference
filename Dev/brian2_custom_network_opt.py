@@ -51,13 +51,13 @@ dI_syn/dt = -f_I * I_syn/tau : 1 (clock-driven)
 w : 1
 '''
 
-neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>(theta_s + theta_v)', reset=reset, method='exact')
+neurons = NeuronGroup(N=N, model=GLIF_eqs, threshold='v>(theta_s + theta_v)', reset=reset, method='euler')
 
-synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='exact')
+synapses = Synapses(neurons, neurons, model=synapse_eqs, on_pre='I_syn = I_syn - f_I * I_syn + I_A', method='euler')
 synapses.connect(condition=True)
 
 poisson_input_grp = PoissonGroup(N, 30.*Hz)
-feedforward = Synapses(poisson_input_grp, neurons, model=in_eqs, on_pre='I_in = 1', method='exact')
+feedforward = Synapses(poisson_input_grp, neurons, model=in_eqs, on_pre='I_in = 1', method='euler')
 feedforward.connect(j='i')
 
 spikemon = SpikeMonitor(neurons[:], 'v', record=True)
