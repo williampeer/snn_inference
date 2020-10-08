@@ -157,7 +157,7 @@ def plot_neuron(membrane_potentials_through_time, title='Neuron activity', fname
     plt.close()
 
 
-def plot_losses(training_loss, test_loss, test_loss_step, uuid, exp_type='default', custom_title=False, fname=False):
+def plot_losses(training_loss, test_loss, uuid, exp_type='default', custom_title=False, fname=False):
     if not fname:
         fname = 'training_and_test_loss'+IO.dt_descriptor()
     data = {'training_loss': training_loss, 'test_loss': test_loss, 'exp_type': exp_type, 'custom_title': custom_title, 'fname': fname}
@@ -165,10 +165,7 @@ def plot_losses(training_loss, test_loss, test_loss_step, uuid, exp_type='defaul
 
     plt.figure()
     plt.plot(training_loss)
-    x_test_loss = []
-    for i in range(len(test_loss)):
-        x_test_loss.append(i * test_loss_step)
-    plt.plot(x_test_loss, test_loss)
+    plt.plot(test_loss)
     plt.legend(['Training loss', 'Test loss'])
     plt.xlabel('Epoch')
     plt.ylabel('Loss')

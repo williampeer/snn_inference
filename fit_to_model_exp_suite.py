@@ -35,7 +35,7 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                  fname='inferred_param_trajectories_{}_exp_num_{}_train_iters_{}'
                                                  .format(model.__class__.__name__, exp_num, train_i),
                                                  logger=logger)
-        plot_losses(training_loss=train_losses, test_loss=test_losses, test_loss_step=constants.evaluate_step, uuid=constants.UUID, exp_type=exp_type_str,
+        plot_losses(training_loss=train_losses, test_loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
                     custom_title='Loss ({}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__, constants.learn_rate),
                     fname='training_and_test_loss_exp_{}_loss_fn_{}'.format(exp_num, constants.loss_fn))
 

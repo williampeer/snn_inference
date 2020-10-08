@@ -5,10 +5,10 @@ from torch import FloatTensor as FT
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-70., -37.], 'C_m': [1., 2.], 'G': [0.2, 0.9], 'R_I': [100., 120.],
+    parameter_init_intervals = {'E_L': [-70., -37.], 'C_m': [1.2, 1.8], 'G': [0.2, 0.9], 'R_I': [100., 110.],
                                 'f_v': [0.2, 0.4], 'f_I': [0.1, 0.4], 'delta_theta_s': [6., 15.], 'b_s': [0.2, 0.4],
-                                'a_v': [0.2, 0.5], 'b_v': [0.1, 0.5], 'theta_inf': [-25., 0.], 'delta_V': [6., 16.],
-                                'I_A': [0.5, 3.]}
+                                'a_v': [0.2, 0.5], 'b_v': [0.1, 0.5], 'theta_inf': [-20., -10.], 'delta_V': [6., 16.],
+                                'I_A': [0.5, 2.]}
 
     def __init__(self, device, N, parameters, C_m=1., G=0.7, R_I=18., E_L=-60., w_mean=0.2, w_var=0.4,
                  delta_theta_s=30., b_s=0.3, f_v=0.15, delta_V=12., f_I=0.3, I_A=1., b_v=0.5, a_v=0.5, theta_inf=-20.):
