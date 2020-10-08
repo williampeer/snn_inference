@@ -16,8 +16,8 @@ target_fnames = ['glif_1',
 def main(argv):
     print('Argument List:', str(argv))
 
-    # num_exps = 20; budget = 10000
-    num_exps = 4; budget = 20
+    num_exps = 20; budget = 10000
+    # num_exps = 4; budget = 20
     optim_name = 'CMA'
     loss_fn = 'poisson_nll'
     target_rate = 10.; time_interval = 4000

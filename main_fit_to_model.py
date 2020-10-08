@@ -12,7 +12,7 @@ def main(argv):
 
     # Default values
     start_seed = 0
-    learn_rate = 0.001; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
+    learn_rate = 0.001; N_exp = 20; tau_van_rossum = 4.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
@@ -78,11 +78,19 @@ def main(argv):
         elif opt in ("-ss", "--start-seed"):
             start_seed = int(args[i])
 
-    # for f_i in range(len(target_fnames)):
-    for f_i in range(1):
+    for f_i in range(len(target_fnames)):
+    # for f_i in range(1):
         target_model_name = target_fnames[f_i]
         if target_model_name == 'glif_1':
             target_model = TargetModels.glif1()
+        elif target_model_name == 'glif_2':
+            target_model = TargetModels.glif2()
+        elif target_model_name == 'glif_3':
+            target_model = TargetModels.glif3()
+        elif target_model_name == 'glif_async':
+            target_model = TargetModels.glif_async()
+        elif target_model_name == 'glif_slow_sync':
+            target_model = TargetModels.glif_slower_more_synchronous()
         else:
             raise NotImplementedError('Target model not implemented. Supplied name: {}'.format(target_model_name))
 
