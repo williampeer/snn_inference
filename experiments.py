@@ -39,6 +39,16 @@ def zip_dicts(a, b):
     return res
 
 
+def zip_tensor_dicts(a, b):
+    res = a.copy()
+    for key in b.keys():
+        if key in a.keys():
+            res[key] = torch.cat((res[key], b[key]))
+        else:
+            res[key] = b[key]
+    return res
+
+
 # Assumes rate in Hz
 def poisson_input(rate, t, N):
     return torch.poisson((rate/1000.) * torch.ones((int(t), N)))  # t x N

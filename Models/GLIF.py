@@ -6,12 +6,12 @@ from torch import FloatTensor as FT
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
     parameter_init_intervals = {'E_L': [-70., -37.], 'C_m': [1.2, 1.8], 'G': [0.2, 0.9], 'R_I': [100., 110.],
-                                'f_v': [0.2, 0.4], 'f_I': [0.1, 0.4], 'delta_theta_s': [6., 15.], 'b_s': [0.2, 0.4],
+                                'f_v': [0.2, 0.4], 'f_I': [0.1, 0.4], 'delta_theta_s': [5., 30.], 'b_s': [0.2, 0.4],
                                 'a_v': [0.2, 0.5], 'b_v': [0.1, 0.5], 'theta_inf': [-20., -10.], 'delta_V': [6., 16.],
                                 'I_A': [0.5, 2.]}
 
     def __init__(self, device, N, parameters, C_m=1., G=0.7, R_I=18., E_L=-60., w_mean=0.2, w_var=0.4,
-                 delta_theta_s=30., b_s=0.3, f_v=0.15, delta_V=12., f_I=0.3, I_A=1., b_v=0.5, a_v=0.5, theta_inf=-20.):
+                 delta_theta_s=15., b_s=0.3, f_v=0.15, delta_V=12., f_I=0.3, I_A=1., b_v=0.5, a_v=0.5, theta_inf=-20.):
         super(GLIF, self).__init__()
         # self.device = device
 
@@ -35,6 +35,8 @@ class GLIF(nn.Module):
                     delta_V = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'f_I':
                     f_I = FT(torch.ones((N,)) * parameters[key])
+                elif key == 'I_A':
+                    I_A = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'b_v':
                     b_v = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'a_v':
@@ -45,8 +47,6 @@ class GLIF(nn.Module):
                     w_mean = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'w_var':
                     w_var = FT(torch.ones((N,)) * parameters[key])
-                elif key == 'I_A':
-                    I_A = FT(torch.ones((N,)) * parameters[key])
 
         __constants__ = ['N', 'E_L', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
         self.N = N
@@ -65,7 +65,13 @@ class GLIF(nn.Module):
         self.theta_v = torch.ones((self.N,))
         self.I_additive = torch.zeros((self.N,))
 
-        rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
+        if parameters.__contains__('preset_weights'):
+            # print('DEBUG: Setting w to preset weights: {}'.format(parameters['preset_weights']))
+            # print('Setting w to preset weights.')
+            rand_ws = parameters['preset_weights']
+            assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
+        else:
+            rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)
         self.E_L = nn.Parameter(FT(E_L), requires_grad=True)
         self.C_m = nn.Parameter(FT(C_m), requires_grad=True)

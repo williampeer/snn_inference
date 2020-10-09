@@ -40,6 +40,7 @@ def van_rossum_squared_distance(s1, s2, tau):
 def firing_rate_distance(model_spikes, target_spikes):
     mean_model_rate = model_spikes.sum(axis=0)
     mean_targets_rate = target_spikes.sum(axis=0)
-    silent_penalty = 2.*torch.exp(-mean_model_rate).sum() / model_spikes.shape[1]
+    # f_penalty(x,y) = sqrt(pow(2e^-x - 2e^-y))
+    silent_penalty = torch.sqrt(torch.pow(2.*torch.exp(-mean_model_rate) - 2.*torch.exp(-mean_targets_rate), 2).sum()) / model_spikes.shape[1]
     return torch.sqrt(torch.pow(torch.sub(mean_model_rate, mean_targets_rate), 2).sum() + 1e-18)/(model_spikes.shape[0]) \
            + silent_penalty

@@ -3,7 +3,7 @@ import sys
 
 import Constants as C
 from Models.GLIF import GLIF
-from TargetModels import TargetModels
+from TargetModels import TargetModels, TargetEnsembleModels
 from fit_to_model_exp_suite import start_exp
 
 
@@ -18,12 +18,12 @@ def main(argv):
     # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'firing_rate_distance'
     # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
-    max_train_iters = 300; batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
+    # max_train_iters = 300; batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
     # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
-    # max_train_iters = 300; batch_size = 200; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
+    max_train_iters = 300; batch_size = 200; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 
@@ -78,26 +78,14 @@ def main(argv):
         elif opt in ("-ss", "--start-seed"):
             start_seed = int(args[i])
 
-    for f_i in range(len(target_fnames)):
-    # for f_i in range(1):
-        target_model_name = target_fnames[f_i]
-        if target_model_name == 'glif_1':
-            target_model = TargetModels.glif1()
-        elif target_model_name == 'glif_2':
-            target_model = TargetModels.glif2()
-        elif target_model_name == 'glif_3':
-            target_model = TargetModels.glif3()
-        elif target_model_name == 'glif_async':
-            target_model = TargetModels.glif_async()
-        elif target_model_name == 'glif_slow_sync':
-            target_model = TargetModels.glif_slower_more_synchronous()
-        else:
-            raise NotImplementedError('Target model not implemented. Supplied name: {}'.format(target_model_name))
+    for f_i in range(1, 6):
+        target_model_name = 'glif_ensembles_{}'.format(f_i)
+        target_model = TargetEnsembleModels.glif_ensembles_model(random_seed=f_i)
 
         constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
                                 tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
                                 initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
-                                plot_flag=plot_flag, start_seed=start_seed, target_fname=target_fnames[f_i])
+                                plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name)
 
         # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         models = [GLIF]
