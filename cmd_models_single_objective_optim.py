@@ -3,20 +3,14 @@ import nevergrad as ng
 import IO
 from Dev.brian2_custom_network_opt import *
 from Log import Logger
-from TargetModels import TargetModels
+from TargetModels import TargetModels, TargetEnsembleModels
 from experiments import zip_dicts
 from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
-
-target_fnames = ['glif_1',
-                 'glif_2',
-                 'glif_3',
-                 'glif_async',
-                 'glif_slow_sync']
 
 def main(argv):
     print('Argument List:', str(argv))
 
-    num_exps = 20; budget = 10000
+    num_exps = 5; budget = 8000
     # num_exps = 4; budget = 20
     optim_name = 'CMA'
     loss_fn = 'poisson_nll'
@@ -50,24 +44,12 @@ def main(argv):
     else:
         raise NotImplementedError()
 
-    target_params_ctr = 0
-    for target_model_name in target_fnames:
-        if target_model_name == 'glif_1':
-            target_model = TargetModels.glif1()
-        elif target_model_name == 'glif_2':
-            target_model = TargetModels.glif2()
-        elif target_model_name == 'glif_3':
-            target_model = TargetModels.glif3()
-        elif target_model_name == 'glif_async':
-            target_model = TargetModels.glif_async()
-        elif target_model_name == 'glif_slow_sync':
-            target_model = TargetModels.glif_slower_more_synchronous()
-        else:
-            raise NotImplementedError('Target model not implemented. Supplied name: {}'.format(target_model_name))
+    for random_seed in range(1,6):
+        target_model_name = 'glif_ensembles_seed_{}'.format(random_seed)
+        target_model = TargetEnsembleModels.glif_ensembles_model(random_seed=random_seed)
 
         # target_params_dict = torch.load(target_data_path + all_target_fnames[target_params_ctr])
         logger.log('Target model: {}'.format(target_model_name))
-        target_params_ctr += 1
         target_parameters = {}
         index_ctr = 0
         for param_i, key in enumerate(target_model.state_dict()):
