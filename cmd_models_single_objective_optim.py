@@ -3,9 +3,10 @@ import nevergrad as ng
 import IO
 from Dev.brian2_custom_network_opt import *
 from Log import Logger
-from TargetModels import TargetModels, TargetEnsembleModels
+from TargetModels import TargetEnsembleModels
 from experiments import zip_dicts
 from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
+
 
 def main(argv):
     print('Argument List:', str(argv))
@@ -13,7 +14,7 @@ def main(argv):
     num_exps = 5; budget = 8000
     # num_exps = 4; budget = 20
     optim_name = 'CMA'
-    loss_fn = 'poisson_nll'
+    loss_fn = 'vrdfrd'
     target_rate = 10.; time_interval = 4000
 
     logger = Logger(log_fname='nevergrad_optimization_{}_budget_{}_{}'.format(optim_name, budget, loss_fn))
@@ -68,10 +69,10 @@ def main(argv):
             w_mean = 0.3; w_var = 0.5; rand_ws = (w_mean - w_var) + 2 * w_var * np.random.random((N ** 2))
             instrum = ng.p.Instrumentation(rate=ng.p.Scalar(init=4.).set_bounds(1., 40.),
                                            w=ng.p.Array(init=rand_ws).set_bounds(-1., 1.),
-                                           E_L=ng.p.Array(init=-65. * np.ones((N,))).set_bounds(-80., -37.),
-                                           C_m=ng.p.Array(init=1.5 * np.ones((N,))).set_bounds(1., 3.),
-                                           G=ng.p.Array(init=0.8 * np.ones((N,))).set_bounds(0.01, 0.99),
-                                           R_I=ng.p.Array(init=100. * np.ones((N,))).set_bounds(80., 140.),
+                                           E_L=ng.p.Array(init=-65. * np.ones((N,))).set_bounds(-80., -35.),
+                                           C_m=ng.p.Array(init=1.5 * np.ones((N,))).set_bounds(1.1, 3.),
+                                           G=ng.p.Array(init=0.8 * np.ones((N,))).set_bounds(0.1, 0.9),
+                                           R_I=ng.p.Array(init=100. * np.ones((N,))).set_bounds(90., 150.),
                                            f_v=ng.p.Array(init=0.14 * np.ones((N,))).set_bounds(0.01, 0.99),
                                            f_I=ng.p.Array(init=0.4 * np.ones((N,))).set_bounds(0.01, 0.99),
 

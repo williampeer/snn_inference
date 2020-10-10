@@ -38,4 +38,4 @@ def glif_ensembles_model(random_seed, N = 12):
     params_pop3 = zip_tensor_dicts(params_pop3, hand_coded_params_pop3)
     randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
 
-    return GLIF(device='cpu', parameters=randomised_params, N=N)
+    return GLIF(parameters=randomised_params, N=N)

@@ -88,9 +88,8 @@ def main(argv):
                                 plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name)
 
         # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
-        models = [GLIF]
-        for m_class in models:
-            start_exp(constants=constants, model_class=m_class, target_model=target_model)
+        # for m_class in models:
+        start_exp(constants=constants, model_class=GLIF, target_model=target_model)
 
 
 if __name__ == "__main__":

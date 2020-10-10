@@ -5,7 +5,6 @@ import data_util
 from Log import Logger
 from eval import calculate_loss
 from experiments import generate_synthetic_data
-from gf_metric import compute_gamma_factor_for_lists, get_spikes
 
 logger = Logger(log_fname='brian2_network_nevergrad_optimization')
 

@@ -5,15 +5,16 @@ from torch import FloatTensor as FT
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-70., -37.], 'C_m': [1.2, 1.8], 'G': [0.2, 0.9], 'R_I': [100., 110.],
+    parameter_init_intervals = {'E_L': [-60., -37.], 'C_m': [1.2, 1.8], 'G': [0.2, 0.9], 'R_I': [145., 150.],
                                 'f_v': [0.2, 0.4], 'f_I': [0.1, 0.4], 'delta_theta_s': [5., 30.], 'b_s': [0.2, 0.4],
                                 'a_v': [0.2, 0.5], 'b_v': [0.1, 0.5], 'theta_inf': [-20., -10.], 'delta_V': [6., 16.],
                                 'I_A': [0.5, 2.]}
 
-    def __init__(self, device, N, parameters, C_m=1., G=0.7, R_I=18., E_L=-60., w_mean=0.2, w_var=0.4,
-                 delta_theta_s=15., b_s=0.3, f_v=0.15, delta_V=12., f_I=0.3, I_A=1., b_v=0.5, a_v=0.5, theta_inf=-20.):
+    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.3):
+        # use_cuda = torch.cuda.is_available()
+        # device = torch.device("cuda" if use_cuda else "cpu")
+
         super(GLIF, self).__init__()
-        # self.device = device
 
         if parameters:
             for key in parameters.keys():
@@ -87,10 +88,10 @@ class GLIF(nn.Module):
         self.delta_V = nn.Parameter(FT(delta_V), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A), requires_grad=True)
         self.w.clamp(-1., 1.)
-        self.E_L.clamp(-80., -37.)
-        self.C_m.clamp(1., 3.)
-        self.G.clamp(0.01, 0.99)
-        self.R_I.clamp(80., 140.)
+        self.E_L.clamp(-80., -35.)
+        self.C_m.clamp(1.1, 3.)
+        self.G.clamp(0.1, 0.9)
+        self.R_I.clamp(100., 180.)
         self.f_v.clamp(0.01, 0.99)
         self.f_I.clamp(0.01, 0.99)
         self.delta_theta_s.clamp(6., 30.)
@@ -102,6 +103,8 @@ class GLIF(nn.Module):
         self.I_A.clamp(0.5, 4.)
         # self.I_A = FT(I_A)
         # self.delta_V = FT(delta_V)
+
+
 
     def reset(self):
         for p in self.parameters():

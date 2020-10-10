@@ -14,11 +14,6 @@ from fit import fit_mini_batches
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)
-
-# use_cuda = torch.cuda.is_available()
-# device = torch.device("cuda" if use_cuda else "cpu")
-device = 'cpu'
-verbose = True
 # ---------------------------------------
 
 
@@ -74,7 +69,7 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
 
 def fit_model_to_target_model(logger, constants, model_class, params_model, exp_num, target_model, target_parameters):
     params_model['N'] = target_model.N
-    model = model_class(device=device, N=target_model.N, parameters=params_model)
+    model = model_class(N=target_model.N, parameters=params_model)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
     poisson_input_rate.clamp(1., 40.)
