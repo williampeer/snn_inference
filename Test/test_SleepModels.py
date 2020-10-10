@@ -4,7 +4,7 @@ from torch import tensor as T
 import model_util
 from TargetModels import SleepModelWrappers
 from experiments import poisson_input
-from plot import plot_neuron, plot_spiketrain
+from plot import plot_neuron, plot_spike_train
 from stats import firing_rate_per_neuron
 
 
@@ -44,8 +44,8 @@ def test_sleep_model(snn):
     # mean_rates_zeros = firing_rate_per_neuron(spikes_zeros)
     # print('mean_rates_zeros: {}'.format(mean_rates_zeros))
 
-    plot_spiketrain(spikes, title='Test {} spiketrain Poisson input'.format(snn.__class__.__name__), uuid='test_SleepModels',
-                    fname='spiketrain_{}_Poisson_input_{}'.format(snn.__class__.__name__, str(rate).replace('.', '_')))
+    plot_spike_train(spikes, title='Test {} spiketrain Poisson input'.format(snn.__class__.__name__), uuid='test_SleepModels',
+                     fname='spiketrain_{}_Poisson_input_{}'.format(snn.__class__.__name__, str(rate).replace('.', '_')))
     # plot_spiketrains_side_by_side(spikes_rem, spikes_nrem, 'test_LIF_complex', title='Test {} spiketrains REM & NREM input'.format(snn.__class__.__name__), legend=['REM', 'NREM'])
     # plot_all_spiketrains([spikes, spikes_wake, spikes_rem, spikes_nrem], 'test_{}_complex'.format(snn.__class__.__name__), title='Test {} spiketrains'.format(snn.__class__.__name__), legend=['Poisson', 'Wake', 'REM', 'NREM'])
 

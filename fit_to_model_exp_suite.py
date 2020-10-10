@@ -116,7 +116,7 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
 
         max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
         # converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
-        converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss <= 0.8 * np.max(validation_losses)
+        converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
 
         targets = None; validation_loss = None
         train_i += 1
@@ -130,7 +130,7 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
     return final_model_parameters, train_losses, validation_losses, train_i, poisson_rates
 
 
-def run_exp_loop(logger, constants, model_class, free_model_parameters, static_parameters, target_model):
+def run_exp_loop(logger, constants, model_class, target_model):
     target_parameters = {}
     for param_i, key in enumerate(target_model.state_dict()):
         target_parameters[param_i - 1] = target_model.state_dict()[key].clone().detach().numpy()
@@ -142,11 +142,11 @@ def run_exp_loop(logger, constants, model_class, free_model_parameters, static_p
         target_model.load_state_dict(target_model.state_dict())
 
         num_neurons = int(target_model.v.shape[0])
-        params_model = draw_from_uniform(free_model_parameters, model_class.parameter_init_intervals, num_neurons)
-        params_model = zip_dicts(params_model, static_parameters)
+        init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
+        # params_model = zip_dicts(params_model, static_parameters)
 
         recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
-            fit_model_to_target_model(logger, constants, model_class, params_model, exp_num=exp_i, target_model=target_model, target_parameters=target_parameters)
+            fit_model_to_target_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model, target_parameters=target_parameters)
         logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
 
         if train_i >= constants.train_iters:
@@ -182,14 +182,14 @@ def start_exp(constants, model_class, target_model):
     logger = Log.Logger(log_fname)
     logger.log('Starting exp. with listed hyperparameters.', [constants.__str__()])
 
-    if model_class in [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
-        # free_parameters = {'C_m': 1.5, 'G': 0.8, 'E_L': -60., 'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14,
-        #                    'delta_V': 12., 'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
-        free_parameters = {'C_m', 'G', 'E_L', 'delta_theta_s', 'b_s', 'f_v', 'delta_V', 'f_I', 'I_A', 'b_v', 'a_v', 'theta_inf', 'R_I'}
-        # static_parameters = {'R_I': 110.}
-        static_parameters = {}
-    else:
-        logger.log('Model class not supported.')
-        sys.exit(1)
+    # if model_class in [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
+    #     # free_parameters = {'C_m': 1.5, 'G': 0.8, 'E_L': -60., 'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14,
+    #     #                    'delta_V': 12., 'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
+    #     # free_parameters = {'C_m', 'G', 'E_L', 'delta_theta_s', 'b_s', 'f_v', 'delta_V', 'f_I', 'I_A', 'b_v', 'a_v', 'theta_inf', 'R_I'}
+    #     # static_parameters = {'R_I': 110.}
+    #     # static_parameters = {}
+    # else:
+    #     logger.log('Model class not supported.')
+    #     sys.exit(1)
 
-    run_exp_loop(logger, constants, model_class, free_parameters, static_parameters, target_model)
+    run_exp_loop(logger, constants, model_class, target_model)

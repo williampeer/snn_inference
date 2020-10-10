@@ -14,8 +14,8 @@ def fetch_and_plot_data(exp_num, t_steps, index_previous_step):
     avg_freq = sut_spikes.sum() / float(sut_spikes.shape[0] * sut_spikes.shape[1])
     print('average freq.: {}'.format(avg_freq))
 
-    plot.plot_spiketrain(sut_spikes, 'Test data spike train', 'test_plot_data',
-                         fname='test_plot_data_exp_{}_index_prev_{}'.format(exp_num, index_previous_step))
+    plot.plot_spike_train(sut_spikes, 'Test data spike train', 'test_plot_data',
+                          fname='test_plot_data_exp_{}_index_prev_{}'.format(exp_num, index_previous_step))
     return next_step
 
 

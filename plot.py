@@ -8,18 +8,18 @@ import IO
 import data_util
 
 
-def plot_spiketrain(spike_history, title, uuid, exp_type='default', fname='spiketrain_test'):
-    data = {'spike_history': spike_history, 'title': title, 'fname': fname}
+def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiketrain_test'):
+    data = {'spike_history': spike_train, 'title': title, 'fname': fname}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_spiketrain')
 
     plt.figure()
     # assuming neuron indices to be columns and reshaping to rows for plotting
-    time_indices = torch.reshape(torch.arange(spike_history.shape[0]), (spike_history.shape[0], 1))
+    time_indices = torch.reshape(torch.arange(spike_train.shape[0]), (spike_train.shape[0], 1))
     # ensure binary values:
-    spike_history = torch.round(spike_history)
-    neuron_spike_times = spike_history * time_indices
+    spike_train = torch.round(spike_train)
+    neuron_spike_times = spike_train * time_indices
 
-    for neuron_i in range(spike_history.shape[1]):
+    for neuron_i in range(spike_train.shape[1]):
         if neuron_spike_times[:, neuron_i].nonzero().sum() > 0:
             plt.plot(torch.reshape(neuron_spike_times[:, neuron_i].nonzero(), (1, -1)),
                      neuron_i+1, '.k', markersize=4.0)

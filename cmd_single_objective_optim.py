@@ -3,7 +3,8 @@ import nevergrad as ng
 import IO
 from Dev.brian2_custom_network_opt import *
 from Log import Logger
-from experiments import zip_dicts
+from Models.GLIF import GLIF
+from experiments import zip_dicts, draw_from_uniform
 from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
 
 output_fnames_rate_0_6 = ['generated_spike_train_random_glif_1_model_t_300s_rate_0_6.mat',
@@ -35,7 +36,7 @@ def main(argv):
     # num_exps = 2; budget = 1
     optim_name = 'CMA'
     loss_fn = 'poisson_nll'
-    time_interval = 4000
+    target_rate = 10.; time_interval = 4000
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
@@ -87,23 +88,25 @@ def main(argv):
         min_loss_per_exp = []
         for exp_i in range(num_exps):
             N = 12
+            init_params = draw_from_uniform(GLIF.parameter_init_intervals, N)
             w_mean = 0.3; w_var = 0.5; rand_ws = (w_mean - w_var) + 2 * w_var * np.random.random((N ** 2))
-            instrum = ng.p.Instrumentation(rate=ng.p.Scalar(init=4.).set_bounds(1., 40.),
+            instrum = ng.p.Instrumentation(rate=ng.p.Scalar(init=target_rate).set_bounds(1., 40.),
                                            w=ng.p.Array(init=rand_ws).set_bounds(-1., 1.),
-                                           E_L=ng.p.Array(init=-65. * np.ones((N,))).set_bounds(-80., -35.),
-                                           C_m=ng.p.Array(init=1.5 * np.ones((N,))).set_bounds(1.1, 3.),
-                                           G=ng.p.Array(init=0.8 * np.ones((N,))).set_bounds(0.1, 0.9),
-                                           R_I=ng.p.Array(init=100. * np.ones((N,))).set_bounds(90., 150.),
-                                           f_v=ng.p.Array(init=0.14 * np.ones((N,))).set_bounds(0.01, 0.99),
-                                           f_I=ng.p.Array(init=0.4 * np.ones((N,))).set_bounds(0.01, 0.99),
+                                           E_L=ng.p.Array(init=init_params['E_L']).set_bounds(-80., -35.),
+                                           C_m=ng.p.Array(init=init_params['C_m']).set_bounds(1.1, 3.),
+                                           G=ng.p.Array(init=init_params['G']).set_bounds(0.1, 0.9),
+                                           R_I=ng.p.Array(init=init_params['R_I']).set_bounds(90., 150.),
+                                           f_v=ng.p.Array(init=init_params['f_v']).set_bounds(0.01, 0.99),
+                                           f_I=ng.p.Array(init=init_params['f_I']).set_bounds(0.01, 0.99),
 
-                                           delta_theta_s=ng.p.Array(init=10. * np.ones((N,))).set_bounds(6., 30.),
-                                           b_s=ng.p.Array(init=0.3 * np.ones((N,))).set_bounds(0.01, 0.9),
-                                           a_v=ng.p.Array(init=0.5 * np.ones((N,))).set_bounds(0.01, 0.9),
-                                           b_v=ng.p.Array(init=0.5 * np.ones((N,))).set_bounds(0.01, 0.9),
-                                           theta_inf=ng.p.Array(init=-15. * np.ones((N,))).set_bounds(-25., 0.),
-                                           delta_V=ng.p.Array(init=6. * np.ones((N,))).set_bounds(0.01, 35.),
-                                           I_A=ng.p.Array(init=2. * np.ones((N,))).set_bounds(0.5, 4.),
+                                           delta_theta_s=ng.p.Array(init=init_params['delta_theta_s']).set_bounds(6.,
+                                                                                                                  30.),
+                                           b_s=ng.p.Array(init=init_params['b_s']).set_bounds(0.01, 0.9),
+                                           a_v=ng.p.Array(init=init_params['a_v']).set_bounds(0.01, 0.9),
+                                           b_v=ng.p.Array(init=init_params['b_v']).set_bounds(0.01, 0.9),
+                                           theta_inf=ng.p.Array(init=init_params['theta_inf']).set_bounds(-25., 0.),
+                                           delta_V=ng.p.Array(init=init_params['delta_V']).set_bounds(0.01, 35.),
+                                           I_A=ng.p.Array(init=init_params['I_A']).set_bounds(0.5, 4.),
 
                                            loss_fn=loss_fn, spike_times=spike_times, spike_indices=spike_indices,
                                            spike_node_indices=spike_node_indices)

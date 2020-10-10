@@ -7,9 +7,9 @@ from model_util import generate_model_data
 # torch.backends.cudnn.benchmark = False
 
 
-def draw_from_uniform(parameters, parameter_intervals, N):
+def draw_from_uniform(parameter_intervals, N):
     new_dict = {}
-    for i, k in enumerate(parameters):
+    for i, k in enumerate(parameter_intervals):
         low = parameter_intervals[k][0]; high = parameter_intervals[k][1]
         new_dict[k] = torch.FloatTensor(np.random.uniform(low, high, N))
     return new_dict
@@ -66,7 +66,7 @@ def release_computational_graph(model, rate_parameter, inputs=None):
 
 def generate_synthetic_data(gen_model, poisson_rate, t):
     gen_input = poisson_input(rate=poisson_rate, t=t, N=gen_model.N)
-    _, gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)
+    gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)
     # for gen spiketrain this may be thresholded to binary values:
     gen_spiketrain = torch.round(gen_spiketrain)
     release_computational_graph(gen_model, poisson_rate, gen_input)

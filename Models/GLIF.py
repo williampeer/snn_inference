@@ -5,12 +5,12 @@ from torch import FloatTensor as FT
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-60., -37.], 'C_m': [1.2, 1.8], 'G': [0.2, 0.9], 'R_I': [145., 150.],
-                                'f_v': [0.2, 0.4], 'f_I': [0.1, 0.4], 'delta_theta_s': [5., 30.], 'b_s': [0.2, 0.4],
-                                'a_v': [0.2, 0.5], 'b_v': [0.1, 0.5], 'theta_inf': [-20., -10.], 'delta_V': [6., 16.],
-                                'I_A': [0.5, 2.]}
+    parameter_init_intervals = {'E_L': [-56., -52.], 'C_m': [1.3, 1.5], 'G': [0.65, 0.8], 'R_I': [110., 115.],
+                                'f_v': [0.25, 0.35], 'f_I': [0.5, 0.7], 'delta_theta_s': [10., 12.], 'b_s': [0.25, 0.35],
+                                'a_v': [0.25, 0.35], 'b_v': [0.25, 0.35], 'theta_inf': [-21., -19.], 'delta_V': [9., 12.],
+                                'I_A': [1.4, 1.8]}
 
-    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.3):
+    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.4):
         # use_cuda = torch.cuda.is_available()
         # device = torch.device("cuda" if use_cuda else "cpu")
 
@@ -89,9 +89,9 @@ class GLIF(nn.Module):
         self.I_A = nn.Parameter(FT(I_A), requires_grad=True)
         self.w.clamp(-1., 1.)
         self.E_L.clamp(-80., -35.)
-        self.C_m.clamp(1.1, 3.)
+        self.C_m.clamp(1.15, 2.)
         self.G.clamp(0.1, 0.9)
-        self.R_I.clamp(100., 180.)
+        self.R_I.clamp(90., 130.)
         self.f_v.clamp(0.01, 0.99)
         self.f_I.clamp(0.01, 0.99)
         self.delta_theta_s.clamp(6., 30.)
@@ -144,4 +144,4 @@ class GLIF(nn.Module):
         self.I_additive = (1. - self.f_I) * self.I_additive \
                           + self.spiked * self.I_A
 
-        return self.v, self.spiked
+        return self.spiked

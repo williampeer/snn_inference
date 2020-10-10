@@ -6,7 +6,7 @@ import spike_metrics
 def test_plot_van_rossum_convolution():
     sample_spiketrain = 1.0 * (torch.rand((200, 3)) < 0.25)
     sample_spiketrain_2 = 1.0 * (torch.rand((200, 3)) < 0.25)
-    plot.plot_spiketrain(sample_spiketrain, uuid='test_uuid', title="Sample spiketrain")
+    plot.plot_spike_train(sample_spiketrain, uuid='test_uuid', title="Sample spiketrain")
     plot.plot_spiketrains_side_by_side(sample_spiketrain, sample_spiketrain_2, 'test_uuid',
                                        title="Sample side-by-side spike trains")
 

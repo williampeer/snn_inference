@@ -54,7 +54,7 @@ def calculate_loss(output, target, loss_fn, tau_vr=None):
     elif loss_fn.__contains__('firing_rate_distance'):
         loss = spike_metrics.firing_rate_distance(output, target)
     elif loss_fn.__contains__('kldfrd'):
-        kld_loss = kl_div(output, target, tau_vr)
+        kld_loss = kl_div(output, target)
         frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
         loss = kld_loss + frd_loss
     elif loss_fn.__contains__('pnllfrd'):
