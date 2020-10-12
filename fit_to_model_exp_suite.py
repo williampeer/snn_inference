@@ -104,19 +104,19 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         # parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
         poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
-        # if train_i % constants.evaluate_step == 0 or (converged or (train_i+1 >= constants.train_iters)):
-        targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter/2.)
+        max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
+        # converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
+        converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
+
+        targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
+                                          t=constants.rows_per_train_iter / 2.)
         validation_loss = evaluate_loss(model, inputs=None, p_rate=poisson_input_rate.clone().detach(),
                                         target_spiketrain=targets, label='train i: {}'.format(train_i),
                                         exp_type=ExperimentType.DataDriven, train_i=train_i, exp_num=exp_num,
-                                        constants=constants)
+                                        constants=constants, converged=converged)
         # validation_loss = last_loss
         logger.log(parameters=['validation loss', validation_loss])
         validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
-
-        max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
-        # converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
-        converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
 
         targets = None; validation_loss = None
         train_i += 1

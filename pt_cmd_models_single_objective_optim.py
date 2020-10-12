@@ -5,10 +5,11 @@ import numpy as np
 import torch
 
 import IO
-from Dev.pytorch_custom_network_opt import pytorch_run_simulation_for, get_spike_train_for
+from Dev.pytorch_custom_network_opt import pytorch_run_simulation_for, get_spike_train_for, cast_to_float32
 from Log import Logger
 from Models.GLIF import GLIF
 from TargetModels import TargetEnsembleModels
+from eval import calculate_loss
 from experiments import zip_dicts, draw_from_uniform, generate_synthetic_data
 from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
 
@@ -77,7 +78,7 @@ def main(argv):
                                            E_L=ng.p.Array(init=init_params['E_L']).set_bounds(-80., -35.),
                                            C_m=ng.p.Array(init=init_params['C_m']).set_bounds(1.15, 2.),
                                            G=ng.p.Array(init=init_params['G']).set_bounds(0.1, 0.9),
-                                           R_I=ng.p.Array(init=init_params['R_I']).set_bounds(90., 130.),
+                                           R_I=ng.p.Array(init=init_params['R_I']).set_bounds(90., 150.),
                                            f_v=ng.p.Array(init=init_params['f_v']).set_bounds(0.01, 0.99),
                                            f_I=ng.p.Array(init=init_params['f_I']).set_bounds(0.01, 0.99),
 
@@ -103,7 +104,6 @@ def main(argv):
             logger.log('recommendation.value: {}'.format(recommended_params))
 
             cur_plot_params = {}  # TODO: fix spaghetti
-            min_loss_per_exp.append(recommendation.loss)
             index_ctr = 0
             for p_i, key in enumerate(recommended_params):
                 if key in ['target_model', 'target_rate', 'time_interval']:
@@ -121,11 +121,15 @@ def main(argv):
                     else:
                         other_params_for_optim[key].append(np.copy(recommended_params[key]))
 
-            model_spike_train = get_spike_train_for(recommended_params['rate'], other_params_for_optim['w'][exp_i], cur_plot_params.copy())
-
+            model_spike_train = get_spike_train_for(recommended_params['rate'], zip_dicts(cur_plot_params.copy(), {'preset_weights': other_params_for_optim['w'][exp_i]}))
             targets = generate_synthetic_data(target_model, target_rate, time_interval)
+
+            # min_loss_per_exp.append(recommendation.loss)  # currently doesn't work..
+            cur_min_loss = calculate_loss(model_spike_train, targets, loss_fn, tau_vr=4.0)
+            min_loss_per_exp.append(cur_min_loss)
+
             plot_spiketrains_side_by_side(model_spike_train, targets, exp_type='single_objective_optim', uuid=UUID,
-                                          title='Spike trains model and target ({}, loss: {})'.format(optim_name, recommendation.loss),
+                                          title='Spike trains model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
                                           fname='spike_trains_optim_{}_exp_num_{}'.format(optim_name, exp_i))
 
             torch.save(recommended_params.copy(),

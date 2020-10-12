@@ -1,9 +1,8 @@
 import sys
 
-
 import Constants as C
 from Models.GLIF import GLIF
-from TargetModels import TargetModels, TargetEnsembleModels
+from TargetModels import TargetEnsembleModels
 from fit_to_model_exp_suite import start_exp
 
 

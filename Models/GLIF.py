@@ -16,7 +16,7 @@ class GLIF(nn.Module):
 
         super(GLIF, self).__init__()
 
-        if parameters:
+        if parameters is not None:
             for key in parameters.keys():
                 if key == 'C_m':
                     C_m = FT(torch.ones((N,)) * parameters[key])
@@ -91,7 +91,7 @@ class GLIF(nn.Module):
         self.E_L.clamp(-80., -35.)
         self.C_m.clamp(1.15, 2.)
         self.G.clamp(0.1, 0.9)
-        self.R_I.clamp(90., 130.)
+        self.R_I.clamp(90., 150.)
         self.f_v.clamp(0.01, 0.99)
         self.f_I.clamp(0.01, 0.99)
         self.delta_theta_s.clamp(6., 30.)

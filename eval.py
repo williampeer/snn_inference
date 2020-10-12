@@ -6,7 +6,7 @@ from experiments import poisson_input, release_computational_graph
 from plot import *
 
 
-def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=None, train_i=None, exp_num=None, constants=None):
+def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=None, train_i=None, exp_num=None, constants=None, converged=False):
     if inputs is not None:
         assert (inputs.shape[0] == target_spiketrain.shape[0]), \
             "inputs and targets should have same shape. inputs shape: {}, targets shape: {}".format(inputs.shape, target_spiketrain.shape)
@@ -30,7 +30,7 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
     else:
         exp_type_str = exp_type.name
 
-    if train_i % constants.evaluate_step == 0:
+    if train_i % constants.evaluate_step == 0 or converged:
         plot_spiketrains_side_by_side(model_spiketrain, target_spiketrain, uuid=constants.UUID, exp_type=exp_type_str,
                                       title='Spike trains test set ({}, loss: {:.3f})'.format(label, loss),
                                       fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))

@@ -9,6 +9,11 @@ logger = Logger(log_fname='pytorch_nevergrad_optimization')
 tau_vr = 4.0
 
 
+def cast_to_float32(np_dict):
+    for key in np_dict.keys():
+        np_dict[key] = np.array(np_dict[key], dtype='float32')
+
+
 def pytorch_run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf,
                                I_A, loss_fn,target_model, target_rate, time_interval=4000):
 
@@ -28,6 +33,7 @@ def pytorch_run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_
 
 
 def get_spike_train_for(rate, neurons_params, run_time=4000):
+    cast_to_float32(neurons_params)
     model = GLIF(neurons_params)
     return generate_synthetic_data(model, rate, run_time)
 
