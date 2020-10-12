@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 import IO
-from Dev.pytorch_custom_network_opt import pytorch_run_simulation_for, get_spike_train_for, cast_to_float32
+from Dev.pytorch_custom_network_opt import pytorch_run_simulation_for, get_spike_train_for
 from Log import Logger
 from Models.GLIF import GLIF
 from TargetModels import TargetEnsembleModels
@@ -135,6 +135,7 @@ def main(argv):
             torch.save(recommended_params.copy(),
                        './saved/single_objective_optim/fitted_params_{}_optim_{}_loss_fn_{}_budget_{}_exp_{}.pt'.format(
                            target_model_name, optim_name, loss_fn, budget, exp_i))
+            cur_min_loss = None; model_spike_train = None; targets = None
 
         params_by_optim[optim_name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
         torch.save(params_by_optim, './saved/single_objective_optim/params_tm_{}_by_optim_{}_loss_fn_{}_budget_{}.pt'.format(target_model_name, optim_name, loss_fn, budget))
