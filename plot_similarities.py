@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from nmf_results import *
-
 
 def bar_plot_similarities(similarities_per_lfn, xticks=False, legends=False, title=False):
     xs = np.linspace(0.2, len(similarities_per_lfn)-0.8, len(similarities_per_lfn))
@@ -45,5 +43,3 @@ def bar_plot_similarities(similarities_per_lfn, xticks=False, legends=False, tit
 #     similarities.append(np.random.rand(int(10 * np.random.rand())))
 #
 # bar_plot_similarities(similarities)
-
-bar_plot_similarities(all_exp_res, )
