@@ -125,7 +125,7 @@ def main(argv):
             targets = generate_synthetic_data(target_model, target_rate, time_interval)
 
             # min_loss_per_exp.append(recommendation.loss)  # currently doesn't work..
-            cur_min_loss = calculate_loss(model_spike_train, targets, loss_fn, tau_vr=4.0)
+            cur_min_loss = calculate_loss(model_spike_train, targets, loss_fn, tau_vr=4.0).clone().detach().numpy()
             min_loss_per_exp.append(cur_min_loss)
 
             plot_spiketrains_side_by_side(model_spike_train, targets, exp_type='single_objective_optim', uuid=UUID,
@@ -152,3 +152,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+    sys.exit(0)

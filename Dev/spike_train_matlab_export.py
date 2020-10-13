@@ -3,8 +3,10 @@ import sys
 import numpy as np
 import torch
 
+from Dev.pytorch_custom_network_opt import in_place_cast_to_float32
 from IO import save_model_params
-from TargetModels import TargetModels
+from Models.GLIF import GLIF
+from TargetModels import TargetEnsembleModels
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_to_sparse_vectors
 from experiments import poisson_input
 from model_util import generate_model_data
@@ -21,10 +23,21 @@ def main(argv):
     # model_path = 'glif1'
     # model = TargetModels.glif1()
     # poisson_rate = 0.4
-    loss_fn = 'kl_div'
-    cur_model_descr = 'glif2'
-    model_path = '/home/william/repos/archives_snn_inference/archive (6)/saved/09-29_08-47-29-521/GLIF_exp_num_4_data_set_None_mean_loss_3.824_uuid_09-29_08-47-29-521.pt'
-    # model_path = '/home/william/repos/archives_snn_inference/archive (7)/saved/10-01_02-00-06-808/GLIF_exp_num_19_data_set_None_mean_loss_-0.000_uuid_10-01_02-00-06-808.pt'
+    model_path = '/home/william/repos/archives_snn_inference/archive (8)/saved/single_objective_optim/fitted_params_glif_ensembles_seed_1_optim_CMA_loss_fn_poisson_nll_budget_10000_exp_2.pt'
+    # model_path = '/home/william/repos/archives_snn_inference/archive (8)/saved/10-12_18-10-35-500/GLIF_exp_num_10_data_set_None_mean_loss_0.227_uuid_10-12_18-10-35-500.pt'
+    # model_path = ''
+
+    loss_fn = model_path.split('loss_fn_')[1].split('_budget')[0]
+    cur_model_descr = model_path.split('fitted_params_')[1].split('_optim')[0]
+    exp_num = model_path.split('exp_')[1].split('.pt')[0]
+    optim = model_path.split('optim_')[1].split('_loss_fn')[0]
+    lr = ''
+
+    # loss_fn = 'firing_rate_distance_2'
+    # cur_model_descr = 'glif_ensembles_seed_1'
+    # exp_num = model_path.split('exp_num_')[1].split('_data_set')[0]
+    # optim = 'Adam'
+    # lr = '_lr_0_001'
 
     for i, opt in enumerate(opts):
         if opt == '-h':
@@ -39,9 +52,22 @@ def main(argv):
         print('No path to load model from specified.')
         sys.exit(1)
 
-    exp_res = torch.load(model_path)
-    model = exp_res['model']
-    poisson_rate = exp_res['rate']
+    recommended_params = torch.load(model_path)
+    poisson_rate = recommended_params['rate']
+    model_params = recommended_params.copy()
+    del model_params['target_model'], model_params['target_rate'], model_params['time_interval'], model_params['loss_fn'], model_params['rate']
+    model_params['preset_weights'] = model_params['w']
+    in_place_cast_to_float32(model_params)
+    model = GLIF(parameters=model_params)
+
+    # exp_res = torch.load(model_path)
+    # model = exp_res['model']
+    # poisson_rate = exp_res['rate']
+
+    # model = TargetEnsembleModels.glif_ensembles_model(1)
+    # poisson_rate = 10.
+
+
     print('Loaded model.')
 
     interval_size = 4000
@@ -57,7 +83,7 @@ def main(argv):
         model.reset_hidden_state()
         # spiketrain = generate_synthetic_data(model, poisson_rate, t=interval_size)
         gen_input = poisson_input(rate=poisson_rate, t=interval_size, N=model.N)
-        _, gen_spiketrain = generate_model_data(model=model, inputs=gen_input)
+        gen_spiketrain = generate_model_data(model=model, inputs=gen_input)
         # for gen spiketrain this may be thresholded to binary values:
         gen_spiketrain = torch.round(gen_spiketrain)
 
@@ -79,8 +105,8 @@ def main(argv):
     # save_spiketrain_in_sparse_matlab_format(fname=save_fname_input, spike_indices=input_indices, spike_times=input_times)
     # save_model_params(model, fname=save_fname_input.replace('.mat', '_params'))
 
-    exp_num = model_path.split('exp_num_')[1].split('_data_set')[0]
-    save_fname_output = 'generated_spike_train_{}_fit_{}_exp_num_{}'.format(cur_model_descr, loss_fn, exp_num).replace('.', '_') + '.mat'
+    save_fname_output = 'fitted_spike_train_{}_{}_{}{}_exp_num_{}'.format(cur_model_descr, optim, loss_fn, lr, exp_num).replace('.', '_') + '.mat'
+    # save_fname_output = 'glif_ensembles_seed_1.mat'
     save_spiketrain_in_sparse_matlab_format(fname=save_fname_output, spike_indices=spike_indices, spike_times=spike_times)
     save_model_params(model, fname=save_fname_output.replace('.mat', '_params'))
 
