@@ -11,7 +11,7 @@ def main(argv):
 
     # Default values
     start_seed = 0
-    learn_rate = 0.001; N_exp = 20; tau_van_rossum = 4.0; plot_flag = True
+    learn_rate = 0.001; N_exp = 10; tau_van_rossum = 4.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
@@ -33,11 +33,6 @@ def main(argv):
     evaluate_step = int(max(max_train_iters/10, 1))
     # data_path = None
     # prefix = '/Users/william/data/target_data/'
-    target_fnames = ['glif_1',
-                     'glif_2',
-                     'glif_3',
-                     'glif_async',
-                     'glif_slow_sync']
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
