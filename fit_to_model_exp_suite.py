@@ -1,15 +1,8 @@
-import sys
-
 import Log
 from Constants import ExperimentType
 from IO import save_poisson_rates
-from Models.GLIF import GLIF
-from Models.LIF import LIF
-from Models.LIF_ASC import LIF_ASC
-from Models.LIF_R import LIF_R
-from Models.LIF_R_ASC import LIF_R_ASC
 from eval import evaluate_loss
-from experiments import generate_synthetic_data, draw_from_uniform, zip_dicts, release_computational_graph
+from experiments import generate_synthetic_data, draw_from_uniform
 from fit import fit_mini_batches
 from plot import *
 
@@ -105,7 +98,6 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
         max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
-        # converged = abs(abs_grads_mean) <= 0.2 * abs(max_grads_mean) and validation_loss <= 0.8 * np.max(validation_losses)
         converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
 
         targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
