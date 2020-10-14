@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 def bar_plot_similarities(similarities_per_lfn, xticks=False, legends=False, title=False):
     xs = np.linspace(0.2, len(similarities_per_lfn)-0.8, len(similarities_per_lfn))
-    width = 0.15
+    width = 0.4
 
     for i in range(len(similarities_per_lfn)):
         sim_exp_lfn = similarities_per_lfn[i]
@@ -19,7 +19,7 @@ def bar_plot_similarities(similarities_per_lfn, xticks=False, legends=False, tit
     if legends:
         plt.legend(legends)
 
-    plt.ylim(0., 0.7)
+    plt.ylim(0., 1.0)
     # plt.xticks(xs)
     if xticks:
         plt.xticks(xs, xticks)
