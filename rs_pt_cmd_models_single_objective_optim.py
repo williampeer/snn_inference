@@ -43,7 +43,7 @@ def main(argv):
         elif opt in ("-lfn", "--loss-function"):
             loss_fn = args[i]
         elif opt in ("-rs", "--random-seed"):
-            random_seed = args[i]
+            random_seed = int(args[i])
 
     if optim_name == 'DE':
         optim = ng.optimizers.DE
