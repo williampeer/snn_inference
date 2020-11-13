@@ -145,4 +145,4 @@ class GLIF(nn.Module):
         self.I_additive = (1. - self.f_I) * self.I_additive \
                           + self.spiked * self.I_A
 
-        return self.spiked
+        return self.v, self.spiked

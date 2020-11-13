@@ -64,6 +64,29 @@ spikemon = SpikeMonitor(neurons[:], 'v', record=True)
 store()
 
 
+def convert_brian_spike_train_dict_to_boolean_matrix(brian_spike_train, t_max):
+    keys = brian_spike_train.keys()
+    res = np.zeros((int(t_max), len(keys)))
+    for i, k in enumerate(keys):
+        node_spike_times = brian_spike_train[k]
+        node_spike_times = np.array(node_spike_times/brian2.msecond, dtype=np.int)
+        res[node_spike_times, i] = 1.
+    return res
+
+
+def convert_brian_spike_train_to_matlab_format(brian_spikes):
+    spike_indices = np.array([], dtype='int8')
+    spike_times = np.array([], dtype='float32')
+
+    for n_i in brian_spikes.keys():
+        spike_times_ms = np.round(brian_spikes[n_i]/brian2.ms)
+        spike_times = np.concatenate((spike_times, spike_times_ms))
+        spike_indices = np.concatenate((spike_indices, n_i * np.ones_like(spike_times_ms, dtype='int8')))
+
+    indices_sorted = np.argsort(spike_times)
+    return spike_times[indices_sorted], spike_indices[indices_sorted]
+
+
 def run_simulation_for(rate, w, C_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf, I_A, loss_fn,
                        target_model, target_rate, time_interval=4000):
     restore()

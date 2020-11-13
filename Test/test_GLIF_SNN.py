@@ -2,7 +2,7 @@ import torch
 
 import model_util
 import spike_metrics
-from TargetModels import TargetModels, TargetEnsembleModels
+from TargetModels import TargetEnsembleModels
 from experiments import poisson_input
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
@@ -10,7 +10,8 @@ for random_seed in range(1, 6):
     # static_parameters = {'N': 10}
     # free_parameters = {'w_mean': 0.2, 'w_var': 0.3}
     # snn = GLIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
-    snn = TargetEnsembleModels.glif_ensembles_model(random_seed=random_seed, N = 12); ext_name = 'ensembles_1'
+    # snn = TargetEnsembleModels.glif_ensembles_model(random_seed=random_seed, N = 12); ext_name = 'ensembles_1'
+    snn = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12); ext_name = 'ensembles_1_dales'
     # snn = TargetModels.glif1(N = 12); ext_name = '1'
     # snn = TargetModels.glif1_2(N = 12); ext_name = '1_2'
     # snn = TargetModels.glif2(N = 12); ext_name = '2'
@@ -33,3 +34,4 @@ for random_seed in range(1, 6):
     tau_vr = torch.tensor(4.0)
     loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)
     print('tau_vr: {}, loss: {}'.format(tau_vr, loss))
+    assert loss > 1e-03, "should have loss for input vs. no input"
