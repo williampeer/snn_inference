@@ -23,7 +23,8 @@ def main(argv):
     # model_path = 'glif1'
     # model = TargetModels.glif1()
     # poisson_rate = 0.4
-    model_path = '/home/william/repos/archives_snn_inference/archive (8)/saved/single_objective_optim/fitted_params_glif_ensembles_seed_1_optim_CMA_loss_fn_poisson_nll_budget_10000_exp_2.pt'
+    # model_path = '/home/william/repos/archives_snn_inference/archive (8)/saved/single_objective_optim/fitted_params_glif_ensembles_seed_1_optim_CMA_loss_fn_poisson_nll_budget_10000_exp_2.pt'
+    model_path = '/home/william/repos/archives_snn_inference/archive (12)/saved/single_objective_optim/fitted_params_glif_ensembles_seed_1_optim_CMA_loss_fn_vrdfrd_10000_exp_5.pt'
     # model_path = '/home/william/repos/archives_snn_inference/archive (8)/saved/10-12_18-10-35-500/GLIF_exp_num_10_data_set_None_mean_loss_0.227_uuid_10-12_18-10-35-500.pt'
     # model_path = ''
 

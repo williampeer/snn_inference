@@ -2,6 +2,7 @@ import sys
 
 import Constants as C
 from Models.GLIF import GLIF
+from Models.LIF import LIF
 from TargetModels import TargetEnsembleModels
 from fit_to_model_exp_suite import start_exp
 
@@ -14,21 +15,21 @@ def main(argv):
     learn_rate = 0.001; N_exp = 10; tau_van_rossum = 4.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
-    # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'firing_rate_distance'
+    max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
+    # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'firing_rate_distance'
     # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # max_train_iters = 300; batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
     # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
-    # max_train_iters = 100; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
-    max_train_iters = 100; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
+    # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'vrdfrd'
+    # max_train_iters = 100; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 
     optimiser = 'Adam'
-    initial_poisson_rate = 10.  # Hz
+    initial_poisson_rate = 20.  # Hz
 
     # evaluate_step = 1
     evaluate_step = int(max(max_train_iters/10, 1))
@@ -84,7 +85,7 @@ def main(argv):
 
         # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         # for m_class in models:
-        start_exp(constants=constants, model_class=GLIF, target_model=target_model)
+        start_exp(constants=constants, model_class=LIF, target_model=target_model)
 
 
 if __name__ == "__main__":

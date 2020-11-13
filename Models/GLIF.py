@@ -5,9 +5,9 @@ from torch import FloatTensor as FT
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-56., -52.], 'C_m': [1.3, 1.5], 'G': [0.65, 0.8], 'R_I': [110., 115.],
+    parameter_init_intervals = {'E_L': [-55., -53.], 'C_m': [1.35, 1.5], 'G': [0.65, 0.8], 'R_I': [130., 134.],
                                 'f_v': [0.25, 0.35], 'f_I': [0.5, 0.7], 'delta_theta_s': [10., 12.], 'b_s': [0.25, 0.35],
-                                'a_v': [0.25, 0.35], 'b_v': [0.25, 0.35], 'theta_inf': [-21., -19.], 'delta_V': [9., 12.],
+                                'a_v': [0.25, 0.35], 'b_v': [0.25, 0.35], 'theta_inf': [-25., -24.], 'delta_V': [9., 12.],
                                 'I_A': [1.4, 1.8]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.4):
@@ -49,7 +49,8 @@ class GLIF(nn.Module):
                 elif key == 'w_var':
                     w_var = FT(torch.ones((N,)) * parameters[key])
 
-        __constants__ = ['N', 'E_L', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
+        # __constants__ = ['N', 'E_L', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
+        __constants__ = ['N']
         self.N = N
         # self.E_L = FT(N * [E_L])
 

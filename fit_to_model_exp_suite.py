@@ -98,7 +98,8 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
         max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
-        converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
+        # converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
+        converged = False
 
         targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
                                           t=constants.rows_per_train_iter / 2.)
