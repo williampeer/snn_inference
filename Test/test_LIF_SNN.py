@@ -33,6 +33,7 @@ import torch
 import model_util
 import spike_metrics
 from Models.LIF import LIF
+from TargetModels.TargetEnsembleModels import lif_ensembles_model_dales_compliant
 from experiments import poisson_input, draw_from_uniform
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
@@ -43,7 +44,8 @@ for random_seed in range(1, 6):
     # free_parameters = {'w_mean': 0.2, 'w_var': 0.3}
     # snn = GLIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
     init_params_model = draw_from_uniform(LIF.parameter_init_intervals, num_neurons)
-    snn = LIF(parameters=init_params_model)
+    # snn = LIF(parameters=init_params_model)
+    snn = lif_ensembles_model_dales_compliant(random_seed=4)
     # snn = TargetModels.glif1(N = 12); ext_name = '1'
     # snn = TargetModels.glif1_2(N = 12); ext_name = '1_2'
     # snn = TargetModels.glif2(N = 12); ext_name = '2'

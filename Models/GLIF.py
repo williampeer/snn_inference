@@ -10,7 +10,8 @@ class GLIF(nn.Module):
                                 'a_v': [0.25, 0.35], 'b_v': [0.25, 0.35], 'theta_inf': [-25., -24.], 'delta_V': [9., 12.],
                                 'I_A': [1.4, 1.8]}
 
-    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.4):
+    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.4,
+                 neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
         # use_cuda = torch.cuda.is_available()
         # device = torch.device("cuda" if use_cuda else "cpu")
 
@@ -50,7 +51,7 @@ class GLIF(nn.Module):
                     w_var = FT(torch.ones((N,)) * parameters[key])
 
         # __constants__ = ['N', 'E_L', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
-        __constants__ = ['N']
+        __constants__ = ['N', 'self_recurrence_mask']
         self.N = N
         # self.E_L = FT(N * [E_L])
 
@@ -61,12 +62,12 @@ class GLIF(nn.Module):
         # self.theta_inf = FT(theta_inf)
 
         self.v = E_L * torch.ones((self.N,))
-        self.g = torch.zeros_like(self.v)  # syn. conductance
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
         self.theta_s = 30. * torch.ones((self.N,))
         self.theta_v = torch.ones((self.N,))
         self.I_additive = torch.zeros((self.N,))
 
+        self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
         if parameters.__contains__('preset_weights'):
             # print('DEBUG: Setting w to preset weights: {}'.format(parameters['preset_weights']))
             # print('Setting w to preset weights.')
@@ -104,8 +105,16 @@ class GLIF(nn.Module):
         self.I_A.clamp(0.5, 4.)
         # self.I_A = FT(I_A)
         # self.delta_V = FT(delta_V)
+        self.w.clamp(-1., 1.)
 
-
+        # row per neuron
+        for i in range(len(neuron_types)):
+            if neuron_types[i] == -1:
+                self.w[i, :].clamp(-1., 0.)
+            elif neuron_types[i] == 1:
+                self.w[i, :].clamp(0., 1.)
+            else:
+                raise NotImplementedError()
 
     def reset(self):
         for p in self.parameters():
@@ -123,8 +132,11 @@ class GLIF(nn.Module):
 
     def forward(self, x_in):
         # I = (x_in + self.w.matmul(self.I_additive))
-        I = torch.sigmoid(x_in + self.w.matmul(self.I_additive))
+        # I = torch.sigmoid(x_in + self.w.matmul(self.I_additive))
         # I = torch.relu(x_in + self.w.matmul(self.I_additive))
+        I = torch.sigmoid(
+            (self.self_recurrence_mask * self.w).matmul(self.I_additive) + x_in
+                          )
 
         dv = (I * self.R_I - self.G * (self.v - self.E_L)) / self.C_m
         v_next = self.v + dv

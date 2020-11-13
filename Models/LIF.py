@@ -8,7 +8,7 @@ class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'R_I', 'tau_g']
     parameter_init_intervals = {'E_L': [-60., -60.], 'C_m': [1.5, 1.5], 'R_I': [70., 70.], 'tau_g': [3., 3.]}
 
-    def __init__(self, parameters, N=12, w_mean=0.5, w_var=0.5, neuron_types=T([-1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, 1])):
+    def __init__(self, parameters, N=12, w_mean=0.5, w_var=0.5, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
         super(LIF, self).__init__()
         # self.device = device
         assert len(neuron_types) == N, "neuron_types should be of length N"
@@ -83,7 +83,7 @@ class LIF(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
-        I = (self.self_recurrence_mask * self.w).matmul(self.g) + x_in
+        I = (self.self_recurrence_mask * self.w).matmul(self.g) + x_in  # TODO: bound this.
 
         dv = (self.E_L - self.v + I * self.R_I) / self.C_m
         v_next = torch.add(self.v, dv)
@@ -99,5 +99,5 @@ class LIF(nn.Module):
         dg = -torch.div(self.g, self.tau_g)
         self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 
-        # return self.v, self.spiked
-        return self.spiked
+        return self.v, self.spiked
+        # return self.spiked
