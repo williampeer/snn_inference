@@ -6,9 +6,9 @@ from torch import FloatTensor as FT
 
 class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'R_I', 'tau_g']
-    parameter_init_intervals = {'E_L': [-60., -60.], 'C_m': [1.5, 1.5], 'R_I': [70., 70.], 'tau_g': [3., 3.]}
+    parameter_init_intervals = {'E_L': [-60., -60.], 'C_m': [1.5, 1.5], 'R_I': [125., 125.], 'tau_g': [3., 3.]}
 
-    def __init__(self, parameters, N=12, w_mean=1., w_var=0., neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])):
+    def __init__(self, parameters, N=12, w_mean=0.5, w_var=0.5, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
         super(LIF, self).__init__()
         # self.device = device
         assert len(neuron_types) == N, "neuron_types should be of length N"
@@ -63,7 +63,7 @@ class LIF(nn.Module):
         self.E_L.clamp(-80., -35.)
         self.C_m.clamp(1.15, 2.)
         self.tau_g.clamp(2.5, 3.5)
-        self.R_I.clamp(70., 70.)
+        self.R_I.clamp(90., 150.)
 
         self.w.clamp(-1., 1.)
         # row per neuron
@@ -107,5 +107,5 @@ class LIF(nn.Module):
         dg = -torch.div(self.g, self.tau_g)
         self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 
-        return self.v, self.spiked
-        # return self.spiked
+        # return self.v, self.spiked
+        return self.spiked

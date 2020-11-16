@@ -124,7 +124,6 @@ class GLIF(nn.Module):
 
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()
-        self.g = self.g.clone().detach()
         self.spiked = self.spiked.clone().detach()
         self.theta_s = self.theta_s.clone().detach()
         self.theta_v = self.theta_v.clone().detach()
@@ -157,4 +156,5 @@ class GLIF(nn.Module):
         self.I_additive = (1. - self.f_I) * self.I_additive \
                           + self.spiked * self.I_A
 
-        return self.v, self.spiked
+        # return self.v, self.spiked
+        return self.spiked

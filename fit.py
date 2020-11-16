@@ -36,7 +36,6 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
         loss = calculate_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(),
                               loss_fn=constants.loss_fn, tau_vr = tau_vr)
 
-
         loss.backward(retain_graph=True)
         poisson_input_rate.grad += torch.mean(current_inputs.grad)
 
