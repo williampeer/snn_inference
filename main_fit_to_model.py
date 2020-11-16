@@ -15,7 +15,7 @@ def main(argv):
     learn_rate = 0.001; N_exp = 10; tau_van_rossum = 4.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
+    # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'firing_rate_distance'
     # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # max_train_iters = 300; batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
@@ -25,6 +25,7 @@ def main(argv):
     # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
     # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'vrdfrd'
     # max_train_iters = 100; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
+    max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_vr'
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 

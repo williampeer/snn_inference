@@ -43,9 +43,9 @@ for random_seed in range(1, 6):
     # static_parameters = {'N': 10}
     # free_parameters = {'w_mean': 0.2, 'w_var': 0.3}
     # snn = GLIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
-    init_params_model = draw_from_uniform(LIF.parameter_init_intervals, num_neurons)
+    # init_params_model = draw_from_uniform(LIF.parameter_init_intervals, num_neurons)
     # snn = LIF(parameters=init_params_model)
-    snn = lif_ensembles_model_dales_compliant(random_seed=4)
+    snn = lif_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.glif1(N = 12); ext_name = '1'
     # snn = TargetModels.glif1_2(N = 12); ext_name = '1_2'
     # snn = TargetModels.glif2(N = 12); ext_name = '2'
@@ -53,7 +53,7 @@ for random_seed in range(1, 6):
     # snn = TargetModels.glif_async(N = 12); ext_name = 'glif_async'
     # snn = TargetModels.glif_slower_more_synchronous(N = 12); ext_name = 'glif_slower_more_synchronous'
 
-    inputs = poisson_input(5., t=4000, N=snn.N)  # now assumes rate in Hz
+    inputs = poisson_input(10., t=4000, N=snn.N)  # now assumes rate in Hz
     print('#inputs: {}'.format(inputs.sum()))
     membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     print('#spikes: {}'.format(spikes.sum()))

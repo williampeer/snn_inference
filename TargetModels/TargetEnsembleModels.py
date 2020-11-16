@@ -83,18 +83,18 @@ def lif_ensembles_model_dales_compliant(random_seed, N = 12):
     np.random.seed(random_seed)
 
     pop_size = int(N / 3)
-    params_pop1 = {'C_m': 2.3, 'E_L': -38., 'R_I': 100., 'tau_g': 3.}
+    params_pop1 = {'C_m': 2.3, 'E_L': -60., 'R_I': 146., 'tau_g': 3.5}
     weights_std = 0.025
     hand_coded_params_pop1 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 torch.cat([T(pop_size*[0.06]), T(pop_size*[0.03]), T(pop_size*[0.01])])}
 
-    params_pop2 = {'C_m': 1.3, 'E_L': -44., 'R_I': 89., 'tau_g': 3.}
+    params_pop2 = {'C_m': 1.3, 'E_L': -60., 'R_I': 128., 'tau_g': 2.5}
     hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 torch.cat([T(4*[.02]), T(4*[.3]), T(4*[0.15])])}
 
-    params_pop3 = {'C_m': 1.1, 'E_L': -60., 'R_I': 80., 'tau_g': 3.}
+    params_pop3 = {'C_m': 1.1, 'E_L': -65., 'R_I': 130., 'tau_g': 1.5}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 torch.cat([T(4*[-.2]), T(4*[-.1]), T(4*[-0.02])])}

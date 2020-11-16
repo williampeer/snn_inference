@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 
 
 # an approximation using torch.where
@@ -20,6 +21,28 @@ def van_rossum_dist(spikes, target_spikes, tau):
     c1 = torch_van_rossum_convolution(spikes=spikes, tau=tau)
     c2 = torch_van_rossum_convolution(spikes=target_spikes, tau=tau)
     return euclid_dist(c1, c2)
+
+
+def van_rossum_dist_one_to_K(spikes, target_spikes, tau):
+    c1 = torch_van_rossum_convolution(spikes=spikes.reshape((-1, 1)), tau=tau)
+    c1 = torch.ones((1, target_spikes.shape[1])) * c1.reshape((-1, 1))  # broadcast
+    c2 = torch_van_rossum_convolution(spikes=target_spikes, tau=tau)
+    euclid_per_node = torch.sqrt(torch.pow(torch.sub(c1, c2), 2) + 1e-18).sum(dim=0)
+    return euclid_per_node
+
+
+def greedy_shortest_dist_vr(spikes, target_spikes, tau):
+    assert spikes.shape[0] > spikes.shape[1], "each time step as a row expected, meaning column by node"
+    num_nodes = spikes.shape[1]
+    indices_left = torch.arange(0, num_nodes)
+    min_distances = torch.tensor([])
+    for s_i in range(0, num_nodes):
+        d_i_J = van_rossum_dist_one_to_K(spikes[:, s_i], target_spikes[:, indices_left], tau)
+        min_distances = torch.cat([min_distances, torch.tensor([d_i_J.min()])])
+        min_index = np.where(min_distances.numpy() == min_distances.min().numpy())[0][0]
+        indices_left = indices_left[indices_left != min_index]
+
+    return torch.mean(min_distances)
 
 
 def euclid_dist(spikes1, spikes2):

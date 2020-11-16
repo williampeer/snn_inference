@@ -65,6 +65,8 @@ def calculate_loss(output, target, loss_fn, tau_vr=None):
         vrd_loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
         frd_loss = spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
         loss = vrd_loss + frd_loss
+    elif loss_fn.__contains__('free_label_vr'):
+        loss = spike_metrics.greedy_shortest_dist_vr(spikes=output, target_spikes=target, tau=tau_vr)
     else:
         raise NotImplementedError("Loss function not supported.")
 

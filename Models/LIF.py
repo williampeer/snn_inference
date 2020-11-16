@@ -8,7 +8,7 @@ class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'R_I', 'tau_g']
     parameter_init_intervals = {'E_L': [-60., -60.], 'C_m': [1.5, 1.5], 'R_I': [70., 70.], 'tau_g': [3., 3.]}
 
-    def __init__(self, parameters, N=12, w_mean=0.5, w_var=0.5, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=1., w_var=0., neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])):
         super(LIF, self).__init__()
         # self.device = device
         assert len(neuron_types) == N, "neuron_types should be of length N"
@@ -37,7 +37,13 @@ class LIF(nn.Module):
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
 
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
-        rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
+        if parameters.__contains__('preset_weights'):
+            # print('DEBUG: Setting w to preset weights: {}'.format(parameters['preset_weights']))
+            # print('Setting w to preset weights.')
+            rand_ws = parameters['preset_weights']
+            assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
+        else:
+            rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
         for i in range(len(neuron_types)):
             if neuron_types[i] == -1:
                 rand_ws[i, :] = -torch.abs(rand_ws[i, :])
@@ -83,7 +89,9 @@ class LIF(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
-        I = (self.self_recurrence_mask * self.w).matmul(self.g) + x_in  # TODO: bound this.
+        I = torch.sigmoid(
+            (self.self_recurrence_mask * self.w).matmul(self.g) + x_in
+        )
 
         dv = (self.E_L - self.v + I * self.R_I) / self.C_m
         v_next = torch.add(self.v, dv)
