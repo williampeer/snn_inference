@@ -65,8 +65,8 @@ def van_rossum_squared_distance(s1, s2, tau):
 
 
 def firing_rate_distance(model_spikes, target_spikes):
-    mean_model_rate = model_spikes.sum(axis=0)
-    mean_targets_rate = target_spikes.sum(axis=0)
+    mean_model_rate = model_spikes.sum(dim=0)
+    mean_targets_rate = target_spikes.sum(dim=0)
     # assert model_spikes.shape[0] > model_spikes.shape[1]
     T = model_spikes.shape[0] / 1000.
     # f_penalty(x,y) = sqrt(pow(e^(-x/T.) - e^(-y/T.)).sum() + 1e-18)
@@ -78,7 +78,7 @@ def firing_rate_distance(model_spikes, target_spikes):
 def shortest_dist_rates(spikes, target_spikes):
     assert spikes.shape[0] > spikes.shape[1], "each time step as a row expected, meaning column by node"
 
-    spike_rates = spikes.sum(axis=0) * 1000. / spikes.shape[0]
+    spike_rates = spikes.sum(dim=0) * 1000. / spikes.shape[0]
     spike_rates, _ = torch.sort(spike_rates)
     target_rates = target_spikes.sum(axis=0) * 1000. / target_spikes.shape[0]
     target_rates, _ = torch.sort(target_rates)
@@ -89,9 +89,9 @@ def shortest_dist_rates(spikes, target_spikes):
 def shortest_dist_rates_w_silent_penalty(spikes, target_spikes):
     assert spikes.shape[0] > spikes.shape[1], "each time step as a row expected, meaning column by node"
 
-    spike_rates = spikes.sum(axis=0) * 1000. / spikes.shape[0]
+    spike_rates = spikes.sum(dim=0) * 1000. / spikes.shape[0]
     spike_rates, _ = torch.sort(spike_rates)
-    target_rates = target_spikes.sum(axis=0) * 1000. / target_spikes.shape[0]
+    target_rates = target_spikes.sum(dim=0) * 1000. / target_spikes.shape[0]
     target_rates, _ = torch.sort(target_rates)
 
     silent_penalty = torch.sqrt(torch.pow(torch.exp(-spike_rates) - torch.exp(target_rates), 2).sum() + 1e-18)
