@@ -25,16 +25,16 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
     for batch_i in range(batch_N):
         print('batch #{}'.format(batch_i))
 
-        # if gen_inputs is not None:
-        #     current_inputs = gen_inputs[batch_size * batch_i:batch_size * (batch_i + 1)]
-        #     current_inputs.retain_grad()
-        # else:
-        current_inputs = poisson_input(rate=poisson_input_rate, t=batch_size, N=model.N)
-        current_inputs.retain_grad()
+        if gen_inputs is not None:
+            current_inputs = gen_inputs[batch_size * batch_i:batch_size * (batch_i + 1)]
+            current_inputs.retain_grad()
+        else:
+            current_inputs = poisson_input(rate=poisson_input_rate, t=batch_size, N=model.N)
+            current_inputs.retain_grad()
         spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, current_inputs)
 
         loss = calculate_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(),
-                              loss_fn=constants.loss_fn, tau_vr = tau_vr)
+                              loss_fn=constants.loss_fn, N = model.N, tau_vr = tau_vr)
 
         loss.backward(retain_graph=True)
         poisson_input_rate.grad += torch.mean(current_inputs.grad)

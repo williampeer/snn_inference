@@ -17,10 +17,10 @@ from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_si
 def main(argv):
     print('Argument List:', str(argv))
 
-    num_exps = 10; budget = 6000
+    num_exps = 5; budget = 5000
     # num_exps = 4; budget = 400
-    # optim_name = 'CMA'
-    optim_name = 'NGO'
+    optim_name = 'CMA'
+    # optim_name = 'NGO'
     loss_fn = 'firing_rate_distance'
     # loss_fn = 'vrdfrd'
     target_rate = 10.; time_interval = 2000

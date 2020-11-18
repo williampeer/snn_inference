@@ -31,8 +31,8 @@ def convert_to_sparse_vectors(spiketrain, t_offset=0.):
     for ms_i in range(spiketrain.shape[0]):
         for node_i in range(spiketrain.shape[1]):
             if spiketrain[ms_i][node_i] != 0:
-                assert spiketrain[ms_i][node_i] in range(10), \
-                    "element out of range(0,5). row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
+                assert spiketrain[ms_i][node_i] <= 1, \
+                    "element out of range. row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
                 # assert spiketrain[ms_i][node_i] == 1, \
                 #     "found element that was neither 0 nor 1. row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
                 spike_times = np.append(spike_times, np.float32(float(ms_i) +t_offset))
@@ -138,9 +138,9 @@ def convert_sparse_spike_train_to_matrix(spike_times, node_indices, unique_node_
     return res
 
 
-def get_spike_times_list(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):
+def get_spike_times_list(index_last_step, advance_by_t_steps, spike_times, spike_indices, num_nodes):
     res = []
-    for _ in range(len(node_numbers)):
+    for _ in range(num_nodes):
         res.append([])
 
     if index_last_step == 0:
@@ -149,7 +149,7 @@ def get_spike_times_list(index_last_step, advance_by_t_steps, spike_times, spike
         prev_spike_time = spike_times[index_last_step]
 
     next_step = index_last_step+1
-    while spike_times[next_step] < prev_spike_time + advance_by_t_steps:
+    while next_step < len(spike_times) and spike_times[next_step] < prev_spike_time + advance_by_t_steps:
         cur_node_index = int(spike_indices[next_step])
         res[cur_node_index] = np.concatenate((res[cur_node_index], [spike_times[next_step]]))
         next_step = next_step+1

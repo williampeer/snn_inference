@@ -1,5 +1,6 @@
 from torch.nn.functional import poisson_nll_loss, kl_div
 
+import ext_spike_metrics
 import model_util
 import spike_metrics
 from experiments import poisson_input, release_computational_graph
@@ -22,7 +23,8 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
 
-    loss = calculate_loss(model_spiketrain, target_spiketrain, loss_fn=constants.loss_fn, tau_vr=constants.tau_van_rossum)
+    loss = calculate_loss(model_spiketrain, target_spiketrain, loss_fn=constants.loss_fn, N=model.N,
+                          tau_vr=constants.tau_van_rossum)
     print('loss:', loss)
 
     if exp_type is None:
@@ -40,7 +42,7 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
     return np_loss
 
 
-def calculate_loss(output, target, loss_fn, tau_vr=None):
+def calculate_loss(output, target, loss_fn, N, tau_vr=None):
     if loss_fn.__contains__('van_rossum_dist'):
         loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
     elif loss_fn.__contains__('poisson_nll'):
@@ -71,6 +73,7 @@ def calculate_loss(output, target, loss_fn, tau_vr=None):
         loss = spike_metrics.shortest_dist_rates(spikes=output, target_spikes=target)
     elif loss_fn.__contains__('free_label_rate_dist_w_penalty'):
         loss = spike_metrics.shortest_dist_rates_w_silent_penalty(spikes=output, target_spikes=target)
+
     else:
         raise NotImplementedError("Loss function not supported.")
 

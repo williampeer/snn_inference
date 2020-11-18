@@ -3,6 +3,7 @@ from nevergrad.functions import MultiobjectiveFunction
 import IO
 from Dev.brian2_custom_network_opt import *
 import nevergrad as ng
+import numpy as np
 
 from experiments import zip_dicts
 from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side

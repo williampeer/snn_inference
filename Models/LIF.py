@@ -6,7 +6,7 @@ from torch import FloatTensor as FT
 
 class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'C_m', 'R_I', 'tau_g']
-    parameter_init_intervals = {'E_L': [-60., -60.], 'C_m': [1.5, 1.5], 'R_I': [125., 125.], 'tau_g': [3., 3.]}
+    parameter_init_intervals = {'E_L': [-70., -55.], 'C_m': [1.5, 2.5], 'R_I': [125., 125.], 'tau_g': [1.5, 3.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.5, w_var=0.5, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
         super(LIF, self).__init__()
@@ -46,12 +46,12 @@ class LIF(nn.Module):
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
         for i in range(len(neuron_types)):
             if neuron_types[i] == -1:
-                rand_ws[i, :] = -torch.abs(rand_ws[i, :])
+                rand_ws[i, :] = -torch.abs(FT(rand_ws[i, :]))
             elif neuron_types[i] == 1:
-                rand_ws[i, :] = torch.abs(rand_ws[i, :])
+                rand_ws[i, :] = torch.abs(FT(rand_ws[i, :]))
             else:
                 raise NotImplementedError()
-        self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
+        self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
         # self.E_L = nn.Parameter(T(N * [E_L]), requires_grad=True)
         # self.C_m = nn.Parameter(T(N * [C_m]), requires_grad=True)
         # self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
@@ -64,7 +64,6 @@ class LIF(nn.Module):
         self.C_m.clamp(1.15, 2.)
         self.tau_g.clamp(2.5, 3.5)
         self.R_I.clamp(90., 150.)
-
         self.w.clamp(-1., 1.)
         # row per neuron
         for i in range(len(neuron_types)):

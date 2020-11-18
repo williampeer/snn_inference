@@ -4,7 +4,7 @@ import Constants as C
 from Models.GLIF import GLIF
 from Models.LIF import LIF
 from TargetModels import TargetEnsembleModels
-from fit_to_model_exp_suite import start_exp
+from fit_to_model_exp_suite_same_input import start_exp
 
 
 def main(argv):
@@ -12,14 +12,14 @@ def main(argv):
 
     # Default values
     start_seed = 0
-    learn_rate = 0.01; N_exp = 10; tau_van_rossum = 20.0; plot_flag = True
+    learn_rate = 0.01; N_exp = 10; tau_van_rossum = 10.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # max_train_iters = 20; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'firing_rate_distance'
     # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # max_train_iters = 300; batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
-    # max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
+    max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
     # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
@@ -27,7 +27,7 @@ def main(argv):
     # max_train_iters = 100; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
     # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_vr'
     # max_train_iters = 20; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_rate_dist'
-    max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_rate_dist_w_penalty'
+    # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_rate_dist_w_penalty'
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 
@@ -78,17 +78,25 @@ def main(argv):
             start_seed = int(args[i])
 
     for f_i in range(1, 6):
-        target_model_name = 'glif_ensembles_{}'.format(f_i)
-        target_model = TargetEnsembleModels.glif_ensembles_model(random_seed=f_i)
-
-        constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
-                                tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
-                                initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
-                                plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name)
-
+        models = [LIF, GLIF]
+        # models = [GLIF]
         # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
-        # for m_class in models:
-        start_exp(constants=constants, model_class=LIF, target_model=target_model)
+        for m_class in models:
+            if m_class.__class__ == LIF.__class__:
+                target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
+            elif m_class.__class__ == GLIF.__class__:
+                target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=f_i)
+            else:
+                raise NotImplementedError()
+
+            constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
+                                    tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
+                                    initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
+                                    plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name)
+
+            start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
 
 if __name__ == "__main__":

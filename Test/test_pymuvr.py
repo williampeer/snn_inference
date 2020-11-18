@@ -12,8 +12,8 @@ spike_indices, spike_times = convert_to_sparse_vectors(model_spike_train)
 target_indices, target_times = convert_to_sparse_vectors(target_spike_train)
 
 t_min = np.min([spike_times[-1], target_times[-1]])
-_, spikes = get_spike_times_list(0, t_min, spike_times, spike_indices, node_numbers=np.unique(spike_indices))
-_, targets = get_spike_times_list(0, t_min, target_times, target_indices, node_numbers=np.unique(target_indices))
+_, spikes = get_spike_times_list(0, t_min, spike_times, spike_indices, num_nodes=np.unique(spike_indices))
+_, targets = get_spike_times_list(0, t_min, target_times, target_indices, num_nodes=np.unique(target_indices))
 
 for cell_i in range(0, len(spikes)):
     spikes[cell_i] = spikes[cell_i].tolist()
