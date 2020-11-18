@@ -1,6 +1,5 @@
 from torch.nn.functional import poisson_nll_loss, kl_div
 
-import ext_spike_metrics
 import model_util
 import spike_metrics
 from experiments import poisson_input, release_computational_graph
