@@ -5,8 +5,8 @@ from torch import FloatTensor as FT
 
 
 class LIF(nn.Module):
-    parameter_names = ['w', 'E_L', 'C_m', 'R_I', 'tau_g']
-    parameter_init_intervals = {'E_L': [-70., -55.], 'C_m': [1.5, 2.5], 'R_I': [125., 125.], 'tau_g': [1.5, 3.5]}
+    parameter_names = ['w', 'E_L', 'tau_m', 'R_I', 'tau_g']
+    parameter_init_intervals = {'E_L': [-70., -55.], 'tau_m': [1.5, 2.5], 'R_I': [100., 100.], 'tau_g': [1.5, 3.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.5, w_var=0.5, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
         super(LIF, self).__init__()
@@ -15,8 +15,8 @@ class LIF(nn.Module):
 
         if parameters:
             for key in parameters.keys():
-                if key == 'C_m':
-                    C_m = FT(torch.ones((N,)) * parameters[key])
+                if key == 'tau_m':
+                    tau_m = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'E_L':
                     E_L = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'tau_g':
@@ -53,15 +53,15 @@ class LIF(nn.Module):
                 raise NotImplementedError()
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
         # self.E_L = nn.Parameter(T(N * [E_L]), requires_grad=True)
-        # self.C_m = nn.Parameter(T(N * [C_m]), requires_grad=True)
+        # self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
         # self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
         # self.R_I = nn.Parameter(T(N * [R_I]), requires_grad=True)
         self.E_L = nn.Parameter(FT(E_L), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
-        self.C_m = nn.Parameter(FT(C_m), requires_grad=True)
+        self.tau_m = nn.Parameter(FT(tau_m), requires_grad=True)
         self.tau_g = nn.Parameter(FT(tau_g), requires_grad=True)
         self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
         self.E_L.clamp(-80., -35.)
-        self.C_m.clamp(1.15, 2.)
+        self.tau_m.clamp(1.15, 2.)
         self.tau_g.clamp(2.5, 3.5)
         self.R_I.clamp(90., 150.)
         self.w.clamp(-1., 1.)
@@ -88,11 +88,10 @@ class LIF(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
-        I = torch.sigmoid(
-            (self.self_recurrence_mask * self.w).matmul(self.g) + x_in
-        )
+        I = (self.g).matmul(self.self_recurrence_mask * self.w) + x_in
+        # I = torch.relu((self.self_recurrence_mask * self.w).matmul(self.g) + x_in)
 
-        dv = (self.E_L - self.v + I * self.R_I) / self.C_m
+        dv = (self.E_L - self.v + I * self.R_I) / self.tau_m  # RI - (v - E_L) / tau_m
         v_next = torch.add(self.v, dv)
 
         # differentiable soft threshold
@@ -103,8 +102,8 @@ class LIF(nn.Module):
 
         # v = spiked * E_L + not_spiked * v
         self.v = torch.add(spiked * self.E_L, not_spiked * v_next)
-        dg = -torch.div(self.g, self.tau_g)
+        dg = -torch.div(self.g, self.tau_g)  # -g/tau_g
         self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 
-        # return self.v, self.spiked
-        return self.spiked
+        return self.v, self.spiked
+        # return self.spiked

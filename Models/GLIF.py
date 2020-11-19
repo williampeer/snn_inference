@@ -4,8 +4,8 @@ from torch import FloatTensor as FT
 
 
 class GLIF(nn.Module):
-    parameter_names = ['w', 'E_L', 'C_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-55., -53.], 'C_m': [1.35, 1.5], 'G': [0.65, 0.8], 'R_I': [130., 134.],
+    parameter_names = ['w', 'E_L', 'tau_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
+    parameter_init_intervals = {'E_L': [-55., -53.], 'tau_m': [1.35, 1.5], 'G': [0.65, 0.8], 'R_I': [130., 134.],
                                 'f_v': [0.25, 0.35], 'f_I': [0.5, 0.7], 'delta_theta_s': [10., 12.], 'b_s': [0.25, 0.35],
                                 'a_v': [0.25, 0.35], 'b_v': [0.25, 0.35], 'theta_inf': [-25., -24.], 'delta_V': [9., 12.],
                                 'I_A': [1.4, 1.8]}
@@ -19,8 +19,8 @@ class GLIF(nn.Module):
 
         if parameters is not None:
             for key in parameters.keys():
-                if key == 'C_m':
-                    C_m = FT(torch.ones((N,)) * parameters[key])
+                if key == 'tau_m':
+                    tau_m = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'G':
                     G = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'R_I':
@@ -77,7 +77,7 @@ class GLIF(nn.Module):
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)
         self.E_L = nn.Parameter(FT(E_L), requires_grad=True)
-        self.C_m = nn.Parameter(FT(C_m), requires_grad=True)
+        self.tau_m = nn.Parameter(FT(tau_m), requires_grad=True)
         self.G = nn.Parameter(FT(G), requires_grad=True)
         self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
         self.f_v = nn.Parameter(FT(f_v), requires_grad=True)
@@ -91,7 +91,7 @@ class GLIF(nn.Module):
         self.I_A = nn.Parameter(FT(I_A), requires_grad=True)
         self.w.clamp(-1., 1.)
         self.E_L.clamp(-80., -35.)
-        self.C_m.clamp(1.15, 2.)
+        self.tau_m.clamp(1.15, 2.)
         self.G.clamp(0.1, 0.9)
         self.R_I.clamp(90., 150.)
         self.f_v.clamp(0.01, 0.99)
@@ -130,14 +130,12 @@ class GLIF(nn.Module):
         self.I_additive = self.I_additive.clone().detach()
 
     def forward(self, x_in):
-        # I = (x_in + self.w.matmul(self.I_additive))
+        I = (0.2 * x_in + self.w.matmul(self.I_additive))
         # I = torch.sigmoid(x_in + self.w.matmul(self.I_additive))
         # I = torch.relu(x_in + self.w.matmul(self.I_additive))
-        I = torch.sigmoid(
-            (self.self_recurrence_mask * self.w).matmul(self.I_additive) + x_in
-                          )
+        # I = torch.sigmoid((self.self_recurrence_mask * self.w).matmul(self.I_additive) + x_in)
 
-        dv = (I * self.R_I - self.G * (self.v - self.E_L)) / self.C_m
+        dv = (I * self.R_I - self.G * (self.v - self.E_L)) / self.tau_m
         v_next = self.v + dv
 
         # differentiable
@@ -156,5 +154,5 @@ class GLIF(nn.Module):
         self.I_additive = (1. - self.f_I) * self.I_additive \
                           + self.spiked * self.I_A
 
-        # return self.v, self.spiked
-        return self.spiked
+        return self.v, self.spiked
+        # return self.spiked
