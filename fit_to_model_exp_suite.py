@@ -81,7 +81,7 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
     train_losses = []; validation_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
     max_grads_mean = np.float(0.)
     while not converged and (train_i < constants.train_iters):
-        logger.log('training iteration #{}'.format(train_i), [ExperimentType.DataDriven])
+        logger.log('training iteration #{}'.format(train_i), [constants.EXP_TYPE])
 
         targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter)
 
@@ -171,7 +171,7 @@ def run_exp_loop(logger, constants, model_class, target_model):
 
 def start_exp(constants, model_class, target_model):
     log_fname = model_class.__name__ + '{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'.\
-        format(ExperimentType.DataDriven.name, '{:1.3f}'.format(constants.learn_rate).replace('.', '_'), constants.batch_size,
+        format(constants.EXP_TYPE.name, '{:1.3f}'.format(constants.learn_rate).replace('.', '_'), constants.batch_size,
                constants.train_iters, constants.rows_per_train_iter, constants.UUID)
     logger = Log.Logger(log_fname)
     logger.log('Starting exp. with listed hyperparameters.', [constants.__str__()])
