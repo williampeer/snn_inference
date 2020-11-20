@@ -106,7 +106,7 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
                                           t=constants.rows_per_train_iter / 2.)
         validation_loss = evaluate_loss(model, inputs=None, p_rate=poisson_input_rate.clone().detach(),
                                         target_spiketrain=targets, label='train i: {}'.format(train_i),
-                                        exp_type=ExperimentType.DataDriven, train_i=train_i, exp_num=exp_num,
+                                        exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
                                         constants=constants, converged=converged)
         # validation_loss = last_loss
         logger.log(parameters=['validation loss', validation_loss])
@@ -116,7 +116,7 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         train_i += 1
 
     stats_training_iterations(parameters, model, poisson_input_rate, train_losses, validation_losses, constants, logger,
-                              ExperimentType.DataDriven.name, target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
+                              constants.EXP_TYPE.name, target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
     final_model_parameters = {}
     for p_i, key in enumerate(model.state_dict()):
         final_model_parameters[p_i] = [model.state_dict()[key].numpy()]
@@ -161,7 +161,7 @@ def run_exp_loop(logger, constants, model_class, target_model):
     if constants.plot_flag:
         plot_all_param_pairs_with_variance(recovered_param_per_exp,
                                        uuid=constants.UUID,
-                                       exp_type=ExperimentType.DataDriven.name,
+                                       exp_type=constants.EXP_TYPE.name,
                                        target_params=target_parameters,
                                        param_names=parameter_names,
                                        custom_title="Average inferred parameters across experiments [{}, {}]".format(

@@ -13,8 +13,7 @@ def main(argv):
 
     # Default values
     start_seed = 0
-    use_true_input = True
-    # use_true_input = False
+    EXP_TYPE = C.ExperimentType.DataDriven
     learn_rate = 0.01; N_exp = 10; tau_van_rossum = 10.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
@@ -79,8 +78,8 @@ def main(argv):
             trn = int(args[i])
         elif opt in ("-ss", "--start-seed"):
             start_seed = int(args[i])
-        elif opt in ("-use-true-input", "--uti"):
-            use_true_input = bool(args[i])
+        elif opt in ("-et", "--experiment-type"):
+            exp_type_str = args[i]
 
     for f_i in range(1, 6):
         models = [LIF, GLIF]
@@ -99,9 +98,9 @@ def main(argv):
             constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
                                     tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
                                     initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
-                                    plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name)
+                                    plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name, exp_type_str=exp_type_str)
 
-            if use_true_input:
+            if constants.EXP_TYPE is C.ExperimentType.SanityCheck:
                 fit_to_model_exp_suite_same_input.start_exp(constants=constants, model_class=m_class, target_model=target_model)
             else:
                 fit_to_model_exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
