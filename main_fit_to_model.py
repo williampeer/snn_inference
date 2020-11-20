@@ -1,10 +1,11 @@
 import sys
 
 import Constants as C
+import fit_to_model_exp_suite
+import fit_to_model_exp_suite_same_input
 from Models.GLIF import GLIF
 from Models.LIF import LIF
 from TargetModels import TargetEnsembleModels
-from fit_to_model_exp_suite_same_input import start_exp
 
 
 def main(argv):
@@ -12,6 +13,8 @@ def main(argv):
 
     # Default values
     start_seed = 0
+    use_true_input = True
+    # use_true_input = False
     learn_rate = 0.01; N_exp = 10; tau_van_rossum = 10.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
@@ -19,7 +22,7 @@ def main(argv):
     # max_train_iters = 20; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'firing_rate_distance'
     # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # max_train_iters = 300; batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
-    max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
+    max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
     # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
@@ -76,6 +79,8 @@ def main(argv):
             trn = int(args[i])
         elif opt in ("-ss", "--start-seed"):
             start_seed = int(args[i])
+        elif opt in ("-use-true-input", "--uti"):
+            use_true_input = bool(args[i])
 
     for f_i in range(1, 6):
         models = [LIF, GLIF]
@@ -96,8 +101,10 @@ def main(argv):
                                     initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
                                     plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name)
 
-            start_exp(constants=constants, model_class=m_class, target_model=target_model)
-
+            if use_true_input:
+                fit_to_model_exp_suite_same_input.start_exp(constants=constants, model_class=m_class, target_model=target_model)
+            else:
+                fit_to_model_exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
