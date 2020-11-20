@@ -88,7 +88,7 @@ class LIF(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
-        I = (self.g).matmul(self.self_recurrence_mask * self.w) + x_in
+        I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in
         # I = torch.relu((self.self_recurrence_mask * self.w).matmul(self.g) + x_in)
 
         dv = (self.E_L - self.v + I * self.R_I) / self.tau_m  # RI - (v - E_L) / tau_m

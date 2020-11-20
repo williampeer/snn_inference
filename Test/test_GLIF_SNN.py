@@ -23,11 +23,11 @@ for random_seed in range(1, 6):
     print('#inputs: {}'.format(inputs.sum()))
     membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     print('#spikes: {}'.format(spikes.sum()))
-    plot_neuron(membrane_potentials.data, title='GLIF neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_GLIF_poisson_input' + '_' + ext_name)
+    plot_neuron(membrane_potentials.data, title='GLIF neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_GLIF_poisson_input' + '_' + str(random_seed))
 
     zeros = torch.zeros_like(inputs)
     membrane_potentials_zeros, spikes_zeros = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, zeros)
-    plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()), fname_ext='test_GLIF_no_input'  + '_' + ext_name)
+    plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()), fname_ext='test_GLIF_no_input'  + '_' + str(random_seed))
 
     plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_GLIF', title='Test GLIF spiketrains random and zero input', legend=['Poisson input', 'No input'])
 
