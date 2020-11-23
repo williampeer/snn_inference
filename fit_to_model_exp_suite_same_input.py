@@ -64,7 +64,7 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
 def fit_model_to_target_model(logger, constants, model_class, params_model, exp_num, target_model, target_parameters):
     params_model['N'] = target_model.N
     model = model_class(N=target_model.N, parameters=params_model,
-                        neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])
+                        neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])  # set to ground truth for this file only
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
     poisson_input_rate.clamp(1., 40.)
