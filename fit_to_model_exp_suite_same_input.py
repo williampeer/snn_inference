@@ -184,14 +184,4 @@ def start_exp(constants, model_class, target_model):
     logger = Log.Logger(log_fname)
     logger.log('Starting exp. with listed hyperparameters.', [constants.__str__()])
 
-    # if model_class in [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
-    #     # free_parameters = {'C_m': 1.5, 'G': 0.8, 'E_L': -60., 'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14,
-    #     #                    'delta_V': 12., 'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
-    #     # free_parameters = {'C_m', 'G', 'E_L', 'delta_theta_s', 'b_s', 'f_v', 'delta_V', 'f_I', 'I_A', 'b_v', 'a_v', 'theta_inf', 'R_I'}
-    #     # static_parameters = {'R_I': 110.}
-    #     # static_parameters = {}
-    # else:
-    #     logger.log('Model class not supported.')
-    #     sys.exit(1)
-
     run_exp_loop(logger, constants, model_class, target_model)

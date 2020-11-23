@@ -10,7 +10,7 @@ class GLIF(nn.Module):
                                 'a_v': [0.45, 0.55], 'b_v': [0.45, 0.55], 'theta_inf': [-15., -19.], 'delta_V': [10., 12.],
                                 'I_A': [1., 2.]}
 
-    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.4,
+    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2,
                  neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
         # use_cuda = torch.cuda.is_available()
         # device = torch.device("cuda" if use_cuda else "cpu")
