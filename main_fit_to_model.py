@@ -20,8 +20,8 @@ def main(argv):
     # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # max_train_iters = 100; batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
-    # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'firing_rate_distance'
-    max_train_iters = 60; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'van_rossum_dist'
+    max_train_iters = 40; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'firing_rate_distance'
+    # max_train_iters = 60; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'van_rossum_dist'
     # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
@@ -83,8 +83,9 @@ def main(argv):
 
     for f_i in range(1, 6):
         # models = [LIF, GLIF]
-        models = [GLIF]
-        # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+        # models = [GLIF]
+        models = [LIF]
+        # models = [LI F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         for m_class in models:
             if m_class.__class__ == LIF.__class__:
                 target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)

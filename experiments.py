@@ -51,7 +51,7 @@ def zip_tensor_dicts(a, b):
 
 # Assumes rate in Hz
 def poisson_input(rate, t, N):
-    return torch.poisson((rate/1000.) * torch.ones((int(t), N)))  # t x N
+    return torch.poisson((rate/1000.) * torch.ones((int(t), N))).clamp(0., 1.)  # t x N
 
 
 def release_computational_graph(model, rate_parameter, inputs=None):

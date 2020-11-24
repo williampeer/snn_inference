@@ -5,7 +5,7 @@ from torch import FloatTensor as FT
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-62., -45.], 'tau_m': [1.5, 2.5], 'G': [0.7, 0.9], 'R_I': [55., 60.],
+    parameter_init_intervals = {'E_L': [-62., -52.], 'tau_m': [1.5, 2.5], 'G': [0.7, 0.9], 'R_I': [55., 60.],
                                 'f_v': [0.25, 0.35], 'f_I': [0.2, 0.6], 'delta_theta_s': [10., 12.], 'b_s': [0.35, 0.45],
                                 'a_v': [0.45, 0.55], 'b_v': [0.45, 0.55], 'theta_inf': [-15., -19.], 'delta_V': [10., 12.],
                                 'I_A': [1., 2.]}
@@ -90,10 +90,10 @@ class GLIF(nn.Module):
         self.delta_V = nn.Parameter(FT(delta_V), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A), requires_grad=True)
         self.w.clamp(-1., 1.)
-        self.E_L.clamp(-80., -35.)
+        self.E_L.clamp(-75., -40.)
         self.tau_m.clamp(1.2, 3.)
         self.G.clamp(0.1, 0.9)
-        self.R_I.clamp(50., 60.)
+        self.R_I.clamp(40., 55.)
         self.f_v.clamp(0.01, 0.99)
         self.f_I.clamp(0.01, 0.99)
         self.delta_theta_s.clamp(6., 30.)

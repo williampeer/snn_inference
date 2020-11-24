@@ -2,16 +2,21 @@ import torch
 
 import model_util
 import spike_metrics
+from Models.GLIF import GLIF
 from TargetModels import TargetEnsembleModels
-from experiments import poisson_input
+from experiments import poisson_input, draw_from_uniform
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
 for random_seed in range(1, 6):
+    num_neurons = 12
+    params_model = draw_from_uniform(GLIF.parameter_init_intervals, num_neurons)
+    snn = GLIF(parameters=params_model, N=num_neurons)
+
     # static_parameters = {'N': 10}
     # free_parameters = {'w_mean': 0.2, 'w_var': 0.3}
     # snn = GLIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
     # snn = TargetEnsembleModels.glif_ensembles_model(random_seed=random_seed, N = 12); ext_name = 'ensembles_1'
-    snn = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12); ext_name = 'ensembles_1_dales'
+    # snn = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12); ext_name = 'ensembles_1_dales'
     # snn = TargetModels.glif1(N = 12); ext_name = '1'
     # snn = TargetModels.glif1_2(N = 12); ext_name = '1_2'
     # snn = TargetModels.glif2(N = 12); ext_name = '2'
@@ -19,7 +24,7 @@ for random_seed in range(1, 6):
     # snn = TargetModels.glif_async(N = 12); ext_name = 'glif_async'
     # snn = TargetModels.glif_slower_more_synchronous(N = 12); ext_name = 'glif_slower_more_synchronous'
 
-    inputs = poisson_input(10., t=4000, N=snn.N)  # now assumes rate in Hz
+    inputs = poisson_input(20., t=10000, N=snn.N)  # now assumes rate in Hz
     print('#inputs: {}'.format(inputs.sum()))
     membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     print('#spikes: {}'.format(spikes.sum()))
