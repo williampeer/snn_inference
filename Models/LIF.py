@@ -63,7 +63,7 @@ class LIF(nn.Module):
         self.E_L.clamp(-80., -35.)
         self.tau_m.clamp(1.15, 3.)
         self.tau_g.clamp(1.5, 3.5)
-        self.R_I.clamp(50., 70.)
+        self.R_I.clamp(40., 70.)
         self.w.clamp(-1., 1.)
         # row per neuron
         for i in range(len(neuron_types)):
@@ -86,6 +86,14 @@ class LIF(nn.Module):
         self.v = self.v.clone().detach()
         self.g = self.g.clone().detach()
         self.spiked = self.spiked.clone().detach()
+
+    def dynamic_clamp_R_I(self):
+        I = (self.g).matmul(self.self_recurrence_mask * self.w)
+        l = torch.ones_like(self.v) * 40.
+        m = (torch.ones_like(self.v) * self.spike_threshold - self.E_L) / I
+
+        # self.R_I.clamp(l, m)
+        self.R_I = torch.max(torch.min(self.R_I, m), l)  # manual .clamp
 
     def forward(self, x_in):
         I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in

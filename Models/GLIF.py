@@ -129,8 +129,20 @@ class GLIF(nn.Module):
         self.theta_v = self.theta_v.clone().detach()
         self.I_additive = self.I_additive.clone().detach()
 
+    def dynamic_clamp_R_I(self):
+        I = (self.g).matmul(self.self_recurrence_mask * self.w)
+        l = torch.ones_like(self.v) * 40.
+        # d_theta_v here contains theta_inf
+        m = (self.theta_s + self.theta_v - self.E_L) / I
+
+        # self.R_I.clamp(l, m)
+        self.R_I = torch.max(torch.min(self.R_I, m), l)  # manual .clamp
+
     def forward(self, x_in):
         I = self.I_additive.matmul(self.self_recurrence_mask * self.w) + 0.85 * x_in
+        # I_A in [0, N * I_A/f_I]
+        # sigm(I_A / I_A_max)
+
         # I = torch.sigmoid(x_in + self.w.matmul(self.I_additive))
         # I = torch.relu(x_in + self.w.matmul(self.I_additive))
         # I = torch.sigmoid((self.self_recurrence_mask * self.w).matmul(self.I_additive) + x_in)

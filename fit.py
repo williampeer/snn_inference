@@ -2,6 +2,8 @@ import numpy as np
 import torch
 
 import model_util
+from Models.GLIF import GLIF
+from Models.LIF import LIF
 from eval import calculate_loss
 from experiments import poisson_input, release_computational_graph
 
@@ -40,6 +42,8 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
         poisson_input_rate.grad += torch.mean(current_inputs.grad)
 
         optimiser.step()
+        model.dynamic_clamp_R_I()
+
         # print('list(model.parameters())', list(model.parameters()))
         for p_i, param in enumerate(list(model.parameters())):
             # print('p_i, param.grad', p_i, param.grad)
