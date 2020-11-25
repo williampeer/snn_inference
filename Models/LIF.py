@@ -60,19 +60,9 @@ class LIF(nn.Module):
         self.tau_m = nn.Parameter(FT(tau_m), requires_grad=True)
         self.tau_g = nn.Parameter(FT(tau_g), requires_grad=True)
         self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
-        self.E_L.clamp(-80., -35.)
-        self.tau_m.clamp(1.15, 3.)
-        self.tau_g.clamp(1.5, 3.5)
-        self.R_I.clamp(40., 70.)
-        self.w.clamp(-1., 1.)
-        # row per neuron
-        for i in range(len(neuron_types)):
-            if neuron_types[i] == -1:
-                self.w[i, :].clamp(-1., 0.)
-            elif neuron_types[i] == 1:
-                self.w[i, :].clamp(0., 1.)
-            else:
-                raise NotImplementedError()
+
+        for i in range(self.R_I.shape[0]):
+            self.R_I[i].register_hook(lambda grad: grad.clamp(float(self.R_I[i]-70 + grad), float(self.R_I[i]-40 + grad)))
 
         # self.to(self.device)
 
@@ -87,13 +77,31 @@ class LIF(nn.Module):
         self.g = self.g.clone().detach()
         self.spiked = self.spiked.clone().detach()
 
+    def clamp_parameters(self):
+        self.E_L.clamp_(-80., -35.)
+        self.tau_m.clamp_(1.15, 3.)
+        self.tau_g.clamp_(1.5, 3.5)
+        self.R_I.clamp_(40., 70.)
+        self.w.clamp_(-1., 1.)
+        # row per neuron
+        for i in range(len(self.neuron_types)):
+            if self.neuron_types[i] == -1:
+                self.w[i, :].clamp_(-1., 0.)
+            elif self.neuron_types[i] == 1:
+                self.w[i, :].clamp_(0., 1.)
+            else:
+                raise NotImplementedError()
+
     def dynamic_clamp_R_I(self):
         I = (self.g).matmul(self.self_recurrence_mask * self.w)
         l = torch.ones_like(self.v) * 40.
         m = (torch.ones_like(self.v) * self.spike_threshold - self.E_L) / I
 
+        # for i in range(self.R_I.shape[0]):
+        #     self.R_I[i].clamp_(float(l[i]), float(m[i]))
+
         # self.R_I.clamp(l, m)
-        self.R_I = torch.max(torch.min(self.R_I, m), l)  # manual .clamp
+        # self.R_I = torch.max(torch.min(self.R_I, m), l)  # manual .clamp
 
     def forward(self, x_in):
         I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in

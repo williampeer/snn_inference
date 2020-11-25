@@ -26,6 +26,8 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
     poisson_input_rate.grad = torch.tensor(0.)
     for batch_i in range(batch_N):
         print('batch #{}'.format(batch_i))
+        # model.clamp_parameters()
+        model.dynamic_clamp_R_I()
 
         if gen_inputs is not None:
             current_inputs = gen_inputs[batch_size * batch_i:batch_size * (batch_i + 1)]
@@ -42,7 +44,6 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
         poisson_input_rate.grad += torch.mean(current_inputs.grad)
 
         optimiser.step()
-        model.dynamic_clamp_R_I()
 
         # print('list(model.parameters())', list(model.parameters()))
         for p_i, param in enumerate(list(model.parameters())):

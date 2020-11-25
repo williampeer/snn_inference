@@ -129,6 +129,34 @@ class GLIF(nn.Module):
         self.theta_v = self.theta_v.clone().detach()
         self.I_additive = self.I_additive.clone().detach()
 
+    def clamp_parameters(self):
+        self.w.clamp(-1., 1.)
+        self.E_L.clamp(-75., -40.)
+        self.tau_m.clamp(1.2, 3.)
+        self.G.clamp(0.1, 0.9)
+        self.R_I.clamp(40., 55.)
+        self.f_v.clamp(0.01, 0.99)
+        self.f_I.clamp(0.01, 0.99)
+        self.delta_theta_s.clamp(6., 30.)
+        self.b_s.clamp(0.01, 0.9)
+        self.a_v.clamp(0.01, 0.9)
+        self.b_v.clamp(0.01, 0.9)
+        self.theta_inf.clamp(-25., 0)
+        self.delta_V.clamp(0.01, 35.)
+        self.I_A.clamp(0.5, 3.)
+        # self.I_A = FT(I_A)
+        # self.delta_V = FT(delta_V)
+        self.w.clamp(-1., 1.)
+
+        # row per neuron
+        for i in range(len(self.neuron_types)):
+            if self.neuron_types[i] == -1:
+                self.w[i, :].clamp_(-1., 0.)
+            elif self.neuron_types[i] == 1:
+                self.w[i, :].clamp_(0., 1.)
+            else:
+                raise NotImplementedError()
+
     def dynamic_clamp_R_I(self):
         I = (self.g).matmul(self.self_recurrence_mask * self.w)
         l = torch.ones_like(self.v) * 40.
