@@ -64,6 +64,16 @@ def van_rossum_squared_distance(s1, s2, tau):
     return mse(c1, c2)
 
 
+def silent_penalty_term(model_spikes, target_spikes):
+    mean_model_rate = model_spikes.sum(dim=0)
+    mean_targets_rate = target_spikes.sum(dim=0)
+    # assert model_spikes.shape[0] > model_spikes.shape[1]
+    T = model_spikes.shape[0] / 1000.
+    # f_penalty(x,y) = sqrt(pow(e^(-x/T.) - e^(-y/T.)).sum() + 1e-18)
+    silent_penalty = torch.sqrt(torch.pow(torch.exp(-mean_model_rate/torch.tensor(T)) - torch.exp(-mean_targets_rate/torch.tensor(T)), 2).sum()+1e-18) / model_spikes.shape[1]
+    return silent_penalty
+
+
 def firing_rate_distance(model_spikes, target_spikes):
     mean_model_rate = model_spikes.sum(dim=0)
     mean_targets_rate = target_spikes.sum(dim=0)
