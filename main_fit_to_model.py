@@ -23,7 +23,7 @@ def main(argv):
     max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'firing_rate_distance'
     # max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
     # max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
-    # max_train_iters = 50; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdsp'
+    max_train_iters = 60; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdsp'
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
     # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
