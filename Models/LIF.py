@@ -51,11 +51,8 @@ class LIF(nn.Module):
                 rand_ws[i, :] = torch.abs(FT(rand_ws[i, :]))
             else:
                 raise NotImplementedError()
+        self.neuron_types = neuron_types
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
-        # self.E_L = nn.Parameter(T(N * [E_L]), requires_grad=True)
-        # self.tau_m = nn.Parameter(T(N * [tau_m]), requires_grad=True)
-        # self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
-        # self.R_I = nn.Parameter(T(N * [R_I]), requires_grad=True)
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.15, 3.), requires_grad=True)
         self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 3.5), requires_grad=True)
@@ -70,12 +67,13 @@ class LIF(nn.Module):
 
         # self.to(self.device)
 
+    def calc_dynamic_clamp_R_I(self):
+        I = (self.g).matmul(self.self_recurrence_mask * self.w)
+        l = torch.ones_like(self.v) * 80.
+        m = (torch.ones_like(self.v) * self.spike_threshold - self.E_L) / I.clamp(min=0.1)
+        return l, m
+
     def register_backward_clamp_hooks(self):
-        def hook_static_R_I_clamp(grad):
-            clamped_grad = grad.detach().clone()
-            for i in range(grad.shape[0]):
-                clamped_grad[i].clamp_(float(130. - self.R_I[i]), float(150. - self.R_I[i]))
-            return clamped_grad
         def hook_dynamic_R_I_clamp(grad):
             l, m = self.calc_dynamic_clamp_R_I()
             clamped_grad = grad.detach().clone()
@@ -85,14 +83,26 @@ class LIF(nn.Module):
 
         self.R_I.register_hook(hook_dynamic_R_I_clamp)
 
-        # # row per neuron
-        # for i in range(len(self.neuron_types)):
-        #     if self.neuron_types[i] == -1:
-        #         self.w[i, :].clamp_(-1., 0.)
-        #     elif self.neuron_types[i] == 1:
-        #         self.w[i, :].clamp_(0., 1.)
-        #     else:
-        #         raise NotImplementedError()
+        # --------------------------------------
+        def static_clamp_for(grad, l, m, p):
+            clamped_grad = grad.clone().detach()
+            for i in range(p.shape[0]):
+                clamped_grad.clamp_(l - p[i], m - p[i])
+            return clamped_grad
+            # return torch.where((grad < -1e-08) + (1e-08 < grad), grad.clamp(float(l.clone()-p.clone()), float(m.clone()-p.clone())), grad.clone())
+
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
+        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.15, 3., self.tau_m))
+        self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 3.5, self.tau_g))
+
+        # row per neuron
+        for i in range(len(self.neuron_types)):
+            if self.neuron_types[i] == -1:
+                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, -1., 0., self.w[i, :]))
+            elif self.neuron_types[i] == 1:
+                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, 0., 1., self.w[i, :]))
+            else:
+                raise NotImplementedError()
 
     def reset(self):
         for p in self.parameters():
@@ -104,18 +114,6 @@ class LIF(nn.Module):
         self.v = self.v.clone().detach()
         self.g = self.g.clone().detach()
         self.spiked = self.spiked.clone().detach()
-
-    def calc_dynamic_clamp_R_I(self):
-        I = (self.g).matmul(self.self_recurrence_mask * self.w)
-        l = torch.ones_like(self.v) * 80.
-        m = (torch.ones_like(self.v) * self.spike_threshold - self.E_L) / I.clamp(min=0.1)
-        #     for i in range(self.R_I.shape[0]):
-        #         self.R_I[i].clamp_(float(l[i]), float(m[i]))
-
-        # self.R_I.clamp(l, m)
-        # self.R_I = torch.max(torch.min(self.R_I, m), l)  # manual .clamp
-
-        return l, m
 
     def forward(self, x_in):
         I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in

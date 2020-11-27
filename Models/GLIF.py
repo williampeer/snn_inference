@@ -75,44 +75,84 @@ class GLIF(nn.Module):
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
-        self.w = nn.Parameter(FT(rand_ws), requires_grad=True)
-        self.E_L = nn.Parameter(FT(E_L), requires_grad=True)
-        self.tau_m = nn.Parameter(FT(tau_m), requires_grad=True)
-        self.G = nn.Parameter(FT(G), requires_grad=True)
-        self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
-        self.f_v = nn.Parameter(FT(f_v), requires_grad=True)
-        self.f_I = nn.Parameter(FT(f_I), requires_grad=True)
-        self.delta_theta_s = nn.Parameter(FT(delta_theta_s), requires_grad=True)
-        self.b_s = nn.Parameter(FT(b_s), requires_grad=True)
-        self.a_v = nn.Parameter(FT(a_v), requires_grad=True)
-        self.b_v = nn.Parameter(FT(b_v), requires_grad=True)
-        self.theta_inf = nn.Parameter(FT(theta_inf), requires_grad=True)
-        self.delta_V = nn.Parameter(FT(delta_V), requires_grad=True)
-        self.I_A = nn.Parameter(FT(I_A), requires_grad=True)
-        self.w.clamp(-1., 1.)
-        self.E_L.clamp(-75., -40.)
-        self.tau_m.clamp(1.2, 3.)
-        self.G.clamp(0.1, 0.9)
-        self.R_I.clamp(40., 55.)
-        self.f_v.clamp(0.01, 0.99)
-        self.f_I.clamp(0.01, 0.99)
-        self.delta_theta_s.clamp(6., 30.)
-        self.b_s.clamp(0.01, 0.9)
-        self.a_v.clamp(0.01, 0.9)
-        self.b_v.clamp(0.01, 0.9)
-        self.theta_inf.clamp(-25., 0)
-        self.delta_V.clamp(0.01, 35.)
-        self.I_A.clamp(0.5, 3.)
-        # self.I_A = FT(I_A)
-        # self.delta_V = FT(delta_V)
-        self.w.clamp(-1., 1.)
-
-        # row per neuron
         for i in range(len(neuron_types)):
             if neuron_types[i] == -1:
-                self.w[i, :].clamp(-1., 0.)
+                rand_ws[i, :] = -torch.abs(FT(rand_ws[i, :]))
             elif neuron_types[i] == 1:
-                self.w[i, :].clamp(0., 1.)
+                rand_ws[i, :] = torch.abs(FT(rand_ws[i, :]))
+            else:
+                raise NotImplementedError()
+        self.neuron_types = neuron_types
+        self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
+        self.E_L = nn.Parameter(FT(E_L).clamp(-75., -40.), requires_grad=True)
+        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.2, 3.), requires_grad=True)
+        self.G = nn.Parameter(FT(G).clamp(0.1, 0.9), requires_grad=True)
+        self.R_I = nn.Parameter(FT(R_I).clamp(40., 55.), requires_grad=True)
+        self.f_v = nn.Parameter(FT(f_v).clamp(0.01, 0.99), requires_grad=True)
+        self.f_I = nn.Parameter(FT(f_I).clamp(0.01, 0.99), requires_grad=True)
+        self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
+        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.9), requires_grad=True)
+        self.a_v = nn.Parameter(FT(a_v).clamp(0.01, 0.9), requires_grad=True)
+        self.b_v = nn.Parameter(FT(b_v).clamp(0.01, 0.9), requires_grad=True)
+        self.theta_inf = nn.Parameter(FT(theta_inf).clamp(-25., 0), requires_grad=True)
+        self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
+        self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
+
+        l, m = self.calc_dynamic_clamp_R_I()
+        R_I = FT(R_I)
+        for i in range(R_I.shape[0]):
+            R_I[i].clamp_(float(l[i]), float(m[i]))
+        self.R_I = nn.Parameter(R_I, requires_grad=True)
+
+        self.register_backward_clamp_hooks()
+
+        # self.to(self.device)
+
+    def calc_dynamic_clamp_R_I(self):
+        I = self.I_additive.matmul(self.self_recurrence_mask * self.w)
+        l = torch.ones_like(self.v) * 40.
+        m = (self.theta_s + self.theta_v - self.E_L) / I.clamp(min=0.1)
+        return l, m
+
+    def register_backward_clamp_hooks(self):
+        def hook_dynamic_R_I_clamp(grad):
+            l, m = self.calc_dynamic_clamp_R_I()
+            clamped_grad = grad.detach().clone()
+            for i in range(grad.shape[0]):
+                clamped_grad[i].clamp_(float(l[i] - self.R_I[i]), float(m[i] - self.R_I[i]))
+            return clamped_grad
+
+        self.R_I.register_hook(hook_dynamic_R_I_clamp)
+
+        # --------------------------------------
+        def static_clamp_for(grad, l, m, p):
+            clamped_grad = grad.clone().detach()
+            for i in range(p.shape[0]):
+                clamped_grad.clamp_(l - p[i], m - p[i])
+            return clamped_grad
+            # return torch.where((grad < -1e-08) + (1e-08 < grad), grad.clamp(float(l.clone()-p.clone()), float(m.clone()-p.clone())), grad.clone())
+
+
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
+        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.2, 3., self.tau_m))
+        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
+        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 40., 55., self.R_I))
+        self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
+        self.f_I.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_I))
+        self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
+        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_s))
+        self.a_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.a_v))
+        self.b_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_v))
+        self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -25., 0., self.theta_inf))
+        self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 0.01, 35., self.delta_V))
+        self.I_A.register_hook(lambda grad: static_clamp_for(grad, 0.5, 3., self.I_A))
+
+        # row per neuron
+        for i in range(len(self.neuron_types)):
+            if self.neuron_types[i] == -1:
+                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, -1., 0., self.w[i, :]))
+            elif self.neuron_types[i] == 1:
+                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, 0., 1., self.w[i, :]))
             else:
                 raise NotImplementedError()
 
@@ -128,43 +168,6 @@ class GLIF(nn.Module):
         self.theta_s = self.theta_s.clone().detach()
         self.theta_v = self.theta_v.clone().detach()
         self.I_additive = self.I_additive.clone().detach()
-
-    def clamp_parameters(self):
-        self.w.clamp(-1., 1.)
-        self.E_L.clamp(-75., -40.)
-        self.tau_m.clamp(1.2, 3.)
-        self.G.clamp(0.1, 0.9)
-        self.R_I.clamp(40., 55.)
-        self.f_v.clamp(0.01, 0.99)
-        self.f_I.clamp(0.01, 0.99)
-        self.delta_theta_s.clamp(6., 30.)
-        self.b_s.clamp(0.01, 0.9)
-        self.a_v.clamp(0.01, 0.9)
-        self.b_v.clamp(0.01, 0.9)
-        self.theta_inf.clamp(-25., 0)
-        self.delta_V.clamp(0.01, 35.)
-        self.I_A.clamp(0.5, 3.)
-        # self.I_A = FT(I_A)
-        # self.delta_V = FT(delta_V)
-        self.w.clamp(-1., 1.)
-
-        # row per neuron
-        for i in range(len(self.neuron_types)):
-            if self.neuron_types[i] == -1:
-                self.w[i, :].clamp_(-1., 0.)
-            elif self.neuron_types[i] == 1:
-                self.w[i, :].clamp_(0., 1.)
-            else:
-                raise NotImplementedError()
-
-    def dynamic_clamp_R_I(self):
-        I = (self.g).matmul(self.self_recurrence_mask * self.w)
-        l = torch.ones_like(self.v) * 40.
-        # d_theta_v here contains theta_inf
-        m = (self.theta_s + self.theta_v - self.E_L) / I
-
-        # self.R_I.clamp(l, m)
-        self.R_I = torch.max(torch.min(self.R_I, m), l)  # manual .clamp
 
     def forward(self, x_in):
         I = self.I_additive.matmul(self.self_recurrence_mask * self.w) + 0.85 * x_in

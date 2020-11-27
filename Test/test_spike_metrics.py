@@ -1,4 +1,5 @@
 from experiments import poisson_input
+from plot import plot_neuron
 from spike_metrics import *
 
 import torch
@@ -55,10 +56,11 @@ def test_van_rossum_dist():
 
 
 def test_optimised_van_rossum():
-    tau = torch.tensor(3.0)
+    tau = torch.tensor(10.0)
     spikes = (torch.rand((100, 3)) > 0.85).float()
 
     torch_conv = torch_van_rossum_convolution(spikes, tau)
+    plot_neuron(torch_conv, "van Rossum convolved spike train", fname_ext="_vr_test")
 
     print('no. spikes: {}, torch conv. sum: {}'.format(spikes.sum(), torch_conv.sum()))
     assert torch_conv.sum() - spikes.sum() > 0., "check torch conv. impl."
@@ -101,5 +103,6 @@ def test_van_rossum_convolution():
 # --------------------------------------
 test_greedy_shortest_dist_vr()
 test_van_rossum_dist()
+test_optimised_van_rossum()
 test_different_taus_van_rossum_dist()
 test_van_rossum_convolution()

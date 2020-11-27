@@ -13,7 +13,7 @@ def torch_van_rossum_convolution(spikes, tau):
     for i in range(int(3*tau)):
         tmp_shifted_conv = torch.cat([padding_zeros, convolved_spiketrain[:-1]])
         # sig(v - threshold) = 0.5 for v = threshold
-        convolved_spiketrain = torch.where(spikes < 0.5, tmp_shifted_conv.clone() * decay_kernel, spikes.clone())
+        convolved_spiketrain = torch.where(spikes < 0.75, tmp_shifted_conv.clone() * decay_kernel, spikes.clone())
     return convolved_spiketrain
 
 
