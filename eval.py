@@ -68,7 +68,7 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None):
         loss = vrd_loss + frd_loss
     elif loss_fn.__contains__('vrdsp'):
         vrd_loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
-        silent_penalty_term = spike_metrics.silent_penalty_term(output, target)  # add term for firing rate.
+        silent_penalty_term = spike_metrics.silent_penalty_term(output, target)
         loss = vrd_loss + silent_penalty_term
     elif loss_fn.__contains__('free_label_vr'):
         loss = spike_metrics.greedy_shortest_dist_vr(spikes=output, target_spikes=target, tau=tau_vr)

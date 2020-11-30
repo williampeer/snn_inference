@@ -2,8 +2,9 @@ import Log
 from Constants import ExperimentType
 from IO import save_poisson_rates
 from eval import evaluate_loss
-from experiments import generate_synthetic_data, draw_from_uniform
+from experiments import generate_synthetic_data, draw_from_uniform, poisson_input, release_computational_graph
 from fit import fit_mini_batches
+from model_util import generate_model_data
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)
@@ -63,7 +64,7 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
 def fit_model_to_target_model(logger, constants, model_class, params_model, exp_num, target_model, target_parameters):
     params_model['N'] = target_model.N
     model = model_class(N=target_model.N, parameters=params_model,
-                        neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])
+                        neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])  # set to ground truth for this file only
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
     poisson_input_rate.clamp(1., 40.)
@@ -83,9 +84,16 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
     while not converged and (train_i < constants.train_iters):
         logger.log('training iteration #{}'.format(train_i), [constants.EXP_TYPE])
 
-        targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter)
+        # targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter)
+        gen_input = poisson_input(rate=poisson_input_rate, t=constants.rows_per_train_iter, N=target_model.N)
+        gen_spiketrain = generate_model_data(model=target_model, inputs=gen_input)
+        # for gen spiketrain this may be thresholded to binary values:
+        gen_spiketrain = torch.round(gen_spiketrain)
+        release_computational_graph(target_model, poisson_input_rate, gen_input)
+        gen_spiketrain.grad = None
+        targets = gen_spiketrain.clone().detach()
 
-        avg_train_loss, abs_grads_mean, last_loss = fit_mini_batches(model, gen_inputs=None, target_spiketrain=targets,
+        avg_train_loss, abs_grads_mean, last_loss = fit_mini_batches(model, gen_inputs=gen_input, target_spiketrain=targets,
                                                                      poisson_input_rate=poisson_input_rate, optimiser=optim,
                                                                      constants=constants, train_i=train_i, logger=logger)
         logger.log(parameters=[avg_train_loss, abs_grads_mean])
@@ -175,15 +183,5 @@ def start_exp(constants, model_class, target_model):
                constants.train_iters, constants.rows_per_train_iter, constants.UUID)
     logger = Log.Logger(log_fname)
     logger.log('Starting exp. with listed hyperparameters.', [constants.__str__()])
-
-    # if model_class in [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]:
-    #     # free_parameters = {'C_m': 1.5, 'G': 0.8, 'E_L': -60., 'delta_theta_s': 25., 'b_s': 0.4, 'f_v': 0.14,
-    #     #                    'delta_V': 12., 'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.5, 'theta_inf': -25.}
-    #     # free_parameters = {'C_m', 'G', 'E_L', 'delta_theta_s', 'b_s', 'f_v', 'delta_V', 'f_I', 'I_A', 'b_v', 'a_v', 'theta_inf', 'R_I'}
-    #     # static_parameters = {'R_I': 110.}
-    #     # static_parameters = {}
-    # else:
-    #     logger.log('Model class not supported.')
-    #     sys.exit(1)
 
     run_exp_loop(logger, constants, model_class, target_model)

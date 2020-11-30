@@ -3,6 +3,8 @@ import torch.nn as nn
 from torch import tensor as T
 from torch import FloatTensor as FT
 
+from TORCH_CUSTOM import static_clamp_for
+
 
 class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'R_I', 'tau_g']
@@ -32,9 +34,9 @@ class LIF(nn.Module):
         self.spike_threshold = T(30.)
         self.N = N
 
-        self.v = torch.zeros((self.N,))
-        self.g = torch.zeros_like(self.v)  # syn. conductance
+        self.v = E_L * torch.ones((self.N,))
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
+        self.g = torch.zeros_like(self.v)  # syn. conductance
 
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
         if parameters.__contains__('preset_weights'):
@@ -70,7 +72,7 @@ class LIF(nn.Module):
     def calc_dynamic_clamp_R_I(self):
         I = (self.g).matmul(self.self_recurrence_mask * self.w)
         l = torch.ones_like(self.v) * 80.
-        m = (torch.ones_like(self.v) * self.spike_threshold - self.E_L) / I.clamp(min=0.1)
+        m = (torch.ones_like(self.v) * self.spike_threshold - self.E_L) / I.clamp(min=1e-02)
         return l, m
 
     def register_backward_clamp_hooks(self):
@@ -84,12 +86,6 @@ class LIF(nn.Module):
         self.R_I.register_hook(hook_dynamic_R_I_clamp)
 
         # --------------------------------------
-        def static_clamp_for(grad, l, m, p):
-            clamped_grad = grad.clone().detach()
-            for i in range(p.shape[0]):
-                clamped_grad.clamp_(l - p[i], m - p[i])
-            return clamped_grad
-            # return torch.where((grad < -1e-08) + (1e-08 < grad), grad.clamp(float(l.clone()-p.clone()), float(m.clone()-p.clone())), grad.clone())
 
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.15, 3., self.tau_m))
@@ -109,6 +105,10 @@ class LIF(nn.Module):
             p.grad = None
             # print('DEBUG: p: {}, p.grad: {}'.format(p, p.grad))
         self.reset_hidden_state()
+
+        self.v = self.E_L.clone().detach() * torch.ones((self.N,))
+        self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
+        self.g = torch.zeros_like(self.v)  # syn. conductance
 
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()

@@ -2,6 +2,7 @@ import numpy as np
 import torch
 
 import model_util
+from Constants import ExperimentType
 from Models.GLIF import GLIF
 from Models.LIF import LIF
 from eval import calculate_loss
@@ -27,7 +28,7 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
     for batch_i in range(batch_N):
         print('batch #{}'.format(batch_i))
 
-        if gen_inputs is not None:
+        if constants.EXP_TYPE is ExperimentType.SanityCheck and gen_inputs is not None:
             current_inputs = gen_inputs[batch_size * batch_i:batch_size * (batch_i + 1)]
             current_inputs.retain_grad()
         else:

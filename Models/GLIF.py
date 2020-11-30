@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 from torch import FloatTensor as FT
 
+from TORCH_CUSTOM import static_clamp_for
+
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
@@ -53,17 +55,10 @@ class GLIF(nn.Module):
         # __constants__ = ['N', 'E_L', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
         __constants__ = ['N', 'self_recurrence_mask']
         self.N = N
-        # self.E_L = FT(N * [E_L])
-
-        # self.delta_theta_s = FT(delta_theta_s)
-        # self.b_s = FT(b_s)
-        # self.a_v = FT(a_v)
-        # self.b_v = FT(b_v)
-        # self.theta_inf = FT(theta_inf)
 
         self.v = E_L * torch.ones((self.N,))
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
-        self.theta_s = 30. * torch.ones((self.N,))
+        self.theta_s = delta_theta_s * torch.ones((self.N,))
         self.theta_v = torch.ones((self.N,))
         self.I_additive = torch.zeros((self.N,))
 
@@ -111,7 +106,7 @@ class GLIF(nn.Module):
     def calc_dynamic_clamp_R_I(self):
         I = self.I_additive.matmul(self.self_recurrence_mask * self.w)
         l = torch.ones_like(self.v) * 40.
-        m = (self.theta_s + self.theta_v - self.E_L) / I.clamp(min=0.1)
+        m = (self.theta_s + self.theta_v - self.E_L) / I.clamp(min=1e-02)
         return l, m
 
     def register_backward_clamp_hooks(self):
@@ -125,18 +120,9 @@ class GLIF(nn.Module):
         self.R_I.register_hook(hook_dynamic_R_I_clamp)
 
         # --------------------------------------
-        def static_clamp_for(grad, l, m, p):
-            clamped_grad = grad.clone().detach()
-            for i in range(p.shape[0]):
-                clamped_grad.clamp_(l - p[i], m - p[i])
-            return clamped_grad
-            # return torch.where((grad < -1e-08) + (1e-08 < grad), grad.clamp(float(l.clone()-p.clone()), float(m.clone()-p.clone())), grad.clone())
-
-
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.2, 3., self.tau_m))
         self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
-        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 40., 55., self.R_I))
         self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
         self.f_I.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_I))
         self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
@@ -161,6 +147,12 @@ class GLIF(nn.Module):
             p.grad = None
             # print('DEBUG: p: {}, p.grad: {}'.format(p, p.grad))
         self.reset_hidden_state()
+
+        # self.v = self.E_L.clone().detach() * torch.ones((self.N,))
+        # self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
+        # self.theta_s = self.delta_theta_s.clone().detach() * torch.ones((self.N,))
+        # self.theta_v = torch.ones((self.N,))
+        # self.I_additive = torch.zeros((self.N,))
 
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()
