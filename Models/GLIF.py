@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import FloatTensor as FT
 
-from TORCH_CUSTOM import static_clamp_for
+from Models.TORCH_CUSTOM import static_clamp_for
 
 
 class GLIF(nn.Module):
