@@ -34,11 +34,12 @@ def main(argv):
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 
-    optimiser = 'Adam'
+    # optimiser = 'Adam'
+    optimiser = 'SGD'
     initial_poisson_rate = 10.  # Hz
 
-    # evaluate_step = 1
-    evaluate_step = int(max(max_train_iters/10, 1))
+    evaluate_step = 1
+    # evaluate_step = int(max(max_train_iters/10, 1))
     # data_path = None
     # prefix = '/Users/william/data/target_data/'
 
@@ -83,10 +84,10 @@ def main(argv):
             exp_type_str = args[i]
 
     for f_i in range(1, 3):
-        models = [LIF, GLIF]
+        # models = [LIF, GLIF]
         # models = [LIF]
-        # models = [GLIF]
-        # models = [LI F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+        models = [GLIF]
+        # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         for m_class in models:
             if m_class.__class__ == LIF.__class__:
                 target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)

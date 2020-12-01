@@ -110,10 +110,10 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         # converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
         converged = False
 
-        targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
+        gen_outputs, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
                                           t=constants.rows_per_train_iter / 2.)
-        validation_loss = evaluate_loss(model, inputs=None, p_rate=poisson_input_rate.clone().detach(),
-                                        target_spiketrain=targets, label='train i: {}'.format(train_i),
+        validation_loss = evaluate_loss(model, inputs=gen_inputs, p_rate=poisson_input_rate.clone().detach(),
+                                        target_spiketrain=gen_outputs, label='train i: {}'.format(train_i),
                                         exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
                                         constants=constants, converged=converged)
         # validation_loss = last_loss

@@ -72,7 +72,7 @@ def generate_synthetic_data(gen_model, poisson_rate, t):
     release_computational_graph(gen_model, poisson_rate, gen_input)
     gen_spiketrain.grad = None
 
-    return gen_spiketrain.clone().detach()
+    return gen_spiketrain.clone().detach(), gen_input.clone().detach()
 
 
 def train_test_split(data, train_test_split_factor=0.85):

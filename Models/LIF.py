@@ -72,7 +72,7 @@ class LIF(nn.Module):
     def calc_dynamic_clamp_R_I(self):
         I = (self.g).matmul(self.self_recurrence_mask * self.w)
         l = torch.ones_like(self.v) * 80.
-        m = (torch.ones_like(self.v) * self.spike_threshold - self.E_L) / I.clamp(min=1e-02)
+        m = torch.min((torch.ones_like(self.v) * self.spike_threshold - self.E_L) / I.clamp(min=1e-02), torch.tensor(200.))
         return l, m
 
     def register_backward_clamp_hooks(self):
