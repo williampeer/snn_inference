@@ -56,11 +56,30 @@ def test_van_rossum_dist():
 
 
 def test_optimised_van_rossum():
-    tau = torch.tensor(10.0)
-    spikes = (torch.rand((100, 3)) > 0.85).float()
+    tau = torch.tensor(20.0)
+    # spikes = (torch.rand((100, 3)) > 0.85).float()
+    spikes = poisson_input(20., 200., 3)
 
     torch_conv = torch_van_rossum_convolution(spikes, tau)
     plot_neuron(torch_conv, "van Rossum convolved spike train", fname_ext="_vr_test")
+
+    print('no. spikes: {}, torch conv. sum: {}'.format(spikes.sum(), torch_conv.sum()))
+    assert torch_conv.sum() - spikes.sum() > 0., "check torch conv. impl."
+
+
+def test_optimised_van_rossum_two_sided():
+    tau = torch.tensor(10.0)
+    # spikes = (torch.rand((100, 3)) > 0.85).float()
+    spikes = poisson_input(20., 200., 3)
+
+    torch_conv = torch_van_rossum_convolution(spikes, tau)
+    plot_neuron(torch_conv, "van Rossum convolved spike train", fname_ext="_vr_test_one_sided")
+
+    print('no. spikes: {}, torch conv. sum: {}'.format(spikes.sum(), torch_conv.sum()))
+    assert torch_conv.sum() - spikes.sum() > 0., "check torch conv. impl."
+
+    torch_conv = torch_van_rossum_convolution_two_sided(spikes, tau)
+    plot_neuron(torch_conv, "van Rossum convolved spike train two sided", fname_ext="_vr_test_two_sided")
 
     print('no. spikes: {}, torch conv. sum: {}'.format(spikes.sum(), torch_conv.sum()))
     assert torch_conv.sum() - spikes.sum() > 0., "check torch conv. impl."
@@ -106,3 +125,4 @@ test_van_rossum_dist()
 test_optimised_van_rossum()
 test_different_taus_van_rossum_dist()
 test_van_rossum_convolution()
+test_optimised_van_rossum_two_sided()

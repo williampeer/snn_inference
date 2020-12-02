@@ -1,25 +1,41 @@
 import torch
-import numpy as np
 
 
 # an approximation using torch.where
-from stats import mean_firing_rate
-
-
 def torch_van_rossum_convolution(spikes, tau):
     decay_kernel = torch.exp(-torch.tensor(1.) / tau)
     convolved_spiketrain = spikes.clone()
-    padding_zeros = torch.zeros((1, spikes.shape[1]))
+    one_row_of_zeros = torch.zeros((1, spikes.shape[1]))
     for i in range(int(3*tau)):
-        tmp_shifted_conv = torch.cat([padding_zeros, convolved_spiketrain[:-1]])
+        tmp_shifted_conv = torch.cat([one_row_of_zeros, convolved_spiketrain[:-1]])
         # sig(v - threshold) = 0.5 for v = threshold
         convolved_spiketrain = torch.where(spikes < 0.75, tmp_shifted_conv.clone() * decay_kernel, spikes.clone())
+    return convolved_spiketrain
+
+
+def torch_van_rossum_convolution_two_sided(spikes, tau):
+    decay_kernel = torch.exp(-torch.tensor(1.) / tau)
+    convolved_spiketrain = spikes.clone()
+    # convolved_spiketrain_backwards = spikes.clone()
+    row_of_zeros = torch.zeros((1, spikes.shape[1]))
+    for i in range(int(3*tau)):
+        tmp_shifted_conv = torch.cat([row_of_zeros, convolved_spiketrain[:-1]])
+        tmp_shifted_backwards = torch.cat([convolved_spiketrain[1:], row_of_zeros.clone().detach()])
+        # sig(v - threshold) = 0.5 for v = threshold
+        convolved_spiketrain = torch.where(spikes < 0.75, torch.max(tmp_shifted_conv * decay_kernel, tmp_shifted_backwards * decay_kernel), spikes.clone())
+        # convolved_spiketrain_backwards = torch.where(spikes < 0.75, tmp_shifted_backwards * decay_kernel, spikes.clone())
     return convolved_spiketrain
 
 
 def van_rossum_dist(spikes, target_spikes, tau):
     c1 = torch_van_rossum_convolution(spikes=spikes, tau=tau)
     c2 = torch_van_rossum_convolution(spikes=target_spikes, tau=tau)
+    return euclid_dist(c1, c2)
+
+
+def van_rossum_dist_two_sided(spikes, target_spikes, tau):
+    c1 = torch_van_rossum_convolution_two_sided(spikes=spikes, tau=tau)
+    c2 = torch_van_rossum_convolution_two_sided(spikes=target_spikes, tau=tau)
     return euclid_dist(c1, c2)
 
 

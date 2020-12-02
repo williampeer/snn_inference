@@ -44,6 +44,8 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
 def calculate_loss(output, target, loss_fn, N, tau_vr=None):
     if loss_fn.__contains__('van_rossum_dist'):
         loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
+    elif loss_fn.__contains__('van_rossum_dist_two_sided'):
+        loss = spike_metrics.van_rossum_dist_two_sided(output, target, tau_vr)
     elif loss_fn.__contains__('poisson_nll'):
         loss = poisson_nll_loss(output, target)
     elif loss_fn.__contains__('kl_div'):
