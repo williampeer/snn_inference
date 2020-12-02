@@ -84,18 +84,15 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
     while not converged and (train_i < constants.train_iters):
         logger.log('training iteration #{}'.format(train_i), [constants.EXP_TYPE])
 
+        # TODO: split into gen_rate, init_rate
         # targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter)
-        gen_input = poisson_input(rate=poisson_input_rate, t=constants.rows_per_train_iter, N=target_model.N)
-        gen_spiketrain = generate_model_data(model=target_model, inputs=gen_input)
-        # for gen spiketrain this may be thresholded to binary values:
-        gen_spiketrain = torch.round(gen_spiketrain)
-        release_computational_graph(target_model, poisson_input_rate, gen_input)
-        gen_spiketrain.grad = None
-        targets = gen_spiketrain.clone().detach()
+        targets, gen_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
 
-        avg_train_loss, abs_grads_mean, last_loss = fit_mini_batches(model, gen_inputs=gen_input, target_spiketrain=targets,
+        avg_train_loss, abs_grads_mean, last_loss = fit_mini_batches(model, gen_inputs=gen_input.clone().detach(), target_spiketrain=targets,
                                                                      poisson_input_rate=poisson_input_rate, optimiser=optim,
                                                                      constants=constants, train_i=train_i, logger=logger)
+        release_computational_graph(target_model, constants.initial_poisson_rate, gen_input)
+
         logger.log(parameters=[avg_train_loss, abs_grads_mean])
         train_losses.append(avg_train_loss)
 

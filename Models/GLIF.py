@@ -80,9 +80,8 @@ class GLIF(nn.Module):
         self.neuron_types = neuron_types
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
         self.E_L = nn.Parameter(FT(E_L).clamp(-75., -40.), requires_grad=True)
-        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.15, 3.), requires_grad=True)
-        self.G = nn.Parameter(FT(G).clamp(0.1, 0.9), requires_grad=True)
-        self.R_I = nn.Parameter(FT(R_I).clamp(40., 55.), requires_grad=True)
+        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
+        self.G = nn.Parameter(FT(G).clamp(0.1, 0.95), requires_grad=True)
         self.f_v = nn.Parameter(FT(f_v).clamp(0.01, 0.99), requires_grad=True)
         self.f_I = nn.Parameter(FT(f_I).clamp(0.01, 0.99), requires_grad=True)
         self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
@@ -93,11 +92,12 @@ class GLIF(nn.Module):
         self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 
-        l, m = self.calc_dynamic_clamp_R_I()
-        R_I = FT(R_I)
-        for i in range(R_I.shape[0]):
-            R_I[i].clamp_(float(l[i]), float(m[i]))
-        self.R_I = nn.Parameter(R_I, requires_grad=True)
+        self.R_I = nn.Parameter(FT(R_I).clamp(25., 70.), requires_grad=True)
+        # l, m = self.calc_dynamic_clamp_R_I()
+        # R_I = FT(R_I)
+        # for i in range(R_I.shape[0]):
+        #     R_I[i].clamp_(float(l[i]), float(m[i]))
+        # self.R_I = nn.Parameter(R_I, requires_grad=True)
 
         self.register_backward_clamp_hooks()
 
@@ -121,16 +121,6 @@ class GLIF(nn.Module):
         self.theta_s = self.theta_s.clone().detach()
         self.theta_v = self.theta_v.clone().detach()
         self.I_additive = self.I_additive.clone().detach()
-
-    def dynamic_clamp_R_I(self):
-        I = self.I_additive.matmul(self.self_recurrence_mask * self.w)
-        l = torch.ones_like(self.v) * 40.
-        m = (self.theta_s + self.theta_v - self.E_L) / I.clamp(min=1e-02)
-        for i in range(self.R_I.shape[0]):
-            self.R_I[i].clamp_(float(l[i] - self.R_I[i]), float(m[i] - self.R_I[i]))
-
-    def clamp_parameters(self):
-        self.dynamic_clamp_R_I()
 
     def forward(self, x_in):
         I = self.I_additive.matmul(self.self_recurrence_mask * self.w) + 0.85 * x_in
@@ -163,46 +153,49 @@ class GLIF(nn.Module):
         # return self.v, self.spiked
         return self.spiked
 
-
     # Apparently, this doesn't work. Maybe due to the Adam-implementation?
-    def calc_dynamic_clamp_R_I(self):
-        I = self.I_additive.matmul(self.self_recurrence_mask * self.w)
-        l = torch.ones_like(self.v) * 20.
-        m = ((self.theta_s + self.theta_v - self.E_L) / I.clamp(min=1e-02)).clamp(min=20., max=200.)
-        return l, m
+    # def calc_dynamic_clamp_R_I(self):
+    #     I = self.I_additive.matmul(self.self_recurrence_mask * self.w)
+    #     l = torch.ones_like(self.v) * 40.
+    #     m = ((self.theta_s + self.theta_v - self.E_L) / I.clamp(min=1e-02)).clamp(min=40., max=100.)
+    #     return l, m
 
     def register_backward_clamp_hooks(self):
-        def hook_dynamic_R_I_clamp(grad):
-            print('DEBUG: R_I grad: {}'.format(grad))
-            l, m = self.calc_dynamic_clamp_R_I()
-            # clamped_grad = grad.detach().clone()
-            for i in range(grad.shape[0]):
-                # clamped_grad[i].clamp_(float(l[i] - self.R_I[i]), float(m[i] - self.R_I[i]))
-                grad[i] = grad[i].clamp(float(l[i] - self.R_I[i]), float(m[i] - self.R_I[i]))
-            print('DEBUG: R_I grad clamped: {}, l: {}, m: {}, R_I: {}'.format(grad, l, m, self.R_I))
-            return grad
+        # def hook_dynamic_R_I_clamp(grad):
+        #     l, m = self.calc_dynamic_clamp_R_I()
+        #     clamped_grad = grad.detach().clone()
+        #     for i in range(grad.shape[0]):
+        #         clamped_grad[i].clamp_(float(l[i] - self.R_I[i]), float(m[i] - self.R_I[i]))
+        #
+        #     # print('DEBUG: PARAM R_I: p= {}'.format(self.R_I))
+        #     # print('DEBUG grad R_I: grad= {}'.format(grad))
+        #     # print('DEBUG (l,m) R_I: l= {}, m= {}'.format(l, m))
+        #     # print('DEBUG grad R_I: clamped_grad= {}'.format(grad))
+        #     return clamped_grad
+        #
+        # self.R_I.register_hook(hook_dynamic_R_I_clamp)
 
-        self.R_I.register_hook(hook_dynamic_R_I_clamp)
-
-        def custom_G_clamp(grad, l, m, p):
-            print('DEBUG G: grad: {}, l: {}, m: {}, p: {}'.format(grad, l, m, p()))
-            clamped_grad = static_clamp_for(grad,l,m,p)
-            print('DEBUG G: clamped_grad: {}'.format(clamped_grad))
-            return clamped_grad
+        # def debug_grad_clamp(grad, l, m, p):
+        #     print('DEBUG PARAM: p= {}\nl= {}, m= {}'.format(p, l, m))
+        #     print('DEBUG grad: grad= {}'.format(grad))
+        #     clamped_grad = static_clamp_for(grad,l,m,p)
+        #     print('DEBUG grad: clamped_grad= {}'.format(clamped_grad))
+        #     return clamped_grad
 
         # --------------------------------------
-        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L.values))
-        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.15, 3., self.tau_m.values))
-        self.G.register_hook(lambda grad: custom_G_clamp(grad, 0.1, 0.9, self.G.values))
-        # self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
-        # self.f_I.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_I))
-        # self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
-        # self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_s))
-        # self.a_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.a_v))
-        # self.b_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_v))
-        # self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -25., 0., self.theta_inf))
-        # self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 0.01, 35., self.delta_V))
-        # self.I_A.register_hook(lambda grad: static_clamp_for(grad, 0.5, 3., self.I_A))
+        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 25., 70., self.R_I))
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
+        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
+        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
+        self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
+        self.f_I.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_I))
+        self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
+        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_s))
+        self.a_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.a_v))
+        self.b_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_v))
+        self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -25., 0., self.theta_inf))
+        self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 0.01, 35., self.delta_V))
+        self.I_A.register_hook(lambda grad: static_clamp_for(grad, 0.5, 3., self.I_A))
 
         # row per neuron
         for i in range(len(self.neuron_types)):

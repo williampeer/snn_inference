@@ -55,40 +55,42 @@ class LIF(nn.Module):
                 raise NotImplementedError()
         self.neuron_types = neuron_types
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
+        self.R_I = nn.Parameter(FT(R_I).clamp(100., 155.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
-        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.15, 3.), requires_grad=True)
+        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
         self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 3.5), requires_grad=True)
 
-        l, m = self.calc_dynamic_clamp_R_I()
-        R_I = FT(R_I)
-        for i in range(R_I.shape[0]):
-            R_I[i].clamp_(float(l[i]), float(m[i]))
-        self.R_I = nn.Parameter(R_I, requires_grad=True)
+        # l, m = self.calc_dynamic_clamp_R_I()
+        # R_I = FT(R_I)
+        # for i in range(R_I.shape[0]):
+        #     R_I[i].clamp_(float(l[i]), float(m[i]))
+        # self.R_I = nn.Parameter(R_I, requires_grad=True)
 
         self.register_backward_clamp_hooks()
 
         # self.to(self.device)
 
-    def calc_dynamic_clamp_R_I(self):
-        I = (self.g).matmul(self.self_recurrence_mask * self.w)
-        l = torch.ones_like(self.v) * 80.
-        m = torch.min((torch.ones_like(self.v) * self.spike_threshold - self.E_L) / I.clamp(min=1e-02), torch.tensor(200.))
-        return l, m
+    # def calc_dynamic_clamp_R_I(self):
+    #     I = (self.g).matmul(self.self_recurrence_mask * self.w)
+    #     l = torch.ones_like(self.v) * 80.
+    #     m = ((torch.ones_like(self.v) * self.spike_threshold - self.E_L) / I.clamp(min=1e-02)).clamp(80., 200.)
+    #     return l, m
 
     def register_backward_clamp_hooks(self):
-        def hook_dynamic_R_I_clamp(grad):
-            l, m = self.calc_dynamic_clamp_R_I()
-            clamped_grad = grad.detach().clone()
-            for i in range(grad.shape[0]):
-                clamped_grad[i].clamp_(float(l[i] - self.R_I[i]), float(m[i] - self.R_I[i]))
-            return clamped_grad
-
-        self.R_I.register_hook(hook_dynamic_R_I_clamp)
+        # def hook_dynamic_R_I_clamp(grad):
+        #     l, m = self.calc_dynamic_clamp_R_I()
+        #     clamped_grad = grad.detach().clone()
+        #     for i in range(grad.shape[0]):
+        #         clamped_grad[i].clamp_(float(l[i] - self.R_I[i]), float(m[i] - self.R_I[i]))
+        #     return clamped_grad
+        #
+        # self.R_I.register_hook(hook_dynamic_R_I_clamp)
 
         # --------------------------------------
 
+        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 100., 155., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
-        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.15, 3., self.tau_m))
+        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
         self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 3.5, self.tau_g))
 
         # row per neuron

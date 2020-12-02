@@ -69,7 +69,6 @@ def generate_synthetic_data(gen_model, poisson_rate, t):
     gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)
     # for gen spiketrain this may be thresholded to binary values:
     gen_spiketrain = torch.round(gen_spiketrain)
-    release_computational_graph(gen_model, poisson_rate, gen_input)
     gen_spiketrain.grad = None
 
     return gen_spiketrain.clone().detach(), gen_input.clone().detach()

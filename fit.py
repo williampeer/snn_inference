@@ -29,7 +29,7 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
         print('batch #{}'.format(batch_i))
 
         if constants.EXP_TYPE is ExperimentType.SanityCheck and gen_inputs is not None:
-            current_inputs = gen_inputs[batch_size * batch_i:batch_size * (batch_i + 1)]
+            current_inputs = gen_inputs[batch_size * batch_i:batch_size * (batch_i + 1)].clone().detach().requires_grad_(True)
             current_inputs.retain_grad()
         else:
             current_inputs = poisson_input(rate=poisson_input_rate, t=batch_size, N=model.N)
@@ -41,7 +41,7 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
 
 
         loss.backward(retain_graph=True)
-        poisson_input_rate.grad += torch.mean(current_inputs.grad)
+        poisson_input_rate.grad = torch.mean(current_inputs.grad)
 
         optimiser.step()
 
