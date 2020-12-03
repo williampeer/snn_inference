@@ -2,9 +2,10 @@ import sys
 
 import Constants as C
 import fit_to_model_exp_suite
-from Models import LIF_dynamic_R_I, GLIF_dynamic_R_I
 from Models.GLIF import GLIF
+from Models.GLIF_dynamic_R_I import GLIF_dynamic_R_I
 from Models.LIF import LIF
+from Models.LIF_dynamic_R_I import LIF_dynamic_R_I
 from TargetModels import TargetEnsembleModels
 
 
@@ -88,7 +89,7 @@ def main(argv):
 
     for f_i in range(1, 3):
         # models = [LIF, GLIF]
-        # models = [GLIF]
+        # models = [GLIF_dynamic_R_I]
         models = [LIF, LIF_dynamic_R_I, GLIF, GLIF_dynamic_R_I]
         # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         for m_class in models:
