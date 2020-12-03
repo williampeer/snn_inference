@@ -5,7 +5,7 @@ from torch import FloatTensor as FT
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_vector_bounds
 
 
-class GLIF(nn.Module):
+class GLIF_dynamic_R_I(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
     parameter_init_intervals = {'E_L': [-62., -46.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [60., 70.],
                                 'f_v': [0.25, 0.35], 'f_I': [0.2, 0.6], 'delta_theta_s': [10., 12.], 'b_s': [0.35, 0.45],
@@ -17,7 +17,7 @@ class GLIF(nn.Module):
         # use_cuda = torch.cuda.is_available()
         # device = torch.device("cuda" if use_cuda else "cpu")
 
-        super(GLIF, self).__init__()
+        super(GLIF_dynamic_R_I, self).__init__()
 
         if parameters is not None:
             for key in parameters.keys():
