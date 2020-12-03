@@ -86,8 +86,8 @@ def main(argv):
             exp_type_str = args[i]
 
     for f_i in range(1, 3):
-        models = [LIF, GLIF]
-        # models = [LIF]
+        # models = [LIF, GLIF]
+        models = [LIF]
         # models = [GLIF]
         # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         for m_class in models:
