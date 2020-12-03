@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import FloatTensor as FT
 
-from Models.TORCH_CUSTOM import static_clamp_for
+from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_vector_bounds
 
 
 class GLIF(nn.Module):
@@ -14,6 +14,9 @@ class GLIF(nn.Module):
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
                  neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
+        # use_cuda = torch.cuda.is_available()
+        # device = torch.device("cuda" if use_cuda else "cpu")
+
         super(GLIF, self).__init__()
 
         if parameters is not None:
@@ -49,6 +52,7 @@ class GLIF(nn.Module):
                 elif key == 'w_var':
                     w_var = FT(torch.ones((N,)) * parameters[key])
 
+        # __constants__ = ['N', 'E_L', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf']
         __constants__ = ['N', 'self_recurrence_mask']
         self.N = N
 
@@ -88,9 +92,14 @@ class GLIF(nn.Module):
         self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 
-        self.R_I = nn.Parameter(FT(R_I).clamp(25., 70.), requires_grad=True)
+        l, m = self.calc_dynamic_clamp_R_I()
+        R_I = FT(R_I)
+        for i in range(R_I.shape[0]):
+            R_I[i].clamp_(float(l[i]), float(m[i]))
+        self.R_I = nn.Parameter(R_I, requires_grad=True)
 
         self.register_backward_clamp_hooks()
+        # self.to(self.device)
 
     def reset(self):
         for p in self.parameters():
@@ -128,8 +137,20 @@ class GLIF(nn.Module):
 
         return self.spiked
 
+    def calc_dynamic_clamp_R_I(self):
+        I = self.I_additive.matmul(self.self_recurrence_mask * self.w)
+        l = torch.ones_like(self.v) * 40.
+        m = ((self.theta_s + self.theta_v - self.E_L) / I.clamp(min=1e-02)).clamp(min=40., max=100.)
+        return l, m
 
     def register_backward_clamp_hooks(self):
+        def hook_dynamic_R_I_clamp(grad):
+            l, m = self.calc_dynamic_clamp_R_I()
+            return static_clamp_for_vector_bounds(grad, l, m, self.R_I)
+
+        self.R_I.register_hook(hook_dynamic_R_I_clamp)
+
+        # --------------------------------------
         self.R_I.register_hook(lambda grad: static_clamp_for(grad, 25., 70., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))

@@ -2,6 +2,7 @@ import sys
 
 import Constants as C
 import fit_to_model_exp_suite
+from Models import LIF_dynamic_R_I, GLIF_dynamic_R_I
 from Models.GLIF import GLIF
 from Models.LIF import LIF
 from TargetModels import TargetEnsembleModels
@@ -14,7 +15,7 @@ def main(argv):
     start_seed = 0
     exp_type_str = C.ExperimentType.SanityCheck.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.02; N_exp = 4; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.02; N_exp = 3; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
@@ -87,14 +88,14 @@ def main(argv):
 
     for f_i in range(1, 3):
         # models = [LIF, GLIF]
-        models = [LIF]
         # models = [GLIF]
+        models = [LIF, LIF_dynamic_R_I, GLIF, GLIF_dynamic_R_I]
         # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         for m_class in models:
-            if m_class.__name__ == LIF.__name__:
+            if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:
                 target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                 target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
-            elif m_class.__name__ == GLIF.__name__:
+            elif m_class.__name__ in [GLIF.__name__, GLIF_dynamic_R_I.__name__]:
                 target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                 target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=f_i)
             else:
