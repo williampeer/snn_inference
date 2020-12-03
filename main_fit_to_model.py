@@ -14,17 +14,18 @@ def main(argv):
     start_seed = 0
     exp_type_str = C.ExperimentType.SanityCheck.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.01; N_exp = 3; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.02; N_exp = 3; tau_van_rossum = 12.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # max_train_iters = 100; batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
-    # max_train_iters = 60; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'firing_rate_distance'
-    # max_train_iters = 60; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
-    max_train_iters = 60; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist_two_sided'
-    # max_train_iters = 60; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
-    # max_train_iters = 60; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdsp'
+    max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'firing_rate_distance'
+    # max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
+    # max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist_two_sided'
+    # max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdtsfrd'
+    # max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
+    # max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdsp'
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
     # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
@@ -85,10 +86,10 @@ def main(argv):
             exp_type_str = args[i]
 
     for f_i in range(1, 3):
-        models = [LIF, GLIF]
-        # models = [LIF]
+        # models = [LIF, GLIF]
+        models = [LIF]
         # models = [GLIF]
-        # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+        # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         for m_class in models:
             if m_class.__name__ == LIF.__name__:
                 target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)

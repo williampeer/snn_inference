@@ -64,6 +64,10 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None):
         pnll_loss = poisson_nll_loss(output, target, tau_vr)
         frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
         loss = pnll_loss + frd_loss
+    elif loss_fn.__contains__('vrdtsfrd'):
+        vrdts_loss = spike_metrics.van_rossum_dist_two_sided(output, target, tau_vr)
+        frd_loss = spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
+        loss = vrdts_loss + frd_loss
     elif loss_fn.__contains__('vrdfrd'):
         vrd_loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
         frd_loss = spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.

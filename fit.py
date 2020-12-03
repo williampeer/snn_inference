@@ -3,8 +3,6 @@ import torch
 
 import model_util
 from Constants import ExperimentType
-from Models.GLIF import GLIF
-from Models.LIF import LIF
 from eval import calculate_loss
 from experiments import poisson_input, release_computational_graph
 
