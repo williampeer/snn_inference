@@ -14,7 +14,7 @@ def main(argv):
     start_seed = 0
     exp_type_str = C.ExperimentType.SanityCheck.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.02; N_exp = 3; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.02; N_exp = 4; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
@@ -86,8 +86,8 @@ def main(argv):
             exp_type_str = args[i]
 
     for f_i in range(1, 3):
-        # models = [LIF, GLIF]
-        models = [LIF]
+        models = [LIF, GLIF]
+        # models = [LIF]
         # models = [GLIF]
         # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         for m_class in models:
