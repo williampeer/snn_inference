@@ -16,18 +16,19 @@ def main(argv):
     start_seed = 0
     exp_type_str = C.ExperimentType.SanityCheck.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.02; N_exp = 3; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.01; N_exp = 8; tau_van_rossum = 80.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    # max_train_iters = 300; batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
-    # max_train_iters = 300; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
-    # max_train_iters = 100; batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
-    max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'firing_rate_distance'
-    # max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
-    # max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist_two_sided'
-    # max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdtsfrd'
-    # max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
-    # max_train_iters = 25; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdsp'
+    max_train_iters = 100
+    # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
+    # batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
+    # batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
+    batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'frd'
+    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdts'
+    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrd'
+    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdtsfrd'
+    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
+    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdsp'
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
     # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
@@ -87,10 +88,13 @@ def main(argv):
         elif opt in ("-et", "--experiment-type"):
             exp_type_str = args[i]
 
-    for f_i in range(1, 3):
-        # models = [LIF, GLIF]
+    for f_i in range(3):
+        models = [LIF, GLIF]
+        # models = [LIF]
+        # models = [LIF_dynamic_R_I]
+        # models = [GLIF]
         # models = [GLIF_dynamic_R_I]
-        models = [LIF, LIF_dynamic_R_I, GLIF, GLIF_dynamic_R_I]
+        # models = [LIF, LIF_dynamic_R_I, GLIF, GLIF_dynamic_R_I]
         # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         for m_class in models:
             if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:

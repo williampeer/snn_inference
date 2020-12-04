@@ -42,9 +42,9 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
 
 
 def calculate_loss(output, target, loss_fn, N, tau_vr=None):
-    if loss_fn.__contains__('van_rossum_dist'):
+    if loss_fn.__contains__('vrd'):
         loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
-    elif loss_fn.__contains__('van_rossum_dist_two_sided'):
+    elif loss_fn.__contains__('vrdts'):
         loss = spike_metrics.van_rossum_dist_two_sided(output, target, tau_vr)
     elif loss_fn.__contains__('poisson_nll'):
         loss = poisson_nll_loss(output, target)
@@ -54,7 +54,7 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None):
         loss = spike_metrics.van_rossum_squared_distance(output, target, tau_vr)
     elif loss_fn.__contains__('mse'):
         loss = spike_metrics.mse(output, target)
-    elif loss_fn.__contains__('firing_rate_distance'):
+    elif loss_fn.__contains__('frd'):
         loss = spike_metrics.firing_rate_distance(output, target)
     elif loss_fn.__contains__('kldfrd'):
         kld_loss = kl_div(output, target)
