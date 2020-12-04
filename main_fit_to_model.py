@@ -14,8 +14,8 @@ def main(argv):
 
     # Default values
     start_seed = 0
-    exp_type_str = C.ExperimentType.SanityCheck.name
-    # exp_type_str = C.ExperimentType.DataDriven.name
+    # exp_type_str = C.ExperimentType.SanityCheck.name
+    exp_type_str = C.ExperimentType.DataDriven.name
     learn_rate = 0.01; N_exp = 8; tau_van_rossum = 80.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
@@ -24,10 +24,10 @@ def main(argv):
     # batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'frd'
-    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdts'
     # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrd'
-    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdtsfrd'
+    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdts'
     # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
+    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdtsfrd'
     # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdsp'
 
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
