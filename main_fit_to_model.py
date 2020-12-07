@@ -14,25 +14,25 @@ def main(argv):
 
     # Default values
     start_seed = 0
-    # exp_type_str = C.ExperimentType.SanityCheck.name
-    exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.01; N_exp = 8; tau_van_rossum = 80.0; plot_flag = True
+    exp_type_str = C.ExperimentType.SanityCheck.name
+    # exp_type_str = C.ExperimentType.DataDriven.name
+    learn_rate = 0.005; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    max_train_iters = 100
+    max_train_iters = 10; batch_size = 400; rows_per_train_iter = 2000
+    # loss_fn = 'frd'
+    loss_fn = 'vrd'
+    # loss_fn = 'vrdts'
+    # loss_fn = 'vrdfrd'
+    # loss_fn = 'vrdtsfrd'
+    # loss_fn = 'vrdsp'
+
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
     # batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
-    batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'frd'
-    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrd'
-    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdts'
-    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdfrd'
-    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdtsfrd'
-    # batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'vrdsp'
-
     # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
     # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
-    # max_train_iters = 100; batch_size = 400; rows_per_train_iter = 4000; loss_fn = 'van_rossum_dist'
+
     # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_vr'
     # max_train_iters = 20; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_rate_dist'
     # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_rate_dist_w_penalty'
@@ -43,8 +43,8 @@ def main(argv):
     optimiser = 'SGD'
     initial_poisson_rate = 10.  # Hz
 
-    # evaluate_step = 1
-    evaluate_step = int(max(max_train_iters/10, 1))
+    evaluate_step = 1
+    # evaluate_step = int(max(max_train_iters/10, 1))
     # data_path = None
     # prefix = '/Users/william/data/target_data/'
 
