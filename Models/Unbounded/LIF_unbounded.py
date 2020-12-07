@@ -1,17 +1,15 @@
 import torch
 import torch.nn as nn
-from torch import tensor as T
 from torch import FloatTensor as FT
+from torch import tensor as T
 
-from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_vector_bounds
 
-
-class LIF(nn.Module):
+class LIF_unbounded(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'R_I', 'tau_g']
     parameter_init_intervals = {'E_L': [-55., -45.], 'tau_m': [1.3, 2.3], 'R_I': [135., 140.], 'tau_g': [2., 3.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
-        super(LIF, self).__init__()
+        super(LIF_unbounded, self).__init__()
         # self.device = device
         assert len(neuron_types) == N, "neuron_types should be of length N"
 
@@ -60,22 +58,7 @@ class LIF(nn.Module):
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
         self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 3.5), requires_grad=True)
 
-        self.register_backward_clamp_hooks()
-
-    def register_backward_clamp_hooks(self):
-        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 100., 155., self.R_I))
-        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
-        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
-        self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 3.5, self.tau_g))
-
-        # row per neuron
-        for i in range(len(self.neuron_types)):
-            if self.neuron_types[i] == -1:
-                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, -1., 0., self.w[i, :]))
-            elif self.neuron_types[i] == 1:
-                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, 0., 1., self.w[i, :]))
-            else:
-                raise NotImplementedError()
+        # self.to(self.device)
 
     def reset(self):
         for p in self.parameters():
