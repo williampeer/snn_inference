@@ -2,12 +2,11 @@ import torch
 
 import model_util
 import spike_metrics
-from Models.GLIF import GLIF
 from TargetModels import TargetEnsembleModels
-from experiments import poisson_input, draw_from_uniform
-from plot import plot_neuron, plot_spiketrains_side_by_side
+from experiments import poisson_input
+from plot import plot_spiketrains_side_by_side
 
-for random_seed in range(1, 6):
+for random_seed in range(5):
     num_neurons = 12
     # params_model = draw_from_uniform(GLIF.parameter_init_intervals, num_neurons)
     # snn = GLIF(parameters=params_model, N=num_neurons)
@@ -24,7 +23,7 @@ for random_seed in range(1, 6):
     # snn = TargetModels.glif_async(N = 12); ext_name = 'glif_async'
     # snn = TargetModels.glif_slower_more_synchronous(N = 12); ext_name = 'glif_slower_more_synchronous'
 
-    inputs = poisson_input(10., t=2000, N=snn.N)  # now assumes rate in Hz
+    inputs = poisson_input(20., t=5000, N=snn.N)  # now assumes rate in Hz
     print('#inputs: {}'.format(inputs.sum()))
     # membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     spikes = model_util.feed_inputs_sequentially_return_spiketrain(snn, inputs)
