@@ -62,7 +62,7 @@ def get_instrum_for(model_type, target_rate, N, target_model, time_interval):
 def get_multiobjective_loss(model_spike_train, targets, N, tau_vr=100.0, loss_fns=['vrdts', 'frd']):
     losses = []
     for lfn in loss_fns:
-        losses.append(calculate_loss(output=model_spike_train, target=targets, loss_fn=lfn, N=N, tau_vr=tau_vr))
+        losses.append(calculate_loss(output=model_spike_train, target=targets, loss_fn=lfn, N=N, tau_vr=tau_vr).clone().detach().requires_grad_(False).data)
     logger.log('loss_fns: {}, losses: {}'.format(loss_fns, losses))
     return losses
 
@@ -76,6 +76,9 @@ def pytorch_run_LIF(rate, w, tau_m, tau_g, R_I, E_L, target_model, target_rate, 
 
     model_spike_train = generate_synthetic_data(model, rate, time_interval)
     target_spike_train = generate_synthetic_data(target_model, target_rate, time_interval)
+
+    release_computational_graph(model, rate, model_spike_train)
+    release_computational_graph(target_model, target_rate, target_spike_train)
 
     return get_multiobjective_loss(model_spike_train, target_spike_train, N=model_spike_train.shape[0])
 
@@ -96,6 +99,9 @@ def pytorch_run_GLIF(rate, w, tau_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
 
     model_spike_train, _ = generate_synthetic_data(model, rate, time_interval)
     target_spike_train, _ = generate_synthetic_data(target_model, target_rate, time_interval)
+
+    release_computational_graph(model, rate, model_spike_train)
+    release_computational_graph(target_model, target_rate, target_spike_train)
 
     return get_multiobjective_loss(model_spike_train, target_spike_train, N=model_spike_train.shape[0])
 
@@ -126,10 +132,6 @@ def main(argv):
             num_exps = int(args[i])
         elif opt in ("-o", "--optim"):
             optim_name = args[i]
-        elif opt in ("-lfn", "--loss-function"):
-            loss_fn = args[i]
-        elif opt in ("-lm", "--loss-metric"):
-            loss_metric = args[i]
         elif opt in ("-rs", "--random-seed"):
             random_seed = int(args[i])
         elif opt in ("-mt", "--model-type"):
@@ -227,8 +229,8 @@ def main(argv):
         cur_min_loss = np.mean(get_multiobjective_loss(model_spike_train, target_spike_train, N))
         min_loss_per_exp.append(cur_min_loss)
 
-        release_computational_graph(cur_model, rate_parameter=None)
-        release_computational_graph(target_model, rate_parameter=None)
+        release_computational_graph(cur_model, rate_parameter=recommended_params['rate'])
+        release_computational_graph(target_model, rate_parameter=target_rate)
 
         plot_spiketrains_side_by_side(model_spike_train, target_spike_train, exp_type='multiobjective_optim', uuid=UUID,
                                       title='Spike trains model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
@@ -237,6 +239,7 @@ def main(argv):
         torch.save(recommended_params.copy(),
                    './saved/multiobjective_optim/fitted_params_{}_optim_{}_budget_{}_exp_{}.pt'.format(
                        target_model_name, optim_name, budget, exp_i))
+        del instrum, optimizer, cur_plot_params, m_params, cur_model, target_model, model_spike_train, target_spike_train
 
     params_by_optim[optim_name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
     torch.save(params_by_optim, './saved/multiobjective_optim/params_tm_{}_by_optim_{}__budget_{}.pt'.format(target_model_name, optim_name, budget))
