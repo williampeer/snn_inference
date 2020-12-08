@@ -79,8 +79,6 @@ def main(argv):
             loss_fn = args[i]
         elif opt in ("-sp", "--should-plot"):
             plot_flag = bool(args[i])
-        # elif opt in ("-tmn", "--target-model-number"):
-        #     tmn = int(args[i])
         elif opt in ("-trn", "--target-rate-number"):
             trn = int(args[i])
         elif opt in ("-ss", "--start-seed"):
