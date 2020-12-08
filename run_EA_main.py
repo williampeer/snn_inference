@@ -109,14 +109,13 @@ def pytorch_run_GLIF(rate, w, tau_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
 def main(argv):
     print('Argument List:', str(argv))
 
-    num_exps = 5; budget = 7000
-    # num_exps = 3; budget = 10
+    # num_exps = 5; budget = 7000
+    num_exps = 3; budget = 10
     optim_name = 'CMA'
     # optim_name = 'NGO'
     # optim_name = 'DE'
     # optim_name = 'PSO'
     target_rate = 10.; time_interval = 2800
-    random_seed = 42
     model_type = 'GLIF'
     target_model = 'LIF'
 
@@ -157,24 +156,6 @@ def main(argv):
     else:
         raise NotImplementedError()
 
-    # for random_seed in range(1,6):
-    if target_model == 'LIF':
-        target_model_name = 'lif_ensembles_model_dales_compliant_rand_seed_{}'.format(random_seed)
-        target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=random_seed)
-    elif target_model == 'GLIF':
-        target_model_name = 'glif_ensembles_model_dales_compliant_rand_seed_{}'.format(random_seed)
-        target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=random_seed)
-    else:
-        raise NotImplementedError("Target model not found.")
-
-    logger.log('Target model: {}'.format(target_model_name))
-    target_parameters = {}
-    index_ctr = 0
-    for param_i, key in enumerate(target_model.state_dict()):
-        if key not in ['rate', 'w']:
-            target_parameters[index_ctr] = [target_model.state_dict()[key].clone().detach().numpy()]
-            index_ctr += 1
-
     # --------------------
     params_by_optim = {}
     UUID = IO.dt_descriptor()
@@ -182,6 +163,22 @@ def main(argv):
     other_params_for_optim = {}
     min_loss_per_exp = []
     for exp_i in range(num_exps):
+        if target_model == 'LIF':
+            target_model_name = 'lif_ensembles_model_dales_compliant_rand_seed_{}'.format(exp_i)
+            target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=exp_i)
+        elif target_model == 'GLIF':
+            target_model_name = 'glif_ensembles_model_dales_compliant_rand_seed_{}'.format(exp_i)
+            target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=exp_i)
+        else:
+            raise NotImplementedError("Target model not found.")
+        logger.log('Target model: {}'.format(target_model_name))
+        target_parameters = {}
+        index_ctr = 0
+        for param_i, key in enumerate(target_model.state_dict()):
+            if key not in ['rate', 'w']:
+                target_parameters[index_ctr] = [target_model.state_dict()[key].clone().detach().numpy()]
+                index_ctr += 1
+
         N = 12
         instrum = get_instrum_for(model_type, target_rate, N, target_model, time_interval)
 
@@ -241,7 +238,7 @@ def main(argv):
         torch.save(recommended_params.copy(),
                    './saved/multiobjective_optim/fitted_params_{}_optim_{}_budget_{}_exp_{}.pt'.format(
                        target_model_name, optim_name, budget, exp_i))
-        del instrum, optimizer, cur_plot_params, m_params, cur_model, model_spike_train, target_spike_train
+        del instrum, optimizer, cur_plot_params, m_params, cur_model, target_model, model_spike_train, target_spike_train
 
     params_by_optim[optim_name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
     torch.save(params_by_optim, './saved/multiobjective_optim/params_tm_{}_by_optim_{}__budget_{}.pt'.format(target_model_name, optim_name, budget))
