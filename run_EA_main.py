@@ -117,9 +117,8 @@ def main(argv):
     # optim_name = 'PSO'
     target_rate = 10.; time_interval = 2800
     model_type = 'GLIF'
-    target_model = 'LIF'
 
-    logger = Logger(log_fname='multiobjective_optimization_{}_{}_budget_{}'.format(model_type, optim_name, budget))
+    logger = Logger(log_fname='multiobjective_optimization_{}_budget_{}'.format(model_type, optim_name, budget))
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
@@ -163,10 +162,10 @@ def main(argv):
     other_params_for_optim = {}
     min_loss_per_exp = []
     for exp_i in range(num_exps):
-        if target_model == 'LIF':
+        if model_type == 'LIF':
             target_model_name = 'lif_ensembles_model_dales_compliant_rand_seed_{}'.format(exp_i)
             target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=exp_i)
-        elif target_model == 'GLIF':
+        elif model_type == 'GLIF':
             target_model_name = 'glif_ensembles_model_dales_compliant_rand_seed_{}'.format(exp_i)
             target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=exp_i)
         else:
