@@ -16,7 +16,7 @@ def main(argv):
     start_seed = 0
     exp_type_str = C.ExperimentType.SanityCheck.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.005; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.05; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     max_train_iters = 50; batch_size = 400; rows_per_train_iter = 2000

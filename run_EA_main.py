@@ -59,7 +59,7 @@ def get_instrum_for(model_type, target_rate, N, target_model, time_interval):
         raise NotImplementedError("model_type not implemented.")
 
 
-def get_multiobjective_loss(model_spike_train, targets, N, tau_vr=100.0, loss_fns=['vrdts', 'frd']):
+def get_multiobjective_loss(model_spike_train, targets, N, tau_vr=100.0, loss_fns=['vrd', 'frd']):
     losses = []
     for lfn in loss_fns:
         losses.append(calculate_loss(output=model_spike_train, target=targets, loss_fn=lfn, N=N, tau_vr=tau_vr).clone().detach().requires_grad_(False).data)
@@ -109,11 +109,13 @@ def pytorch_run_GLIF(rate, w, tau_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
 def main(argv):
     print('Argument List:', str(argv))
 
-    num_exps = 5; budget = 6000
+    num_exps = 5; budget = 7000
     # num_exps = 3; budget = 10
     optim_name = 'CMA'
     # optim_name = 'NGO'
-    target_rate = 10.; time_interval = 2000
+    # optim_name = 'DE'
+    # optim_name = 'PSO'
+    target_rate = 10.; time_interval = 2800
     random_seed = 42
     model_type = 'GLIF'
     target_model = 'LIF'
@@ -239,7 +241,7 @@ def main(argv):
         torch.save(recommended_params.copy(),
                    './saved/multiobjective_optim/fitted_params_{}_optim_{}_budget_{}_exp_{}.pt'.format(
                        target_model_name, optim_name, budget, exp_i))
-        del instrum, optimizer, cur_plot_params, m_params, cur_model, target_model, model_spike_train, target_spike_train
+        del instrum, optimizer, cur_plot_params, m_params, cur_model, model_spike_train, target_spike_train
 
     params_by_optim[optim_name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
     torch.save(params_by_optim, './saved/multiobjective_optim/params_tm_{}_by_optim_{}__budget_{}.pt'.format(target_model_name, optim_name, budget))
