@@ -109,8 +109,8 @@ def pytorch_run_GLIF(rate, w, tau_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
 def main(argv):
     print('Argument List:', str(argv))
 
-    num_exps = 5; budget = 7000
-    # num_exps = 3; budget = 10
+    # num_exps = 5; budget = 7000
+    num_exps = 3; budget = 500
     optim_name = 'CMA'
     # optim_name = 'NGO'
     # optim_name = 'DE'

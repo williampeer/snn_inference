@@ -16,13 +16,13 @@ def main(argv):
     start_seed = 0
     exp_type_str = C.ExperimentType.SanityCheck.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.05; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.02; N_exp = 5; tau_van_rossum = 10.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    max_train_iters = 50; batch_size = 400; rows_per_train_iter = 2000
+    max_train_iters = 15; batch_size = 400; rows_per_train_iter = 2000
     # loss_fn = 'frd'
-    loss_fn = 'vrd'
-    # loss_fn = 'vrdts'
+    # loss_fn = 'vrd'
+    loss_fn = 'vrdts'
     # loss_fn = 'vrdfrd'
     # loss_fn = 'vrdtsfrd'
     # loss_fn = 'vrdsp'
