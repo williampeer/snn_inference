@@ -5,7 +5,7 @@ from torch import FloatTensor as FT
 
 class GLIF_unbounded(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-62., -46.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [60., 68.],
+    parameter_init_intervals = {'E_L': [-62., -46.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [50., 60.],
                                 'f_v': [0.25, 0.35], 'f_I': [0.2, 0.6], 'delta_theta_s': [10., 12.], 'b_s': [0.35, 0.45],
                                 'a_v': [0.45, 0.55], 'b_v': [0.45, 0.55], 'theta_inf': [-16., -20.], 'delta_V': [10., 12.],
                                 'I_A': [1.2, 2.]}
@@ -82,7 +82,7 @@ class GLIF_unbounded(nn.Module):
         self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 
-        self.R_I = nn.Parameter(FT(R_I).clamp(25., 68.), requires_grad=True)
+        self.R_I = nn.Parameter(FT(R_I).clamp(25., 64.), requires_grad=True)
 
 
     def reset(self):

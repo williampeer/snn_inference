@@ -30,7 +30,7 @@ def get_instrum_for(model_type, target_rate, N, target_model, time_interval):
                                     E_L=ng.p.Array(init=init_params['E_L']).set_bounds(-75., -40.),
                                     tau_m=ng.p.Array(init=init_params['tau_m']).set_bounds(1.1, 3.),
                                     G=ng.p.Array(init=init_params['G']).set_bounds(0.1, 0.95),
-                                    R_I=ng.p.Array(init=init_params['R_I']).set_bounds(50., 68.),
+                                    R_I=ng.p.Array(init=init_params['R_I']).set_bounds(40., 64.),
                                     f_v=ng.p.Array(init=init_params['f_v']).set_bounds(0.01, 0.99),
                                     f_I=ng.p.Array(init=init_params['f_I']).set_bounds(0.01, 0.99),
 
@@ -232,7 +232,7 @@ def main(argv):
 
         plot_spiketrains_side_by_side(model_spike_train, target_spike_train, exp_type='multiobjective_optim', uuid=UUID,
                                       title='Spike trains model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
-                                      fname='spike_trains_optim_{}_exp_num_{}'.format(optim_name, exp_i))
+                                      fname='spike_trains_{}_optim_{}_exp_num_{}'.format(model_type, optim_name, exp_i))
 
         torch.save(recommended_params.copy(),
                    './saved/multiobjective_optim/fitted_params_{}_optim_{}_budget_{}_exp_{}.pt'.format(
