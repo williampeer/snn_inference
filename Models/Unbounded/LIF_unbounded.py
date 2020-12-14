@@ -16,13 +16,13 @@ class LIF_unbounded(nn.Module):
         if parameters:
             for key in parameters.keys():
                 if key == 'tau_m':
-                    tau_m = FT(torch.ones((N,)) * parameters[key])
+                    tau_m = FT(parameters[key])
                 elif key == 'E_L':
-                    E_L = FT(torch.ones((N,)) * parameters[key])
+                    E_L = FT(parameters[key])
                 elif key == 'tau_g':
-                    tau_g = FT(torch.ones((N,)) * parameters[key])
+                    tau_g = FT(parameters[key])
                 elif key == 'R_I':
-                    R_I = FT(torch.ones((N,)) * parameters[key])
+                    R_I = FT(parameters[key])
                 elif key == 'w_mean':
                     w_mean = float(parameters[key])
                 elif key == 'w_var':
