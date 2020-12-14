@@ -7,9 +7,9 @@ from model_util import generate_model_data
 # torch.backends.cudnn.benchmark = False
 
 
-def draw_from_uniform(parameters, parameter_intervals, N):
+def draw_from_uniform(parameter_intervals, N):
     new_dict = {}
-    for i, k in enumerate(parameters):
+    for i, k in enumerate(parameter_intervals):
         low = parameter_intervals[k][0]; high = parameter_intervals[k][1]
         new_dict[k] = torch.FloatTensor(np.random.uniform(low, high, N))
     return new_dict
@@ -39,18 +39,39 @@ def zip_dicts(a, b):
     return res
 
 
+def zip_tensor_dicts(a, b):
+    res = a.copy()
+    for key in b.keys():
+        if key in a.keys():
+            res[key] = torch.cat((res[key], b[key]))
+        else:
+            res[key] = b[key]
+    return res
+
+
+# Assumes rate in Hz
 def poisson_input(rate, t, N):
-    return torch.poisson(rate * torch.ones((int(t), N)))  # t x N
+    return torch.poisson((rate/1000.) * torch.ones((int(t), N))).clamp(0., 1.)  # t x N
+
+
+def release_computational_graph(model, rate_parameter, inputs=None):
+    model.reset()
+    if hasattr(rate_parameter, 'grad'):
+        rate_parameter.grad = None
+        # print('debug in hasattr(rate_parameter, \'grad\')')
+    if inputs is not None and hasattr(inputs, 'grad'):
+        inputs.grad = None
+        # print('debug in inputs is not None and hasattr(inputs, \'grad\')')
 
 
 def generate_synthetic_data(gen_model, poisson_rate, t):
     gen_input = poisson_input(rate=poisson_rate, t=t, N=gen_model.N)
-    _, gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)
+    gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)
     # for gen spiketrain this may be thresholded to binary values:
     gen_spiketrain = torch.round(gen_spiketrain)
-    del gen_input
+    gen_spiketrain.grad = None
 
-    return gen_spiketrain.clone().detach()
+    return gen_spiketrain.clone().detach(), gen_input.clone().detach()
 
 
 def train_test_split(data, train_test_split_factor=0.85):

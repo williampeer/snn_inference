@@ -23,7 +23,7 @@ def load_sparse_data(full_path):
     return node_indices, spike_times, spike_indices
 
 
-def convert_to_sparse_vectors(spiketrain, t_offset):
+def convert_to_sparse_vectors(spiketrain, t_offset=0.):
     assert spiketrain.shape[0] > spiketrain.shape[1], "assuming bins x nodes (rows as timesteps). spiketrain.shape: {}".format(spiketrain.shape)
 
     spike_indices = np.array([], dtype='int8')
@@ -31,8 +31,8 @@ def convert_to_sparse_vectors(spiketrain, t_offset):
     for ms_i in range(spiketrain.shape[0]):
         for node_i in range(spiketrain.shape[1]):
             if spiketrain[ms_i][node_i] != 0:
-                assert spiketrain[ms_i][node_i] in range(10), \
-                    "element out of range(0,5). row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
+                assert spiketrain[ms_i][node_i] <= 1, \
+                    "element out of range. row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
                 # assert spiketrain[ms_i][node_i] == 1, \
                 #     "found element that was neither 0 nor 1. row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
                 spike_times = np.append(spike_times, np.float32(float(ms_i) +t_offset))
@@ -129,17 +129,6 @@ def transform_to_population_spiking(spikes, kernel_indices):
 #     return satisfactory_quality_node_indices, spike_times, spike_indices, qual, states
 
 
-def convert_brian_spike_train_dict_to_boolean_matrix(brian_spike_train, t_max):
-    keys = brian_spike_train.keys()
-    res = np.zeros((int(t_max), len(keys)))
-    for i, k in enumerate(keys):
-        node_spike_times = brian_spike_train[k]
-        import brian2
-        node_spike_times = np.array(node_spike_times/brian2.msecond, dtype=np.int)
-        res[node_spike_times, i] = 1.
-    return res
-
-
 def convert_sparse_spike_train_to_matrix(spike_times, node_indices, unique_node_indices):
     res = {}
     for j in range(len(unique_node_indices)):
@@ -149,17 +138,20 @@ def convert_sparse_spike_train_to_matrix(spike_times, node_indices, unique_node_
     return res
 
 
-def get_spike_times_list(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):
+def get_spike_times_list(index_last_step, advance_by_t_steps, spike_times, spike_indices, num_nodes):
     res = []
-    for _ in range(len(node_numbers)):
+    for _ in range(num_nodes):
         res.append([])
 
-    prev_spike_time = spike_times[index_last_step]
+    if index_last_step == 0:
+        prev_spike_time = 0
+    else:
+        prev_spike_time = spike_times[index_last_step]
 
     next_step = index_last_step+1
-    while spike_times[next_step] < prev_spike_time + advance_by_t_steps:
+    while next_step < len(spike_times) and spike_times[next_step] < prev_spike_time + advance_by_t_steps:
         cur_node_index = int(spike_indices[next_step])
-        res[cur_node_index] = np.concatenate((res[cur_node_index], spike_times[next_step]))
+        res[cur_node_index] = np.concatenate((res[cur_node_index], [spike_times[next_step]]))
         next_step = next_step+1
 
     return next_step, res
