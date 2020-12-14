@@ -19,10 +19,10 @@ def main(argv):
     learn_rate = 0.02; N_exp = 5; tau_van_rossum = 10.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    max_train_iters = 15; batch_size = 400; rows_per_train_iter = 2000
-    # loss_fn = 'frd'
+    max_train_iters = 30; batch_size = 400; rows_per_train_iter = 2000
+    loss_fn = 'frd'
     # loss_fn = 'vrd'
-    loss_fn = 'vrdts'
+    # loss_fn = 'vrdts'
     # loss_fn = 'vrdfrd'
     # loss_fn = 'vrdtsfrd'
     # loss_fn = 'vrdsp'
