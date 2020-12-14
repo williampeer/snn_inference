@@ -71,8 +71,8 @@ def pytorch_run_LIF(rate, w, tau_m, tau_g, R_I, E_L, target_model, target_rate, 
                             'E_L': np.array(E_L, dtype='float32'),
                             'preset_weights': np.array(w, dtype='float32')})
 
-    model_spike_train = generate_synthetic_data(model, rate, time_interval)
-    target_spike_train = generate_synthetic_data(target_model, target_rate, time_interval)
+    model_spike_train, _ = generate_synthetic_data(model, rate, time_interval)
+    target_spike_train, _ = generate_synthetic_data(target_model, target_rate, time_interval)
 
     release_computational_graph(model, rate, model_spike_train)
     release_computational_graph(target_model, target_rate, target_spike_train)
