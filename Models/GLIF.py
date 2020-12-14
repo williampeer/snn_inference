@@ -7,13 +7,13 @@ from Models.TORCH_CUSTOM import static_clamp_for
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-62., -46.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [60., 68.],
+    parameter_init_intervals = {'E_L': [-62., -46.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [50., 60.],
                                 'f_v': [0.25, 0.35], 'f_I': [0.2, 0.6], 'delta_theta_s': [10., 12.], 'b_s': [0.35, 0.45],
-                                'a_v': [0.45, 0.55], 'b_v': [0.45, 0.55], 'theta_inf': [-16., -20.], 'delta_V': [10., 12.],
+                                'a_v': [0.45, 0.55], 'b_v': [0.45, 0.55], 'theta_inf': [-13., -16.], 'delta_V': [8., 14.],
                                 'I_A': [1.2, 2.]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
-                 neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
+                 neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(GLIF, self).__init__()
 
         if parameters is not None:
@@ -130,7 +130,7 @@ class GLIF(nn.Module):
 
 
     def register_backward_clamp_hooks(self):
-        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 25., 64., self.R_I))
+        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 25., 60., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
         self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
@@ -140,8 +140,8 @@ class GLIF(nn.Module):
         self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_s))
         self.a_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.a_v))
         self.b_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_v))
-        self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -25., 0., self.theta_inf))
-        self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 0.01, 35., self.delta_V))
+        self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -20., -10., self.theta_inf))
+        self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
         self.I_A.register_hook(lambda grad: static_clamp_for(grad, 0.5, 3., self.I_A))
 
         # row per neuron

@@ -10,7 +10,7 @@ class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'R_I', 'tau_g']
     parameter_init_intervals = {'E_L': [-55., -45.], 'tau_m': [1.3, 2.3], 'R_I': [135., 140.], 'tau_g': [2., 3.5]}
 
-    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF, self).__init__()
         # self.device = device
         assert len(neuron_types) == N, "neuron_types should be of length N"

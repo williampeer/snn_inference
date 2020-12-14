@@ -7,13 +7,13 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_vector_bounds
 
 class GLIF_dynamic_R_I(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-62., -46.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [60., 70.],
+    parameter_init_intervals = {'E_L': [-62., -46.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [50., 60.],
                                 'f_v': [0.25, 0.35], 'f_I': [0.2, 0.6], 'delta_theta_s': [10., 12.], 'b_s': [0.35, 0.45],
-                                'a_v': [0.45, 0.55], 'b_v': [0.45, 0.55], 'theta_inf': [-16., -20.], 'delta_V': [10., 12.],
+                                'a_v': [0.45, 0.55], 'b_v': [0.45, 0.55], 'theta_inf': [-13., -16.], 'delta_V': [8., 14.],
                                 'I_A': [1.2, 2.]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
-                 neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1])):
+                 neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         # use_cuda = torch.cuda.is_available()
         # device = torch.device("cuda" if use_cuda else "cpu")
 
@@ -88,8 +88,8 @@ class GLIF_dynamic_R_I(nn.Module):
         self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.9), requires_grad=True)
         self.a_v = nn.Parameter(FT(a_v).clamp(0.01, 0.9), requires_grad=True)
         self.b_v = nn.Parameter(FT(b_v).clamp(0.01, 0.9), requires_grad=True)
-        self.theta_inf = nn.Parameter(FT(theta_inf).clamp(-25., 0), requires_grad=True)
-        self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
+        self.theta_inf = nn.Parameter(FT(theta_inf).clamp(-20., -10.), requires_grad=True)
+        self.delta_V = nn.Parameter(FT(delta_V).clamp(1., 35.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 
         l, m = self.calc_dynamic_clamp_R_I()

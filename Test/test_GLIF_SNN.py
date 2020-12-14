@@ -6,7 +6,7 @@ from TargetModels import TargetEnsembleModels
 from experiments import poisson_input
 from plot import plot_spiketrains_side_by_side
 
-for random_seed in range(5):
+for random_seed in range(15):
     num_neurons = 12
     # params_model = draw_from_uniform(GLIF.parameter_init_intervals, num_neurons)
     # snn = GLIF(parameters=params_model, N=num_neurons)

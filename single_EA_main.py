@@ -29,7 +29,7 @@ def get_instrum_for(model_type, target_rate, N, target_model, time_interval):
                                     E_L=ng.p.Array(init=init_params['E_L']).set_bounds(-75., -40.),
                                     tau_m=ng.p.Array(init=init_params['tau_m']).set_bounds(1.1, 3.),
                                     G=ng.p.Array(init=init_params['G']).set_bounds(0.1, 0.95),
-                                    R_I=ng.p.Array(init=init_params['R_I']).set_bounds(40., 64.),
+                                    R_I=ng.p.Array(init=init_params['R_I']).set_bounds(40., 60.),
                                     f_v=ng.p.Array(init=init_params['f_v']).set_bounds(0.01, 0.99),
                                     f_I=ng.p.Array(init=init_params['f_I']).set_bounds(0.01, 0.99),
 
@@ -37,8 +37,8 @@ def get_instrum_for(model_type, target_rate, N, target_model, time_interval):
                                     b_s=ng.p.Array(init=init_params['b_s']).set_bounds(0.01, 0.9),
                                     a_v=ng.p.Array(init=init_params['a_v']).set_bounds(0.01, 0.9),
                                     b_v=ng.p.Array(init=init_params['b_v']).set_bounds(0.01, 0.9),
-                                    theta_inf=ng.p.Array(init=init_params['theta_inf']).set_bounds(-25., 0.),
-                                    delta_V=ng.p.Array(init=init_params['delta_V']).set_bounds(0.01, 35.),
+                                    theta_inf=ng.p.Array(init=init_params['theta_inf']).set_bounds(-20., -10.),
+                                    delta_V=ng.p.Array(init=init_params['delta_V']).set_bounds(1., 35.),
                                     I_A=ng.p.Array(init=init_params['I_A']).set_bounds(0.5, 3.),
 
                                     target_model=target_model,
@@ -106,14 +106,14 @@ def pytorch_run_GLIF(rate, w, tau_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
 def main(argv):
     print('Argument List:', str(argv))
 
-    # num_exps = 5; budget = 7000
-    num_exps = 3; budget = 500
+    num_exps = 5; budget = 10000
+    # num_exps = 3; budget = 500
     optim_name = 'CMA'
     # optim_name = 'NGO'
     # optim_name = 'DE'
     # optim_name = 'PSO'
     target_rate = 10.; time_interval = 2800
-    model_type = 'GLIF'
+    model_type = 'LIF'
 
     logger = Logger(log_fname='single_objective_optimization_{}_budget_{}'.format(model_type, optim_name, budget))
 
