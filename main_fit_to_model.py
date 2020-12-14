@@ -16,7 +16,7 @@ def main(argv):
     start_seed = 0
     exp_type_str = C.ExperimentType.SanityCheck.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.02; N_exp = 5; tau_van_rossum = 10.0; plot_flag = True
+    learn_rate = 0.02; N_exp = 10; tau_van_rossum = 10.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     max_train_iters = 30; batch_size = 400; rows_per_train_iter = 2000
@@ -86,8 +86,8 @@ def main(argv):
         elif opt in ("-et", "--experiment-type"):
             exp_type_str = args[i]
 
-    for f_i in range(3):
-        models = [LIF, GLIF]
+    for f_i in range(1):
+        models = [LIF, LIF_dynamic_R_I, GLIF, GLIF_dynamic_R_I]
         # models = [LIF]
         # models = [LIF_dynamic_R_I]
         # models = [GLIF]
