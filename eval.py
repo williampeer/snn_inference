@@ -56,6 +56,11 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None):
         loss = spike_metrics.mse(output, target)
     elif loss_fn.__contains__('frd'):
         loss = spike_metrics.firing_rate_distance(output, target)
+    elif loss_fn.__contains__('frdvrd'):
+        loss_frd = spike_metrics.firing_rate_distance(output, target)
+        loss_vrd = spike_metrics.van_rossum_dist(output, target, tau_vr)
+        # assuming both are normalised
+        loss = loss_frd + 0.1 * loss_vrd
     elif loss_fn.__contains__('kldfrd'):
         kld_loss = kl_div(output, target)
         frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
