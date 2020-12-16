@@ -22,12 +22,13 @@ for random_seed in range(15):
     # snn = TargetModels.glif3(N = 12); ext_name = '3'
     # snn = TargetModels.glif_async(N = 12); ext_name = 'glif_async'
     # snn = TargetModels.glif_slower_more_synchronous(N = 12); ext_name = 'glif_slower_more_synchronous'
+    # print(list(snn.parameters())[0])
 
-    inputs = poisson_input(20., t=5000, N=snn.N)  # now assumes rate in Hz
+    inputs = poisson_input(10., t=5000, N=snn.N)  # now assumes rate in Hz
     print('#inputs: {}'.format(inputs.sum()))
     # membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     spikes = model_util.feed_inputs_sequentially_return_spiketrain(snn, inputs)
-    print('#spikes: {}'.format(spikes.sum()))
+    print('#spikes: {}'.format(torch.round(spikes).sum(dim=0)))
     # plot_neuron(membrane_potentials.data, title='GLIF neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_GLIF_poisson_input' + '_' + str(random_seed))
 
     zeros = torch.zeros_like(inputs)
