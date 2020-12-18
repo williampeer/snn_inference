@@ -14,13 +14,14 @@ def main(argv):
 
     # Default values
     start_seed = 0
-    exp_type_str = C.ExperimentType.SanityCheck.name
-    # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.02; N_exp = 10; tau_van_rossum = 10.0; plot_flag = True
+    # exp_type_str = C.ExperimentType.SanityCheck.name
+    exp_type_str = C.ExperimentType.DataDriven.name
+    learn_rate = 0.02; N_exp = 10; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     max_train_iters = 30; batch_size = 400; rows_per_train_iter = 2000
     loss_fn = 'frd'
+    loss_fn = 'frdvrd'
     # loss_fn = 'vrd'
     # loss_fn = 'vrdts'
     # loss_fn = 'vrdfrd'
