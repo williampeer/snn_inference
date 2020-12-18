@@ -62,7 +62,7 @@ def get_instrum_for(model_type, target_rate, N, target_model, time_interval):
 def get_multiobjective_loss(model_spike_train, targets, N, tau_vr=100.0, loss_fns=['vrd', 'frd']):
     losses = []
     for lfn in loss_fns:
-        losses.append(calculate_loss(output=model_spike_train, target=targets, loss_fn=lfn, N=N, tau_vr=tau_vr).clone().detach().requires_grad_(False).data)
+        losses.append(np.float(calculate_loss(output=model_spike_train, target=targets, loss_fn=lfn, N=N, tau_vr=tau_vr).clone().detach().requires_grad_(False).data))
     logger.log('loss_fns: {}, losses: {}'.format(loss_fns, losses))
     return losses
 
