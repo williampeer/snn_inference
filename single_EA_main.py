@@ -113,7 +113,7 @@ def main(argv):
     # optim_name = 'DE'
     # optim_name = 'PSO'
     target_rate = 10.; time_interval = 2800
-    model_type = 'LIF'
+    model_type = 'GLIF'
 
     logger = Logger(log_fname='single_objective_GLIF_v2_optimization_{}_budget_{}'.format(model_type, optim_name, budget))
 

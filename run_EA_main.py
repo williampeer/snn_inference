@@ -15,7 +15,7 @@ from experiments import zip_dicts, draw_from_uniform, generate_synthetic_data, r
 from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
 
 
-logger = Logger(log_fname='torch_EA_multiobjective')
+logger = Logger(log_fname='torch_EA_multiobjective_GLIF_v2')
 
 
 def get_instrum_for(model_type, target_rate, N, target_model, time_interval):
@@ -118,7 +118,7 @@ def main(argv):
     target_rate = 10.; time_interval = 2800
     model_type = 'GLIF'
 
-    logger = Logger(log_fname='multiobjective_optimization_{}_budget_{}'.format(model_type, optim_name, budget))
+    logger = Logger(log_fname='multiobjective_optimization_{}_budget_{}_GLIF_v2'.format(model_type, optim_name, budget))
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
@@ -166,7 +166,7 @@ def main(argv):
             target_model_name = 'lif_ensembles_model_dales_compliant_rand_seed_{}'.format(exp_i)
             target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=exp_i)
         elif model_type == 'GLIF':
-            target_model_name = 'glif_ensembles_model_dales_compliant_rand_seed_{}'.format(exp_i)
+            target_model_name = 'glif_ensembles_model_dales_compliant_rand_seed_{}_GLIF_v2'.format(exp_i)
             target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=exp_i)
         else:
             raise NotImplementedError("Target model not found.")
@@ -231,8 +231,8 @@ def main(argv):
         release_computational_graph(target_model, rate_parameter=target_rate)
 
         plot_spiketrains_side_by_side(model_spike_train, target_spike_train, exp_type='multiobjective_optim', uuid=UUID,
-                                      title='Spike trains model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
-                                      fname='spike_trains_{}_optim_{}_exp_num_{}'.format(model_type, optim_name, exp_i))
+                                      title='Spike trains (Gv2) model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
+                                      fname='spike_trains_{}_optim_{}_exp_num_{}_GLIF_v2'.format(model_type, optim_name, exp_i))
 
         torch.save(recommended_params.copy(),
                    './saved/multiobjective_optim/fitted_params_{}_optim_{}_budget_{}_exp_{}.pt'.format(
