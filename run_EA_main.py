@@ -140,7 +140,7 @@ def main(argv):
         elif opt in ("-mt", "--model-type"):
             model_type = args[i]
         elif opt in ("-tvr", "--tau-vr"):
-            model_type = args[i]
+            tau_vr = args[i]
 
     if optim_name == 'DE':
         optim = ng.optimizers.DE
