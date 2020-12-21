@@ -30,6 +30,7 @@ for random_seed in range(15):
     spikes = model_util.feed_inputs_sequentially_return_spiketrain(snn, inputs)
     print('#spikes: {}'.format(torch.round(spikes).sum(dim=0)))
     # plot_neuron(membrane_potentials.data, title='GLIF neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_GLIF_poisson_input' + '_' + str(random_seed))
+    assert spikes.sum() < 12 * 2 * 10. * 5, "should be less spikes than input rate * 2 per neuron. spikes.sum(): {}".format(spikes.sum())
 
     zeros = torch.zeros_like(inputs)
     # membrane_potentials_zeros, spikes_zeros = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, zeros)

@@ -12,8 +12,8 @@ def glif_ensembles_model_dales_compliant(random_seed, N = 12):
     np.random.seed(random_seed)
 
     pop_size = int(N / 3)
-    params_pop1 = {'tau_m': 2.5, 'G': 0.9, 'E_L': -40., 'delta_theta_s': 8., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 8.,
-                   'f_I': 0.3, 'I_A': 1.2, 'b_v': 0.4, 'a_v': 0.5, 'theta_inf': -18., 'R_I': 59.}
+    params_pop1 = {'tau_m': 2.5, 'G': 0.9, 'E_L': -40., 'delta_theta_s': 10., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 10.,
+                   'f_I': 0.3, 'I_A': 1.2, 'b_v': 0.4, 'a_v': 0.5, 'theta_inf': -18., 'R_I': 58.}
     weights_std = 0.025
     hand_coded_params_pop1 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
@@ -21,16 +21,16 @@ def glif_ensembles_model_dales_compliant(random_seed, N = 12):
                                                 torch.cat([T(pop_size * [0.3]), T(pop_size * [0.2]), T(pop_size * [0.06])])}
                                                 # torch.cat([T(pop_size * [0.0]), T(pop_size * [0.0]), T(pop_size * [0.0])])}
 
-    params_pop2 = {'tau_m': 1.4, 'G': 0.8, 'E_L': -52., 'delta_theta_s': 14., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 12.,
-                   'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.4, 'theta_inf': -18., 'R_I': 58.}
+    params_pop2 = {'tau_m': 1.4, 'G': 0.8, 'E_L': -53., 'delta_theta_s': 14., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 12.,
+                   'f_I': 0.4, 'I_A': 1., 'b_v': 0.5, 'a_v': 0.4, 'theta_inf': -18., 'R_I': 57.}
     hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[.02]), T(4*[.3]), T(4*[0.15])])}
-                                                torch.cat([T(4 * [.03]), T(4 * [.4]), T(4 * [0.4])])}
+                                                torch.cat([T(4 * [.03]), T(4 * [.3]), T(4 * [0.4])])}
                                                 # torch.cat([T(pop_size * [0.0]), T(pop_size * [0.0]), T(pop_size * [0.0])])}
 
-    params_pop3 = {'tau_m': 1.1, 'G': 0.7, 'E_L': -48., 'delta_theta_s': 14., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 14.,
-                   'f_I': 0.3, 'I_A': 1.2, 'b_v': 0.5, 'a_v': 0.4, 'theta_inf': -5., 'R_I': 54.}
+    params_pop3 = {'tau_m': 1.1, 'G': 0.7, 'E_L': -58., 'delta_theta_s': 14., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 14.,
+                   'f_I': 0.3, 'I_A': 1.2, 'b_v': 0.5, 'a_v': 0.4, 'theta_inf': -12., 'R_I': 56.}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4 * [-.4]), T(4 * [-.2]), T(4 * [-0.02])])}
