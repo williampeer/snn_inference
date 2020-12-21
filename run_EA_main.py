@@ -18,7 +18,7 @@ from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_si
 logger = Logger(log_fname='torch_EA_multiobjective_GLIF_v2')
 
 
-def get_instrum_for(model_type, target_rate, N, target_model, time_interval):
+def get_instrum_for(model_type, target_rate, N, target_model, time_interval, tau_vr=100.0):
     inhib_mask = np.ones((12, 12))
     inhib_mask[8:,:] = -1
     rand_ws = np.random.random((N, N)) * inhib_mask
@@ -43,7 +43,8 @@ def get_instrum_for(model_type, target_rate, N, target_model, time_interval):
                                     I_A=ng.p.Array(init=init_params['I_A']).set_bounds(0.5, 3.),
 
                                     target_model=target_model,
-                                    target_rate=target_rate, time_interval=time_interval)
+                                    target_rate=target_rate, time_interval=time_interval,
+                                    tau_vr=tau_vr)
     elif model_type == 'LIF':
         init_params = draw_from_uniform(LIF_unbounded.parameter_init_intervals, N)
         return ng.p.Instrumentation(rate=ng.p.Scalar(init=target_rate).set_bounds(1., 40.),
@@ -54,7 +55,8 @@ def get_instrum_for(model_type, target_rate, N, target_model, time_interval):
                                     R_I=ng.p.Array(init=init_params['R_I']).set_bounds(100., 155.),
 
                                     target_model=target_model,
-                                    target_rate=target_rate, time_interval=time_interval)
+                                    target_rate=target_rate, time_interval=time_interval,
+                                    tau_vr=tau_vr)
     else:
         raise NotImplementedError("model_type not implemented.")
 
@@ -67,7 +69,7 @@ def get_multiobjective_loss(model_spike_train, targets, N, tau_vr=100.0, loss_fn
     return losses
 
 
-def pytorch_run_LIF(rate, w, tau_m, tau_g, R_I, E_L, target_model, target_rate, time_interval=4000):
+def pytorch_run_LIF(rate, w, tau_m, tau_g, R_I, E_L, target_model, target_rate, time_interval=4000, tau_vr=100.0):
     model = LIF_unbounded({ 'tau_m': np.array(tau_m, dtype='float32'),
                             'tau_g': np.array(tau_g, dtype='float32'),
                             'R_I': np.array(R_I, dtype='float32'),
@@ -84,7 +86,7 @@ def pytorch_run_LIF(rate, w, tau_m, tau_g, R_I, E_L, target_model, target_rate, 
 
 
 def pytorch_run_GLIF(rate, w, tau_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta_theta_s, delta_V, theta_inf,
-                     I_A, target_model, target_rate, time_interval=4000):
+                     I_A, target_model, target_rate, time_interval=4000, tau_vr=100.0):
 
     model = GLIF_unbounded({'f_I': np.array(f_I, dtype='float32'), 'tau_m': np.array(tau_m, dtype='float32'),
                             'G': np.array(G, dtype='float32'),
@@ -117,6 +119,7 @@ def main(argv):
     # optim_name = 'PSO'
     target_rate = 10.; time_interval = 2800
     model_type = 'GLIF'
+    tau_vr = 100.0
 
     logger = Logger(log_fname='multiobjective_optimization_{}_budget_{}_GLIF_v2'.format(model_type, optim_name, budget))
 
@@ -135,6 +138,8 @@ def main(argv):
         elif opt in ("-rs", "--random-seed"):
             random_seed = int(args[i])
         elif opt in ("-mt", "--model-type"):
+            model_type = args[i]
+        elif opt in ("-tvr", "--tau-vr"):
             model_type = args[i]
 
     if optim_name == 'DE':
@@ -174,12 +179,12 @@ def main(argv):
         target_parameters = {}
         index_ctr = 0
         for param_i, key in enumerate(target_model.state_dict()):
-            if key not in ['rate', 'w']:
+            if key not in ['rate', 'w', 'tau_vr', 'loss_fns']:
                 target_parameters[index_ctr] = [target_model.state_dict()[key].clone().detach().numpy()]
                 index_ctr += 1
 
         N = 12
-        instrum = get_instrum_for(model_type, target_rate, N, target_model, time_interval)
+        instrum = get_instrum_for(model_type, target_rate, N, target_model, time_interval, tau_vr=tau_vr)
 
         optimizer = optim(parametrization=instrum, budget=budget)
 
@@ -201,7 +206,7 @@ def main(argv):
         cur_plot_params = {}  # TODO: simplify following implementation
         index_ctr = 0
         for p_i, key in enumerate(recommended_params):
-            if key in ['target_model', 'target_rate', 'time_interval']:
+            if key in ['target_model', 'target_rate', 'time_interval', 'tau_vr', 'loss_fns']:
                 pass
             elif key not in ['rate', 'w']:
                 if exp_i == 0:

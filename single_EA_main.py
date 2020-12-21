@@ -177,7 +177,7 @@ def main(argv):
         target_parameters = {}
         index_ctr = 0
         for param_i, key in enumerate(target_model.state_dict()):
-            if key not in ['rate', 'w', 'loss_fn']:
+            if key not in ['rate', 'w', 'loss_fn', 'tau_vr']:
                 target_parameters[index_ctr] = [target_model.state_dict()[key].clone().detach().numpy()]
                 index_ctr += 1
 
