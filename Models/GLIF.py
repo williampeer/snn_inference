@@ -84,7 +84,7 @@ class GLIF(nn.Module):
         self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.9), requires_grad=True)
         self.a_v = nn.Parameter(FT(a_v).clamp(0.01, 0.9), requires_grad=True)
         self.b_v = nn.Parameter(FT(b_v).clamp(0.01, 0.9), requires_grad=True)
-        self.theta_inf = nn.Parameter(FT(theta_inf).clamp(-25., 0), requires_grad=True)
+        self.theta_inf = nn.Parameter(FT(theta_inf).clamp(-25., 0.), requires_grad=True)
         self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 

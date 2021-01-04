@@ -88,8 +88,8 @@ class GLIF_dynamic_R_I(nn.Module):
         self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.9), requires_grad=True)
         self.a_v = nn.Parameter(FT(a_v).clamp(0.01, 0.9), requires_grad=True)
         self.b_v = nn.Parameter(FT(b_v).clamp(0.01, 0.9), requires_grad=True)
-        self.theta_inf = nn.Parameter(FT(theta_inf).clamp(-20., -10.), requires_grad=True)
-        self.delta_V = nn.Parameter(FT(delta_V).clamp(1., 35.), requires_grad=True)
+        self.theta_inf = nn.Parameter(FT(theta_inf).clamp(-25., 0.), requires_grad=True)
+        self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 
         l, m = self.calc_dynamic_clamp_R_I()
@@ -151,7 +151,7 @@ class GLIF_dynamic_R_I(nn.Module):
         self.R_I.register_hook(hook_dynamic_R_I_clamp)
 
         # --------------------------------------
-        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 25., 70., self.R_I))
+        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 25., 60., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
         self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
@@ -161,8 +161,8 @@ class GLIF_dynamic_R_I(nn.Module):
         self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_s))
         self.a_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.a_v))
         self.b_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_v))
-        self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -25., 0., self.theta_inf))
-        self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 0.01, 35., self.delta_V))
+        self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -20., -10., self.theta_inf))
+        self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
         self.I_A.register_hook(lambda grad: static_clamp_for(grad, 0.5, 3., self.I_A))
 
         # row per neuron
