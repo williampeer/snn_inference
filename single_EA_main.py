@@ -108,7 +108,7 @@ def pytorch_run_GLIF(rate, w, tau_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
 def main(argv):
     print('Argument List:', str(argv))
 
-    num_exps = 5; budget = 10000
+    num_exps = 5; budget = 8000
     # num_exps = 3; budget = 5
     optim_name = 'CMA'
     # optim_name = 'NGO'
@@ -119,7 +119,7 @@ def main(argv):
     loss_fn = 'frd'
     tau_vr = 100.0
 
-    logger = Logger(log_fname='single_objective_GLIF_v2_optimization_{}_budget_{}'.format(model_type, optim_name, budget))
+    logger = Logger(log_fname='single_objective_optimization_{}_v3_optim_{}_budget_{}'.format(model_type, optim_name, budget))
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
