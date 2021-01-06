@@ -15,7 +15,7 @@ from experiments import zip_dicts, draw_from_uniform, generate_synthetic_data, r
 from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
 
 
-logger = Logger(log_fname='torch_EA_multiobjective_GLIF_v2')
+logger = Logger(log_fname='torch_EA_multiobjective_GLIF_v3')
 
 
 def get_instrum_for(model_type, target_rate, N, target_model, time_interval, tau_vr=100.0):
