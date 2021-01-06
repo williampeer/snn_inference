@@ -94,7 +94,8 @@ def main(argv):
         # models = [LIF_dynamic_R_I]
         # models = [GLIF]
         # models = [GLIF_dynamic_R_I]
-        models = [GLIF, GLIF_dynamic_R_I]
+        models = [LIF, LIF_dynamic_R_I]
+        # models = [GLIF, GLIF_dynamic_R_I]
         # models = [LIF, LIF_dynamic_R_I, GLIF, GLIF_dynamic_R_I]
         # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         for m_class in models:
