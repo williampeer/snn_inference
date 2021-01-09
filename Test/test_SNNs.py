@@ -18,8 +18,10 @@ for random_seed in range(15):
     # free_parameters = {'w_mean': 0.2, 'w_var': 0.3}
     # snn = GLIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
     # snn = TargetEnsembleModels.glif_ensembles_model(random_seed=random_seed, N = 12); ext_name = 'ensembles_1'
-    snn = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12); ext_name = 'ensembles_1_dales_GLIF'
-    # snn = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12); ext_name = 'ensembles_1_dales_LIF'
+    snn = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+    ext_name = 'ensembles_{}_dales_GLIF'.format(random_seed)
+    # snn = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+    # ext_name = 'ensembles_{}_dales_LIF'.format(random_seed)
     # snn = TargetModels.glif1(N = 12); ext_name = '1'
     # snn = TargetModels.glif1_2(N = 12); ext_name = '1_2'
     # snn = TargetModels.glif2(N = 12); ext_name = '2'
@@ -28,7 +30,8 @@ for random_seed in range(15):
     # snn = TargetModels.glif_slower_more_synchronous(N = 12); ext_name = 'glif_slower_more_synchronous'
     # print(list(snn.parameters())[0])
 
-    inputs = poisson_input(12., t=12000, N=snn.N)  # rate in Hz
+    rate = 12.
+    inputs = poisson_input(rate, t=12000, N=snn.N)  # rate in Hz
     print('#inputs: {}'.format(inputs.sum()))
     # membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     spikes = model_util.feed_inputs_sequentially_return_spiketrain(snn, inputs)
@@ -41,7 +44,8 @@ for random_seed in range(15):
     spikes_zeros = model_util.feed_inputs_sequentially_return_spiketrain(snn, zeros)
     # plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()), fname_ext='test_GLIF_no_input'  + '_' + str(random_seed))
 
-    plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_GLIF', title='Test GLIF spiketrains random and zero input', legend=['Poisson input', 'No input'])
+    plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_SNNs', title='{} random ({} Hz) and zero input'.format(ext_name, rate),
+                                  legend=['Poisson input', 'No input'])
 
     tau_vr = torch.tensor(4.0)
     loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)

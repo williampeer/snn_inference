@@ -115,18 +115,18 @@ def transform_to_population_spiking(spikes, kernel_indices):
     return torch.min(convolved_spikes, torch.tensor(1.0))
 
 
-# def load_sparse_data_matlab_format(fname):
-#     exp_data = sio.loadmat(prefix + path + fname)['DATA']
-#
-#     # Custom Matlab-compatible format
-#     spike_indices = exp_data['clu'][0][0]  # index of the spiking neurons
-#     spike_times = exp_data['res'][0][0]  # spike times
-#     qual = exp_data['qual'][0][0]  # neuronal decoding quality
-#     states = exp_data['score'][0][0]  # state
-#
-#     satisfactory_quality_node_indices = np.unique(spike_indices)
-#
-#     return satisfactory_quality_node_indices, spike_times, spike_indices, qual, states
+def load_sparse_data_matlab_format(fname):
+    exp_data = sio.loadmat(prefix + 'repos/snn_inference/data/' + fname)['DATA']
+
+    # Custom Matlab-compatible format
+    spike_indices = exp_data['clu'][0][0]  # index of the spiking neurons
+    spike_times = exp_data['res'][0][0]  # spike times
+    qual = exp_data['qual'][0][0]  # neuronal decoding quality
+    states = exp_data['score'][0][0]  # state
+
+    satisfactory_quality_node_indices = np.unique(spike_indices)
+
+    return satisfactory_quality_node_indices, spike_times, spike_indices, qual, states
 
 
 def convert_sparse_spike_train_to_matrix(spike_times, node_indices, unique_node_indices):
