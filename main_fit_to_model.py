@@ -19,7 +19,7 @@ def main(argv):
     learn_rate = 0.02; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    max_train_iters = 30; batch_size = 400; rows_per_train_iter = 2000
+    max_train_iters = 20; batch_size = 1000; rows_per_train_iter = 3000
     # loss_fn = 'frdvrda'
     loss_fn = 'frd'
     # loss_fn = 'frdvrd'
@@ -45,7 +45,7 @@ def main(argv):
     optimiser = 'SGD'
     initial_poisson_rate = 10.  # Hz
 
-    evaluate_step = 5
+    evaluate_step = 2
     # evaluate_step = int(max(max_train_iters/10, 1))
     # data_path = None
     # prefix = '/Users/william/data/target_data/'
@@ -90,8 +90,8 @@ def main(argv):
 
     for f_i in range(4):
         # models = [LIF, GLIF, LIF_dynamic_R_I, GLIF_dynamic_R_I]
-        models = [LIF, LIF_dynamic_R_I]
-        # models = [GLIF, GLIF_dynamic_R_I]
+        # models = [LIF, LIF_dynamic_R_I]
+        models = [GLIF, GLIF_dynamic_R_I]
         # models = [LIF, LIF_dynamic_R_I, GLIF, GLIF_dynamic_R_I]
         # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
         for m_class in models:
