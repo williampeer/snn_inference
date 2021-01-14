@@ -45,7 +45,7 @@ def main(argv):
     optimiser = 'SGD'
     initial_poisson_rate = 10.  # Hz
 
-    evaluate_step = 1
+    evaluate_step = 5
     # evaluate_step = int(max(max_train_iters/10, 1))
     # data_path = None
     # prefix = '/Users/william/data/target_data/'

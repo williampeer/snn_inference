@@ -108,7 +108,7 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         converged = False
 
         gen_outputs, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
-                                          t=constants.rows_per_train_iter / 2.)
+                                          t=constants.rows_per_train_iter)
         validation_loss = evaluate_loss(model, inputs=gen_inputs, p_rate=poisson_input_rate.clone().detach(),
                                         target_spiketrain=gen_outputs, label='train i: {}'.format(train_i),
                                         exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
