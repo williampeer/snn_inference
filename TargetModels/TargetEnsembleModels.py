@@ -19,7 +19,7 @@ def glif_ensembles_model_dales_compliant(random_seed, N = 12):
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(pop_size*[0.06]), T(pop_size*[0.03]), T(pop_size*[0.01])])}
                                                 # torch.cat([T(pop_size * [0.2]), T(pop_size * [0.15]), T(pop_size * [0.05])])}
-                                                torch.cat([T(pop_size * [0.35]), T(pop_size * [0.15]), T(pop_size * [0.05])])}
+                                                torch.cat([T(pop_size * [0.3]), T(pop_size * [0.15]), T(pop_size * [0.05])])}
                                                 # torch.cat([T(pop_size * [0.0]), T(pop_size * [0.0]), T(pop_size * [0.0])])}
 
     params_pop2 = {'tau_m': 1.5, 'G': 0.8, 'E_L': -49., 'delta_theta_s': 14., 'b_s': 0.3, 'f_v': 0.14, 'delta_V': 12.,
