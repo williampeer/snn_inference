@@ -10,7 +10,7 @@ class GLIF(nn.Module):
     parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.5, 0.9], 'R_I': [55., 59.],
                                 'f_v': [0.2, 0.4], 'f_I': [0.2, 0.5], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
                                 'a_v': [0.25, 0.45], 'b_v': [0.25, 0.45], 'theta_inf': [-15., -18.], 'delta_V': [8., 14.],
-                                'I_A': [1.1, 1.7]}
+                                'I_A': [1.2, 1.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
                  neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
