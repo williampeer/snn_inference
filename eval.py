@@ -54,7 +54,7 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
         loss = vrd_loss + silent_penalty_term
     elif loss_fn.__contains__('vrd'):
         loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
-    elif loss_fn.__contains__('poisson_nll'):
+    elif loss_fn.__contains__('pnll'):
         loss = poisson_nll_loss(output, target)
     elif loss_fn.__contains__('kl_div'):
         loss = kl_div(output, target)
