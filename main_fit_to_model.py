@@ -49,6 +49,7 @@ def main(argv):
     # evaluate_step = int(max(max_train_iters/10, 1))
     # data_path = None
     # prefix = '/Users/william/data/target_data/'
+    model_type = None
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
@@ -87,16 +88,21 @@ def main(argv):
             start_seed = int(args[i])
         elif opt in ("-et", "--experiment-type"):
             exp_type_str = args[i]
+        elif opt in ("-mt", "--model-type"):
+            model_type = args[i]
 
-    for f_i in range(4):
-        models = [LIF, GLIF, LIF_dynamic_R_I, GLIF_dynamic_R_I]
-        # models = [LIF, LIF_dynamic_R_I]
-        # models = [GLIF, GLIF_dynamic_R_I]
-        # models = [GLIF]
-        # models = [GLIF_dynamic_R_I]
-        # models = [LIF, LIF_dynamic_R_I, GLIF, GLIF_dynamic_R_I]
-        # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
-        for m_class in models:
+    all_models = [LIF, GLIF, LIF_dynamic_R_I, GLIF_dynamic_R_I]
+    models = [LIF, GLIF]
+    # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    if model_type is not None and model_type in str(all_models):
+        for m in all_models:
+            if m.__name__ is model_type:
+                models = [m]
+        if len(models) > 1:
+            print('Did not find supplied model type. Iterating over all implemented models..')
+
+    for m_class in models:
+        for f_i in range(4):
             if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:
                 target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                 target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
