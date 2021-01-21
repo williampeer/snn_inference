@@ -16,14 +16,14 @@ def main(argv):
     start_seed = 0
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.02; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.05; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     max_train_iters = 20; batch_size = 1000; rows_per_train_iter = 3000
     # loss_fn = 'frdvrda'
     loss_fn = 'frd'
-    # loss_fn = 'frdvrd'
     # loss_fn = 'vrd'
+    # loss_fn = 'frdvrd'
     # loss_fn = 'vrdts'
     # loss_fn = 'vrdfrd'
     # loss_fn = 'vrdtsfrd'
@@ -41,8 +41,8 @@ def main(argv):
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 
-    # optimiser = 'Adam'
-    optimiser = 'SGD'
+    optimiser = 'Adam'
+    # optimiser = 'SGD'
     initial_poisson_rate = 10.  # Hz
 
     evaluate_step = 2
@@ -72,7 +72,7 @@ def main(argv):
             tau_van_rossum = float(args[i])
         elif opt in ("-rpti", "--rows-per-training-iteration"):
             rows_per_train_iter = int(args[i])
-        elif opt in ("-optim", "--optimiser"):
+        elif opt in ("-o", "--optimiser"):
             optimiser = str(args[i])
         elif opt in ("-ipr", "--initial-poisson-rate"):
             initial_poisson_rate = float(args[i])
