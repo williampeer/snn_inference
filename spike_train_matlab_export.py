@@ -6,6 +6,7 @@ import torch
 from Dev.pytorch_custom_network_opt import in_place_cast_to_float32
 from IO import save_model_params
 from Models.GLIF import GLIF
+from Models.LIF import LIF
 from TargetModels import TargetEnsembleModels
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_to_sparse_vectors
 from experiments import poisson_input
@@ -22,14 +23,19 @@ def main(argv):
     t = 5 * 60 * 1000
     # poisson_rate = 10.
     # model_path = '/home/william/repos/archives_snn_inference/archive (12)/saved/single_objective_optim/fitted_params_glif_ensembles_seed_1_optim_CMA_loss_fn_vrdfrd_10000_exp_5.pt'
-    model_path = '/home/william/repos/archives_snn_inference/archive'
+    # model_path = '/Users/william/repos/archives_snn_inference/archive 3/saved/01-14_04-50-00-736/LIF_exp_num_0_data_set_None_mean_loss_17.943_uuid_01-14_04-50-00-736.pt'
+    # model_path = '/Users/william/repos/archives_snn_inference/archive 3/saved/01-14_04-50-00-736/LIF_exp_num_1_data_set_None_mean_loss_10.910_uuid_01-14_04-50-00-736.pt'
+    # model_path = '/Users/william/repos/archives_snn_inference/archive 3/saved/01-14_04-50-00-736/LIF_exp_num_2_data_set_None_mean_loss_15.618_uuid_01-14_04-50-00-736.pt'
+    model_path = '/Users/william/repos/archives_snn_inference/archive 3/saved/01-14_04-50-00-736/LIF_exp_num_4_data_set_None_mean_loss_6.865_uuid_01-14_04-50-00-736.pt'
+    # model_path = '/Users/william/repos/archives_snn_inference/archive 3/saved/01-14_04-50-00-736/poisson_rates_per_exp.pt'
     # model_path = ''
 
-    loss_fn = model_path.split('loss_fn_')[1].split('_budget')[0]
-    cur_model_descr = model_path.split('fitted_params_')[1].split('_optim')[0]
-    exp_num = model_path.split('exp_')[1].split('.pt')[0]
-    optim = model_path.split('optim_')[1].split('_loss_fn')[0]
-    lr = ''
+    # loss_fn = model_path.split('loss_fn_')[1].split('_budget')[0]
+    # cur_model_descr = model_path.split('fitted_params_')[1].split('_optim')[0]
+    cur_model_name = model_path.split('_exp_num')[0].split('/')[-1]
+    exp_num = model_path.split('exp_num_')[1].split('_data_set')[0]
+    # optim = model_path.split('optim_')[1].split('_loss_fn')[0]
+    # lr = ''
 
     for i, opt in enumerate(opts):
         if opt == '-h':
@@ -44,17 +50,11 @@ def main(argv):
         print('No path to load model from specified.')
         sys.exit(1)
 
-    recommended_params = torch.load(model_path)
-    poisson_rate = recommended_params['rate']
-    model_params = recommended_params.copy()
-    del model_params['target_model'], model_params['target_rate'], model_params['time_interval'], model_params['loss_fn'], model_params['rate']
-    model_params['preset_weights'] = model_params['w']
-    in_place_cast_to_float32(model_params)
-    model = GLIF(parameters=model_params)
 
-    # exp_res = torch.load(model_path)
-    # model = exp_res['model']
-    # poisson_rate = exp_res['rate']
+    exp_res = torch.load(model_path)
+    model = exp_res['model']
+    poisson_rate = exp_res['rate']
+    # loss = data['loss']
 
     print('Loaded model.')
 
@@ -78,8 +78,6 @@ def main(argv):
         inputs = gen_input.clone().detach()
         spiketrain = gen_spiketrain.clone().detach()
 
-        save_fname_output = 'fitted_spike_train_{}_{}_{}{}_exp_num_{}'.format(cur_model_descr, optim, loss_fn, lr, exp_num).replace('.', '_') + '.mat'
-        plot_spike_train(spiketrain, 'Plot imported SNN', 'plot_imported_model', fname=save_fname_output)
         cur_input_indices, cur_input_times = convert_to_sparse_vectors(inputs, t_offset=t_i*interval_size)
         input_indices = np.append(input_indices, cur_input_indices)
         input_times = np.append(input_times, cur_input_times)
@@ -93,8 +91,11 @@ def main(argv):
     # save_fname_input = 'poisson_inputs_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
     # save_spiketrain_in_sparse_matlab_format(fname=save_fname_input, spike_indices=input_indices, spike_times=input_times)
     # save_model_params(model, fname=save_fname_input.replace('.mat', '_params'))
+    save_fname_output = 'fitted_spike_train_{}_exp_no_{}_rate_{}'.format(cur_model_name, exp_num, poisson_rate).replace('.', '_')
+    plot_spike_train(spiketrain, 'Plot imported SNN', 'plot_imported_model', fname=save_fname_output)
 
-    save_fname_output = 'fitted_spike_train_{}_{}_{}{}_exp_num_{}'.format(cur_model_descr, optim, loss_fn, lr, exp_num).replace('.', '_') + '.mat'
+    # save_fname_output = 'fitted_spike_train_{}_{}_{}{}_exp_num_{}'.format(cur_model_descr, optim, loss_fn, lr, exp_num).replace('.', '_') + '.mat'
+    save_fname_output = 'fitted_spike_train_{}_exp_no_{}_rate_{}'.format(cur_model_name, exp_num, poisson_rate).replace('.', '_') + '.mat'
     save_spiketrain_in_sparse_matlab_format(fname=save_fname_output, spike_indices=spike_indices, spike_times=spike_times)
     save_model_params(model, fname=save_fname_output.replace('.mat', '_params'))
 
