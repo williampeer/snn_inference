@@ -30,8 +30,8 @@ def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiket
     plt.title(title)
 
     full_path = './figures/' + exp_type + '/' + uuid + '/'
-    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
-    IO.makedir_if_not_exists(full_path)
+    # IO.makedir_if_not_exists('/figures/' + exp_type + '/')
+    # IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
     # plt.show()
     plt.close()

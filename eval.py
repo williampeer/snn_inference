@@ -52,8 +52,6 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
         vrd_loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
         silent_penalty_term = spike_metrics.silent_penalty_term(output, target)
         loss = vrd_loss + silent_penalty_term
-    elif loss_fn.__contains__('vrd'):
-        loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
     elif loss_fn.__contains__('pnll'):
         loss = poisson_nll_loss(output, target)
     elif loss_fn.__contains__('kl_div'):
@@ -72,6 +70,8 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
         loss_vrd = spike_metrics.van_rossum_dist(output, target, tau_vr)
         # assuming both are normalised
         loss = 0.9 * loss_frd + 0.1 * loss_vrd
+    elif loss_fn.__contains__('vrd'):
+        loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
     elif loss_fn.__contains__('frd'):
         loss = spike_metrics.firing_rate_distance(output, target)
     elif loss_fn.__contains__('kldfrd'):
