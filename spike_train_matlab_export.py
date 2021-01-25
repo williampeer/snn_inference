@@ -14,42 +14,105 @@ from model_util import generate_model_data
 from plot import plot_spike_train
 
 
-def main(argv):
-    print('Argument List:', str(argv))
+def main():
+    # model_path = '/Users/william/repos/archives_snn_inference/archive 7/saved/'
+    # model_path = ''
 
-    opts = [opt for opt in argv if opt.startswith("-")]
-    args = [arg for arg in argv if not arg.startswith("-")]
+    model_paths = []
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-04-49-336/LIF_exp_num_0_data_set_None_mean_loss_65.547_uuid_01-20_15-04-49-336.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-04-49-336/LIF_exp_num_1_data_set_None_mean_loss_61.167_uuid_01-20_15-04-49-336.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-04-49-336/LIF_exp_num_2_data_set_None_mean_loss_38.016_uuid_01-20_15-04-49-336.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-04-49-336/LIF_exp_num_3_data_set_None_mean_loss_39.588_uuid_01-20_15-04-49-336.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-04-49-336/LIF_exp_num_4_data_set_None_mean_loss_27.772_uuid_01-20_15-04-49-336.pt']
+    #
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-30-30-455/LIF_exp_num_0_data_set_None_mean_loss_30.836_uuid_01-21_22-30-30-455.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-30-30-455/LIF_exp_num_1_data_set_None_mean_loss_13.194_uuid_01-21_22-30-30-455.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-30-30-455/LIF_exp_num_2_data_set_None_mean_loss_31.775_uuid_01-21_22-30-30-455.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-30-30-455/LIF_exp_num_3_data_set_None_mean_loss_18.227_uuid_01-21_22-30-30-455.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-30-30-455/LIF_exp_num_4_data_set_None_mean_loss_14.051_uuid_01-21_22-30-30-455.pt']
+    #
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_06-07-29-245/LIF_exp_num_0_data_set_None_mean_loss_317.612_uuid_01-23_06-07-29-245.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_06-07-29-245/LIF_exp_num_1_data_set_None_mean_loss_54.696_uuid_01-23_06-07-29-245.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_06-07-29-245/LIF_exp_num_2_data_set_None_mean_loss_50.540_uuid_01-23_06-07-29-245.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_06-07-29-245/LIF_exp_num_3_data_set_None_mean_loss_71.706_uuid_01-23_06-07-29-245.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_06-07-29-245/LIF_exp_num_4_data_set_None_mean_loss_59.141_uuid_01-23_06-07-29-245.pt']
+
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-06-33-420/LIF_exp_num_0_data_set_None_mean_loss_6.120_uuid_01-20_15-06-33-420.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-06-33-420/LIF_exp_num_1_data_set_None_mean_loss_4.918_uuid_01-20_15-06-33-420.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-06-33-420/LIF_exp_num_2_data_set_None_mean_loss_5.139_uuid_01-20_15-06-33-420.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-06-33-420/LIF_exp_num_3_data_set_None_mean_loss_5.081_uuid_01-20_15-06-33-420.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-06-33-420/LIF_exp_num_4_data_set_None_mean_loss_5.075_uuid_01-20_15-06-33-420.pt']
+    #
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_16-48-38-729/LIF_exp_num_0_data_set_None_mean_loss_5.367_uuid_01-21_16-48-38-729.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_16-48-38-729/LIF_exp_num_1_data_set_None_mean_loss_3.487_uuid_01-21_16-48-38-729.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_16-48-38-729/LIF_exp_num_2_data_set_None_mean_loss_3.918_uuid_01-21_16-48-38-729.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_16-48-38-729/LIF_exp_num_3_data_set_None_mean_loss_4.155_uuid_01-21_16-48-38-729.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_16-48-38-729/LIF_exp_num_4_data_set_None_mean_loss_4.461_uuid_01-21_16-48-38-729.pt']
+    #
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_18-58-47-549/LIF_exp_num_0_data_set_None_mean_loss_5.757_uuid_01-22_18-58-47-549.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_18-58-47-549/LIF_exp_num_1_data_set_None_mean_loss_4.164_uuid_01-22_18-58-47-549.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_18-58-47-549/LIF_exp_num_2_data_set_None_mean_loss_4.561_uuid_01-22_18-58-47-549.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_18-58-47-549/LIF_exp_num_3_data_set_None_mean_loss_4.804_uuid_01-22_18-58-47-549.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_18-58-47-549/LIF_exp_num_4_data_set_None_mean_loss_4.790_uuid_01-22_18-58-47-549.pt']
+
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-05-16-907/LIF_exp_num_0_data_set_None_mean_loss_52.921_uuid_01-20_15-05-16-907.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-05-16-907/LIF_exp_num_1_data_set_None_mean_loss_38.483_uuid_01-20_15-05-16-907.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-05-16-907/LIF_exp_num_2_data_set_None_mean_loss_49.349_uuid_01-20_15-05-16-907.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-05-16-907/LIF_exp_num_3_data_set_None_mean_loss_39.583_uuid_01-20_15-05-16-907.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-05-16-907/LIF_exp_num_4_data_set_None_mean_loss_37.063_uuid_01-20_15-05-16-907.pt']
+
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_15-38-22-857/LIF_exp_num_0_data_set_None_mean_loss_43.225_uuid_01-21_15-38-22-857.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_15-38-22-857/LIF_exp_num_1_data_set_None_mean_loss_15.598_uuid_01-21_15-38-22-857.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_15-38-22-857/LIF_exp_num_2_data_set_None_mean_loss_34.582_uuid_01-21_15-38-22-857.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_15-38-22-857/LIF_exp_num_3_data_set_None_mean_loss_32.154_uuid_01-21_15-38-22-857.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_15-38-22-857/LIF_exp_num_4_data_set_None_mean_loss_22.386_uuid_01-21_15-38-22-857.pt']
+
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_16-37-23-061/LIF_exp_num_0_data_set_None_mean_loss_82.193_uuid_01-22_16-37-23-061.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_16-37-23-061/LIF_exp_num_1_data_set_None_mean_loss_39.025_uuid_01-22_16-37-23-061.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_16-37-23-061/LIF_exp_num_2_data_set_None_mean_loss_62.308_uuid_01-22_16-37-23-061.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_16-37-23-061/LIF_exp_num_3_data_set_None_mean_loss_40.546_uuid_01-22_16-37-23-061.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_16-37-23-061/LIF_exp_num_4_data_set_None_mean_loss_54.480_uuid_01-22_16-37-23-061.pt']
+
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_18-54-27-129/LIF_exp_num_0_data_set_None_mean_loss_51.368_uuid_01-23_18-54-27-129.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_18-54-27-129/LIF_exp_num_1_data_set_None_mean_loss_29.710_uuid_01-23_18-54-27-129.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_18-54-27-129/LIF_exp_num_2_data_set_None_mean_loss_45.786_uuid_01-23_18-54-27-129.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_18-54-27-129/LIF_exp_num_3_data_set_None_mean_loss_36.853_uuid_01-23_18-54-27-129.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_18-54-27-129/LIF_exp_num_4_data_set_None_mean_loss_38.116_uuid_01-23_18-54-27-129.pt']
+
+    for mp in model_paths:
+        load_and_export_sim_data(mp, optim='')
+
+
+def load_and_export_sim_data(model_path, optim):
+    # print('Argument List:', str(argv))
+
+    # opts = [opt for opt in argv if opt.startswith("-")]
+    # args = [arg for arg in argv if not arg.startswith("-")]
 
     t = 5 * 60 * 1000
-    # poisson_rate = 10.
-    # model_path = '/home/william/repos/archives_snn_inference/archive (12)/saved/single_objective_optim/fitted_params_glif_ensembles_seed_1_optim_CMA_loss_fn_vrdfrd_10000_exp_5.pt'
-    # model_path = '/Users/william/repos/archives_snn_inference/archive 3/saved/01-14_04-50-00-736/LIF_exp_num_0_data_set_None_mean_loss_17.943_uuid_01-14_04-50-00-736.pt'
-    # model_path = '/Users/william/repos/archives_snn_inference/archive 3/saved/01-14_04-50-00-736/LIF_exp_num_1_data_set_None_mean_loss_10.910_uuid_01-14_04-50-00-736.pt'
-    # model_path = '/Users/william/repos/archives_snn_inference/archive 3/saved/01-14_04-50-00-736/LIF_exp_num_2_data_set_None_mean_loss_15.618_uuid_01-14_04-50-00-736.pt'
-    model_path = '/Users/william/repos/archives_snn_inference/archive 3/saved/01-14_04-50-00-736/LIF_exp_num_4_data_set_None_mean_loss_6.865_uuid_01-14_04-50-00-736.pt'
-    # model_path = '/Users/william/repos/archives_snn_inference/archive 3/saved/01-14_04-50-00-736/poisson_rates_per_exp.pt'
-    # model_path = ''
 
     # loss_fn = model_path.split('loss_fn_')[1].split('_budget')[0]
     # cur_model_descr = model_path.split('fitted_params_')[1].split('_optim')[0]
     cur_model_name = model_path.split('_exp_num')[0].split('/')[-1]
     exp_num = model_path.split('exp_num_')[1].split('_data_set')[0]
     # optim = model_path.split('optim_')[1].split('_loss_fn')[0]
+    id = optim + '_' + model_path.split('.pt')[0].split('-')[-1]
     # lr = ''
 
-    for i, opt in enumerate(opts):
-        if opt == '-h':
-            print('load_and_export_model_data.py -p <path> -t <time> -r <poisson-rate>')
-            sys.exit()
-        elif opt in ("-p", "--path"):
-            model_path = args[i]
-        elif opt in ("-t", "--time"):
-            t = int(args[i])
 
-    if model_path is None:
-        print('No path to load model from specified.')
-        sys.exit(1)
-
+    # for i, opt in enumerate(opts):
+    #     if opt == '-h':
+    #         print('load_and_export_model_data.py -p <path> -t <time> -r <poisson-rate>')
+    #         sys.exit()
+    #     elif opt in ("-p", "--path"):
+    #         model_path = args[i]
+    #     elif opt in ("-t", "--time"):
+    #         t = int(args[i])
+    #
+    # if model_path is None:
+    #     print('No path to load model from specified.')
+    #     sys.exit(1)
+    # poisson_rate = 10.
 
     exp_res = torch.load(model_path)
     model = exp_res['model']
@@ -91,15 +154,15 @@ def main(argv):
     # save_fname_input = 'poisson_inputs_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
     # save_spiketrain_in_sparse_matlab_format(fname=save_fname_input, spike_indices=input_indices, spike_times=input_times)
     # save_model_params(model, fname=save_fname_input.replace('.mat', '_params'))
-    save_fname_output = 'fitted_spike_train_{}_exp_no_{}_rate_{}'.format(cur_model_name, exp_num, poisson_rate).replace('.', '_')
+    save_fname_output = 'fitted_spike_train_{}_id_{}_exp_no_{}'.format(cur_model_name, id, exp_num).replace('.', '_')
     plot_spike_train(spiketrain, 'Plot imported SNN', 'plot_imported_model', fname=save_fname_output)
 
     # save_fname_output = 'fitted_spike_train_{}_{}_{}{}_exp_num_{}'.format(cur_model_descr, optim, loss_fn, lr, exp_num).replace('.', '_') + '.mat'
-    save_fname_output = 'fitted_spike_train_{}_exp_no_{}_rate_{}'.format(cur_model_name, exp_num, poisson_rate).replace('.', '_') + '.mat'
+    save_fname_output = 'fitted_spike_train_{}_id_{}_exp_no_{}'.format(cur_model_name, id, exp_num).replace('.', '_') + '.mat'
     save_spiketrain_in_sparse_matlab_format(fname=save_fname_output, spike_indices=spike_indices, spike_times=spike_times)
     save_model_params(model, fname=save_fname_output.replace('.mat', '_params'))
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()
     sys.exit(0)
