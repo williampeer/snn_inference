@@ -136,8 +136,9 @@ def run_exp_loop(logger, constants, model_class, target_model):
 
     recovered_param_per_exp = {}; poisson_rate_per_exp = []
     for exp_i in range(constants.start_seed, constants.start_seed+constants.N_exp):
-        torch.manual_seed(exp_i)
-        np.random.seed(exp_i)
+        non_overlapping_offset = constants.start_seed + constants.N_exp + 1
+        torch.manual_seed(non_overlapping_offset + exp_i)
+        np.random.seed(non_overlapping_offset + exp_i)
         target_model.load_state_dict(target_model.state_dict())
 
         num_neurons = int(target_model.v.shape[0])
