@@ -8,6 +8,7 @@
 
 # ----------
 
+# TODO: WIP
 # per exp.:
 # import losses
 # modify plot_losses fn to be for averages and stds
@@ -15,7 +16,7 @@
 
 # ----------
 
-# iff model saved after train iter. #0:
+# iff model saved at train iter. #0:
 #   calc. dist at #0 and #-1 to target. plot/report relative improvement (%?)
 
 

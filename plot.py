@@ -183,6 +183,34 @@ def plot_losses(training_loss, test_loss, uuid, exp_type='default', custom_title
     plt.close()
 
 
+def plot_avg_losses(avg_train_loss, train_loss_std, avg_test_loss, test_loss_std, uuid, exp_type='default', custom_title=False, fname=False):
+    # if not fname:
+    #     fname = 'training_and_test_loss'+IO.dt_descriptor()
+    # data = {'training_loss': training_loss, 'test_loss': test_loss, 'exp_type': exp_type, 'custom_title': custom_title, 'fname': fname}
+    # IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_losses')
+
+    plt.figure()
+    plt.errorbar(x=np.linspace(1, len(avg_train_loss), len(avg_train_loss)), y=avg_train_loss, yerr=train_loss_std)
+    plt.errorbar(x=np.linspace(1, len(avg_test_loss), len(avg_test_loss)), y=avg_test_loss, yerr=test_loss_std)
+
+    plt.legend(['Training loss', 'Test loss'])
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    # plt.xticks(range(len(loss_arr+1)))
+    if custom_title:
+        plt.title(custom_title)
+    else:
+        plt.title('Average training and test loss')
+
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+    plt.savefig(fname=full_path + fname)
+    # plt.show()
+    plt.close()
+
+
 def plot_losses_nodes(batch_loss_per_node, uuid, exp_type='default', custom_title=False, fname=False):
     if not fname:
         fname = 'batch_loss_per_node'+IO.dt_descriptor()

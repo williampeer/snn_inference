@@ -79,40 +79,67 @@ def main():
     # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_18-54-27-129/LIF_exp_num_3_data_set_None_mean_loss_36.853_uuid_01-23_18-54-27-129.pt']
     # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_18-54-27-129/LIF_exp_num_4_data_set_None_mean_loss_38.116_uuid_01-23_18-54-27-129.pt']
 
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-08-07-832/LIF_exp_num_0_data_set_None_mean_loss_16.059_uuid_01-21_22-08-07-832.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-08-07-832/LIF_exp_num_1_data_set_None_mean_loss_16.429_uuid_01-21_22-08-07-832.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-08-07-832/LIF_exp_num_2_data_set_None_mean_loss_19.590_uuid_01-21_22-08-07-832.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-08-07-832/LIF_exp_num_3_data_set_None_mean_loss_13.801_uuid_01-21_22-08-07-832.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-08-07-832/LIF_exp_num_4_data_set_None_mean_loss_12.059_uuid_01-21_22-08-07-832.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-08-07-832/LIF_exp_num_0_data_set_None_mean_loss_16.059_uuid_01-21_22-08-07-832.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-08-07-832/LIF_exp_num_1_data_set_None_mean_loss_16.429_uuid_01-21_22-08-07-832.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-08-07-832/LIF_exp_num_2_data_set_None_mean_loss_19.590_uuid_01-21_22-08-07-832.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-08-07-832/LIF_exp_num_3_data_set_None_mean_loss_13.801_uuid_01-21_22-08-07-832.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_22-08-07-832/LIF_exp_num_4_data_set_None_mean_loss_12.059_uuid_01-21_22-08-07-832.pt']
+    #
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_05-11-39-091/LIF_exp_num_0_data_set_None_mean_loss_60.484_uuid_01-23_05-11-39-091.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_05-11-39-091/LIF_exp_num_1_data_set_None_mean_loss_58.241_uuid_01-23_05-11-39-091.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_05-11-39-091/LIF_exp_num_2_data_set_None_mean_loss_46.015_uuid_01-23_05-11-39-091.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_05-11-39-091/LIF_exp_num_3_data_set_None_mean_loss_44.075_uuid_01-23_05-11-39-091.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_05-11-39-091/LIF_exp_num_4_data_set_None_mean_loss_165.832_uuid_01-23_05-11-39-091.pt']
+    #
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-07-44-795/LIF_exp_num_0_data_set_None_mean_loss_4.951_uuid_01-20_15-07-44-795.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-07-44-795/LIF_exp_num_1_data_set_None_mean_loss_4.954_uuid_01-20_15-07-44-795.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-07-44-795/LIF_exp_num_2_data_set_None_mean_loss_4.967_uuid_01-20_15-07-44-795.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-07-44-795/LIF_exp_num_3_data_set_None_mean_loss_4.631_uuid_01-20_15-07-44-795.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-07-44-795/LIF_exp_num_4_data_set_None_mean_loss_4.150_uuid_01-20_15-07-44-795.pt']
+    #
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_18-12-56-967/LIF_exp_num_0_data_set_None_mean_loss_3.515_uuid_01-21_18-12-56-967.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_18-12-56-967/LIF_exp_num_1_data_set_None_mean_loss_3.565_uuid_01-21_18-12-56-967.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_18-12-56-967/LIF_exp_num_2_data_set_None_mean_loss_3.562_uuid_01-21_18-12-56-967.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_18-12-56-967/LIF_exp_num_3_data_set_None_mean_loss_3.629_uuid_01-21_18-12-56-967.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_18-12-56-967/LIF_exp_num_4_data_set_None_mean_loss_3.239_uuid_01-21_18-12-56-967.pt']
+    #
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_21-37-40-455/LIF_exp_num_0_data_set_None_mean_loss_4.354_uuid_01-22_21-37-40-455.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_21-37-40-455/LIF_exp_num_1_data_set_None_mean_loss_4.304_uuid_01-22_21-37-40-455.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_21-37-40-455/LIF_exp_num_2_data_set_None_mean_loss_4.200_uuid_01-22_21-37-40-455.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_21-37-40-455/LIF_exp_num_3_data_set_None_mean_loss_4.315_uuid_01-22_21-37-40-455.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_21-37-40-455/LIF_exp_num_4_data_set_None_mean_loss_4.048_uuid_01-22_21-37-40-455.pt']
 
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_05-11-39-091/LIF_exp_num_0_data_set_None_mean_loss_60.484_uuid_01-23_05-11-39-091.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_05-11-39-091/LIF_exp_num_1_data_set_None_mean_loss_58.241_uuid_01-23_05-11-39-091.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_05-11-39-091/LIF_exp_num_2_data_set_None_mean_loss_46.015_uuid_01-23_05-11-39-091.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_05-11-39-091/LIF_exp_num_3_data_set_None_mean_loss_44.075_uuid_01-23_05-11-39-091.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-23_05-11-39-091/LIF_exp_num_4_data_set_None_mean_loss_165.832_uuid_01-23_05-11-39-091.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_13-44-20-353/LIF_exp_num_0_data_set_None_mean_loss_25.227_uuid_01-24_13-44-20-353.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_13-44-20-353/LIF_exp_num_1_data_set_None_mean_loss_25.457_uuid_01-24_13-44-20-353.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_13-44-20-353/LIF_exp_num_2_data_set_None_mean_loss_25.986_uuid_01-24_13-44-20-353.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_13-44-20-353/LIF_exp_num_3_data_set_None_mean_loss_19.753_uuid_01-24_13-44-20-353.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_13-44-20-353/LIF_exp_num_4_data_set_None_mean_loss_17.947_uuid_01-24_13-44-20-353.pt']
+    #
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_02-32-43-141/LIF_exp_num_0_data_set_None_mean_loss_4.592_uuid_01-24_02-32-43-141.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_02-32-43-141/LIF_exp_num_1_data_set_None_mean_loss_4.534_uuid_01-24_02-32-43-141.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_02-32-43-141/LIF_exp_num_2_data_set_None_mean_loss_4.640_uuid_01-24_02-32-43-141.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_02-32-43-141/LIF_exp_num_3_data_set_None_mean_loss_4.596_uuid_01-24_02-32-43-141.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_02-32-43-141/LIF_exp_num_4_data_set_None_mean_loss_3.612_uuid_01-24_02-32-43-141.pt']
 
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-07-44-795/LIF_exp_num_0_data_set_None_mean_loss_4.951_uuid_01-20_15-07-44-795.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-07-44-795/LIF_exp_num_1_data_set_None_mean_loss_4.954_uuid_01-20_15-07-44-795.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-07-44-795/LIF_exp_num_2_data_set_None_mean_loss_4.967_uuid_01-20_15-07-44-795.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-07-44-795/LIF_exp_num_3_data_set_None_mean_loss_4.631_uuid_01-20_15-07-44-795.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-07-44-795/LIF_exp_num_4_data_set_None_mean_loss_4.150_uuid_01-20_15-07-44-795.pt']
+    # # lr 0.01
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_03-47-10-327/LIF_exp_num_0_data_set_None_mean_loss_54.980_uuid_01-25_03-47-10-327.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_03-47-10-327/LIF_exp_num_1_data_set_None_mean_loss_39.062_uuid_01-25_03-47-10-327.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_03-47-10-327/LIF_exp_num_2_data_set_None_mean_loss_45.534_uuid_01-25_03-47-10-327.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_03-47-10-327/LIF_exp_num_3_data_set_None_mean_loss_34.986_uuid_01-25_03-47-10-327.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_03-47-10-327/LIF_exp_num_4_data_set_None_mean_loss_34.768_uuid_01-25_03-47-10-327.pt']
 
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_18-12-56-967/LIF_exp_num_0_data_set_None_mean_loss_3.515_uuid_01-21_18-12-56-967.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_18-12-56-967/LIF_exp_num_1_data_set_None_mean_loss_3.565_uuid_01-21_18-12-56-967.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_18-12-56-967/LIF_exp_num_2_data_set_None_mean_loss_3.562_uuid_01-21_18-12-56-967.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_18-12-56-967/LIF_exp_num_3_data_set_None_mean_loss_3.629_uuid_01-21_18-12-56-967.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-21_18-12-56-967/LIF_exp_num_4_data_set_None_mean_loss_3.239_uuid_01-21_18-12-56-967.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_0_data_set_None_mean_loss_40.321_uuid_01-24_15-14-04-415.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_1_data_set_None_mean_loss_33.254_uuid_01-24_15-14-04-415.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_2_data_set_None_mean_loss_37.121_uuid_01-24_15-14-04-415.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_3_data_set_None_mean_loss_36.953_uuid_01-24_15-14-04-415.pt']
+    model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_4_data_set_None_mean_loss_23.412_uuid_01-24_15-14-04-415.pt']
 
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_21-37-40-455/LIF_exp_num_0_data_set_None_mean_loss_4.354_uuid_01-22_21-37-40-455.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_21-37-40-455/LIF_exp_num_1_data_set_None_mean_loss_4.304_uuid_01-22_21-37-40-455.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_21-37-40-455/LIF_exp_num_2_data_set_None_mean_loss_4.200_uuid_01-22_21-37-40-455.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_21-37-40-455/LIF_exp_num_3_data_set_None_mean_loss_4.315_uuid_01-22_21-37-40-455.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 7/saved/01-22_21-37-40-455/LIF_exp_num_4_data_set_None_mean_loss_4.048_uuid_01-22_21-37-40-455.pt']
+    # model_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/01-20_15-07-08-831/'
 
-    # model_path = '/Users/william/repos/archives_snn_inference/archive 7/saved/'
+    # model_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/'
 
     for mp in model_paths:
-        load_and_export_sim_data(mp, optim='Adam')
+        load_and_export_sim_data(mp, optim='SGD')
 
 
 def load_and_export_sim_data(model_path, optim):
