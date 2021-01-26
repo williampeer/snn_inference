@@ -128,18 +128,22 @@ def main():
     # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_03-47-10-327/LIF_exp_num_3_data_set_None_mean_loss_34.986_uuid_01-25_03-47-10-327.pt']
     # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_03-47-10-327/LIF_exp_num_4_data_set_None_mean_loss_34.768_uuid_01-25_03-47-10-327.pt']
 
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_0_data_set_None_mean_loss_40.321_uuid_01-24_15-14-04-415.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_1_data_set_None_mean_loss_33.254_uuid_01-24_15-14-04-415.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_2_data_set_None_mean_loss_37.121_uuid_01-24_15-14-04-415.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_3_data_set_None_mean_loss_36.953_uuid_01-24_15-14-04-415.pt']
-    model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_4_data_set_None_mean_loss_23.412_uuid_01-24_15-14-04-415.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_0_data_set_None_mean_loss_40.321_uuid_01-24_15-14-04-415.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_1_data_set_None_mean_loss_33.254_uuid_01-24_15-14-04-415.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_2_data_set_None_mean_loss_37.121_uuid_01-24_15-14-04-415.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_3_data_set_None_mean_loss_36.953_uuid_01-24_15-14-04-415.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-24_15-14-04-415/LIF_exp_num_4_data_set_None_mean_loss_23.412_uuid_01-24_15-14-04-415.pt']
 
-    # model_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/01-20_15-07-08-831/'
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_11-53-35-101/LIF_exp_num_0_data_set_None_mean_loss_42.144_uuid_01-25_11-53-35-101.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_11-53-35-101/LIF_exp_num_1_data_set_None_mean_loss_18.351_uuid_01-25_11-53-35-101.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_11-53-35-101/LIF_exp_num_2_data_set_None_mean_loss_38.188_uuid_01-25_11-53-35-101.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_11-53-35-101/LIF_exp_num_3_data_set_None_mean_loss_30.634_uuid_01-25_11-53-35-101.pt']
+    # model_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/01-25_11-53-35-101/LIF_exp_num_4_data_set_None_mean_loss_25.222_uuid_01-25_11-53-35-101.pt']
 
     # model_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/'
 
     for mp in model_paths:
-        load_and_export_sim_data(mp, optim='SGD')
+        load_and_export_sim_data(mp, optim='Adam_frdvrda_001')
 
 
 def load_and_export_sim_data(model_path, optim):

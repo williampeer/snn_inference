@@ -40,7 +40,12 @@ def main(argv):
     # load_path = '/Users/william/repos/archives_snn_inference/archive 7/saved/plot_data/01-21_15-38-22-857/plot_all_param_pairs_with_variance01-22_16-37-22-985.pt'
     # load_path = '/Users/william/repos/archives_snn_inference/archive 7/saved/plot_data/01-22_16-37-23-061/plot_all_param_pairs_with_variance01-23_18-54-27-058.pt'
     # load_path = '/Users/william/repos/archives_snn_inference/archive 7/saved/plot_data/01-23_18-54-27-129/plot_all_param_pairs_with_variance01-24_22-04-32-965.pt'
-    load_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-20_15-05-33-991/plot_losses01-20_21-09-57-287.pt'
+
+    # load_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-24_13-44-20-353/plot_all_param_pairs_with_variance01-25_23-01-48-640.pt'
+
+    # load_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-24_02-32-43-141/plot_all_param_pairs_with_variance01-25_08-45-39-164.pt'
+
+    load_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-24_15-14-04-415/plot_all_param_pairs_with_variance01-26_01-24-16-739.pt'
 
     # load_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/'
 

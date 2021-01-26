@@ -52,3 +52,5 @@ all_exp_res = [CMA, NGO, GDs_0_0005, GDs_0_001]
 
 bar_plot_similarities(all_exp_res, xticks=['CMA', 'NGO', 'Adam, $\\alpha=0.05\ \%$', 'Adam, $\\alpha=0.1\ \%$'],
                       legends=['vRD + $f_r$-penalty', '$f_d + f_r$-penalty'])
+
+# TODO: refactor, new results. better matlab import?

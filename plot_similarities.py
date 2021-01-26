@@ -43,3 +43,9 @@ def bar_plot_similarities(similarities_per_lfn, xticks=False, legends=False, tit
 #     similarities.append(np.random.rand(int(10 * np.random.rand())))
 #
 # bar_plot_similarities(similarities)
+
+# ---------
+# TODO: WIP
+# geodesic(?) distance NMF modules
+
+# ACs in appendix?
