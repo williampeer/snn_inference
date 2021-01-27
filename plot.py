@@ -585,7 +585,7 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
 #                                            custom_title=custom_title, logger=logger)
 
 
-def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname):
+def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname, custom_title=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -600,14 +600,47 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     r_max = np.max([np.array(r1), np.array(r2)])
     rstd_max = np.max([np.array(r1_std), np.array(r2_std)])
     summed_max = r_max + rstd_max
-    plt.ylim(0, summed_max + rstd_max*0.05)
+    # plt.ylim(0, summed_max + rstd_max*0.05)
+    plt.ylim(0, 15)
     plt.xticks(xs)
     plt.xlabel('Neuron')
     plt.ylabel('$Hz$')
-    plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
+    if custom_title:
+        plt.title(custom_title)
+    else:
+        plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
+
+
+def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'y1': y1, 'y2': y2, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_pair_custom_labels')
+
+    xs = np.linspace(1, y1.shape[0], y1.shape[0])
+    plt.bar(xs-0.2, y1, yerr=y1_std, width=0.4)
+    plt.bar(xs+0.2, y2, yerr=y2_std, width=0.4)
+    plt.legend(['Fitted model', 'Target model'])
+    r_max = np.max([np.array(y1), np.array(y2)])
+    rstd_max = np.max([np.array(y1_std), np.array(y2_std)])
+    summed_max = r_max + rstd_max
+    plt.ylim(0, summed_max + rstd_max*0.05)
+    # plt.ylim(0, 15)
+    plt.xticks(xs)
+    plt.xlabel(labels)
+    if title:
+        plt.title(title)
+    else:
+        plt.title('Variance and CV for each setup')
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+
 
 
 def bar_plot_all_neuron_rates(rates, stds, bin_size, exp_type, uuid, fname, legends):

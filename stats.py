@@ -65,3 +65,24 @@ def spike_train_corr_new(s1, s2, bin_size=20):
 
     corrcoef = np.corrcoef(sums1, sums2, rowvar=False)
     return corrcoef
+
+
+def higher_order_stats(s1, s2, bin_size=20):
+    s1 = np.array(s1); s2 = np.array(s2)
+    assert s1.shape[0] == s2.shape[0] and s1.shape[1] == s2.shape[1], \
+        "shapes should be equal. s1.shape: {}, s2.shape: {}".format(s1.shape, s2.shape)
+
+    sums1 = sub_sums(s1, bin_size=bin_size)
+    sums2 = sub_sums(s2, bin_size=bin_size)
+
+    mu1 = np.mean(sums1)
+    std1 = np.std(sums1)
+    mu2 = np.mean(sums2)
+    std2 = np.std(sums2)
+
+    CV1 = std1 / mu1
+    CV2 = std2 / mu2
+
+    corrcoef = np.corrcoef(sums1, sums2, rowvar=False)
+
+    return corrcoef, mu1, std1, mu2, std2, CV1, CV2

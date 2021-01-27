@@ -13,7 +13,7 @@ def glif_sleep_model():
     w_NREM = torch.ones((4, 1)) * torch.cat([T(4*[-.168]), T(4*[-.13]), T(4*[0.])])
     w = torch.cat([w_Wake, w_REM, w_NREM])
 
-    glif_model = GLIF(device='cpu', parameters={}, N=w.shape[0], R_I=18.)
+    glif_model = GLIF(parameters={}, N=w.shape[0])
     glif_model.w = nn.Parameter(w, requires_grad=False)
 
     # wake, rem, nrem

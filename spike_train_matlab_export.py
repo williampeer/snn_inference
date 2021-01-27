@@ -15,7 +15,7 @@ from plot import plot_spike_train
 
 
 def main():
-    # model_path = '/Users/william/repos/archives_snn_inference/archive 7/saved/'
+    # model_path = '/Users/william/repos/archives_snn_inference/archive 7/saved/01-20_15-05-33-991/'
     # model_path = ''
 
     model_paths = []
@@ -143,23 +143,21 @@ def main():
     # model_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/'
 
     for mp in model_paths:
-        load_and_export_sim_data(mp, optim='Adam_frdvrda_001')
+        load_and_export_sim_data(mp)
 
 
-def load_and_export_sim_data(model_path, optim):
+def load_and_export_sim_data(model_path, fname=False, t = 60 * 1000):
     # print('Argument List:', str(argv))
 
     # opts = [opt for opt in argv if opt.startswith("-")]
     # args = [arg for arg in argv if not arg.startswith("-")]
-
-    t = 5 * 60 * 1000
 
     # loss_fn = model_path.split('loss_fn_')[1].split('_budget')[0]
     # cur_model_descr = model_path.split('fitted_params_')[1].split('_optim')[0]
     cur_model_name = model_path.split('_exp_num')[0].split('/')[-1]
     exp_num = model_path.split('exp_num_')[1].split('_data_set')[0]
     # optim = model_path.split('optim_')[1].split('_loss_fn')[0]
-    id = optim + '_' + model_path.split('.pt')[0].split('-')[-1]
+    # id = optim + '_' + model_path.split('.pt')[0].split('-')[-1]
     # lr = ''
 
 
@@ -217,12 +215,14 @@ def load_and_export_sim_data(model_path, optim):
     # save_fname_input = 'poisson_inputs_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
     # save_spiketrain_in_sparse_matlab_format(fname=save_fname_input, spike_indices=input_indices, spike_times=input_times)
     # save_model_params(model, fname=save_fname_input.replace('.mat', '_params'))
-    save_fname_output = 'fitted_spike_train_{}_id_{}_exp_no_{}'.format(cur_model_name, id, exp_num).replace('.', '_')
-    plot_spike_train(spiketrain, 'Plot imported SNN', 'plot_imported_model', fname=save_fname_output)
+    save_fname_output = 'fitted_spikes_'.format(cur_model_name, id, exp_num).replace('.', '_')
+    if not fname:
+        fname = save_fname_output
+    plot_spike_train(spiketrain, 'Plot imported SNN', 'plot_imported_model', fname=fname)
 
     # save_fname_output = 'fitted_spike_train_{}_{}_{}{}_exp_num_{}'.format(cur_model_descr, optim, loss_fn, lr, exp_num).replace('.', '_') + '.mat'
-    save_fname_output = 'fitted_spike_train_{}_id_{}_exp_no_{}'.format(cur_model_name, id, exp_num).replace('.', '_') + '.mat'
-    save_spiketrain_in_sparse_matlab_format(fname=save_fname_output, spike_indices=spike_indices, spike_times=spike_times)
+    # save_fname_output = 'fitted_spike_train_{}_id_{}_exp_no_{}'.format(cur_model_name, id, exp_num).replace('.', '_') + '.mat'
+    save_spiketrain_in_sparse_matlab_format(fname=fname + '.mat', spike_indices=spike_indices, spike_times=spike_times)
     save_model_params(model, fname=save_fname_output.replace('.mat', '_params'))
 
 
