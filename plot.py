@@ -614,7 +614,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     plt.close()
 
 
-def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title):
+def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, xlabel=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -622,17 +622,29 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
     data = {'y1': y1, 'y2': y2, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_pair_custom_labels')
 
-    xs = np.linspace(1, y1.shape[0], y1.shape[0])
-    plt.bar(xs-0.2, y1, yerr=y1_std, width=0.4)
-    plt.bar(xs+0.2, y2, yerr=y2_std, width=0.4)
+    xs = np.linspace(1, len(y1), len(y1))
+
+    if hasattr(y1_std, 'shape'):
+        plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)
+    else:
+        plt.bar(xs-0.15, y1, width=0.3)
+    if hasattr(y2_std, 'shape'):
+        plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3)
+    else:
+        plt.bar(xs+0.15, y2, width=0.3)
+
     plt.legend(['Fitted model', 'Target model'])
     r_max = np.max([np.array(y1), np.array(y2)])
     rstd_max = np.max([np.array(y1_std), np.array(y2_std)])
     summed_max = r_max + rstd_max
     plt.ylim(0, summed_max + rstd_max*0.05)
     # plt.ylim(0, 15)
-    plt.xticks(xs)
-    plt.xlabel(labels)
+    if labels:
+        plt.xticks(xs, labels)
+    else:
+        plt.xticks(xs)
+    if xlabel:
+        plt.xlabel(xlabel)
     if title:
         plt.title(title)
     else:
@@ -684,6 +696,11 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_siz
 
     data = {'corrs': corrs, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='heat_plot_spike_train_correlations')
+
+    for row_i in range(corrs.shape[0]):
+        for col_i in range(corrs.shape[1]):
+            if np.isnan(corrs[row_i][col_i]):
+                corrs[row_i][col_i] = 0.
 
     a = plt.imshow(corrs, cmap="PuOr", vmin=-1, vmax=1)
     cbar = plt.colorbar(a)

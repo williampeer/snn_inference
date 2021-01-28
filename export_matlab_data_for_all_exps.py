@@ -3,13 +3,14 @@ import sys
 
 import torch
 
+from data_util import prefix, path
 from spike_train_matlab_export import load_and_export_sim_data
 
 
 def main(argv):
     print('Argument List:', str(argv))
 
-    experiments_path = '/Users/william/repos/archives_snn_inference/archive 10/saved/'
+    experiments_path = '/Users/william/repos/archives_snn_inference/archive 11/saved/'
     plot_data_path = experiments_path + 'plot_data/'
     folders = os.listdir(experiments_path)
     # pdata_files = os.listdir(plot_data_path)
@@ -48,7 +49,12 @@ def main(argv):
                 lr = custom_title.split(', ')[-1].strip(' =lr').strip(')').replace('.', '')
                 lfn = loss_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
 
-                load_and_export_sim_data(full_folder_path + f, fname='spikes_{}_{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr, id))
+                cur_fname = 'spikes_{}_{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr, id)
+                save_file_name = prefix + path + cur_fname + '.mat'
+                if not os.path.exists(save_file_name):
+                    load_and_export_sim_data(full_folder_path + f, fname=cur_fname)
+                else:
+                    print('file exists. skipping..')
                 # load_and_export_sim_data(f, optim='Adam_frdvrda_001')
 
 if __name__ == "__main__":
