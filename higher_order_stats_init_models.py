@@ -137,10 +137,16 @@ def main(argv):
                                          title='Avg. CV for spike count across experiments ({})'.format(model_type),
                                          legend=['Initial model', 'Target model'])
 
-        print('diag mean avg_corrcoeff: {}'.format((np.eye(12) * avg_corrcoeff[12:, :12]).sum() / 12.))
+        mean_avg_corrcoeff = (np.eye(12) * avg_corrcoeff[12:, :12]).sum() / 12.
+        print('diag mean avg_corrcoeff: {}'.format(mean_avg_corrcoeff))
 
+        return mum, stdm, CVm, mut, stdt, CVt, mean_avg_corrcoeff
         # cur_std_model, cur_rate_model = stats.binned_avg_firing_rate_per_neuron(model_spike_train, bin_size=400)
         # cur_std_target, cur_rate_target = stats.binned_avg_firing_rate_per_neuron(target_spike_train, bin_size=400)
+
+
+def get_LIF_init_models_stats():
+    return main([])
 
 
 if __name__ == "__main__":
