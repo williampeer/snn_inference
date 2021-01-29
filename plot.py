@@ -614,7 +614,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     plt.close()
 
 
-def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, xlabel=False):
+def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, xlabel=False, legend=False, baseline=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -624,18 +624,64 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
 
     xs = np.linspace(1, len(y1), len(y1))
 
-    if hasattr(y1_std, 'shape'):
+    if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
         plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)
     else:
         plt.bar(xs-0.15, y1, width=0.3)
-    if hasattr(y2_std, 'shape'):
+    if hasattr(y2_std, 'shape') or hasattr(y2_std, 'append'):
         plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3)
     else:
         plt.bar(xs+0.15, y2, width=0.3)
 
-    plt.legend(['Fitted model', 'Target model'])
+    if not legend:
+        plt.legend(['Fitted model', 'Target model'])
+    else:
+        plt.legend(legend)
+
+    if baseline:
+        plt.plot(xs, np.ones_like(y1) * baseline, 'g--')
+
     r_max = np.max([np.array(y1), np.array(y2)])
     rstd_max = np.max([np.array(y1_std), np.array(y2_std)])
+    summed_max = r_max + rstd_max
+    plt.ylim(0, summed_max + rstd_max*0.05)
+    # plt.ylim(0, 15)
+    if labels:
+        plt.xticks(xs, labels)
+    else:
+        plt.xticks(xs)
+    if xlabel:
+        plt.xlabel(xlabel)
+    if title:
+        plt.title(title)
+    else:
+        plt.title('Variance and CV for each setup')
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+
+
+
+def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xlabel=False, baseline=False):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'y1': y1, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_crosscorrdiag')
+
+    xs = np.linspace(1, len(y1), len(y1))
+
+    if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
+        plt.bar(xs, y1, yerr=y1_std, width=0.5)
+    else:
+        plt.bar(xs, y1, width=0.5)
+
+    if baseline:
+        plt.plot(xs, np.ones_like(y1) * baseline, 'g--')
+
+    r_max = np.max(np.array(y1))
+    rstd_max = np.max(np.array(y1_std))
     summed_max = r_max + rstd_max
     plt.ylim(0, summed_max + rstd_max*0.05)
     # plt.ylim(0, 15)

@@ -13,7 +13,7 @@ def main(argv):
 
     experiments_path = '/Users/william/repos/archives_snn_inference/archive 11/saved/plot_data/'
     folders = os.listdir(experiments_path)
-    avg_statistics_per_exp = {}
+    experiment_averages = {}
     for folder_path in folders:
         # print(folder_path)
 
@@ -46,17 +46,17 @@ def main(argv):
             print('Processing final spike trains for configuration: {}, {}, {}, {}'.format(model_type, optimiser, lr, lfn))
             plot_spiketrains_files.sort()  # check that alphabetically
 
-            if not avg_statistics_per_exp.__contains__(model_type):
-                avg_statistics_per_exp[model_type] = {
+            if not experiment_averages.__contains__(model_type):
+                experiment_averages[model_type] = {
                     optimiser: {lfn: {lr: {'corrcoeff': [], 'mu_model': [], 'std_model': [],
                                            'mu_target': [], 'std_target': [],
                                            'CV_model': [], 'CV_target': []}}}}
-            if not avg_statistics_per_exp[model_type].__contains__(optimiser):
-                avg_statistics_per_exp[model_type][optimiser] = {}
-            if not avg_statistics_per_exp[model_type][optimiser].__contains__(lfn):
-                avg_statistics_per_exp[model_type][optimiser][lfn] = {}
-            if not avg_statistics_per_exp[model_type][optimiser][lfn].__contains__(lr):
-                avg_statistics_per_exp[model_type][optimiser][lfn][lr] = {'corrcoeff': [], 'mu_model': [],
+            if not experiment_averages[model_type].__contains__(optimiser):
+                experiment_averages[model_type][optimiser] = {}
+            if not experiment_averages[model_type][optimiser].__contains__(lfn):
+                experiment_averages[model_type][optimiser][lfn] = {}
+            if not experiment_averages[model_type][optimiser][lfn].__contains__(lr):
+                experiment_averages[model_type][optimiser][lfn][lr] = {'corrcoeff': [], 'mu_model': [],
                                                                           'std_model': [],
                                                                           'mu_target': [], 'std_target': [],
                                                                           'CV_model': [], 'CV_target': []}
@@ -64,6 +64,7 @@ def main(argv):
             # avg_rates_model = []; avg_rates_target = []
             corrcoeff_sum = None; mum = []; mut = []; stdm = []; stdt = []; CVm = []; CVt = []
             for exp_i in range(int(len(plot_spiketrains_files) / 11)):  # gen data for [0 + 11 * i]
+                print('exp_i: {}'.format(exp_i))
                 cur_full_path = full_folder_path + plot_spiketrains_files[11 * exp_i]
 
                 data = torch.load(cur_full_path)
@@ -83,7 +84,7 @@ def main(argv):
                 fname_prefix = model_type + '_' + optimiser + '_' + lfn + '_' + lr
 
                 id = cur_full_path.split('/')[-2]
-                save_fname = '{}_{}_exp_num_{}.eps'.format(fname_prefix, id, exp_i)
+                save_fname = '{}_{}_exp_num_{}.png'.format(fname_prefix, id, exp_i)
 
                 plot.heatmap_spike_train_correlations(corrcoeff[12:, :12], axes=['Fitted model', 'Target model'],
                                                       exp_type='export', uuid=model_type+'/single_exp',
@@ -94,6 +95,7 @@ def main(argv):
                     corrcoeff_sum = np.zeros_like(corrcoeff) + corrcoeff
                 else:
                     corrcoeff_sum = corrcoeff_sum + corrcoeff
+
                 mum.append(mu1)
                 mut.append(mu2)
                 stdm.append(std1)
@@ -101,26 +103,46 @@ def main(argv):
                 CVm.append(CV1)
                 CVt.append(CV2)
 
-            avg_corrcoeff = corrcoeff_sum / float(exp_i+1)
+            avg_corrcoeff = (corrcoeff_sum / float(exp_i+1))[12:, :12]
+            # print('avg_corrcoeff: {}'.format(avg_corrcoeff))
+            for i in range(avg_corrcoeff.shape[0]):
+                for j in range(avg_corrcoeff.shape[1]):
+                    if np.isnan(avg_corrcoeff[i][j]):
+                        avg_corrcoeff[i][j] = 0.
             cur_hyperconf = 'Average corrcoeff, {}, {}, {}, $\\alpha={}$'.format(model_type, optimiser, lfn, lr)
-            plot.heatmap_spike_train_correlations(avg_corrcoeff[12:, :12], axes=['Fitted model', 'Target model'],
+            plot.heatmap_spike_train_correlations(avg_corrcoeff, axes=['Fitted model', 'Target model'],
                                                   exp_type=plot_data['exp_type'], uuid='export',
                                                   fname='heatmap_bin_{}_avg_{}_exp_{}'.format(20, fname_prefix.replace('.', ''), id),
                                                   bin_size=20, custom_title=cur_hyperconf)
 
-            avg_statistics_per_exp[model_type][optimiser][lfn][lr]['corrcoeff'].append(np.copy(avg_corrcoeff))
+            experiment_averages[model_type][optimiser][lfn][lr]['corrcoeff'].append(np.copy(avg_corrcoeff))
 
-            avg_statistics_per_exp[model_type][optimiser][lfn][lr]['mu_model'].append(np.mean(mum))
-            avg_statistics_per_exp[model_type][optimiser][lfn][lr]['std_model'].append(np.std(mum))
-            avg_statistics_per_exp[model_type][optimiser][lfn][lr]['mu_target'].append(np.mean(mut))
-            avg_statistics_per_exp[model_type][optimiser][lfn][lr]['std_target'].append(np.std(mut))
-            avg_statistics_per_exp[model_type][optimiser][lfn][lr]['CV_model'].append(np.mean(CVm))
-            avg_statistics_per_exp[model_type][optimiser][lfn][lr]['CV_target'].append(np.mean(CVt))
+            plot.bar_plot_pair_custom_labels(y1=mum, y2=mut,
+                                             y1_std=stdm,
+                                             y2_std=stdt,
+                                             labels=False,
+                                             exp_type='export', uuid=model_type,
+                                             fname='bar_plot_avg_avg_{}'.format(
+                                                 model_type + '_' + optimiser + '_' + lfn + '_' + lr).replace('.', ''),
+                                             title='Average spike count within experiment', xlabel='Random seed')
+            plot.bar_plot_pair_custom_labels(y1=CVm, y2=CVt,
+                                             y1_std=np.std(CVm),
+                                             y2_std=np.std(CVt),
+                                             labels=False,
+                                             exp_type='export', uuid=model_type, fname='bar_plot_avg_avg_CV_{}'.format(model_type + '_' + optimiser + '_' + lfn + '_' + lr).replace('.', ''),
+                                             title='Avg. CV for spike count within experiment', xlabel='Random seed')
+
+            experiment_averages[model_type][optimiser][lfn][lr]['mu_model'].append(np.mean(mum))
+            experiment_averages[model_type][optimiser][lfn][lr]['std_model'].append(np.std(mum))
+            experiment_averages[model_type][optimiser][lfn][lr]['mu_target'].append(np.mean(mut))
+            experiment_averages[model_type][optimiser][lfn][lr]['std_target'].append(np.std(mut))
+            experiment_averages[model_type][optimiser][lfn][lr]['CV_model'].append(np.mean(CVm))
+            experiment_averages[model_type][optimiser][lfn][lr]['CV_target'].append(np.mean(CVt))
 
             # cur_std_model, cur_rate_model = stats.binned_avg_firing_rate_per_neuron(model_spike_train, bin_size=400)
             # cur_std_target, cur_rate_target = stats.binned_avg_firing_rate_per_neuron(target_spike_train, bin_size=400)
 
-        plot_stats_across_experiments(avg_statistics_per_exp)
+    plot_stats_across_experiments(experiment_averages)
 
 
 def plot_stats_across_experiments(avg_statistics_per_exp):
@@ -131,26 +153,14 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
         res_mu_t = []; res_mu_t_std = []
         res_CV_m = []; res_CV_m_std = []
         res_CV_t = []; res_CV_t_std = []
+
+        avg_diag_corrs = []
+        avg_diag_corrs_std = []
         labels = []
         for o_i, o_k in enumerate(avg_statistics_per_exp[m_k]):
             for lfn_i, lfn_k in enumerate(avg_statistics_per_exp[m_k][o_k]):
                 for lr_i, lr_k in enumerate(avg_statistics_per_exp[m_k][o_k][lfn_k]):
                     avg_stats_exps = avg_statistics_per_exp[m_k][o_k][lfn_k][lr_k]
-                    plot.bar_plot_pair_custom_labels(y1=avg_stats_exps['mu_model'], y2=avg_stats_exps['mu_target'],
-                                                     y1_std=avg_stats_exps['std_model'],
-                                                     y2_std=avg_stats_exps['std_target'],
-                                                     labels=False,
-                                                     exp_type='export', uuid=m_k,
-                                                     fname='bar_plot_avg_avg_{}'.format(
-                                                         m_k + '_' + o_k + '_' + lfn_k + '_' + lr_k).replace('.', ''),
-                                                     title='Average spike count within experiment', xlabel='Random seed')
-                    plot.bar_plot_pair_custom_labels(y1=avg_stats_exps['CV_model'], y2=avg_stats_exps['CV_target'],
-                                                     y1_std=np.std(avg_stats_exps['CV_model']),
-                                                     y2_std=np.std(avg_stats_exps['CV_target']),
-                                                     labels=False,
-                                                     exp_type='export', uuid=m_k, fname='bar_plot_avg_avg_CV_{}'.format(
-                                                         m_k + '_' + o_k + '_' + lfn_k + '_' + lr_k).replace('.', ''),
-                                                     title='Avg. CV for spike count within experiment', xlabel='Random seed')
 
                     res_std_m.append(np.mean(avg_stats_exps['std_model']))
                     res_std_t.append(np.mean(avg_stats_exps['std_target']))
@@ -165,6 +175,15 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
                     res_CV_m_std.append(np.std(avg_stats_exps['CV_model']))
                     res_CV_t_std.append(np.std(avg_stats_exps['CV_target']))
 
+                    corr_avgs = []
+                    for c_i in range(len(avg_stats_exps['corrcoeff'])):
+                        avg_diag_corr = (np.eye(12) * avg_stats_exps['corrcoeff'][0]).sum() / 12.
+                        print('avg_diag_corr: {} for config ({}, {}, {}, {})'.format(avg_diag_corr, m_k, o_k, lfn_k, lr_k))
+                        corr_avgs.append(avg_diag_corr)
+
+                    avg_diag_corrs.append(np.mean(corr_avgs))
+                    avg_diag_corrs_std.append(np.std(corr_avgs))
+
                     labels.append(o_k + ',\n' + lfn_k + ',\n$\\alpha$=' + lr_k)
 
         plot.bar_plot_pair_custom_labels(y1=res_mu_m, y2=res_mu_t, y1_std=res_mu_m_std, y2_std=res_mu_t_std, labels=labels,
@@ -178,6 +197,15 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
                                          labels=labels,
                                          exp_type='export', uuid=m_k, fname='bar_plot_avg_avg_CV_{}'.format(m_k),
                                          title='Avg. CV for spike count across experiments ({})'.format(m_k))
+
+        baseline = 0.
+        if m_k is 'LIF':
+            baseline = 0.202
+        elif m_k is 'GLIF':
+            baseline = 0.325
+        plot.bar_plot_crosscorrdiag(y1=avg_diag_corrs, y1_std=avg_diag_corrs_std, labels=labels,
+                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_diag_corrs_{}'.format(m_k),
+                                         title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline)
 
 
 if __name__ == "__main__":
