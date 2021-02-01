@@ -7,6 +7,7 @@ from torch import tensor as T
 
 from Models.LIF import LIF
 from experiments import draw_from_uniform, zip_dicts
+from plot import bar_plot_pair_custom_labels, bar_plot_crosscorrdiag
 
 
 def get_init_params(model_class, exp_num, N=12):
@@ -49,7 +50,7 @@ for exp_folder in folders:
         files = []
         id = 'None'
 
-    param_files = []; optimiser = None
+    param_files = []; optimiser = None; model_type = ''
     for f in files:
         if f.__contains__('plot_all_param_pairs_with_variance'):
             param_files.append(f)
@@ -63,7 +64,7 @@ for exp_folder in folders:
 
     # assert len(param_files) == 1, "should only be one plot_all_param_pairs_with_variance-file per folder. len: {}".format(len(param_files))
     if model_type == 'LIF' and len(param_files) == 1:
-        print('Succes! Processing exp: {}'.format(exp_folder + '/' + f))
+        print('Succes! Processing exp: {}'.format(exp_folder + '/' + param_files[0]))
         exp_data = torch.load(full_folder_path + param_files[0])
         param_names = exp_data['plot_data']['param_names']
         m_p_by_exp = exp_data['plot_data']['param_means']
@@ -101,24 +102,44 @@ for exp_folder in folders:
 
 
 # unpack
-for k_i, k_v in enumerate(experiment_averages.keys()):
-    print('processing exp results for exp #{}: {}'.format(k_i, experiment_averages[k_v]))
-    flat_ds = []; flat_stds = []
-    for d_i, d in enumerate(experiment_averages[k_v]['dist'].values()):
-        flat_ds.append(d[0])
-    # for s_i, s in enumerate(stds.values()):
-    #     flat_stds.append(s[0])
-    # flat_ds_init = []; flat_stds_init = []
-    # for d_i, d in enumerate(distances_init.values()):
-    #     flat_ds_init.append(d[0])
-    # for s_i, s in enumerate(stds_init.values()):
-    #     flat_stds_init.append(s[0])
+exp_avg_ds = []; exp_avg_stds = []; exp_avg_init_ds = []; exp_avg_init_stds = []
+keys_list = list(experiment_averages.keys())
+keys_list.sort()
+labels = []
+for k_i, k_v in enumerate(keys_list):
+    if not (k_v.__contains__('vrdfrda') or k_v.__contains__('pnll')):
+        labels.append(k_v.replace('LIF_', '').replace('0_0', '0.0').replace('_', '\n').replace('frdvrd', 'fv').replace('Adam', 'Adm'))
+        print('processing exp results for config: {}'.format(k_v))
+        flat_ds = []; flat_stds = []
+        for d_i, d in enumerate(experiment_averages[k_v]['dist'].values()):
+            flat_ds.append(d[0])
+        for s_i, s in enumerate(experiment_averages[k_v]['std'].values()):
+            flat_stds.append(s[0])
+        flat_ds_init = []; flat_stds_init = []
+        for d_i, d in enumerate(experiment_averages[k_v]['init_dist'].values()):
+            flat_ds_init.append(d[0])
+        for s_i, s in enumerate(experiment_averages[k_v]['init_std'].values()):
+            flat_stds_init.append(s[0])
 
-    # bar_plot_pair_custom_labels(np.array(flat_ds_init)/np.array(flat_ds_init), np.array(flat_ds)/np.array(flat_ds_init),
-    #                             np.array(flat_stds_init)/np.array(flat_ds_init), np.array(flat_stds)/np.array(flat_ds_init),
-    #                             list(distances.keys()), 'export', 'test',
-    #                             'exp_export_test_euclid_dist_params_{}_{}_{}_id_{}'.format(model_type,lfn,lr,id),
-    #                             'Avg Euclid dist per param, exp {}'.format(exp_folder),
-    #                             legend=['Initial model', 'Fitted model'])
+        bar_plot_pair_custom_labels(np.array(flat_ds_init)/np.array(flat_ds_init), np.array(flat_ds)/np.array(flat_ds_init),
+                                    np.array(flat_stds_init)/np.array(flat_ds_init), np.array(flat_stds)/np.array(flat_ds_init),
+                                    param_names, 'export', 'test',
+                                    'exp_export_test_euclid_dist_params_{}.eps'.format(k_v),
+                                    'Avg Euclid dist per param for configuration {}'.format(k_v.replace('0_0', '0.0')).replace('_', ', '),
+                                    legend=['Initial model', 'Fitted model'])
 
-# TODO: store data per exp, plot avg per config. See the other files, should be pretty quick.
+        all_n_k = np.array(flat_ds_init)
+        exp_avg_ds.append(np.mean(np.array(flat_ds)/all_n_k))
+        exp_avg_stds.append(np.std(np.array(flat_ds)/all_n_k))
+        # exp_avg_stds.append(np.mean(flat_stds))
+        exp_avg_init_ds.append(np.mean(np.array(flat_ds_init)/all_n_k))
+        exp_avg_init_stds.append(np.std(np.array(flat_ds_init)/all_n_k))
+        # exp_avg_init_stds.append(np.mean(flat_stds_init))
+
+norm_kern = np.array(exp_avg_init_ds)
+bar_plot_crosscorrdiag(np.array(exp_avg_ds),
+                                exp_avg_stds,
+                                labels, 'export', 'test',
+                                'exp_export_test_euclid_dist_params_across_exp.eps',
+                                'Avg Euclid dist for all parameters across experiments',
+                                baseline=1.0)

@@ -671,20 +671,23 @@ def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xla
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_crosscorrdiag')
 
     xs = np.linspace(1, len(y1), len(y1))
+    width = 1.
+
+    if baseline:
+        plt.plot([xs[0]-width/2, xs[-1]+width/2], [baseline, baseline], 'k--')
 
     if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
         if baseline:
             above_threshold = np.maximum(y1 - np.ones_like(y1) * baseline, 0)
             below_threshold = np.minimum(y1, baseline)
-            plt.bar(xs, below_threshold, yerr=y1_std, width=0.5)
-            plt.bar(xs, above_threshold, yerr=y1_std, width=0.5, bottom=below_threshold)
+            plt.bar(xs, below_threshold, yerr=y1_std, width=0.5*width)
+            plt.bar(xs, above_threshold, yerr=y1_std, width=0.5*width, bottom=below_threshold)
         else:
-            plt.bar(xs, y1, yerr=y1_std, width=0.5)
+            plt.bar(xs, y1, yerr=y1_std, width=width)
     else:
-        plt.bar(xs, y1, width=0.5)
+        plt.bar(xs, y1, width=width)
 
-    if baseline:
-        plt.plot([xs[0]-0.25, xs[-1]+0.25], [baseline, baseline], 'k--')
+    plt.legend(['Initial', 'Fitted'])
 
     r_max = np.max(np.array(y1))
     rstd_max = np.max(np.array(y1_std))
