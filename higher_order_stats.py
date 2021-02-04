@@ -52,43 +52,44 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
                     labels.append(o_k + ',\n' + lfn_k + ',\n$\\alpha$=' + lr_k)
 
         i_mum, i_stdm, i_CVm, i_mut, i_stdt, i_CVt, i_mean_avg_corrcoeff = get_LIF_init_models_stats()
-        res_std_m.append(np.mean(i_stdm))
-        res_std_t.append(np.mean(i_stdt))
-        res_std_m_std.append(np.std(i_stdm))
-        res_std_t_std.append(np.std(i_stdt))
-        res_mu_m.append(np.mean(i_mum))
-        res_mu_t.append(np.mean(i_mut))
-        res_mu_m_std.append(np.std(i_mum))
-        res_mu_t_std.append(np.std(i_mut))
-        res_CV_m.append(np.mean(i_CVm))
-        res_CV_t.append(np.mean(i_CVt))
-        res_CV_m_std.append(np.std(i_CVm))
-        res_CV_t_std.append(np.std(i_CVt))
-        avg_diag_corrs.append(np.mean(i_mean_avg_corrcoeff))
-        avg_diag_corrs_std.append(np.std(i_mean_avg_corrcoeff))
-
-        labels.append('init\nmodels')
+        # res_std_m.append(np.mean(i_stdm))
+        # res_std_t.append(np.mean(i_stdt))
+        # res_std_m_std.append(np.std(i_stdm))
+        # res_std_t_std.append(np.std(i_stdt))
+        # res_mu_m.append(np.mean(i_mum))
+        # res_mu_t.append(np.mean(i_mut))
+        # res_mu_m_std.append(np.std(i_mum))
+        # res_mu_t_std.append(np.std(i_mut))
+        # res_CV_m.append(np.mean(i_CVm))
+        # res_CV_t.append(np.mean(i_CVt))
+        # res_CV_m_std.append(np.std(i_CVm))
+        # res_CV_t_std.append(np.std(i_CVt))
+        # avg_diag_corrs.append(np.mean(i_mean_avg_corrcoeff))
+        # avg_diag_corrs_std.append(np.std(i_mean_avg_corrcoeff))
+        #
+        # labels.append('init\nmodels')
 
         plot.bar_plot_pair_custom_labels(y1=res_mu_m, y2=res_mu_t, y1_std=res_mu_m_std, y2_std=res_mu_t_std, labels=labels,
-                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_mu_across_exp_{}'.format(m_k),
+                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_mu_across_exp_{}.eps'.format(m_k),
                                          title='Avg. spike count across experiments ({})'.format(m_k))
         plot.bar_plot_pair_custom_labels(y1=res_std_m, y2=res_std_t, y1_std=res_std_m_std, y2_std=res_std_t_std,
                                          labels=labels,
-                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_std_across_exp_{}'.format(m_k),
+                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_std_across_exp_{}.eps'.format(m_k),
                                          title='Avg. spike standard deviation across experiments ({})'.format(m_k))
         plot.bar_plot_pair_custom_labels(y1=res_CV_m, y2=res_CV_t, y1_std=res_CV_m_std, y2_std=res_CV_t_std,
                                          labels=labels,
-                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_avg_CV_{}'.format(m_k),
+                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_avg_CV_{}.eps'.format(m_k),
                                          title='Avg. CV for spike count across experiments ({})'.format(m_k))
 
         print('m_k', m_k)
         baseline = 0.202
+        # baseline = 0.325
         if m_k is 'LIF':
             baseline = 0.202
         elif m_k is 'GLIF':
             baseline = 0.325
         plot.bar_plot_crosscorrdiag(y1=avg_diag_corrs, y1_std=avg_diag_corrs_std, labels=labels,
-                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_diag_corrs_{}'.format(m_k),
+                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_diag_corrs_{}.eps'.format(m_k),
                                          title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline)
 
 
@@ -122,7 +123,7 @@ for folder_path in folders:
             lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
             # break
 
-    if len(plot_spiketrains_files) != 55 or model_type != 'GLIF':  # file mask
+    if len(plot_spiketrains_files) != 55 or model_type != 'LIF':  # file mask
         # print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
         # print(len(plot_spiketrains_files))
         pass
@@ -159,7 +160,7 @@ for folder_path in folders:
             plot.plot_spiketrains_side_by_side(torch.tensor(model_spike_train), torch.tensor(target_spike_train),
                                                'export', model_type,
                                                title='Final spike trains {}, {}, {}, $\\alpha={}$'.format(model_type, optimiser, lfn, lr),
-                                               fname='spike_train_{}_{}_{}_exp_{}'.format(model_type, optimiser, lfn, exp_i))
+                                               fname='spike_train_{}_{}_{}_exp_{}.eps'.format(model_type, optimiser, lfn, exp_i))
 
             corrcoeff, mu1, std1, mu2, std2, CV1, CV2 = stats.higher_order_stats(model_spike_train, target_spike_train, bin_size=100)
 
@@ -172,7 +173,7 @@ for folder_path in folders:
 
             plot.heatmap_spike_train_correlations(corrcoeff[12:, :12], axes=['Fitted model', 'Target model'],
                                                   exp_type='export', uuid=model_type+'/single_exp',
-                                                  fname='heatmap_bin_{}_{}'.format(20, save_fname),
+                                                  fname='heatmap_bin_{}_{}.eps'.format(20, save_fname),
                                                   bin_size=20, custom_title=cur_hyperconf)
 
             if corrcoeff_sum is None:
@@ -196,7 +197,7 @@ for folder_path in folders:
         cur_hyperconf = 'Average corrcoeff, {}, {}, {}, $\\alpha={}$'.format(model_type, optimiser, lfn, lr)
         plot.heatmap_spike_train_correlations(avg_corrcoeff, axes=['Fitted model', 'Target model'],
                                               exp_type=plot_data['exp_type'], uuid='export',
-                                              fname='heatmap_bin_{}_avg_{}_exp_{}'.format(20, fname_prefix.replace('.', ''), id),
+                                              fname='heatmap_bin_{}_avg_{}_exp_{}.eps'.format(20, fname_prefix.replace('.', ''), id),
                                               bin_size=20, custom_title=cur_hyperconf)
 
         experiment_averages[model_type][optimiser][lfn][lr]['corrcoeff'].append(np.copy(avg_corrcoeff))
@@ -206,14 +207,14 @@ for folder_path in folders:
                                          y2_std=stdt,
                                          labels=False,
                                          exp_type='export', uuid=model_type,
-                                         fname='bar_plot_avg_avg_{}'.format(
+                                         fname='bar_plot_avg_avg_{}.eps'.format(
                                              model_type + '_' + optimiser + '_' + lfn + '_' + lr).replace('.', ''),
                                          title='Average spike count within experiment', xlabel='Random seed')
         plot.bar_plot_pair_custom_labels(y1=CVm, y2=CVt,
                                          y1_std=np.std(CVm),
                                          y2_std=np.std(CVt),
                                          labels=False,
-                                         exp_type='export', uuid=model_type, fname='bar_plot_avg_avg_CV_{}'.format(model_type + '_' + optimiser + '_' + lfn + '_' + lr).replace('.', ''),
+                                         exp_type='export', uuid=model_type, fname='bar_plot_avg_avg_CV_{}.eps'.format(model_type + '_' + optimiser + '_' + lfn + '_' + lr).replace('.', ''),
                                          title='Avg. CV for spike count within experiment', xlabel='Random seed')
 
         experiment_averages[model_type][optimiser][lfn][lr]['mu_model'].append(np.mean(mum))

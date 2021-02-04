@@ -66,7 +66,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
                                          y1_std=np.zeros_like(stds_model_rates),
                                          y2_std=np.zeros_like(stds_model_rates),
                                          labels=labels,
-                                         exp_type='export', uuid=m_k, fname='rate_bar_plot_avg_rate_CV_{}'.format(m_k),
+                                         exp_type='export', uuid=m_k, fname='rate_bar_plot_avg_rate_CV_{}.eps'.format(m_k),
                                          title='Avg. CV for firing rate across experiments ({})'.format(m_k))
 
 
@@ -77,7 +77,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 load_paths = []
 # load_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-20_15-05-33-991/plot_spiketrains_side_by_side01-21_21-55-15-927.pt']
 # experiments_path = '/Users/william/repos/archives_snn_inference/archive 10/saved/plot_data/'
-experiments_path = '/Users/william/repos/archives_snn_inference/archive 12/saved/plot_data/'
+experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
 folders = os.listdir(experiments_path)
 experiment_averages = {}
 for folder_path in folders:
@@ -102,7 +102,7 @@ for folder_path in folders:
             lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
             # break
 
-    if len(plot_spiketrains_files) != 55 or model_type != 'GLIF':  # file mask
+    if len(plot_spiketrains_files) != 55 or model_type != 'LIF':  # file mask
         # print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
         # print(len(plot_spiketrains_files))
         pass

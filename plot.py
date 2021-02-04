@@ -7,6 +7,8 @@ from scipy.stats import gaussian_kde
 import IO
 import data_util
 
+plt.rcParams.update({'font.size': 20})
+
 
 def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiketrain_test'):
     data = {'spike_history': spike_train, 'title': title, 'fname': fname}
@@ -82,9 +84,9 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
     else:
         plt.yticks(range(1, neuron_i + 2))
     plt.ylim(0, neuron_i+2)
-    if not title:
-        title = 'Spiketrains side by side'
-    plt.title(title)
+    # if not title:
+    #     title = 'Spiketrains side by side'
+    # plt.title(title)
 
     full_path = './figures/' + exp_type + '/' +  uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
@@ -190,18 +192,21 @@ def plot_avg_losses(avg_train_loss, train_loss_std, avg_test_loss, test_loss_std
     # IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_losses')
 
     plt.figure()
-    plt.errorbar(x=np.linspace(1, len(avg_train_loss), len(avg_train_loss)), y=avg_train_loss, yerr=train_loss_std)
-    plt.errorbar(x=np.linspace(1, len(avg_test_loss), len(avg_test_loss)), y=avg_test_loss, yerr=test_loss_std)
+    # xs_n = len(avg_train_loss)
+    xs_n = 20
+    plt.errorbar(np.linspace(1, xs_n, len(avg_train_loss)), y=avg_train_loss, yerr=train_loss_std)
+    plt.errorbar(np.linspace(1, xs_n, len(avg_test_loss)), y=avg_test_loss, yerr=test_loss_std)
+    plt.xticks(np.arange(11) * 2)
 
     plt.legend(['Training loss', 'Test loss'])
 
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     # plt.xticks(range(len(loss_arr+1)))
-    if custom_title:
-        plt.title(custom_title)
-    else:
-        plt.title('Average training and test loss')
+    # if custom_title:
+    #     plt.title(custom_title)
+    # else:
+    #     plt.title('Average training and test loss')
 
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
@@ -223,10 +228,10 @@ def plot_losses_nodes(batch_loss_per_node, uuid, exp_type='default', custom_titl
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     # plt.xticks(range(len(loss_arr+1)))
-    if custom_title:
-        plt.title(custom_title)
-    else:
-        plt.title('Batch loss')
+    # if custom_title:
+    #     plt.title(custom_title)
+    # else:
+    #     plt.title('Batch loss')
 
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
@@ -280,10 +285,10 @@ def plot_parameter_pair_with_variance(p1_means, p2_means, target_params, path, x
 
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        if custom_title:
-            plt.title(custom_title)
-        else:
-            plt.title('Inferred KDE')
+        # if custom_title:
+        #     plt.title(custom_title)
+        # else:
+        #     plt.title('Inferred KDE')
 
         # plt.imsave(fname, image)
         plt.savefig(fname=path)
@@ -327,10 +332,10 @@ def decompose_param_plot(param_2D, target_params, name, path, custom_title=False
             except:
                 print('WARN: Failed to calculate KDE for param.s: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
 
-    if custom_title:
-        fig.suptitle(custom_title + ' ${}$'.format(name))
-    else:
-        fig.suptitle('Decomposed KDEs between neurons for parameter ${}$'.format(name))
+    # if custom_title:
+    #     fig.suptitle(custom_title + ' ${}$'.format(name))
+    # else:
+    #     fig.suptitle('Decomposed KDEs between neurons for parameter ${}$'.format(name))
 
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
@@ -460,12 +465,12 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
             # except:
             #     print('WARN: Failed to plot trajectory for params: {}, {}. targets: {}, i: {}, j: {}'.format(params_by_exp[i], params_by_exp[j], current_targets, i, j))
 
-    fig.suptitle('GD trajectory-projections for parameter ${}$'.format(name))
+    # fig.suptitle('GD trajectory-projections for parameter ${}$'.format(name))
 
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
     # plt.show()
-    fig.savefig(path)
+    fig.savefig(path + '.eps')
     plt.close()
 
 
@@ -487,10 +492,10 @@ def param_pair_trajectory_plot(p1_means, p2_means, target_params, path, xlabel='
 
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        if custom_title:
-            plt.title(custom_title)
-        else:
-            plt.title('GD trajectory for parameters')
+        # if custom_title:
+        #     plt.title(custom_title)
+        # else:
+        #     plt.title('GD trajectory for parameters')
 
         # plt.imsave(fname, image)
         plt.savefig(fname=path)
@@ -605,10 +610,10 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     plt.xticks(xs)
     plt.xlabel('Neuron')
     plt.ylabel('$Hz$')
-    if custom_title:
-        plt.title(custom_title)
-    else:
-        plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
+    # if custom_title:
+    #     plt.title(custom_title)
+    # else:
+    #     plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
@@ -652,10 +657,10 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
         plt.xticks(xs)
     if xlabel:
         plt.xlabel(xlabel)
-    if title:
-        plt.title(title)
-    else:
-        plt.title('Variance and CV for each setup')
+    # if title:
+    #     plt.title(title)
+    # else:
+    #     plt.title('Variance and CV for each setup')
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
@@ -673,9 +678,6 @@ def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xla
     xs = np.linspace(1, len(y1), len(y1))
     width = 1.
 
-    if baseline:
-        plt.plot([xs[0]-width/2, xs[-1]+width/2], [baseline, baseline], 'k--')
-
     if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
         if baseline:
             above_threshold = np.maximum(y1 - np.ones_like(y1) * baseline, 0)
@@ -689,6 +691,9 @@ def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xla
 
     plt.legend(['Initial', 'Fitted'])
 
+    if baseline:
+        plt.plot([xs[0]-width/2, xs[-1]+width/2], [baseline, baseline], 'k--')
+
     r_max = np.max(np.array(y1))
     rstd_max = np.max(np.array(y1_std))
     summed_max = r_max + rstd_max
@@ -700,10 +705,10 @@ def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xla
         plt.xticks(xs)
     if xlabel:
         plt.xlabel(xlabel)
-    if title:
-        plt.title(title)
-    else:
-        plt.title('Variance and CV for each setup')
+    # if title:
+    #     plt.title(title)
+    # else:
+    #     plt.title('Variance and CV for each setup')
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
@@ -737,7 +742,7 @@ def bar_plot_all_neuron_rates(rates, stds, bin_size, exp_type, uuid, fname, lege
 
     plt.xlabel('Neuron')
     plt.ylabel('$Hz$')
-    plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
+    # plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
 
     # plt.show()
     plt.savefig(fname=full_path + fname)
@@ -763,10 +768,10 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_siz
         cbar.set_label(custom_label)
     else:
         cbar.set_label("correlation coeff.")
-    if custom_title is not False:
-        plt.title(custom_title)
-    else:
-        plt.title('Pairwise spike correlations (interval: {} ms)'.format(bin_size))
+    # if custom_title is not False:
+    #     plt.title(custom_title)
+    # else:
+    #     plt.title('Pairwise spike correlations (interval: {} ms)'.format(bin_size))
     plt.xticks(np.arange(0, len(corrs)))
     plt.yticks(np.arange(0, len(corrs)))
     plt.ylabel(axes[0])

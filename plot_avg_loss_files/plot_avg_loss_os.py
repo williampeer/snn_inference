@@ -16,7 +16,7 @@ def main(argv):
 
     load_paths = []
     # load_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-20_15-05-33-991/plot_spiketrains_side_by_side01-21_21-55-15-927.pt']
-    experiments_path = '/Users/william/repos/archives_snn_inference/archive 10/saved/plot_data/'
+    experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
     folders = os.listdir(experiments_path)
     loss_res = {}
     for folder_path in folders:
@@ -28,8 +28,8 @@ def main(argv):
         else:
             files = []
             id = 'None'
-        # plot_spiketrains_files = []
-        # plot_losses_files = []
+        plot_spiketrains_files = []
+        plot_losses_files = []
         for f in files:
             if f.__contains__('plot_losses'):
                 f_data = torch.load(full_folder_path + f)
@@ -39,7 +39,7 @@ def main(argv):
                 lr = custom_title.split(', ')[-1].strip(' =lr').strip(')')
                 lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
 
-                # plot_losses_files.append(f)
+                plot_losses_files.append(f)
                 if not loss_res.__contains__(model_type):
                     loss_res[model_type] = { optimiser: { lr: { lfn: [] } } }
                 if not loss_res[model_type].__contains__(optimiser):
@@ -52,12 +52,13 @@ def main(argv):
 
                 loss_res[model_type][optimiser][lr][lfn].append()
                 # break
-
-        # if len(plot_spiketrains_files) != 55:
-            # print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
+        if model_type != 'LIF':
+            pass
+        elif len(plot_losses_files) == 0:
+            print("Incomplete exp. no loss files.")
             # print(len(plot_spiketrains_files))
-            # pass
-        # else:
+            pass
+        else:
             print('Processing configuration: {}'.format(folder_path))
             plot_spiketrains_files.sort()  # check that alphabetically
 

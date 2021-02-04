@@ -69,7 +69,7 @@ def main(argv):
             plot.plot_spiketrains_side_by_side(torch.tensor(model_spike_train), torch.tensor(target_spike_train),
                                                'export', model_type,
                                                title='Final spike trains {}, {}, {}, $\\alpha={}$'.format(model_type, optimiser, lfn, lr),
-                                               fname='initial_spike_train_{}_{}_{}_exp_{}'.format(model_type, optimiser, lfn, exp_i))
+                                               fname='initial_spike_train_{}_{}_{}_exp_{}.eps'.format(model_type, optimiser, lfn, exp_i))
 
             corrcoeff, mu1, std1, mu2, std2, CV1, CV2 = stats.higher_order_stats(model_spike_train, target_spike_train, bin_size=100)
 
@@ -82,7 +82,7 @@ def main(argv):
 
             plot.heatmap_spike_train_correlations(corrcoeff[12:, :12], axes=['Fitted model', 'Target model'],
                                                   exp_type='export', uuid=model_type+'/single_exp',
-                                                  fname='initial_heatmap_bin_{}_{}'.format(20, save_fname),
+                                                  fname='initial_heatmap_bin_{}_{}.eps'.format(20, save_fname),
                                                   bin_size=20, custom_title=cur_hyperconf)
 
             if corrcoeff_sum is None:
@@ -100,7 +100,7 @@ def main(argv):
         cur_hyperconf = 'Average corrcoeff, {}, {}, {}, $\\alpha={}$'.format(model_type, optimiser, lfn, lr)
         plot.heatmap_spike_train_correlations(avg_corrcoeff[12:, :12], axes=['Fitted model', 'Target model'],
                                               exp_type=plot_data['exp_type'], uuid='export',
-                                              fname='initial_heatmap_bin_{}_avg_{}_exp_{}'.format(20, fname_prefix.replace('.', ''), id),
+                                              fname='initial_heatmap_bin_{}_avg_{}_exp_{}.eps'.format(20, fname_prefix.replace('.', ''), id),
                                               bin_size=20, custom_title=cur_hyperconf)
 
         plot.bar_plot_pair_custom_labels(y1=mum, y2=mut,
@@ -108,7 +108,7 @@ def main(argv):
                                          y2_std=stdt,
                                          labels=False,
                                          exp_type='export', uuid=model_type,
-                                         fname='initial_bar_plot_avg_avg_{}'.format(
+                                         fname='initial_bar_plot_avg_avg_{}.eps'.format(
                                              model_type + '_' + optimiser + '_' + lfn + '_' + lr).replace('.', ''),
                                          title='Average spike count within experiment', xlabel='Random seed',
                                          legend=['Initial model', 'Target model'])
@@ -116,24 +116,24 @@ def main(argv):
                                          y1_std=np.std(CVm),
                                          y2_std=np.std(CVt),
                                          labels=False,
-                                         exp_type='export', uuid=model_type, fname='initial_bar_plot_avg_avg_CV_{}'.format(model_type + '_' + optimiser + '_' + lfn + '_' + lr).replace('.', ''),
+                                         exp_type='export', uuid=model_type, fname='initial_bar_plot_avg_avg_CV_{}.eps'.format(model_type + '_' + optimiser + '_' + lfn + '_' + lr).replace('.', ''),
                                          title='Avg. CV for spike count within experiment', xlabel='Random seed',
                                          legend=['Initial model', 'Target model'])
 
         plot.bar_plot_pair_custom_labels(y1=[np.mean(mum)], y2=[np.mean(mut)], y1_std=[np.std(mum)], y2_std=[np.std(mut)], labels=[optimiser + ',\n' + lfn + ',\n$\\alpha$=' + lr],
-                                         exp_type='export', uuid=model_type, fname='initial_bar_plot_avg_mu_across_exp_{}'.format(model_type),
+                                         exp_type='export', uuid=model_type, fname='initial_bar_plot_avg_mu_across_exp_{}.eps'.format(model_type),
                                          title='Avg. spike count across experiments ({})'.format(model_type),
                                          legend=['Initial model', 'Target model'])
 
         plot.bar_plot_pair_custom_labels(y1=[np.mean(stdm)], y2=[np.mean(stdt)], y1_std=[np.std(stdm)], y2_std=[np.std(stdt)],
                                          labels=[optimiser + ',\n' + lfn + ',\n$\\alpha$=' + lr],
-                                         exp_type='export', uuid=model_type, fname='initial_bar_plot_avg_std_across_exp_{}'.format(model_type),
+                                         exp_type='export', uuid=model_type, fname='initial_bar_plot_avg_std_across_exp_{}.eps'.format(model_type),
                                          title='Avg. spike standard deviation across experiments ({})'.format(model_type),
                                          legend=['Initial model', 'Target model'])
 
         plot.bar_plot_pair_custom_labels(y1=[np.mean(CVm)], y2=[np.mean(CVt)], y1_std=0., y2_std=0.,
                                          labels=[optimiser + ',\n' + lfn + ',\n$\\alpha$=' + lr],
-                                         exp_type='export', uuid=model_type, fname='initial_bar_plot_avg_avg_CV_{}'.format(model_type),
+                                         exp_type='export', uuid=model_type, fname='initial_bar_plot_avg_avg_CV_{}.eps'.format(model_type),
                                          title='Avg. CV for spike count across experiments ({})'.format(model_type),
                                          legend=['Initial model', 'Target model'])
 
