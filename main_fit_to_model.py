@@ -3,7 +3,6 @@ import sys
 import Constants as C
 import fit_to_model_exp_suite
 from Models.LIF import LIF
-from Models.LIF_dynamic_R_I import LIF_dynamic_R_I
 from TargetModels import TargetEnsembleModels
 
 
@@ -88,7 +87,7 @@ def main(argv):
 
     for m_class in models:
         for f_i in range(4):
-            if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:
+            if m_class.__name__ in [LIF.__name__]:
                 target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                 target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
             else:

@@ -14,7 +14,7 @@ def makedir_if_not_exists(path):
     #     os.mkdir(path)
     path_parts = path.split('/')
     aggr_path = ''
-    for i in range(len(path_parts)):  # needs to create one dir at a time.
+    for i in range(len(path_parts)-1):  # needs to create one dir at a time.
         aggr_path += path_parts[i] + '/'
         if not os.path.exists(aggr_path):
             os.mkdir(aggr_path)
