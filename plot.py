@@ -7,7 +7,7 @@ from scipy.stats import gaussian_kde
 import IO
 import data_util
 
-plt.rcParams.update({'font.size': 20})
+plt.rcParams.update({'font.size': 14})
 
 
 def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiketrain_test'):
@@ -142,21 +142,25 @@ def plot_all_spiketrains(spikes_arr, uuid, exp_type='default', title=False, fnam
     plt.close()
 
 
-def plot_neuron(membrane_potentials_through_time, title='Neuron activity', fname_ext=False):
-    data = {'membrane_potentials_through_time': membrane_potentials_through_time, 'title': title}
+def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', title='Neuron activity',
+                ylabel='Membrane potential', fname='plot_neuron_test'):
+    data = {'membrane_potentials_through_time': membrane_potentials_through_time, 'title': title, 'uuid': uuid,
+            'exp_type': exp_type, 'ylabel': ylabel, 'fname': fname}
     IO.save_plot_data(data=data, uuid='test_uuid', plot_fn='plot_neuron')
-
+    legend = []
+    for i in range(len(membrane_potentials_through_time)):
+        legend.append('N.{}'.format(i+1))
     plt.figure()
     plt.plot(torch.arange(membrane_potentials_through_time.shape[0]), membrane_potentials_through_time)
-    plt.title(title)
+    plt.legend(legend, loc='upper left', ncol=4)
+    # plt.title(title)
     plt.xlabel('Time (ms)')
-    plt.ylabel('Membrane potential')
+    plt.ylabel(ylabel)
     # plt.show()
-    fname = './figures/test_neuron'
-    if fname_ext:
-        fname = fname + fname_ext
-    plt.savefig(fname=fname)
-    plt.close()
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    # IO.makedir_if_not_exists('/figures/' + exp_type + '/')
+    # IO.makedir_if_not_exists(full_path)
+    plt.savefig(fname=full_path + fname)
 
 
 def plot_losses(training_loss, test_loss, uuid, exp_type='default', custom_title=False, fname=False):
@@ -212,6 +216,54 @@ def plot_avg_losses(avg_train_loss, train_loss_std, avg_test_loss, test_loss_std
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
+    # plt.show()
+    plt.close()
+
+
+def plot_avg_losses_composite(loss_res, keys):
+    plt.figure()
+    # xs_n = len(avg_train_loss)
+    # legend = []
+    legend = ['frd', 'vrd', 'a(frd+vrd)']
+    fmts = ['--', '--*', '-']
+    # cols = ['c', 'm', 'g']
+    ctr = 0
+    for key in keys:
+        cur_avg_train_loss = np.mean(loss_res[key]['train_loss'], axis=0)
+        train_std = np.std(loss_res[key]['train_loss'], axis=0)
+        cur_avg_test_loss = np.mean(loss_res[key]['test_loss'], axis=0)
+        test_std = np.std(loss_res[key]['test_loss'], axis=0)
+        xs_n = 20
+        norm_kern = np.max(cur_avg_test_loss)
+        plt.errorbar(np.linspace(1, xs_n, len(cur_avg_train_loss)), y=cur_avg_train_loss/norm_kern, yerr=train_std/norm_kern, fmt=fmts[ctr])
+        # plt.errorbar(np.linspace(1, xs_n, len(cur_avg_test_loss)), y=cur_avg_test_loss/norm_kern, yerr=test_std/norm_kern)
+        plt.xticks(np.arange(11) * 2)
+        ctr +=1
+
+        # legend.append('Training {}'.format(key))
+        # legend.append('Test {}'.format(key))
+
+    ctr = 0
+    for key in keys:
+        cur_avg_test_loss = np.mean(loss_res[key]['test_loss'], axis=0)
+        test_std = np.std(loss_res[key]['test_loss'], axis=0)
+        xs_n = 20
+        norm_kern = np.max(cur_avg_test_loss)
+        plt.errorbar(np.linspace(1, xs_n, len(cur_avg_test_loss)), y=cur_avg_test_loss/norm_kern, yerr=test_std/norm_kern, fmt=fmts[ctr])
+        plt.xticks(np.arange(11) * 2)
+        ctr += 1
+
+    plt.legend(legend)
+
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+
+    plt.grid(True)
+
+    full_path = './figures/' + 'LIF' + '/' + 'export' + '/'
+    IO.makedir_if_not_exists('./figures/' + 'LIF' + '/')
+    IO.makedir_if_not_exists(full_path)
+    plt.savefig(fname=full_path + 'export_avg_loss_composite.eps')
     # plt.show()
     plt.close()
 
@@ -666,6 +718,63 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
     plt.close()
 
 
+def bar_plot_pair_custom_labels_two_grps(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, xlabel=False, legend=False, baseline=False):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'y1': y1, 'y2': y2, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_pair_custom_labels')
+
+
+    # if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
+    #     plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)
+    # else:
+    #     plt.bar(xs-0.15, y1, width=0.3)
+    # if hasattr(y2_std, 'shape') or hasattr(y2_std, 'append'):
+    #     plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3)
+    # else:
+    num_els = len(y1)
+    half = int(num_els/2)
+    rest = num_els-half
+    width = 0.4
+    skip = width*2
+    xs = np.linspace(1, half, half)
+    xs2 = np.linspace(1+half+skip, half+skip+rest, rest)
+    plt.bar(xs-width/2, y1[:half], yerr=y1_std[:half], width=width)
+    plt.bar(xs+width/2, y2[:half], yerr=y2_std[:half], width=width)
+    plt.bar(xs2-width/2, y1[half:], yerr=y1_std[half:], width=width)
+    plt.bar(xs2+width/2, y2[half:], yerr=y2_std[half:], width=width)
+
+    if not legend:
+        plt.legend(['Fitted Adam', 'Target', 'Fitted SGD', 'Target'], loc='lower left', ncol=2)
+    else:
+        plt.legend(legend)
+
+    # if baseline:
+    #     plt.plot(xs, np.ones_like(y1) * baseline, 'g--')
+
+    r_max = np.max([np.array(y1), np.array(y2)])
+    rstd_max = np.max([np.array(y1_std), np.array(y2_std)])
+    summed_max = r_max + rstd_max
+    plt.ylim(0, summed_max + rstd_max*0.05)
+    # plt.ylim(0, 15)
+    if labels:
+        # plt.xticks(xs, labels)
+        plt.xticks(np.concatenate((xs, xs2)), labels)
+    else:
+        plt.xticks(xs)
+    if xlabel:
+        plt.xlabel(xlabel)
+    # if title:
+    #     plt.title(title)
+    # else:
+    #     plt.title('Variance and CV for each setup')
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+
+
 
 def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xlabel=False, baseline=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
@@ -676,7 +785,7 @@ def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xla
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_crosscorrdiag')
 
     xs = np.linspace(1, len(y1), len(y1))
-    width = 1.
+    width = 1.4
 
     if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
         if baseline:
@@ -710,6 +819,63 @@ def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xla
     # else:
     #     plt.title('Variance and CV for each setup')
     # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+
+
+
+def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, title, xlabel=False, baseline=False):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'y1': y1, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_crosscorrdiag')
+
+    xs = np.linspace(1, len(y1)+1, len(y1))
+    width = 1.2
+    xs2 = np.linspace(1+len(y1)+2*width, 1+len(y1)+len(y2)+2*width, len(y2))
+
+    if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
+        # if baseline:
+        #     above_threshold_1 = np.maximum(y1 - np.ones_like(y1) * baseline, 0)
+        #     below_threshold_1 = np.minimum(y1, baseline)
+        #     plt.bar(xs, above_threshold_1, yerr=y1_std, width=0.5*width)
+        #     plt.bar(xs, above_threshold_1, yerr=y1_std, width=0.5*width, bottom=below_threshold_1)
+        #     above_threshold_2 = np.maximum(y2 - np.ones_like(y2) * baseline, 0)
+        #     below_threshold_2 = np.minimum(y2, baseline)
+        #     plt.bar(xs2, below_threshold_2, yerr=y2_std, width=0.5 * width)
+        #     plt.bar(xs2, above_threshold_2, yerr=y2_std, width=0.5 * width, bottom=below_threshold_2)
+        # else:
+        plt.bar(xs, y1, yerr=y1_std, width=width)
+        plt.bar(xs2, y2, yerr=y2_std, width=width)
+    else:
+        plt.bar(xs, y1, width=width)
+        plt.bar(xs2, y2, width=width)
+
+    plt.legend(['Adam', 'SGD'], loc='upper right')
+
+    if baseline:
+        plt.plot([xs[0]-width/2, xs2[-1]+width/2], [baseline, baseline], 'k--')
+
+    r_max = np.max(np.array(y1))
+    rstd_max = np.max(np.array(y1_std))
+    summed_max = r_max + rstd_max
+    plt.ylim(0, summed_max + rstd_max*0.05)
+    # plt.ylim(0, 15)
+    if labels:
+        plt.xticks(np.concatenate((xs, xs2)), labels)
+        # plt.xticks(xs2, labels)
+    else:
+        plt.xticks(xs)
+    if xlabel:
+        plt.xlabel(xlabel)
+    # if title:
+    #     plt.title(title)
+    # else:
+    #     plt.title('Variance and CV for each setup')
+    # plt.show()
+    plt.ylabel('Relative distance')
     plt.savefig(fname=full_path + fname)
     plt.close()
 

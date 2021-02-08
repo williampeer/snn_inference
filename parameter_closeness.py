@@ -7,7 +7,7 @@ from torch import tensor as T
 
 from Models.LIF import LIF
 from experiments import draw_from_uniform, zip_dicts
-from plot import bar_plot_pair_custom_labels, bar_plot_crosscorrdiag
+from plot import bar_plot_pair_custom_labels, bar_plot_crosscorrdiag, bar_plot_two_grps
 
 
 def get_init_params(model_class, exp_num, N=12):
@@ -70,7 +70,8 @@ for exp_folder in folders:
         m_p_by_exp = exp_data['plot_data']['param_means']
         t_p_by_exp = list(exp_data['plot_data']['target_params'].values())
 
-        config = '{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr.replace('.', '_'))
+        # config = '{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr.replace('.', '_'))
+        config = '{}_{}_{}'.format(model_type, optimiser, lfn)
         # distances = {}
         # stds = {}
         # distances_init = {}
@@ -107,8 +108,11 @@ keys_list = list(experiment_averages.keys())
 keys_list.sort()
 labels = []
 for k_i, k_v in enumerate(keys_list):
+    # if not (k_v.__contains__('vrdfrda') or k_v.__contains__('pnll')):
     if not (k_v.__contains__('vrdfrda') or k_v.__contains__('pnll')):
-        labels.append(k_v.replace('LIF_', '').replace('0_0', '0.0').replace('_', '\n').replace('frdvrd', 'fv').replace('Adam', 'Adm'))
+    # if k_v not in ['LIF_Adam_vrdfrda_0_05', 'LIF_Adam_pnll_0_05']:
+        labels.append(k_v.replace('LIF_Adam_', '').replace('LIF_SGD_', '').replace('_', '\n')
+                      .replace('frdvrda', '$d_A$').replace('frdvrd', '$d_C$').replace('frd', '$d_r$').replace('vrd', '$d_v$'))
         print('processing exp results for config: {}'.format(k_v))
         flat_ds = []; flat_stds = []
         for d_i, d in enumerate(experiment_averages[k_v]['dist'].values()):
@@ -121,25 +125,28 @@ for k_i, k_v in enumerate(keys_list):
         for s_i, s in enumerate(experiment_averages[k_v]['init_std'].values()):
             flat_stds_init.append(s[0])
 
-        bar_plot_pair_custom_labels(np.array(flat_ds_init)/np.array(flat_ds_init), np.array(flat_ds)/np.array(flat_ds_init),
-                                    np.array(flat_stds_init)/np.array(flat_ds_init), np.array(flat_stds)/np.array(flat_ds_init),
+        norm_kern = np.array(flat_ds_init)
+        bar_plot_pair_custom_labels(np.array(flat_ds_init)/norm_kern, np.array(flat_ds)/norm_kern,
+                                    np.array(flat_stds_init)/norm_kern, np.array(flat_stds)/norm_kern,
                                     param_names, 'export', 'test',
-                                    'exp_export_test_euclid_dist_params_{}.eps'.format(k_v),
+                                    'exp_export_all_euclid_dist_params_{}.eps'.format(k_v),
                                     'Avg Euclid dist per param for configuration {}'.format(k_v.replace('0_0', '0.0')).replace('_', ', '),
                                     legend=['Initial model', 'Fitted model'])
 
-        all_n_k = np.array(flat_ds_init)
-        exp_avg_ds.append(np.mean(np.array(flat_ds)/all_n_k))
-        exp_avg_stds.append(np.std(np.array(flat_ds)/all_n_k))
+        exp_avg_ds.append(np.mean(np.array(flat_ds)/norm_kern))
+        exp_avg_stds.append(np.std(np.array(flat_ds)/norm_kern))
         # exp_avg_stds.append(np.mean(flat_stds))
-        exp_avg_init_ds.append(np.mean(np.array(flat_ds_init)/all_n_k))
-        exp_avg_init_stds.append(np.std(np.array(flat_ds_init)/all_n_k))
+        exp_avg_init_ds.append(np.mean(np.array(flat_ds_init)/norm_kern))
+        exp_avg_init_stds.append(np.std(np.array(flat_ds_init)/norm_kern))
         # exp_avg_init_stds.append(np.mean(flat_stds_init))
 
-norm_kern = np.array(exp_avg_init_ds)
-bar_plot_crosscorrdiag(np.array(exp_avg_ds),
-                                exp_avg_stds,
-                                labels, 'export', 'test',
-                                'exp_export_test_euclid_dist_params_across_exp.eps',
-                                'Avg Euclid dist for all parameters across experiments',
-                                baseline=1.0)
+# norm_kern = 1.
+# norm_kern = np.max(exp_avg_init_ds)
+bar_plot_two_grps(np.array(exp_avg_ds[:4]),
+                  np.array(exp_avg_stds[:4]),
+                  np.array(exp_avg_ds[4:]),
+                  np.array(exp_avg_stds[4:]),
+                  labels, 'export', 'test',
+                  'exp_export_all_euclid_dist_params_across_exp.eps',
+                  'Avg Euclid dist for all parameters across experiments',
+                  baseline=1.0)

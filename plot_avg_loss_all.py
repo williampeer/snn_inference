@@ -108,6 +108,9 @@ def main(argv):
                                  custom_title='Average loss across experiments, {}'.format(conf.replace('0_0', '0.0').replace('_', ', ')),
                                  fname='export_avg_loss_across_exp_{}.eps'.format(conf))
 
+    keys = ['LIF_Adam_frd_0_05', 'LIF_Adam_vrd_0_05', 'LIF_Adam_frdvrda_0_05']
+    plot.plot_avg_losses_composite(loss_res, keys)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
