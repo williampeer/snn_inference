@@ -41,6 +41,7 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
     return np_loss
 
 
+# TODO: transform for Enum
 def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
     if loss_fn.__contains__('vrdts'):
         loss = spike_metrics.van_rossum_dist_two_sided(output, target, tau_vr)

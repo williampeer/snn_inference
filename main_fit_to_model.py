@@ -2,8 +2,6 @@ import sys
 
 import Constants as C
 import fit_to_model_exp_suite
-from Models.GLIF import GLIF
-from Models.GLIF_dynamic_R_I import GLIF_dynamic_R_I
 from Models.LIF import LIF
 from Models.LIF_dynamic_R_I import LIF_dynamic_R_I
 from TargetModels import TargetEnsembleModels
@@ -19,25 +17,13 @@ def main(argv):
     learn_rate = 0.05; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    max_train_iters = 20; batch_size = 1000; rows_per_train_iter = 3000
-    # loss_fn = 'frdvrda'
+    max_train_iters = 20; batch_size = 400; rows_per_train_iter = 3000
     loss_fn = 'frd'
     # loss_fn = 'vrd'
     # loss_fn = 'frdvrd'
-    # loss_fn = 'vrdts'
-    # loss_fn = 'vrdfrd'
-    # loss_fn = 'vrdtsfrd'
-    # loss_fn = 'vrdsp'
+    # loss_fn = 'frdvrda'
 
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
-    # batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
-    # batch_size = 50; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
-    # max_train_iters = 100; batch_size = 200; rows_per_train_iter = 2000; loss_fn = 'kldfrd'
-    # max_train_iters = 50; batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'pnllfrd'
-
-    # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_vr'
-    # max_train_iters = 20; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_rate_dist'
-    # max_train_iters = 40; batch_size = 400; rows_per_train_iter = 2000; loss_fn = 'free_label_rate_dist_w_penalty'
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 
@@ -91,9 +77,8 @@ def main(argv):
         elif opt in ("-mt", "--model-type"):
             model_type = args[i]
 
-    all_models = [LIF, GLIF, LIF_dynamic_R_I, GLIF_dynamic_R_I]
-    models = [LIF, GLIF]
-    # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    all_models = [LIF]
+    models = [LIF]
     if model_type is not None and model_type in str(all_models):
         for m in all_models:
             if m.__name__ is model_type:
@@ -106,9 +91,6 @@ def main(argv):
             if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:
                 target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                 target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
-            elif m_class.__name__ in [GLIF.__name__, GLIF_dynamic_R_I.__name__]:
-                target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=f_i)
             else:
                 raise NotImplementedError()
 

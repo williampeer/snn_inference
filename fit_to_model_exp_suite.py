@@ -1,11 +1,13 @@
+import torch
+import numpy as np
+
+import IO
 import Log
-from Constants import ExperimentType
 from IO import save_poisson_rates
 from eval import evaluate_loss
-from experiments import generate_synthetic_data, draw_from_uniform, poisson_input, release_computational_graph
+from experiments import generate_synthetic_data, draw_from_uniform, release_computational_graph
 from fit import fit_mini_batches
-from model_util import generate_model_data
-from plot import *
+from plot import plot_losses
 
 torch.autograd.set_detect_anomaly(True)
 # ---------------------------------------
@@ -15,15 +17,6 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
     if constants.plot_flag:
         parameter_names = model.parameter_names
         parameter_names.append('p_rate')
-        plot_parameter_inference_trajectories_2d(model_parameters,
-                                                 uuid=constants.UUID,
-                                                 exp_type=exp_type_str,
-                                                 target_params=target_parameters,
-                                                 param_names=parameter_names,
-                                                 custom_title='Inferred parameters across training iterations',
-                                                 fname='inferred_param_trajectories_{}_exp_num_{}_train_iters_{}'
-                                                 .format(model.__class__.__name__, exp_num, train_i),
-                                                 logger=logger)
         plot_losses(training_loss=train_losses, test_loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
                     custom_title='Loss ({}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__, constants.learn_rate),
                     fname='training_and_test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn, str(constants.tau_van_rossum).replace('.', '_')))
@@ -164,15 +157,6 @@ def run_exp_loop(logger, constants, model_class, target_model):
     save_poisson_rates(poisson_rate_per_exp, uuid=constants.UUID, fname='poisson_rates_per_exp.pt')
     parameter_names = model_class.parameter_names
     parameter_names.append('p_rate')
-    if constants.plot_flag:
-        plot_all_param_pairs_with_variance(recovered_param_per_exp,
-                                       uuid=constants.UUID,
-                                       exp_type=constants.EXP_TYPE.name,
-                                       target_params=target_parameters,
-                                       param_names=parameter_names,
-                                       custom_title="Average inferred parameters across experiments [{}, {}]".format(
-                                           model_class.__name__, constants.optimiser),
-                                       logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
 
 
 def start_exp(constants, model_class, target_model):

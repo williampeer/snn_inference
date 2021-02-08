@@ -1,9 +1,8 @@
 import torch
 
-from TargetModels.TargetModels import *
 from plot import heatmap_spike_train_correlations
 
-m1 = glif1()
+m1 = LIF()
 weights = m1.w.clone().detach().numpy()
 
 heatmap_spike_train_correlations(weights, ['neuron $i$', 'neuron $j$'], exp_type='weights', uuid='test_plot',
