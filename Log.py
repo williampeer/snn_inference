@@ -5,8 +5,8 @@ from IO import makedir_if_not_exists
 
 class Logger:
     def __init__(self, log_fname):
+        makedir_if_not_exists('./Logs/')
         self.fname = './Logs/' + log_fname + '.txt'
-        makedir_if_not_exists(self.fname)
 
     def log(self, log_str='', parameters=[]):
         prefix = '[{}]'.format(dt.datetime.now())
