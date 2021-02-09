@@ -16,7 +16,7 @@ def main(argv):
     learn_rate = 0.05; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    max_train_iters = 20; batch_size = 400; rows_per_train_iter = 3000
+    max_train_iters = 20; batch_size = 400; rows_per_train_iter = 4000
     loss_fn = 'frd'
     # loss_fn = 'vrd'
     # loss_fn = 'frdvrd'
