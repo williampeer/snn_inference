@@ -33,7 +33,6 @@ def main(argv):
     evaluate_step = 2
     # evaluate_step = int(max(max_train_iters/10, 1))
     # data_path = None
-    # prefix = '/Users/william/data/target_data/'
     model_type = None
 
     opts = [opt for opt in argv if opt.startswith("-")]
