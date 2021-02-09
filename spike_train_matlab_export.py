@@ -3,11 +3,7 @@ import sys
 import numpy as np
 import torch
 
-from Dev.pytorch_custom_network_opt import in_place_cast_to_float32
 from IO import save_model_params
-from Models.GLIF import GLIF
-from Models.LIF import LIF
-from TargetModels import TargetEnsembleModels
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_to_sparse_vectors
 from experiments import poisson_input
 from model_util import generate_model_data
