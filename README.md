@@ -13,7 +13,7 @@ See Models/ for models that are already implemented and their implementations.
 
 Test/ for tests that you may want to run just to figure out how the Models can be used outside of the experiments context (or what happens under the hood).
 
-experiments.py should give a gist about the current implementation (no interface exists as of now, but see pseudo-code in the supplementary material file).
+exp_suite.py should give a gist about the current implementation (no interface exists as of now, but see pseudo-code in the supplementary material file).
 
 ### Sample usage
 ```
