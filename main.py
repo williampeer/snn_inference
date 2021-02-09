@@ -1,7 +1,7 @@
 import sys
 
 import Constants as C
-import fit_to_model_exp_suite
+import exp_suite
 from Models.GLIF import GLIF
 from Models.GLIF_dynamic_R_I import GLIF_dynamic_R_I
 from Models.LIF import LIF
@@ -117,7 +117,7 @@ def main(argv):
                                     initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
                                     plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name, exp_type_str=exp_type_str)
 
-            fit_to_model_exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
+            exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

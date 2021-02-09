@@ -42,19 +42,7 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
 
 
 def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
-    if loss_fn.__contains__('vrdts'):
-        loss = spike_metrics.van_rossum_dist_two_sided(output, target, tau_vr)
-    elif loss_fn.__contains__('vrdtsfrd'):
-        vrdts_loss = spike_metrics.van_rossum_dist_two_sided(output, target, tau_vr)
-        frd_loss = spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
-        loss = vrdts_loss + frd_loss
-    elif loss_fn.__contains__('vrdsp'):
-        vrd_loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
-        silent_penalty_term = spike_metrics.silent_penalty_term(output, target)
-        loss = vrd_loss + silent_penalty_term
-    elif loss_fn.__contains__('pnll'):
-        loss = poisson_nll_loss(output, target)
-    elif loss_fn.__contains__('kl_div'):
+    if loss_fn.__contains__('kl_div'):
         loss = kl_div(output, target)
     elif loss_fn.__contains__('van_rossum_squared'):
         loss = spike_metrics.van_rossum_squared_distance(output, target, tau_vr)
@@ -78,16 +66,6 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
         kld_loss = kl_div(output, target)
         frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
         loss = kld_loss + frd_loss
-    elif loss_fn.__contains__('pnllfrd'):
-        pnll_loss = poisson_nll_loss(output, target, tau_vr)
-        frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
-        loss = pnll_loss + frd_loss
-    elif loss_fn.__contains__('free_label_vr'):
-        loss = spike_metrics.greedy_shortest_dist_vr(spikes=output, target_spikes=target, tau=tau_vr)
-    elif loss_fn.__contains__('free_label_rate_dist'):
-        loss = spike_metrics.shortest_dist_rates(spikes=output, target_spikes=target)
-    elif loss_fn.__contains__('free_label_rate_dist_w_penalty'):
-        loss = spike_metrics.shortest_dist_rates_w_silent_penalty(spikes=output, target_spikes=target)
 
     else:
         raise NotImplementedError("Loss function not supported.")
