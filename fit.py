@@ -7,7 +7,7 @@ from eval import calculate_loss
 from experiments import poisson_input, release_computational_graph
 
 
-def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimiser, constants, train_i=None, logger=None):
+def fit_over_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimiser, constants, train_i=None, logger=None):
     if gen_inputs is not None:
         assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
             "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)

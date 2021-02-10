@@ -4,7 +4,8 @@ from experiments import poisson_input, release_computational_graph
 from plot import *
 
 
-def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=None, train_i=None, exp_num=None, constants=None, converged=False):
+def evaluate_loss(model, inputs, p_rate, target_spiketrain,
+                  label='', exp_type=None, train_i=None, exp_num=None, constants=None):
     if inputs is not None:
         assert (inputs.shape[0] == target_spiketrain.shape[0]), \
             "inputs and targets should have same shape. inputs shape: {}, targets shape: {}".format(inputs.shape, target_spiketrain.shape)
@@ -13,12 +14,8 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
 
     model_spiketrain = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs)
 
-    print('-- sanity-checks --')
-    print('model:')
     sanity_checks(torch.round(model_spiketrain))
-    print('target:')
     sanity_checks(target_spiketrain)
-    print('-- sanity-checks-done --')
 
     loss = calculate_loss(model_spiketrain, target_spiketrain, loss_fn=constants.loss_fn, N=model.N,
                           tau_vr=constants.tau_van_rossum)
@@ -29,7 +26,7 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
     else:
         exp_type_str = exp_type.name
 
-    if train_i % constants.evaluate_step == 0 or converged or train_i == constants.train_iters -1:
+    if train_i % constants.evaluate_step == 0 or train_i == constants.train_iters -1:
         plot_spiketrains_side_by_side(model_spiketrain, target_spiketrain, uuid=constants.UUID, exp_type=exp_type_str,
                                       title='Spike trains test set ({}, loss: {:.3f})'.format(label, loss),
                                       fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))

@@ -6,7 +6,7 @@ import Log
 from IO import save_poisson_rates
 from eval import evaluate_loss
 from experiments import generate_synthetic_data, draw_from_uniform, release_computational_graph
-from fit import fit_mini_batches
+from fit import fit_over_batches
 from plot import plot_losses
 
 torch.autograd.set_detect_anomaly(True)
@@ -25,33 +25,10 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
     mean_test_loss = torch.mean(torch.tensor(test_losses)).clone().detach().numpy()
     logger.log('test_losses: #{}'.format(test_losses), ['mean test loss: {}'.format(mean_test_loss)])
 
-    cur_fname = '{}_exp_num_{}_data_set_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, constants.data_set, mean_test_loss, constants.UUID)
+    cur_fname = '{}_exp_num_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, mean_test_loss, constants.UUID)
     IO.save(model, rate=poisson_rate, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
 
     del model, mean_test_loss
-
-
-def convergence_check(validation_losses):
-    if len(validation_losses) <= 1:
-        return False
-
-    val_diff = validation_losses[-1] - validation_losses[-2]
-    return val_diff >= 0.
-
-
-def overall_gradients_mean(gradients, train_i, loss_fn):
-    mean_logger = Log.Logger('gradients_mean_log')
-    full_logger = Log.Logger('gradients_full_log')
-
-    avg_grads = []
-    for i, grads in enumerate(gradients):
-        avg_grads.append(torch.mean(grads))
-    overall_mean = torch.mean(torch.tensor(avg_grads))
-    mean_logger.log('avg_grads: {}, train_i: {}, loss_fn: {}'.format(avg_grads, train_i, loss_fn))
-    mean_logger.log('overall_mean: {}'.format(overall_mean))
-
-    full_logger.log('train_i: {}, loss_fn: {}, gradients'.format(train_i, loss_fn), gradients)
-    return float(overall_mean.clone().detach())
 
 
 def fit_model_to_target_model(logger, constants, model_class, params_model, exp_num, target_model, target_parameters):
@@ -64,7 +41,6 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
     parameters = {}
     for p_i, key in enumerate(model.state_dict()):
         parameters[p_i] = [model.state_dict()[key].numpy()]
-    # parameters[p_i + 1] = [poisson_input_rate.clone().detach().numpy()]
     poisson_rates = []
     poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
@@ -72,16 +48,15 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
     optim_params.append(poisson_input_rate)
     optim = constants.optimiser(optim_params, lr=constants.learn_rate)
 
-    train_losses = []; validation_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
+    train_losses = []; validation_losses = np.array([]); prev_spike_index = 0; train_i = 0
+    # converged = False  # TODO (optional): convergence criterion
     max_grads_mean = np.float(0.)
-    while not converged and (train_i < constants.train_iters):
+    while train_i < constants.train_iters:
         logger.log('training iteration #{}'.format(train_i), [constants.EXP_TYPE])
 
-        # TODO: split into gen_rate, init_rate
-        # targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter)
         targets, gen_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
 
-        avg_train_loss, abs_grads_mean, last_loss = fit_mini_batches(model, gen_inputs=gen_input.clone().detach(), target_spiketrain=targets,
+        avg_train_loss, abs_grads_mean, last_loss = fit_over_batches(model, gen_inputs=gen_input.clone().detach(), target_spiketrain=targets,
                                                                      poisson_input_rate=poisson_input_rate, optimiser=optim,
                                                                      constants=constants, train_i=train_i, logger=logger)
         release_computational_graph(target_model, constants.initial_poisson_rate, gen_input)
@@ -93,20 +68,16 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         logger.log('current parameters {}'.format(cur_params))
         for p_i, key in enumerate(cur_params):
             parameters[p_i].append(cur_params[key].clone().detach().numpy())
-        # parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
         poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
         max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
-        # converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
-        converged = False
 
         gen_outputs, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
                                           t=constants.rows_per_train_iter)
         validation_loss = evaluate_loss(model, inputs=gen_inputs, p_rate=poisson_input_rate.clone().detach(),
                                         target_spiketrain=gen_outputs, label='train i: {}'.format(train_i),
                                         exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
-                                        constants=constants, converged=converged)
-        # validation_loss = last_loss
+                                        constants=constants)
         logger.log(parameters=['validation loss', validation_loss])
         validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
 
@@ -136,7 +107,6 @@ def run_exp_loop(logger, constants, model_class, target_model):
 
         num_neurons = int(target_model.v.shape[0])
         init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-        # params_model = zip_dicts(params_model, static_parameters)
 
         recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
             fit_model_to_target_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model, target_parameters=target_parameters)

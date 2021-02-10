@@ -13,29 +13,9 @@ def torch_van_rossum_convolution(spikes, tau):
     return convolved_spiketrain
 
 
-def torch_van_rossum_convolution_two_sided(spikes, tau):
-    decay_kernel = torch.exp(-torch.tensor(1.) / tau)
-    convolved_spiketrain = spikes.clone()
-    # convolved_spiketrain_backwards = spikes.clone()
-    row_of_zeros = torch.zeros((1, spikes.shape[1]))
-    for i in range(int(3*tau)):
-        tmp_shifted_conv = torch.cat([row_of_zeros, convolved_spiketrain[:-1]])
-        tmp_shifted_backwards = torch.cat([convolved_spiketrain[1:], row_of_zeros.clone().detach()])
-        # sig(v - threshold) = 0.5 for v = threshold
-        convolved_spiketrain = torch.where(spikes < 0.75, torch.max(tmp_shifted_conv * decay_kernel, tmp_shifted_backwards * decay_kernel), spikes.clone())
-        # convolved_spiketrain_backwards = torch.where(spikes < 0.75, tmp_shifted_backwards * decay_kernel, spikes.clone())
-    return convolved_spiketrain
-
-
 def van_rossum_dist(spikes, target_spikes, tau):
     c1 = torch_van_rossum_convolution(spikes=spikes, tau=tau)
     c2 = torch_van_rossum_convolution(spikes=target_spikes, tau=tau)
-    return euclid_dist(c1, c2)
-
-
-def van_rossum_dist_two_sided(spikes, target_spikes, tau):
-    c1 = torch_van_rossum_convolution_two_sided(spikes=spikes, tau=tau)
-    c2 = torch_van_rossum_convolution_two_sided(spikes=target_spikes, tau=tau)
     return euclid_dist(c1, c2)
 
 
@@ -80,16 +60,6 @@ def van_rossum_squared_distance(s1, s2, tau):
     return mse(c1, c2)
 
 
-def silent_penalty_term(model_spikes, target_spikes):
-    mean_model_rate = model_spikes.sum(dim=0)
-    mean_targets_rate = target_spikes.sum(dim=0)
-    # assert model_spikes.shape[0] > model_spikes.shape[1]
-    T = model_spikes.shape[0] / 1000.
-    # f_penalty(x,y) = sqrt(pow(e^(-x/T.) - e^(-y/T.)).sum() + 1e-18)
-    silent_penalty = torch.sqrt(torch.pow(torch.exp(-mean_model_rate/torch.tensor(T)) - torch.exp(-mean_targets_rate/torch.tensor(T)), 2).sum()+1e-18) / model_spikes.shape[1]
-    return silent_penalty
-
-
 def firing_rate_distance(model_spikes, target_spikes):
     mean_model_rate = model_spikes.sum(dim=0)
     mean_targets_rate = target_spikes.sum(dim=0)
@@ -98,27 +68,3 @@ def firing_rate_distance(model_spikes, target_spikes):
     # f_penalty(x,y) = sqrt(pow(e^(-x/T.) - e^(-y/T.)).sum() + 1e-18)
     silent_penalty = torch.sqrt(torch.pow(torch.exp(-mean_model_rate/torch.tensor(T)) - torch.exp(-mean_targets_rate/torch.tensor(T)), 2).sum()+1e-18) / model_spikes.shape[1]
     return torch.sqrt(torch.pow(torch.sub(mean_model_rate, mean_targets_rate), 2).sum() + 1e-18) + silent_penalty
-
-
-def shortest_dist_rates(spikes, target_spikes):
-    assert spikes.shape[0] > spikes.shape[1], "each time step as a row expected, meaning column by node"
-
-    spike_rates = spikes.sum(dim=0) * 1000. / spikes.shape[0]
-    spike_rates, _ = torch.sort(spike_rates)
-    target_rates = target_spikes.sum(axis=0) * 1000. / target_spikes.shape[0]
-    target_rates, _ = torch.sort(target_rates)
-
-    return torch.sqrt(torch.pow(torch.sub(spike_rates, target_rates), 2).sum() + 1e-18)
-
-
-def shortest_dist_rates_w_silent_penalty(spikes, target_spikes):
-    assert spikes.shape[0] > spikes.shape[1], "each time step as a row expected, meaning column by node"
-
-    spike_rates = spikes.sum(dim=0) * 1000. / spikes.shape[0]
-    spike_rates, _ = torch.sort(spike_rates)
-    target_rates = target_spikes.sum(dim=0) * 1000. / target_spikes.shape[0]
-    target_rates, _ = torch.sort(target_rates)
-
-    silent_penalty = torch.sqrt(torch.pow(torch.exp(-spike_rates) - torch.exp(target_rates), 2).sum() + 1e-18)
-    return torch.sqrt(torch.pow(torch.sub(spike_rates, target_rates), 2).sum() + 1e-18) + silent_penalty
-
