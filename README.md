@@ -19,3 +19,6 @@ exp_suite.py should give a gist about the current implementation (no interface e
 ```
 python main.py --experiment-type DataDriven -optim Adam -lfn frd -lr 0.05 -N 1 -ti 10
 ```
+
+This runs the experiment, fitting a model to a generative model, using the pre-defined generative model found in `TargetEnsembleModels`.
+It uses the Adam optimizer, firing rate distance (frd) loss function (see `eval.py` for loss functions), and fits using a learning rate of 0.05, for 10 training iterations, in one experiment.
