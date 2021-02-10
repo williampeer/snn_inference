@@ -16,12 +16,12 @@ def main(argv):
     start_seed = 0
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.05; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.025; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    max_train_iters = 20; batch_size = 1000; rows_per_train_iter = 3000
+    max_train_iters = 20; batch_size = 400; rows_per_train_iter = 4000
     # loss_fn = 'frdvrda'
-    loss_fn = 'frd'
+    # loss_fn = 'frd'
     # loss_fn = 'vrd'
     # loss_fn = 'frdvrd'
     # loss_fn = 'vrdts'
@@ -92,7 +92,8 @@ def main(argv):
             model_type = args[i]
 
     all_models = [LIF, GLIF, LIF_dynamic_R_I, GLIF_dynamic_R_I]
-    models = [LIF, GLIF]
+    models = [GLIF]
+    loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
     # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     if model_type is not None and model_type in str(all_models):
         for m in all_models:
@@ -102,22 +103,23 @@ def main(argv):
             print('Did not find supplied model type. Iterating over all implemented models..')
 
     for m_class in models:
-        for f_i in range(4):
-            if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:
-                target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
-            elif m_class.__name__ in [GLIF.__name__, GLIF_dynamic_R_I.__name__]:
-                target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=f_i)
-            else:
-                raise NotImplementedError()
+        for loss_fn in loss_functions:
+            for f_i in range(4):
+                if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:
+                    target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                    target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
+                elif m_class.__name__ in [GLIF.__name__, GLIF_dynamic_R_I.__name__]:
+                    target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                    target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=f_i)
+                else:
+                    raise NotImplementedError()
 
-            constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
-                                    tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
-                                    initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
-                                    plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name, exp_type_str=exp_type_str)
+                constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
+                                        tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
+                                        initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
+                                        plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name, exp_type_str=exp_type_str)
 
-            exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
+                exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

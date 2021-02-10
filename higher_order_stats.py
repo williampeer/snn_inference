@@ -79,7 +79,8 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 
         plot.bar_plot_pair_custom_labels_two_grps(y1=res_mu_m, y2=res_mu_t, y1_std=res_mu_m_std, y2_std=res_mu_t_std, labels=labels,
                                          exp_type='export', uuid=m_k, fname='bar_plot_avg_mu_across_exp_{}.eps'.format(m_k),
-                                         title='Avg. spike count across experiments ({})'.format(m_k))
+                                         title='Avg. spike count across experiments ({})'.format(m_k),
+                                                  ylabel='Firing rate ($Hz$)')
         # plot.bar_plot_pair_custom_labels(y1=res_std_m, y2=res_std_t, y1_std=res_std_m_std, y2_std=res_std_t_std,
         #                                  labels=labels,
         #                                  exp_type='export', uuid=m_k, fname='bar_plot_avg_std_across_exp_{}.eps'.format(m_k),
@@ -87,7 +88,8 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
         plot.bar_plot_pair_custom_labels_two_grps(y1=res_CV_m, y2=res_CV_t, y1_std=res_CV_m_std, y2_std=res_CV_t_std,
                                          labels=labels,
                                          exp_type='export', uuid=m_k, fname='bar_plot_avg_avg_CV_{}.eps'.format(m_k),
-                                         title='Avg. CV for spike count across experiments ({})'.format(m_k))
+                                         title='Avg. CV for spike count across experiments ({})'.format(m_k),
+                                                  ylabel='Coefficient of variation')
 
         print('m_k', m_k)
         baseline = 0.202
@@ -112,7 +114,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 # def main(argv):
 # print('Argument List:', str(argv))
 
-experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
+experiments_path = '/Users/william/repos/archives_snn_inference/archive/saved/plot_data/'
 folders = os.listdir(experiments_path)
 experiment_averages = {}
 for folder_path in folders:

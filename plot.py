@@ -719,7 +719,8 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
     plt.close()
 
 
-def bar_plot_pair_custom_labels_two_grps(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, xlabel=False, legend=False, baseline=False):
+def bar_plot_pair_custom_labels_two_grps(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, xlabel=False,
+                                         ylabel=False, legend=False, baseline=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -767,6 +768,8 @@ def bar_plot_pair_custom_labels_two_grps(y1, y2, y1_std, y2_std, labels, exp_typ
         plt.xticks(xs)
     if xlabel:
         plt.xlabel(xlabel)
+    if ylabel:
+        plt.ylabel(ylabel)
     # if title:
     #     plt.title(title)
     # else:
@@ -825,7 +828,7 @@ def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xla
 
 
 
-def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, title, xlabel=False, baseline=False):
+def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, title, xlabel=False, ylabel=False, baseline=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -871,12 +874,15 @@ def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, tit
         plt.xticks(xs)
     if xlabel:
         plt.xlabel(xlabel)
+    if ylabel:
+        plt.xlabel(xlabel)
+    else:
+        plt.ylabel('Relative distance')
     # if title:
     #     plt.title(title)
     # else:
     #     plt.title('Variance and CV for each setup')
     # plt.show()
-    plt.ylabel('Relative distance')
     plt.savefig(fname=full_path + fname)
     plt.close()
 
