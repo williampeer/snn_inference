@@ -1,9 +1,6 @@
 import numpy as np
 import torch
 
-# NOTE: This is an implementation for sparse representations (two vectors) of a spike trains,
-#   represented by two vectors; the spike times, and node indices.
-
 prefix = '/Users/user/'
 path = 'data/target_data/'
 matlab_export = 'matlab_export/'
