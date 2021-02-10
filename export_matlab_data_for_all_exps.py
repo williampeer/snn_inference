@@ -10,7 +10,8 @@ from spike_train_matlab_export import load_and_export_sim_data
 def main(argv):
     print('Argument List:', str(argv))
 
-    experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/'
+    # experiments_path = '/Users/william/repos/archives_snn_inference/archive/saved/'
+    experiments_path = '/Users/william/repos/archives_snn_inference/archive 2/saved/'
     plot_data_path = experiments_path + 'plot_data/'
     folders = os.listdir(experiments_path)
     # pdata_files = os.listdir(plot_data_path)

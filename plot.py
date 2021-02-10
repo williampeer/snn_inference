@@ -11,6 +11,7 @@ plt.rcParams.update({'font.size': 14})
 
 
 def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiketrain_test'):
+
     data = {'spike_history': spike_train, 'title': title, 'fname': fname}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_spiketrain')
 
@@ -19,11 +20,11 @@ def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiket
     time_indices = torch.reshape(torch.arange(spike_train.shape[0]), (spike_train.shape[0], 1))
     # ensure binary values:
     spike_train = torch.round(spike_train)
-    neuron_spike_times = spike_train * time_indices
+    neuron_spike_times = spike_train * time_indices.float()
 
     for neuron_i in range(spike_train.shape[1]):
         if neuron_spike_times[:, neuron_i].nonzero().sum() > 0:
-            plt.plot(torch.reshape(neuron_spike_times[:, neuron_i].nonzero(), (1, -1)),
+            plt.plot(torch.reshape(neuron_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
                      neuron_i+1, '.k', markersize=4.0)
 
     plt.xlabel('Time (ms)')
@@ -33,7 +34,7 @@ def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiket
 
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     # IO.makedir_if_not_exists('/figures/' + exp_type + '/')
-    # IO.makedir_if_not_exists(full_path)
+    IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
     # plt.show()
     plt.close()
