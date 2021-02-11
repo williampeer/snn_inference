@@ -28,6 +28,7 @@ def main(argv):
     # loss_fn = 'vrdfrd'
     # loss_fn = 'vrdtsfrd'
     # loss_fn = 'vrdsp'
+    loss_fn = None
 
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
@@ -94,7 +95,10 @@ def main(argv):
     all_models = [LIF, GLIF, LIF_dynamic_R_I, GLIF_dynamic_R_I]
     models = [GLIF]
     # loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
-    loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda']
+    if loss_fn is None:
+        loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda']
+    else:
+        loss_functions = [loss_fn]
     # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     if model_type is not None and model_type in str(all_models):
         for m in all_models:
