@@ -136,29 +136,32 @@ def run_exp_loop(logger, constants, model_class, target_model):
 
     recovered_param_per_exp = {}; poisson_rate_per_exp = []
     for exp_i in range(constants.start_seed, constants.start_seed+constants.N_exp):
-        non_overlapping_offset = constants.start_seed + constants.N_exp + 1
-        torch.manual_seed(non_overlapping_offset + exp_i)
-        np.random.seed(non_overlapping_offset + exp_i)
-        target_model.load_state_dict(target_model.state_dict())
+        try:
+            non_overlapping_offset = constants.start_seed + constants.N_exp + 1
+            torch.manual_seed(non_overlapping_offset + exp_i)
+            np.random.seed(non_overlapping_offset + exp_i)
+            target_model.load_state_dict(target_model.state_dict())
 
-        num_neurons = int(target_model.v.shape[0])
-        init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-        # params_model = zip_dicts(params_model, static_parameters)
+            num_neurons = int(target_model.v.shape[0])
+            init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
+            # params_model = zip_dicts(params_model, static_parameters)
 
-        recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
-            fit_model_to_target_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model, target_parameters=target_parameters)
-        logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
+            recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
+                fit_model_to_target_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model, target_parameters=target_parameters)
+            logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
 
-        if train_i >= constants.train_iters:
-            print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
-                  .format(exp_i, train_i, train_losses, test_losses))
+            if train_i >= constants.train_iters:
+                print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
+                      .format(exp_i, train_i, train_losses, test_losses))
 
-        for p_i, key in enumerate(recovered_parameters):
-            if exp_i == constants.start_seed:
-                recovered_param_per_exp[key] = [recovered_parameters[key]]
-            else:
-                recovered_param_per_exp[key].append(recovered_parameters[key])
-        poisson_rate_per_exp.append(poisson_rates[-1])
+            for p_i, key in enumerate(recovered_parameters):
+                if exp_i == constants.start_seed:
+                    recovered_param_per_exp[key] = [recovered_parameters[key]]
+                else:
+                    recovered_param_per_exp[key].append(recovered_parameters[key])
+            poisson_rate_per_exp.append(poisson_rates[-1])
+        except:
+            logger.log('Exception occurred. Likely a backprop. error.')
 
     logger.log('poisson_rate_per_exp', poisson_rate_per_exp)
     save_poisson_rates(poisson_rate_per_exp, uuid=constants.UUID, fname='poisson_rates_per_exp.pt')
