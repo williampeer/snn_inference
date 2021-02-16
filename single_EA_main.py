@@ -108,13 +108,13 @@ def pytorch_run_GLIF(rate, w, tau_m, G, R_I, f_v, f_I, E_L, b_s, b_v, a_v, delta
 def main(argv):
     print('Argument List:', str(argv))
 
-    num_exps = 5; budget = 6000
+    num_exps = 5; budget = 8000
     # num_exps = 3; budget = 5
     optim_name = 'CMA'
     # optim_name = 'NGO'
     # optim_name = 'DE'
     # optim_name = 'PSO'
-    target_rate = 10.; time_interval = 800
+    target_rate = 10.; time_interval = 1600
     model_type = 'LIF'
     loss_fn = 'frd'
     tau_vr = 100.0
@@ -164,13 +164,13 @@ def main(argv):
     current_plottable_params_for_optim = {}
     other_params_for_optim = {}
     min_loss_per_exp = []
-    for exp_i in range(num_exps):
+    for target_seed in range(4):
         if model_type == 'LIF':
-            target_model_name = 'lif_ensembles_model_dales_compliant_rand_seed_{}'.format(exp_i)
-            target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=exp_i)
+            target_model_name = 'lif_ensembles_model_dales_compliant_rand_seed_{}'.format(target_seed)
+            target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=target_seed)
         elif model_type == 'GLIF':
-            target_model_name = 'glif_ensembles_model_dales_compliant_rand_seed_{}'.format(exp_i)
-            target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=exp_i)
+            target_model_name = 'glif_ensembles_model_dales_compliant_rand_seed_{}'.format(target_seed)
+            target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=target_seed)
         else:
             raise NotImplementedError("Target model not found.")
         logger.log('Target model: {}'.format(target_model_name))
@@ -181,76 +181,77 @@ def main(argv):
                 target_parameters[index_ctr] = [target_model.state_dict()[key].clone().detach().numpy()]
                 index_ctr += 1
 
-        N = 12
-        instrum = get_instrum_for(model_type, target_rate, N, target_model, time_interval, loss_fn, tau_vr)
+        for exp_i in range(num_exps):
+            N = 12
+            instrum = get_instrum_for(model_type, target_rate, N, target_model, time_interval, loss_fn, tau_vr)
 
-        optimizer = optim(parametrization=instrum, budget=budget)
+            optimizer = optim(parametrization=instrum, budget=budget)
 
-        logger.log('setup experiment with the optimizer {}'.format(optimizer.__str__()))
+            logger.log('setup experiment with the optimizer {}'.format(optimizer.__str__()))
 
-        if model_type == 'LIF':
-            recommendation = optimizer.minimize(pytorch_run_LIF)
-        elif model_type == 'GLIF':
-            recommendation = optimizer.minimize(pytorch_run_GLIF)
-        else:
-            raise NotImplementedError()
-
-        recommended_params = recommendation.value[1]
-
-        logger.log('recommendation.value: {}'.format(recommended_params))
-
-        cur_plot_params = {}  # TODO: simplify following implementation
-        index_ctr = 0
-        for p_i, key in enumerate(recommended_params):
-            if key in ['target_model', 'target_rate', 'time_interval', 'loss_fn', 'tau_vr']:
-                pass
-            elif key not in ['rate', 'w']:
-                if exp_i == 0:
-                    current_plottable_params_for_optim[index_ctr] = [np.copy(recommended_params[key])]
-                else:
-                    current_plottable_params_for_optim[index_ctr].append(np.copy(recommended_params[key]))
-                cur_plot_params[key] = np.copy(recommended_params[key])
-                index_ctr += 1
+            if model_type == 'LIF':
+                recommendation = optimizer.minimize(pytorch_run_LIF)
+            elif model_type == 'GLIF':
+                recommendation = optimizer.minimize(pytorch_run_GLIF)
             else:
-                if exp_i == 0:
-                    other_params_for_optim[key] = [np.copy(recommended_params[key])]
+                raise NotImplementedError()
+
+            recommended_params = recommendation.value[1]
+
+            logger.log('recommendation.value: {}'.format(recommended_params))
+
+            cur_plot_params = {}  # TODO: simplify following implementation
+            index_ctr = 0
+            for p_i, key in enumerate(recommended_params):
+                if key in ['target_model', 'target_rate', 'time_interval', 'loss_fn', 'tau_vr']:
+                    pass
+                elif key not in ['rate', 'w']:
+                    if exp_i == 0:
+                        current_plottable_params_for_optim[index_ctr] = [np.copy(recommended_params[key])]
+                    else:
+                        current_plottable_params_for_optim[index_ctr].append(np.copy(recommended_params[key]))
+                    cur_plot_params[key] = np.copy(recommended_params[key])
+                    index_ctr += 1
                 else:
-                    other_params_for_optim[key].append(np.copy(recommended_params[key]))
+                    if exp_i == 0:
+                        other_params_for_optim[key] = [np.copy(recommended_params[key])]
+                    else:
+                        other_params_for_optim[key].append(np.copy(recommended_params[key]))
 
-        m_params = zip_dicts(cur_plot_params.copy(), {'preset_weights': other_params_for_optim['w'][exp_i]})
-        for key in m_params.keys():
-            m_params[key] = np.array(m_params[key], dtype='float32')
-        cur_model = model_class(m_params)
-        model_spike_train, _ = generate_synthetic_data(cur_model, recommended_params['rate'], time_interval)
-        target_spike_train, _ = generate_synthetic_data(target_model, target_rate, time_interval)
+            m_params = zip_dicts(cur_plot_params.copy(), {'preset_weights': other_params_for_optim['w'][exp_i]})
+            for key in m_params.keys():
+                m_params[key] = np.array(m_params[key], dtype='float32')
+            cur_model = model_class(m_params)
+            model_spike_train, _ = generate_synthetic_data(cur_model, recommended_params['rate'], time_interval)
+            target_spike_train, _ = generate_synthetic_data(target_model, target_rate, time_interval)
 
-        # min_loss_per_exp.append(recommendation.loss)  # currently doesn't work..
-        cur_min_loss = get_loss(model_spike_train, target_spike_train, N)
-        min_loss_per_exp.append(cur_min_loss)
+            # min_loss_per_exp.append(recommendation.loss)  # currently doesn't work..
+            cur_min_loss = get_loss(model_spike_train, target_spike_train, N)
+            min_loss_per_exp.append(cur_min_loss)
 
-        release_computational_graph(cur_model, rate_parameter=recommended_params['rate'])
-        release_computational_graph(target_model, rate_parameter=target_rate)
+            release_computational_graph(cur_model, rate_parameter=recommended_params['rate'])
+            release_computational_graph(target_model, rate_parameter=target_rate)
 
-        plot_spiketrains_side_by_side(model_spike_train, target_spike_train, exp_type='single_objective_optim', uuid=UUID,
-                                      title='Spike trains (Gv2) model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
-                                      fname='spike_trains_{}_optim_{}_exp_num_{}_GLIF_v2'.format(model_type, optim_name, exp_i))
+            plot_spiketrains_side_by_side(model_spike_train, target_spike_train, exp_type='single_objective_optim', uuid=UUID,
+                                          title='Spike trains (Gv2) model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
+                                          fname='spike_trains_{}_optim_{}_exp_num_{}_GLIF_v2'.format(model_type, optim_name, exp_i))
 
-        torch.save(recommended_params.copy(),
-                   './saved/single_objective_optim/fitted_params_{}_optim_{}_budget_{}_exp_{}.pt'.format(
-                       target_model_name, optim_name, budget, exp_i))
-        del instrum, optimizer, cur_plot_params, m_params, cur_model, target_model, model_spike_train, target_spike_train
+            torch.save(recommended_params.copy(),
+                       './saved/single_objective_optim/fitted_params_{}_optim_{}_budget_{}_exp_{}.pt'.format(
+                           target_model_name, optim_name, budget, exp_i))
+            del instrum, optimizer, cur_plot_params, m_params, cur_model, target_model, model_spike_train, target_spike_train
 
-    params_by_optim[optim_name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
-    torch.save(params_by_optim, './saved/single_objective_optim/params_tm_{}_by_optim_{}__budget_{}.pt'.format(target_model_name, optim_name, budget))
-    torch.save(min_loss_per_exp, './saved/single_objective_optim/min_losses_tm_{}_optim_{}_budget_{}.pt'.format(target_model_name, optim_name, budget))
+        params_by_optim[optim_name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
+        torch.save(params_by_optim, './saved/single_objective_optim/params_tm_{}_by_optim_{}__budget_{}.pt'.format(target_model_name, optim_name, budget))
+        torch.save(min_loss_per_exp, './saved/single_objective_optim/min_losses_tm_{}_optim_{}_budget_{}.pt'.format(target_model_name, optim_name, budget))
 
-    plot_all_param_pairs_with_variance(current_plottable_params_for_optim,
-                                       exp_type='single_objective_optim',
-                                       uuid=UUID,
-                                       target_params=target_parameters,
-                                       param_names=list(recommended_params.keys())[2:],
-                                       custom_title="KDE projection of 2D model parameter".format(optim_name),
-                                       logger=logger, fname='single_objective_KDE_optim_{}_target_model_{}'.format(optim_name, target_model_name))
+        plot_all_param_pairs_with_variance(current_plottable_params_for_optim,
+                                           exp_type='single_objective_optim',
+                                           uuid=UUID,
+                                           target_params=target_parameters,
+                                           param_names=list(recommended_params.keys())[2:],
+                                           custom_title="KDE projection of 2D model parameter".format(optim_name),
+                                           logger=logger, fname='single_objective_KDE_optim_{}_target_model_{}'.format(optim_name, target_model_name))
 
 
 if __name__ == "__main__":
