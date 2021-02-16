@@ -239,7 +239,7 @@ def main(argv):
             torch.save(recommended_params.copy(),
                        './saved/single_objective_optim/fitted_params_{}_optim_{}_budget_{}_exp_{}.pt'.format(
                            target_model_name, optim_name, budget, exp_i))
-            del instrum, optimizer, cur_plot_params, m_params, cur_model, target_model, model_spike_train, target_spike_train
+            del instrum, optimizer, cur_plot_params, m_params, cur_model, model_spike_train, target_spike_train
 
         params_by_optim[optim_name] = zip_dicts(current_plottable_params_for_optim, other_params_for_optim)
         torch.save(params_by_optim, './saved/single_objective_optim/params_tm_{}_by_optim_{}__budget_{}.pt'.format(target_model_name, optim_name, budget))
