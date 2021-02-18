@@ -236,7 +236,8 @@ def plot_avg_losses_composite(loss_res, keys):
         test_std = np.std(loss_res[key]['test_loss'], axis=0)
         xs_n = 20
         norm_kern = np.max(cur_avg_test_loss)
-        plt.errorbar(np.linspace(1, xs_n, len(cur_avg_train_loss)), y=cur_avg_train_loss/norm_kern, yerr=train_std/norm_kern, fmt=fmts[ctr])
+        cur_linspace = np.linspace(1, xs_n, len(cur_avg_train_loss))
+        plt.errorbar(cur_linspace, y=cur_avg_train_loss/norm_kern, yerr=train_std/norm_kern, fmt=fmts[ctr % len(fmts)])
         # plt.errorbar(np.linspace(1, xs_n, len(cur_avg_test_loss)), y=cur_avg_test_loss/norm_kern, yerr=test_std/norm_kern)
         plt.xticks(np.arange(11) * 2)
         ctr +=1
@@ -250,7 +251,7 @@ def plot_avg_losses_composite(loss_res, keys):
         test_std = np.std(loss_res[key]['test_loss'], axis=0)
         xs_n = 20
         norm_kern = np.max(cur_avg_test_loss)
-        plt.errorbar(np.linspace(1, xs_n, len(cur_avg_test_loss)), y=cur_avg_test_loss/norm_kern, yerr=test_std/norm_kern, fmt=fmts[ctr])
+        plt.errorbar(np.linspace(1, xs_n, len(cur_avg_test_loss)), y=cur_avg_test_loss/norm_kern, yerr=test_std/norm_kern, fmt=fmts[ctr % len(fmts)])
         plt.xticks(np.arange(11) * 2)
         ctr += 1
 
