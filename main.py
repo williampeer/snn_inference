@@ -102,7 +102,7 @@ def main(argv):
     # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     if model_type is not None and model_type in str(all_models):
         for m in all_models:
-            if m.__name__ is model_type:
+            if m.__name__ == model_type:
                 models = [m]
         if len(models) > 1:
             print('Did not find supplied model type. Iterating over all implemented models..')
@@ -125,6 +125,7 @@ def main(argv):
                                         plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name, exp_type_str=exp_type_str)
 
                 exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])
