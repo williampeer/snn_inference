@@ -1,53 +1,114 @@
 import torch
 import torch.nn as nn
 from torch import tensor as T
+from torch import FloatTensor as FT
+
+from Models.TORCH_CUSTOM import static_clamp_for
 
 
 class LIF_R(nn.Module):
-    def __init__(self, device, parameters, C_m=1.0, G=0.7, tau_g=2.0, E_L=-65., N=10, w_mean=0.15, w_var=0.25,
-                 delta_theta_s=30., b_s=0.5, R_I=18., f_v=0.12, delta_V=12.):
+    parameter_names = ['w', 'E_L', 'tau_m', 'tau_g', 'G', 'R_I', 'f_v', 'delta_theta_s', 'b_s', 'delta_V']
+    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'tau_g': [2.0, 3.0], 'G': [0.5, 0.9],
+                                'R_I': [55., 59.],  ##
+                                'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
+                                'delta_V': [8., 14.]}
+
+    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF_R, self).__init__()
         # self.device = device
 
         if parameters:
             for key in parameters.keys():
-                if key == 'C_m':
-                    C_m = float(parameters[key])
+                if key == 'tau_m':
+                    tau_m = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'E_L':
-                    E_L = float(parameters[key])
+                    E_L = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'G':
-                    G = float(parameters[key])
+                    G = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'tau_g':
-                    tau_g = float(parameters[key])
+                    tau_g = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'R_I':
-                    R_I = float(parameters[key])
-                elif key == 'N':
-                    N = int(parameters[key])
+                    R_I = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'w_mean':
                     w_mean = float(parameters[key])
                 elif key == 'w_var':
                     w_var = float(parameters[key])
+                elif key == 'delta_theta_s':
+                    delta_theta_s = FT(torch.ones((N,)) * parameters[key])
+                elif key == 'b_s':
+                    b_s = FT(torch.ones((N,)) * parameters[key])
+                elif key == 'f_v':
+                    f_v = FT(torch.ones((N,)) * parameters[key])
+                elif key == 'delta_V':
+                    delta_V = FT(torch.ones((N,)) * parameters[key])
 
         __constants__ = ['N']
-        self.delta_theta_s = T(delta_theta_s)
         self.N = N
 
         self.v = torch.zeros((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
-        self.theta_s = T(30.) * torch.ones((self.N,))
-        self.b_s = T(b_s)
+        self.theta_s = delta_theta_s * torch.ones((self.N,))
 
-        rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
-        self.w = nn.Parameter(rand_ws, requires_grad=True)  # initialise with positive weights only
-        self.E_L = nn.Parameter(T(N * [E_L]), requires_grad=True)
-        self.C_m = nn.Parameter(T(N * [C_m]), requires_grad=True)
-        self.G = nn.Parameter(T(N * [G]), requires_grad=True)
-        self.tau_g = nn.Parameter(T(N * [tau_g]), requires_grad=True)
+        self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
+        if parameters.__contains__('preset_weights'):
+            # print('DEBUG: Setting w to preset weights: {}'.format(parameters['preset_weights']))
+            # print('Setting w to preset weights.')
+            rand_ws = parameters['preset_weights']
+            assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
+        else:
+            rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
+        for i in range(len(neuron_types)):
+            if neuron_types[i] == -1:
+                rand_ws[i, :] = -torch.abs(FT(rand_ws[i, :]))
+            elif neuron_types[i] == 1:
+                rand_ws[i, :] = torch.abs(FT(rand_ws[i, :]))
+            else:
+                raise NotImplementedError()
+        self.neuron_types = neuron_types
+        self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
 
-        self.R_I = T(R_I)
-        self.f_v = T(f_v)  # Sample values: f_v = 0.15; delta_V = 12.
-        self.delta_V = T(delta_V)
+        self.E_L = nn.Parameter(FT(E_L).clamp(-75., -40.), requires_grad=True)
+        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.9), requires_grad=True)
+        self.G = nn.Parameter(FT(G), requires_grad=True)
+        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
+        self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 3.5), requires_grad=True)
+        self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
+        # self.R_I = nn.Parameter(FT(R_I).clamp(25., 64.), requires_grad=True)
+        self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
+        self.f_v = nn.Parameter(FT(f_v).clamp(0.01, 0.99), requires_grad=True)  # Sample values: f_v = 0.15; delta_V = 12.
+        self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)  ##
+
+        self.register_backward_clamp_hooks()
+
+    def register_backward_clamp_hooks(self):
+        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 50., 150., self.R_I))
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
+        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
+        self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 3.5, self.tau_g))
+        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
+        self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
+        self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
+        self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
+        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_s))
+
+        # row per neuron
+        for i in range(len(self.neuron_types)):
+            if self.neuron_types[i] == -1:
+                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, -1., 0., self.w[i, :]))
+            elif self.neuron_types[i] == 1:
+                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, 0., 1., self.w[i, :]))
+            else:
+                raise NotImplementedError()
+
+    def reset(self):
+        for p in self.parameters():
+            p.grad = None
+        self.reset_hidden_state()
+
+        self.v = self.E_L.clone().detach() * torch.ones((self.N,))
+        self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
+        self.g = torch.zeros_like(self.v)  # syn. conductance
 
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()
@@ -56,8 +117,9 @@ class LIF_R(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
-        I = self.w.matmul(self.g) + x_in
-        dv = (self.G * (self.E_L - self.v) + I * self.R_I) / self.C_m
+        I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in
+
+        dv = (self.G * (self.E_L - self.v) + I * self.R_I) / self.tau_m
         v_next = self.v + dv
 
         # differentiability
@@ -72,7 +134,7 @@ class LIF_R(nn.Module):
         theta_s_next = (1-self.b_s) * self.theta_s
         self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
 
-        self.g = self.g - not_spiked * self.g/self.tau_g
+        self.g = spiked + not_spiked * (self.g - self.g/self.tau_g)
 
-        return self.v, self.spiked
-
+        # return self.v, self.spiked
+        return self.spiked

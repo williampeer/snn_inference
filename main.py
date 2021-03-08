@@ -5,6 +5,9 @@ import exp_suite
 from Models.GLIF import GLIF
 from Models.GLIF_dynamic_R_I import GLIF_dynamic_R_I
 from Models.LIF import LIF
+from Models.LIF_ASC import LIF_ASC
+from Models.LIF_R import LIF_R
+from Models.LIF_R_ASC import LIF_R_ASC
 from Models.LIF_dynamic_R_I import LIF_dynamic_R_I
 from TargetModels import TargetEnsembleModels
 
@@ -21,14 +24,14 @@ def main(argv):
 
     max_train_iters = 20; batch_size = 400; rows_per_train_iter = 4000
     # loss_fn = 'frdvrda'
-    # loss_fn = 'frd'
+    loss_fn = 'frd'
     # loss_fn = 'vrd'
     # loss_fn = 'frdvrd'
     # loss_fn = 'vrdts'
     # loss_fn = 'vrdfrd'
     # loss_fn = 'vrdtsfrd'
     # loss_fn = 'vrdsp'
-    loss_fn = None
+    # loss_fn = None
 
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
@@ -92,14 +95,14 @@ def main(argv):
         elif opt in ("-mt", "--model-type"):
             model_type = args[i]
 
-    all_models = [LIF, GLIF, LIF_dynamic_R_I, GLIF_dynamic_R_I]
-    models = [GLIF]
+    all_models = [LIF, GLIF, GLIF_dynamic_R_I, LIF_R, LIF_ASC, LIF_R_ASC]
+    # models = [GLIF]
+    models = [LIF_R, LIF_ASC, LIF_R_ASC, LIF, GLIF]
     # loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
     if loss_fn is None:
         loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda']
     else:
         loss_functions = [loss_fn]
-    # models = [LI..F, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     if model_type is not None and model_type in str(all_models):
         for m in all_models:
             if m.__name__ == model_type:
