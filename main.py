@@ -116,6 +116,9 @@ def main(argv):
                 if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:
                     target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                     target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
+                elif m_class.__name__ in [LIF_R.__name__]:
+                    target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                    target_model = TargetEnsembleModels.lif_r_ensembles_model_dales_compliant(random_seed=f_i)
                 elif m_class.__name__ in [GLIF.__name__, GLIF_dynamic_R_I.__name__]:
                     target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                     target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=f_i)
