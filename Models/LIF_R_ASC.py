@@ -126,7 +126,7 @@ class LIF_R_ASC(nn.Module):
         return self.spiked
 
     def register_backward_clamp_hooks(self):
-        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 50., 150., self.R_I))
+        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 70., 115., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
         self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
