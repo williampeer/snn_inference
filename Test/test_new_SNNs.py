@@ -7,17 +7,17 @@ from TargetModels import TargetEnsembleModels
 from experiments import poisson_input
 from plot import plot_spiketrains_side_by_side
 
-for random_seed in range(15):
+for random_seed in range(5, 10):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
     num_neurons = 12
 
-    snn = TargetEnsembleModels.lif_r_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
-    ext_name = 'ensembles_{}_dales_LIF_R'.format(random_seed)
+    # snn = TargetEnsembleModels.lif_r_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+    # ext_name = 'ensembles_{}_dales_LIF_R'.format(random_seed)
     # snn = TargetEnsembleModels.lif_asc_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
     # ext_name = 'ensembles_{}_dales_LIF_ASC'.format(random_seed)
-    # snn = TargetEnsembleModels.lif_r_asc_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
-    # ext_name = 'ensembles_{}_dales_LIF_R_ASC'.format(random_seed)
+    snn = TargetEnsembleModels.lif_r_asc_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
+    ext_name = 'ensembles_{}_dales_LIF_R_ASC'.format(random_seed)
 
     # Izhikevich?
     # snn = TargetEnsembleModels.izhikevich_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
