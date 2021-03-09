@@ -105,7 +105,7 @@ class GLIF(nn.Module):
         self.I_additive = self.I_additive.clone().detach()
 
     def forward(self, x_in):
-        I = self.I_additive.matmul(self.self_recurrence_mask * self.w) + 0.85 * x_in
+        I = self.I_additive.matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in
 
         dv = (I * self.R_I - self.G * (self.v - self.E_L)) / self.tau_m
         v_next = torch.add(self.v, dv)

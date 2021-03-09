@@ -16,8 +16,11 @@ for random_seed in range(5, 10):
     # ext_name = 'ensembles_{}_dales_LIF_R'.format(random_seed)
     # snn = TargetEnsembleModels.lif_asc_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
     # ext_name = 'ensembles_{}_dales_LIF_ASC'.format(random_seed)
-    snn = TargetEnsembleModels.lif_r_asc_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
-    ext_name = 'ensembles_{}_dales_LIF_R_ASC'.format(random_seed)
+    # snn = TargetEnsembleModels.lif_r_asc_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
+    # ext_name = 'ensembles_{}_dales_LIF_R_ASC'.format(random_seed)
+
+    snn = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
+    ext_name = 'ensembles_{}_dales_GLIF'.format(random_seed)
 
     # Izhikevich?
     # snn = TargetEnsembleModels.izhikevich_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
