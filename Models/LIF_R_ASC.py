@@ -115,8 +115,9 @@ class LIF_R_ASC(nn.Module):
         v_reset = self.E_L + self.f_v * (self.v - self.E_L) - self.delta_V
         self.v = spiked * v_reset + not_spiked * v_next
 
-        theta_s_next = self.theta_s - self.b_s * self.theta_s
-        self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
+        # theta_s_next = self.theta_s - self.b_s * self.theta_s
+        # self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
+        self.theta_s = (1. - self.b_s) * self.theta_s + spiked * self.delta_theta_s  # always decay
 
         I_additive_decayed = (torch.ones_like(self.f_I) - self.f_I) * self.I_additive
         self.I_additive = spiked * (self.I_additive + self.I_A) + not_spiked * I_additive_decayed
