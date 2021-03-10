@@ -19,10 +19,11 @@ def main(argv):
     start_seed = 0
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.05; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.05; N_exp = 3; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
-    max_train_iters = 20; batch_size = 400; rows_per_train_iter = 4000
+    # max_train_iters = 20; batch_size = 400; rows_per_train_iter = 4000
+    max_train_iters = 8; batch_size = 400; rows_per_train_iter = 2000
     # loss_fn = 'frdvrda'
     loss_fn = 'frd'
     # loss_fn = 'vrd'
@@ -98,7 +99,7 @@ def main(argv):
     all_models = [LIF, GLIF, GLIF_dynamic_R_I, LIF_R, LIF_ASC, LIF_R_ASC]
     # models = [GLIF]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC, LIF, GLIF]
-    models = [LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC]
     # loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
     if loss_fn is None:
         loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda']
@@ -113,7 +114,7 @@ def main(argv):
 
     for m_class in models:
         for loss_fn in loss_functions:
-            for f_i in range(4):
+            for f_i in range(2):
                 if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:
                     target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                     target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
