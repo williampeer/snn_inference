@@ -1,14 +1,14 @@
 import torch
 import torch.nn as nn
-from torch import tensor as T
 from torch import FloatTensor as FT
+from torch import tensor as T
 
 from Models.TORCH_CUSTOM import static_clamp_for
 
 
 class LIF_ASC(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_g', 'G', 'R_I', 'f_v', 'delta_theta_s', 'b_s']
-    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.5, 0.9], 'R_I': [55., 59.],
+    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [80., 95.],
                                 'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
