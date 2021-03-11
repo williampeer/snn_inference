@@ -7,9 +7,9 @@ from Models.TORCH_CUSTOM import static_clamp_for
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.5, 0.9], 'R_I': [55., 59.],
+    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.5, 0.9], 'R_I': [72., 78.],
                                 'f_v': [0.2, 0.4], 'f_I': [0.2, 0.5], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
-                                'a_v': [0.25, 0.45], 'b_v': [0.25, 0.45], 'theta_inf': [-15., -18.], 'delta_V': [8., 14.],
+                                'a_v': [0.25, 0.45], 'b_v': [0.25, 0.45], 'theta_inf': [-12., -16.], 'delta_V': [8., 14.],
                                 'I_A': [1.2, 1.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
@@ -75,7 +75,7 @@ class GLIF(nn.Module):
                 raise NotImplementedError()
         self.neuron_types = neuron_types
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
-        self.E_L = nn.Parameter(FT(E_L).clamp(-75., -40.), requires_grad=True)
+        self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
         self.G = nn.Parameter(FT(G).clamp(0.1, 0.95), requires_grad=True)
         self.f_v = nn.Parameter(FT(f_v).clamp(0.01, 0.99), requires_grad=True)
@@ -88,7 +88,8 @@ class GLIF(nn.Module):
         self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 
-        self.R_I = nn.Parameter(FT(R_I).clamp(25., 64.), requires_grad=True)
+        self.R_I = nn.Parameter(FT(R_I).clamp(67., 82.), requires_grad=True)
+        # self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
 
         self.register_backward_clamp_hooks()
 
@@ -130,8 +131,8 @@ class GLIF(nn.Module):
 
 
     def register_backward_clamp_hooks(self):
-        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 25., 60., self.R_I))
-        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
+        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 67., 82., self.R_I))
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
         self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
         self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))

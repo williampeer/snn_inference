@@ -8,7 +8,7 @@ from Models.TORCH_CUSTOM import static_clamp_for
 
 class LIF_ASC(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_g', 'G', 'R_I', 'f_v', 'delta_theta_s', 'b_s']
-    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [80., 95.],
+    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [80., 88.],
                                 'f_I': [0.2, 0.4], 'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
                                 'I_A': [1.2, 1.5]}
 

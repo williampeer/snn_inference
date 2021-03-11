@@ -1,3 +1,5 @@
+import sys
+
 import torch
 import numpy as np
 
@@ -47,3 +49,5 @@ for random_seed in range(5, 10):
     loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)
     print('tau_vr: {}, loss: {}'.format(tau_vr, loss))
     assert loss > 1e-03, "should have loss for input vs. no input"
+
+sys.exit()
