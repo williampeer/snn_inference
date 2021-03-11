@@ -99,7 +99,7 @@ def main(argv):
     all_models = [LIF, GLIF, GLIF_dynamic_R_I, LIF_R, LIF_ASC, LIF_R_ASC]
     # models = [GLIF]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC, LIF, GLIF]
-    models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC]
+    models = [LIF_R, LIF_ASC, LIF_R_ASC, GLIF, GLIF_dynamic_R_I]
     # loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
     if loss_fn is None:
         loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda']
