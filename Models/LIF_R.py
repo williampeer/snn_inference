@@ -75,14 +75,14 @@ class LIF_R(nn.Module):
         self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 3.5), requires_grad=True)
         self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
         # self.R_I = nn.Parameter(FT(R_I).clamp(25., 64.), requires_grad=True)
-        self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
+        self.R_I = nn.Parameter(FT(R_I).clamp(75., 112.), requires_grad=True)
         self.f_v = nn.Parameter(FT(f_v).clamp(0.01, 0.99), requires_grad=True)  # Sample values: f_v = 0.15; delta_V = 12.
         self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)  ##
 
         self.register_backward_clamp_hooks()
 
     def register_backward_clamp_hooks(self):
-        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 50., 150., self.R_I))
+        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 75., 112., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
         self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 3.5, self.tau_g))
