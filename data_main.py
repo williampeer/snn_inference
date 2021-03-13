@@ -1,15 +1,13 @@
 import sys
 
 import Constants as C
-import exp_suite
+import data_exp_suite
 from Models.GLIF import GLIF
 from Models.GLIF_dynamic_R_I import GLIF_dynamic_R_I
 from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from Models.LIF_dynamic_R_I import LIF_dynamic_R_I
-from TargetModels import TargetEnsembleModels
 
 
 def main(argv):
@@ -19,8 +17,8 @@ def main(argv):
     start_seed = 0
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.03; N_exp = 4; tau_van_rossum = 100.0; plot_flag = True
-    # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
+    learn_rate = 0.03; N_exp = 5; tau_van_rossum = 100.0; plot_flag = True
+    # learn_rate = 0.03; N_exp = 1; tau_van_rossum = 4.0; plot_flag = True
 
     max_train_iters = 20; batch_size = 400; rows_per_train_iter = 4000
     # max_train_iters = 8; batch_size = 400; rows_per_train_iter = 2000
@@ -52,8 +50,8 @@ def main(argv):
 
     evaluate_step = 2
     # evaluate_step = int(max(max_train_iters/10, 1))
-    # data_path = None
-    # prefix = '/Users/william/data/target_data/'
+    prefix = '/Users/william/data/unpublished/'
+    data_path = prefix + 'exp138.mat'
     model_type = None
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -99,7 +97,7 @@ def main(argv):
     all_models = [LIF, GLIF, GLIF_dynamic_R_I, LIF_R, LIF_ASC, LIF_R_ASC]
     # models = [GLIF]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC, LIF, GLIF]
-    models = [LIF_R, LIF_ASC, LIF_R_ASC, GLIF, GLIF_dynamic_R_I]
+    models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, GLIF_dynamic_R_I]
     # loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
     if loss_fn is None:
         loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda']
@@ -114,31 +112,13 @@ def main(argv):
 
     for m_class in models:
         for loss_fn in loss_functions:
-            for f_i in range(3):
-                if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:
-                    target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
-                elif m_class.__name__ in [LIF_R.__name__]:
-                    target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetEnsembleModels.lif_r_ensembles_model_dales_compliant(random_seed=f_i)
-                elif m_class.__name__ in [LIF_ASC.__name__]:
-                    target_model_name = 'lif_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetEnsembleModels.lif_asc_ensembles_model_dales_compliant(random_seed=f_i)
-                elif m_class.__name__ in [LIF_R_ASC.__name__]:
-                    target_model_name = 'lif_r_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetEnsembleModels.lif_r_asc_ensembles_model_dales_compliant(random_seed=f_i)
-                elif m_class.__name__ in [GLIF.__name__, GLIF_dynamic_R_I.__name__]:
-                    target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=f_i)
-                else:
-                    raise NotImplementedError()
+            constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
+                                    tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
+                                    initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
+                                    plot_flag=plot_flag, start_seed=start_seed, target_fname='data', exp_type_str=exp_type_str,
+                                    data_path=data_path)
 
-                constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
-                                        tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
-                                        initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
-                                        plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name, exp_type_str=exp_type_str)
-
-                exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
+            data_exp_suite.start_exp(constants=constants, model_class=m_class)
 
 
 if __name__ == "__main__":
