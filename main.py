@@ -18,7 +18,7 @@ def main(argv):
     # Default values
     start_seed = 0
     # exp_type_str = C.ExperimentType.SanityCheck.name
-    exp_type_str = C.ExperimentType.DataDriven.name
+    exp_type_str = C.ExperimentType.Synthetic.name
     learn_rate = 0.03; N_exp = 4; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
