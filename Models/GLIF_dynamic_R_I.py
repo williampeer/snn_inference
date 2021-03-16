@@ -139,8 +139,8 @@ class GLIF_dynamic_R_I(nn.Module):
 
     def calc_dynamic_clamp_R_I(self):
         I = self.I_additive.matmul(self.self_recurrence_mask * self.w)
-        l = torch.ones_like(self.v) * 40.
-        m = ((self.theta_s + self.theta_v - self.E_L) / I.clamp(min=1e-02)).clamp(min=67., max=82.)
+        l = torch.ones_like(self.v) * 60.
+        m = ((self.theta_s + self.theta_v - self.E_L) / I.clamp(min=1e-02)).clamp(min=60., max=78.)
         return l, m
 
     def register_backward_clamp_hooks(self):

@@ -7,8 +7,6 @@ mkdir saved
 mkdir figures/default
 mkdir figures/DataDriven
 mkdir figures/Synthetic
-mkdir figures/SanityCheck
-mkdir figures/RetrieveFitted
 mkdir figures/single_objective_optim
 mkdir figures/multiobjective_optim
 

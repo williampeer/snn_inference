@@ -1,10 +1,8 @@
 import Log
-from Constants import ExperimentType
 from IO import save_poisson_rates
 from eval import evaluate_loss
-from experiments import generate_synthetic_data, draw_from_uniform, poisson_input, release_computational_graph
+from experiments import generate_synthetic_data, draw_from_uniform, release_computational_graph
 from fit import fit_mini_batches
-from model_util import generate_model_data
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)
