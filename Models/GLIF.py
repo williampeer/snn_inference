@@ -88,7 +88,7 @@ class GLIF(nn.Module):
         self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 
-        self.R_I = nn.Parameter(FT(R_I).clamp(67., 82.), requires_grad=True)
+        self.R_I = nn.Parameter(FT(R_I).clamp(60., 78.), requires_grad=True)
         # self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
 
         self.register_backward_clamp_hooks()
@@ -131,7 +131,7 @@ class GLIF(nn.Module):
 
 
     def register_backward_clamp_hooks(self):
-        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 67., 82., self.R_I))
+        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 60., 78., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
         self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
