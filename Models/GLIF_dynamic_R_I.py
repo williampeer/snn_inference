@@ -7,7 +7,7 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_vector_bounds
 
 class GLIF_dynamic_R_I(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
-    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.5, 0.9], 'R_I': [72., 78.],
+    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.5, 0.9], 'R_I': [70., 76.],
                                 'f_v': [0.2, 0.4], 'f_I': [0.2, 0.5], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
                                 'a_v': [0.25, 0.45], 'b_v': [0.25, 0.45], 'theta_inf': [-12., -16.], 'delta_V': [8., 14.],
                                 'I_A': [1.2, 1.5]}
