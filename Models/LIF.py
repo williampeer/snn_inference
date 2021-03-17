@@ -55,6 +55,7 @@ class LIF(nn.Module):
                 raise NotImplementedError()
         self.neuron_types = neuron_types
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
+
         self.R_I = nn.Parameter(FT(R_I).clamp(100., 150.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
