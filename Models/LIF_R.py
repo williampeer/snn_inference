@@ -69,7 +69,7 @@ class LIF_R(nn.Module):
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
 
         self.E_L = nn.Parameter(FT(E_L).clamp(-75., -40.), requires_grad=True)
-        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.9), requires_grad=True)
+        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.95), requires_grad=True)
         self.G = nn.Parameter(FT(G), requires_grad=True)
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
         self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 3.5), requires_grad=True)
@@ -86,11 +86,11 @@ class LIF_R(nn.Module):
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
         self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 3.5, self.tau_g))
-        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
+        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.95, self.G))
         self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
         self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
         self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
-        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_s))
+        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.b_s))
 
         # row per neuron
         for i in range(len(self.neuron_types)):
@@ -131,10 +131,13 @@ class LIF_R(nn.Module):
         v_reset = self.E_L + self.f_v * (self.v - self.E_L) - self.delta_V
         self.v = spiked * v_reset + not_spiked * v_next
 
-        theta_s_next = (1-self.b_s) * self.theta_s
-        self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
+        # theta_s_next = (1-self.b_s) * self.theta_s
+        # self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
+        self.theta_s = (1-self.b_s) * self.theta_s + spiked * self.delta_theta_s
 
-        self.g = spiked + not_spiked * (self.g - self.g/self.tau_g)
+        # self.g = spiked + not_spiked * (self.g - self.g/self.tau_g)
+        dg = -torch.div(self.g, self.tau_g)  # -g/tau_g
+        self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 
         # return self.v, self.spiked
         return self.spiked

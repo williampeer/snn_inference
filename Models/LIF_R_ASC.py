@@ -74,7 +74,7 @@ class LIF_R_ASC(nn.Module):
         self.f_v = nn.Parameter(FT(f_v).clamp(0.01, 0.99), requires_grad=True)
         self.f_I = nn.Parameter(FT(f_I).clamp(0.01, 0.99), requires_grad=True)
         self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
-        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.9), requires_grad=True)
+        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.95), requires_grad=True)
         self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 
@@ -129,11 +129,11 @@ class LIF_R_ASC(nn.Module):
         self.R_I.register_hook(lambda grad: static_clamp_for(grad, 75., 95., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
-        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
+        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.95, self.G))
         self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
         self.f_I.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_I))
         self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
-        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_s))
+        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.b_s))
         self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
         self.I_A.register_hook(lambda grad: static_clamp_for(grad, 0.5, 3., self.I_A))
 

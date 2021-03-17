@@ -43,7 +43,6 @@ class LIF_ASC(nn.Module):
 
         __constants__ = ['N']
         self.N = N
-        self.G = FT(G)
 
         self.v = torch.zeros((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
@@ -69,7 +68,8 @@ class LIF_ASC(nn.Module):
         self.neuron_types = neuron_types
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
 
-        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.9), requires_grad=True)
+        self.G = nn.Parameter(FT(G).clamp(0.1, 0.95), requires_grad=True)
+        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.95), requires_grad=True)
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
         self.f_I = nn.Parameter(FT(f_I).clamp(0.01, 0.99), requires_grad=True)
@@ -82,10 +82,10 @@ class LIF_ASC(nn.Module):
         self.R_I.register_hook(lambda grad: static_clamp_for(grad, 75., 95., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
-        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.9, self.G))
+        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.95, self.G))
         self.f_I.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_I))
         self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
-        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_s))
+        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.b_s))
         self.I_A.register_hook(lambda grad: static_clamp_for(grad, 0.5, 3., self.I_A))
 
         # row per neuron
@@ -128,8 +128,9 @@ class LIF_ASC(nn.Module):
         theta_s_next = (1 - self.b_s) * self.theta_s
         self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
 
-        I_additive_decayed = (torch.ones_like(self.f_I) - self.f_I) * self.I_additive
-        self.I_additive = spiked * (self.I_additive + self.I_A) + not_spiked * I_additive_decayed
+        # I_additive_decayed = (torch.ones_like(self.f_I) - self.f_I) * self.I_additive
+        # self.I_additive = spiked * (self.I_additive + self.I_A) + not_spiked * I_additive_decayed
+        self.I_additive = (1. - self.f_I) * self.I_additive + self.spiked * self.I_A
 
         # return self.v, self.spiked
         return self.spiked

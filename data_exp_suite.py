@@ -163,8 +163,9 @@ def run_exp_loop(logger, constants, model_class):
                 else:
                     recovered_param_per_exp[key].append(recovered_parameters[key])
             poisson_rate_per_exp.append(poisson_rates[-1])
-        except:
-            logger.log('Exception occurred. Likely a backprop. error.')
+        except Exception as e:
+            logger.log('Exception occurred: {}'.format(e))
+            print(e)
 
     logger.log('poisson_rate_per_exp', poisson_rate_per_exp)
     save_poisson_rates(poisson_rate_per_exp, uuid=constants.UUID, fname='poisson_rates_per_exp.pt')
