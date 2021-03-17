@@ -85,9 +85,9 @@ class GLIF_dynamic_R_I(nn.Module):
         self.f_v = nn.Parameter(FT(f_v).clamp(0.01, 0.99), requires_grad=True)
         self.f_I = nn.Parameter(FT(f_I).clamp(0.01, 0.99), requires_grad=True)
         self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
-        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.9), requires_grad=True)
-        self.a_v = nn.Parameter(FT(a_v).clamp(0.01, 0.9), requires_grad=True)
-        self.b_v = nn.Parameter(FT(b_v).clamp(0.01, 0.9), requires_grad=True)
+        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.95), requires_grad=True)
+        self.a_v = nn.Parameter(FT(a_v).clamp(0.01, 0.95), requires_grad=True)
+        self.b_v = nn.Parameter(FT(b_v).clamp(0.01, 0.95), requires_grad=True)
         self.theta_inf = nn.Parameter(FT(theta_inf).clamp(-25., 0.), requires_grad=True)
         self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
@@ -132,8 +132,7 @@ class GLIF_dynamic_R_I(nn.Module):
         d_theta_v = self.a_v * (self.v - self.E_L) - self.b_v * (self.theta_v - self.theta_inf)
         self.theta_v = self.theta_v + not_spiked * d_theta_v
 
-        self.I_additive = (1. - self.f_I) * self.I_additive \
-                          + self.spiked * self.I_A
+        self.I_additive = (1. - self.f_I) * self.I_additive + self.spiked * self.I_A
 
         return self.spiked
 
@@ -158,9 +157,9 @@ class GLIF_dynamic_R_I(nn.Module):
         self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
         self.f_I.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_I))
         self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
-        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_s))
-        self.a_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.a_v))
-        self.b_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.9, self.b_v))
+        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.b_s))
+        self.a_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.a_v))
+        self.b_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.b_v))
         self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -20., -10., self.theta_inf))
         self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
         self.I_A.register_hook(lambda grad: static_clamp_for(grad, 0.5, 3., self.I_A))
