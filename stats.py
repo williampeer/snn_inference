@@ -84,5 +84,12 @@ def higher_order_stats(s1, s2, bin_size=20):
     CV2 = std2 / mu2
 
     corrcoef = np.corrcoef(sums1, sums2, rowvar=False)
+    s1_spikes = s1.sum(axis=0)
+    s2_spikes = s2.sum(axis=0)
+    N = s1.shape[1]
+    for m_i in range(N):
+        if s1_spikes[m_i] < 0.01 or s2_spikes[m_i] < 0.01:
+            corrcoef[12 + m_i, :] = 0.
+            corrcoef[:, m_i] = 0.
 
-    return corrcoef, mu1, std1, mu2, std2, CV1, CV2
+    return np.abs(corrcoef), mu1, std1, mu2, std2, CV1, CV2
