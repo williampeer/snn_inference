@@ -8,8 +8,8 @@ from Models.TORCH_CUSTOM import static_clamp_for
 
 class LIF_ASC(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_g', 'G', 'R_I', 'f_v', 'delta_theta_s', 'b_s']
-    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [80., 88.],
-                                'f_I': [0.2, 0.4], 'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
+    parameter_init_intervals = {'E_L': [-62., -45.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [2910., 2930.],
+                                'f_I': [0.3, 0.5], 'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
                                 'I_A': [1.2, 1.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
@@ -73,13 +73,14 @@ class LIF_ASC(nn.Module):
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
         self.f_I = nn.Parameter(FT(f_I).clamp(0.01, 0.99), requires_grad=True)
-        self.R_I = nn.Parameter(FT(R_I).clamp(75., 95.), requires_grad=True)
+        # self.R_I = nn.Parameter(FT(R_I).clamp(75., 95.), requires_grad=True)
+        self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
 
         self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
         self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 
     def register_backward_clamp_hooks(self):
-        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 75., 95., self.R_I))
+        # self.R_I.register_hook(lambda grad: static_clamp_for(grad, 75., 95., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -75., -40., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
         self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.95, self.G))
@@ -113,8 +114,9 @@ class LIF_ASC(nn.Module):
 
     def forward(self, x_in):
         I = self.I_additive.matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in
+        I_normalised = I / ((self.N-1) * self.I_A / self.f_I)
 
-        dv = (self.G * (self.E_L - self.v) + I * self.R_I) / self.tau_m
+        dv = (self.G * (self.E_L - self.v) + I_normalised * self.R_I) / self.tau_m
         v_next = self.v + dv
 
         # differentiable
