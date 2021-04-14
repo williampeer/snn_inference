@@ -8,7 +8,8 @@ import IO
 class Constants:
     def __init__(self, learn_rate, train_iters, N_exp, batch_size, tau_van_rossum,
                  initial_poisson_rate, rows_per_train_iter, optimiser, loss_fn, evaluate_step,
-                 data_set=None, data_path=None, fitted_model_path=None, data_bin_size=None, target_bin_size=None):
+                 data_set=None, data_path=None, plot_flag=True, fitted_model_path=None, data_bin_size=None,
+                 target_bin_size=None, start_seed=0, target_fname=None, exp_type_str=None):
         if data_bin_size is not None:
             self.data_bin_size = int(data_bin_size)
         else:
@@ -32,6 +33,13 @@ class Constants:
         self.rows_per_train_iter = int(rows_per_train_iter)
         self.loss_fn = loss_fn
         self.evaluate_step = evaluate_step
+        self.plot_flag = plot_flag
+        self.start_seed = start_seed
+        self.target_fname = target_fname
+        try:
+            self.EXP_TYPE = ExperimentType[exp_type_str]
+        except:
+            raise NotImplementedError('ExperimentType not found.')
 
         # self.UUID = uuid.uuid4().__str__()
         self.UUID = IO.dt_descriptor()
@@ -47,14 +55,15 @@ class Constants:
     def __str__(self):
         return 'data_bin_size: {}, target_bin_size: {}, learn_rate: {}, train_iters: {}, N_exp: {}, batch_size: {},' \
                'tau_van_rossum: {}, initial_poisson_rate: {}, rows_per_train_iter: {}, ' \
-               'optimiser: {}, loss_fn: {}, data_set: {}, evaluate_step: {}, fitted_model_path: {}'.\
+               'optimiser: {}, loss_fn: {}, data_set: {}, evaluate_step: {}, fitted_model_path: {}, ' \
+               'data_path: {}, plot_flag: {}, start_seed: {}, target_fname: {}, EXP_TYPE: {}'.\
             format(self.data_bin_size, self.target_bin_size, self.learn_rate, self.train_iters, self.N_exp,
                    self.batch_size, self.tau_van_rossum, self.initial_poisson_rate, self.rows_per_train_iter,
-                   self.optimiser, self.loss_fn, self.data_set, self.evaluate_step, self.fitted_model_path)
+                   self.optimiser, self.loss_fn, self.data_set, self.evaluate_step, self.fitted_model_path,
+                   self.data_path, self.plot_flag, self.start_seed, self.target_fname, self.EXP_TYPE)
 
 
 class ExperimentType(enum.Enum):
     DataDriven = 1
     Synthetic = 2
     SanityCheck = 3
-    RetrieveFitted = 4

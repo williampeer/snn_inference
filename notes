@@ -1,0 +1,92 @@
+
+input stimuli
+
+consistent stimulus - sweet spot
+wrt "noise"
+
+
+
+clear all;
+set_parameters;
+data_names = slower_sync_0_4_kl_div;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = slower_sync_0_4_poisson_nll;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = slower_sync_0_4_vrd;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = slower_sync_0_4_vrdfrd;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = glif1_0_4_kl_div;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = glif1_0_4_kl_div;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = glif1_0_4_vrd;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = glif1_0_4_2_vrdfrd;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = glif1_0_4_3_vrdfrd;
+calc_moddist;
+--------------
+clear all;
+set_parameters;
+data_names = glif2_0_4_kl_div;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = glif2_0_4_poisson_nll;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = glif2_0_4_vrd;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = glif2_0_4_vrdfrd;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = async_0_4_kl_div;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = async_0_4_poisson_nll;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = async_0_4_vrd;
+calc_moddist;
+
+clear all;
+set_parameters;
+data_names = async_0_4_vrdfrd;
+calc_moddist;

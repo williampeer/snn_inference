@@ -2,14 +2,22 @@ import torch
 import os
 from datetime import datetime
 
+import data_util
+
 PATH = './saved/'
 PLOT_PATH = 'plot_data/'
 fname_ext = '.pt'
 
 
 def makedir_if_not_exists(path):
-    if not os.path.exists(path):
-        os.mkdir(path)
+    # if not os.path.exists(path):
+    #     os.mkdir(path)
+    path_parts = path.split('/')
+    aggr_path = ''
+    for i in range(len(path_parts)):  # needs to create one dir at a time.
+        aggr_path += path_parts[i] + '/'
+        if not os.path.exists(aggr_path):
+            os.mkdir(aggr_path)
 
 
 def save_entire_model(model, uuid, fname='test_model'):
@@ -18,17 +26,25 @@ def save_entire_model(model, uuid, fname='test_model'):
     torch.save(model, PATH+uuid+'/'+fname+fname_ext)
 
 
-def save_model_params(model, uuid, fname='test_model_params'):
+def save_model_params(model, fname='test_model_params'):
+    full_path = data_util.prefix + data_util.path
+    makedir_if_not_exists(full_path)
+
+    torch.save(model.state_dict(), full_path+'/'+fname+fname_ext)
+
+
+def save_poisson_rates(rates, uuid, fname='default_poisson_rates'):
     makedir_if_not_exists(PATH + uuid)
 
-    torch.save(model.state_dict(), PATH+uuid+'/'+fname+fname_ext)
+    torch.save(rates, PATH+uuid+'/'+fname+fname_ext)
 
 
-def save(model, loss, uuid, fname='test_exp_dict'):
+def save(model, rate, loss, uuid, fname='test_exp_dict'):
     makedir_if_not_exists(PATH + uuid)
 
     torch.save({
         'model': model,
+        'rate': rate,
         'loss': loss
     }, PATH+uuid+'/'+fname+fname_ext)
 

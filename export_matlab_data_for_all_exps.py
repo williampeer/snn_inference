@@ -1,0 +1,70 @@
+import os
+import sys
+
+import torch
+
+from IO import makedir_if_not_exists
+from data_util import prefix, path
+from spike_train_matlab_export import load_and_export_sim_data
+
+
+def main(argv):
+    print('Argument List:', str(argv))
+
+    # experiments_path = '/Users/william/repos/archives_snn_inference/archive/saved/'
+    experiments_path = '/Users/william/repos/archives_snn_inference/archive 15 data/saved/'
+    archive_name = 'data/'
+    plot_data_path = experiments_path + 'plot_data/'
+    folders = os.listdir(experiments_path)
+    # pdata_files = os.listdir(plot_data_path)
+
+    spike_train_files_post_training = {}
+    for folder_path in folders:
+        # print(folder_path)
+
+        full_folder_path = experiments_path + folder_path + '/'
+        if not folder_path.__contains__('.DS_Store'):
+            files = os.listdir(full_folder_path)
+            id = folder_path.split('-')[-1]
+        else:
+            files = []
+            id = 'None'
+
+        for f in files:
+            if f.__contains__('exp_num'):
+                model_type = f.split('_exp_num_')[0]
+                if model_type not in ['LIF', 'LIF_R']:  # mt mask
+                    pass
+                else:
+                    exp_num = int(f.split('_exp_num_')[1].split('_')[0])
+
+                    pdata_files = os.listdir(plot_data_path + folder_path)
+                    pdata_loss_files = []
+                    for pdata_f in pdata_files:
+                        if pdata_f.__contains__('plot_losses'):
+                            pdata_loss_files.append(pdata_f)
+
+                    pdata_loss_files.sort()
+                    if len(pdata_loss_files) > exp_num:
+                        cur_exp_pdata_loss_file = pdata_loss_files[exp_num]
+                        loss_data = torch.load(plot_data_path + folder_path + '/' + cur_exp_pdata_loss_file)
+                        custom_title = loss_data['plot_data']['custom_title']
+                        optimiser = custom_title.split(', ')[1].strip(' ')
+                        # model_type = custom_title.split(',')[0].split('(')[-1]
+                        lr = custom_title.split(', ')[-1].strip(' =lr').strip(')').replace('.', '')
+                        lfn = loss_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
+
+                        exp_type = 'DataDriven_5'
+                        cur_fname = 'spikes_{}_{}_{}_{}_{}_{}_exp_num_{}'.format(exp_type, model_type, optimiser, lfn, lr, id, exp_num)
+                        save_file_name = prefix + path + archive_name + cur_fname + '.mat'
+
+                        # if optimiser == 'SGD':
+                        if os.path.exists(prefix + path + archive_name) and not os.path.exists(save_file_name):
+                            makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
+                            load_and_export_sim_data(full_folder_path + f, fname=archive_name + cur_fname)
+                        else:
+                            print('file exists. skipping..')
+                        # load_and_export_sim_data(f, optim='Adam_frdvrda_001')
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
