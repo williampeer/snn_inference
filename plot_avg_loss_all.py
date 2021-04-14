@@ -16,7 +16,8 @@ def main(argv):
 
     load_paths = []
     # load_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-20_15-05-33-991/plot_spiketrains_side_by_side01-21_21-55-15-927.pt']
-    experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
+    experiments_path = '/Users/william/repos/archives_snn_inference/archive 14 data/saved/plot_data/'
+    archive = '14_data'
     folders = os.listdir(experiments_path)
     loss_res = {}
     for folder_path in folders:
@@ -42,9 +43,10 @@ def main(argv):
                 plot_losses_files.append(f)
 
                 # break
-        if model_type != 'LIF':
-            pass
-        elif len(plot_losses_files) == 0:
+        # if model_type != 'LIF':
+        #     pass
+        # elif len(plot_losses_files) == 0:
+        if len(plot_losses_files) == 0:
             print("Incomplete exp.: No loss files.")
             # print(len(plot_spiketrains_files))
             pass
@@ -104,12 +106,14 @@ def main(argv):
             train_std = np.std(loss_res[conf]['train_loss'], axis=0)
             cur_avg_test_loss = np.mean(loss_res[conf]['test_loss'], axis=0)
             test_std = np.std(loss_res[conf]['test_loss'], axis=0)
-            plot.plot_avg_losses(cur_avg_train_loss, train_std, cur_avg_test_loss, test_std, 'export', exp_type=model_type,
+            plot.plot_avg_losses(cur_avg_train_loss, train_std, cur_avg_test_loss, test_std, 'export/'+archive, exp_type=model_type,
                                  custom_title='Average loss across experiments, {}'.format(conf.replace('0_0', '0.0').replace('_', ', ')),
                                  fname='export_avg_loss_across_exp_{}.eps'.format(conf))
 
-    keys = ['LIF_Adam_frd_0_05', 'LIF_Adam_vrd_0_05', 'LIF_Adam_frdvrda_0_05']
-    plot.plot_avg_losses_composite(loss_res, keys)
+    # keys = ['LIF_Adam_frd_0_05', 'LIF_Adam_vrd_0_05', 'LIF_Adam_frdvrda_0_05']
+    # keys = ['GLIF_Adam_frd_0_05', 'GLIF_Adam_vrd_0_05', 'GLIF_Adam_frdvrda_0_05']
+    # plot.plot_avg_losses_composite(loss_res, keys)
+    plot.plot_avg_losses_composite(loss_res, conf_keys)
 
 
 if __name__ == "__main__":

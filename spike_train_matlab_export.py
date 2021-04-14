@@ -10,7 +10,7 @@ from model_util import generate_model_data
 from plot import plot_spike_train
 
 
-def load_and_export_sim_data(model_path, fname=False, t = 60 * 1000):
+def load_and_export_sim_data(model_path, fname=False, t = 5 * 60 * 1000):
     # print('Argument List:', str(argv))
 
     # loss_fn = model_path.split('loss_fn_')[1].split('_budget')[0]

@@ -1,12 +1,10 @@
 import os
-import sys
 
 import numpy as np
 import torch
 
 import plot
 import stats
-from higher_order_stats_init_models import get_LIF_init_models_stats
 
 
 def plot_stats_across_experiments(avg_statistics_per_exp):
@@ -78,7 +76,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
         # labels.append('init\nmodels')
 
         plot.bar_plot_pair_custom_labels_two_grps(y1=res_mu_m, y2=res_mu_t, y1_std=res_mu_m_std, y2_std=res_mu_t_std, labels=labels,
-                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_mu_across_exp_{}.eps'.format(m_k),
+                                         exp_type='export', uuid='ho_stats' + '/' + custom_uuid, fname='bar_plot_avg_mu_across_exp_{}.eps'.format(m_k),
                                          title='Avg. spike count across experiments ({})'.format(m_k),
                                                   ylabel='Firing rate ($Hz$)')
         # plot.bar_plot_pair_custom_labels(y1=res_std_m, y2=res_std_t, y1_std=res_std_m_std, y2_std=res_std_t_std,
@@ -87,13 +85,13 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
         #                                  title='Avg. spike standard deviation across experiments ({})'.format(m_k))
         plot.bar_plot_pair_custom_labels_two_grps(y1=res_CV_m, y2=res_CV_t, y1_std=res_CV_m_std, y2_std=res_CV_t_std,
                                          labels=labels,
-                                         exp_type='export', uuid=m_k, fname='bar_plot_avg_avg_CV_{}.eps'.format(m_k),
+                                         exp_type='export', uuid='ho_stats' + '/' + custom_uuid, fname='bar_plot_avg_avg_CV_{}.eps'.format(m_k),
                                          title='Avg. CV for spike count across experiments ({})'.format(m_k),
                                                   ylabel='Coefficient of variation')
 
         print('m_k', m_k)
-        baseline = 0.202
-        # baseline = 0.325
+        # baseline = 0.202
+        baseline = 0.325
         if m_k is 'LIF':
             baseline = 0.202
         elif m_k is 'GLIF':
@@ -104,17 +102,19 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
         #                                  exp_type='export', uuid=m_k, fname='bar_plot_avg_diag_corrs_{}.eps'.format(m_k),
         #                                  title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline)
         lh = int(len(avg_diag_corrs)/2)
-        plot.bar_plot_two_grps(y1=avg_diag_corrs[:lh], y1_std=avg_diag_corrs_std[:lh],
-                               y2=avg_diag_corrs[lh:], y2_std=avg_diag_corrs_std[lh:],
-                               labels=labels,
-                               exp_type='export', uuid=m_k, fname='bar_plot_avg_diag_corrs_{}.eps'.format(m_k),
-                               title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline)
+        if not (np.any(np.isnan(avg_diag_corrs)) or np.any(np.isnan(avg_diag_corrs_std))):
+            plot.bar_plot_two_grps(y1=avg_diag_corrs[:lh], y1_std=avg_diag_corrs_std[:lh],
+                                   y2=avg_diag_corrs[lh:], y2_std=avg_diag_corrs_std[lh:],
+                                   labels=labels,
+                                   exp_type='export', uuid='ho_stats' + '/' + custom_uuid, fname='bar_plot_avg_diag_corrs_{}.eps'.format(m_k),
+                                   title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline)
 
 
 # def main(argv):
 # print('Argument List:', str(argv))
 
-experiments_path = '/Users/william/repos/archives_snn_inference/archive/saved/plot_data/'
+experiments_path = '/Users/william/repos/archives_snn_inference/archive 14 data/saved/plot_data/'
+custom_uuid = 'data'
 folders = os.listdir(experiments_path)
 experiment_averages = {}
 for folder_path in folders:
@@ -128,7 +128,7 @@ for folder_path in folders:
         files = []
         id = 'None'
     plot_spiketrains_files = []
-    # plot_losses_files = []
+    plot_losses_files = []
     for f in files:
         if f.__contains__('plot_spiketrains_side_by_side'):
             plot_spiketrains_files.append(f)
@@ -140,9 +140,17 @@ for folder_path in folders:
             # lr = custom_title.split(', ')[-1].strip(' =lr').strip(')')
             lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
             # break
+            plot_losses_files.append(f)
 
     # if len(plot_spiketrains_files) != 55 or model_type != 'LIF' or lfn not in ['frd', 'vrd', 'frdvrd', 'frdvrda']: # file mask
-    if model_type != 'LIF' or lfn not in ['frd', 'vrd', 'frdvrd', 'frdvrda']: # file mask
+    # if model_type != 'LIF' or lfn not in ['frd', 'vrd', 'frdvrd', 'frdvrda']: # file mask
+    if len(plot_losses_files) == 0:
+        print("Incomplete exp.: No loss files.")
+        # print(len(plot_spiketrains_files))
+        pass
+    # elif model_type != 'LIF_R' or lfn not in ['frd']: # file mask
+    # elif lfn not in ['frd'] or model_type == 'GLIF' or model_type == 'LIF': # file mask
+    elif lfn not in ['frd']: # file mask
         # print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
         # print(len(plot_spiketrains_files))
         pass
@@ -187,10 +195,12 @@ for folder_path in folders:
 
             corrcoeff, mu1, std1, mu2, std2, CV1, CV2 = stats.higher_order_stats(model_spike_train, target_spike_train, bin_size=100)
 
-            if not np.isnan(corrcoeff).any():
+            if not np.isnan(corrcoeff[12:, :12]).any():
                 avg_diag_corr = (np.eye(12) * corrcoeff[12:, :12]).sum() / 12.
                 # avg_diag_corr_std = (np.eye(12) * corrcoeff).sum() / 12.
                 experiment_averages[model_type][optimiser][lfn]['all_corrcoeff'].append(np.copy(avg_diag_corr))
+            else:
+                print('corrcoeff NaN for {}, {}, {}'.format(model_type, optimiser, lfn))
 
             cur_hyperconf = 'Correlation coefficient, {}, {}, {}'.format(model_type, optimiser, lfn)
             fname_prefix = model_type + '_' + optimiser + '_' + lfn

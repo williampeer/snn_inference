@@ -19,7 +19,7 @@ def main(argv):
 
     # experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
     # load_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/01-22_11-04-09-239/plot_parameter_inference_trajectories_2d01-23_07-27-33-240.pt'
-    experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/01-22_11-04-09-239/'
+    experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/03-16_10-33-15-060/'
 
     # for i, opt in enumerate(opts):
     #     if opt == '-h':
@@ -83,11 +83,11 @@ def main(argv):
                                                           exp_type=plot_data['exp_type'], uuid='export',
                                                           fname='heatmap_bin_{}_{}'.format(bin_size, save_fname),
                                                           bin_size=bin_size)
-                    std1, r1 = stats.binned_avg_firing_rate_per_neuron(s1, bin_size=bin_size)
-                    std2, r2 = stats.binned_avg_firing_rate_per_neuron(s2, bin_size=bin_size)
-                    plot.bar_plot_neuron_rates(r1, r2, std1, std2, bin_size=bin_size, exp_type=plot_data['exp_type'],
-                                               uuid='export',
-                                               fname='rate_plot_bin_{}_{}'.format(bin_size, save_fname))
+                    # std1, r1 = stats.binned_avg_firing_rate_per_neuron(s1, bin_size=bin_size)
+                    # std2, r2 = stats.binned_avg_firing_rate_per_neuron(s2, bin_size=bin_size)
+                    # plot.bar_plot_neuron_rates(r1, r2, std1, std2, bin_size=bin_size, exp_type=plot_data['exp_type'],
+                    #                            uuid='export',
+                    #                            fname='rate_plot_bin_{}_{}'.format(bin_size, save_fname))
 
             for f in plot_all_param_pairs_with_variance_files:
                 data = torch.load(experiments_path + f)

@@ -221,12 +221,12 @@ def plot_avg_losses(avg_train_loss, train_loss_std, avg_test_loss, test_loss_std
     plt.close()
 
 
-def plot_avg_losses_composite(loss_res, keys):
+def plot_avg_losses_composite(loss_res, keys, archive_path='default_export'):
     plt.figure()
     # xs_n = len(avg_train_loss)
-    # legend = []
-    legend = ['frd', 'vrd', 'a(frd+vrd)']
-    fmts = ['--', '--*', '-']
+    legend = []
+    # legend = ['frd', 'vrd', 'a(frd+vrd)']
+    # fmts = ['--', '--*', '-']
     # cols = ['c', 'm', 'g']
     ctr = 0
     for key in keys:
@@ -237,13 +237,15 @@ def plot_avg_losses_composite(loss_res, keys):
         xs_n = 20
         norm_kern = np.max(cur_avg_test_loss)
         cur_linspace = np.linspace(1, xs_n, len(cur_avg_train_loss))
-        plt.errorbar(cur_linspace, y=cur_avg_train_loss/norm_kern, yerr=train_std/norm_kern, fmt=fmts[ctr % len(fmts)])
+        # plt.errorbar(cur_linspace, y=cur_avg_train_loss/norm_kern, yerr=train_std/norm_kern, fmt=fmts[ctr % len(fmts)])
+        plt.errorbar(cur_linspace, y=cur_avg_train_loss/norm_kern, yerr=train_std/norm_kern)
         # plt.errorbar(np.linspace(1, xs_n, len(cur_avg_test_loss)), y=cur_avg_test_loss/norm_kern, yerr=test_std/norm_kern)
         plt.xticks(np.arange(11) * 2)
         ctr +=1
 
         # legend.append('Training {}'.format(key))
         # legend.append('Test {}'.format(key))
+        legend.append('{}'.format(key))
 
     ctr = 0
     for key in keys:
@@ -251,19 +253,19 @@ def plot_avg_losses_composite(loss_res, keys):
         test_std = np.std(loss_res[key]['test_loss'], axis=0)
         xs_n = 20
         norm_kern = np.max(cur_avg_test_loss)
-        plt.errorbar(np.linspace(1, xs_n, len(cur_avg_test_loss)), y=cur_avg_test_loss/norm_kern, yerr=test_std/norm_kern, fmt=fmts[ctr % len(fmts)])
+        # plt.errorbar(np.linspace(1, xs_n, len(cur_avg_test_loss)), y=cur_avg_test_loss/norm_kern, yerr=test_std/norm_kern, fmt=fmts[ctr % len(fmts)])
+        plt.errorbar(np.linspace(1, xs_n, len(cur_avg_test_loss)), y=cur_avg_test_loss/norm_kern, yerr=test_std/norm_kern)
         plt.xticks(np.arange(11) * 2)
         ctr += 1
 
-    plt.legend(legend)
+    plt.legend(legend, loc='upper left', fontsize='xx-small', fancybox=True, bbox_to_anchor=(0.8, 1.)).get_frame().set_alpha(0.6)
 
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
 
     plt.grid(True)
 
-    full_path = './figures/' + 'LIF' + '/' + 'export' + '/'
-    IO.makedir_if_not_exists('./figures/' + 'LIF' + '/')
+    full_path = './figures/' + archive_path + '/'
     IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + 'export_avg_loss_composite.eps')
     # plt.show()
