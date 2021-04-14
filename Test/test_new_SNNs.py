@@ -6,7 +6,7 @@ import numpy as np
 import model_util
 import spike_metrics
 from TargetModels import TargetEnsembleModels
-from experiments import poisson_input
+from experiments import poisson_input, continuous_normalised_poisson_noise
 from plot import plot_spiketrains_side_by_side
 
 for random_seed in range(5, 10):
@@ -14,10 +14,12 @@ for random_seed in range(5, 10):
     np.random.seed(random_seed)
     num_neurons = 12
 
-    # snn = TargetEnsembleModels.lif_r_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
-    # ext_name = 'ensembles_{}_dales_LIF_R'.format(random_seed)
-    snn = TargetEnsembleModels.lif_asc_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
-    ext_name = 'ensembles_{}_dales_LIF_ASC'.format(random_seed)
+    # snn = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+    # ext_name = 'ensembles_{}_dales_LIF'.format(random_seed)
+    snn = TargetEnsembleModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+    ext_name = 'ensembles_{}_dales_LIF_continuous'.format(random_seed)
+    # snn = TargetEnsembleModels.lif_asc_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
+    # ext_name = 'ensembles_{}_dales_LIF_ASC'.format(random_seed)
     # snn = TargetEnsembleModels.lif_r_asc_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
     # ext_name = 'ensembles_{}_dales_LIF_R_ASC'.format(random_seed)
 
@@ -31,8 +33,10 @@ for random_seed in range(5, 10):
     # snn = TargetEnsembleModels.izhikevich_ensembles_model_dales_compliant(random_seed=random_seed, N=12)
     # ext_name = 'ensembles_{}_dales_Izhikevich'.format(random_seed)
 
-    rate = 10.
-    inputs = poisson_input(rate, t=12000, N=snn.N)  # rate in Hz
+    # rate = 10.
+    # inputs = poisson_input(rate, t=12000, N=snn.N)  # rate in Hz
+    p_lambda = 4.
+    inputs = continuous_normalised_poisson_noise(p_lambda=p_lambda, t=12000, N=snn.N)  # rate in Hz
     print('#inputs: {}'.format(inputs.sum()))
     # membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     spikes = model_util.feed_inputs_sequentially_return_spiketrain(snn, inputs)
@@ -45,7 +49,8 @@ for random_seed in range(5, 10):
     spikes_zeros = model_util.feed_inputs_sequentially_return_spiketrain(snn, zeros)
     # plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()), fname_ext='test_GLIF_no_input'  + '_' + str(random_seed))
 
-    plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_SNNs', title='{} random ({} Hz) and zero input'.format(ext_name, rate),
+    # plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_SNNs', title='{} random ({} Hz) and zero input'.format(ext_name, rate),
+    plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_SNNs', title='{} random (\lambda={}) and zero input'.format(ext_name, p_lambda),
                                   legend=['Poisson input', 'No input'])
 
     tau_vr = torch.tensor(4.0)

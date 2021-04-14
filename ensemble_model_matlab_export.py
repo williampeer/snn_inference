@@ -3,9 +3,7 @@ import sys
 import numpy as np
 import torch
 
-from Dev.pytorch_custom_network_opt import in_place_cast_to_float32
 from IO import save_model_params
-from Models.GLIF import GLIF
 from TargetModels import TargetEnsembleModels
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_to_sparse_vectors
 from experiments import poisson_input
@@ -19,7 +17,8 @@ def main(argv):
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
 
-    model_type = None
+    # model_type = None
+    model_type = 'LIF_R'
     t = 5 * 60 * 1000
     # t = 15 * 60 * 1000
     for r_seed in range(4):
@@ -39,6 +38,9 @@ def main(argv):
             if model_type == 'LIF':
                 model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=r_seed)
                 model_name = 'lif_ensembles_dales_{}'.format(r_seed)
+            elif model_type == 'LIF_R':
+                model = TargetEnsembleModels.lif_r_ensembles_model_dales_compliant(random_seed=r_seed)
+                model_name = 'lif_r_ensembles_dales_{}'.format(r_seed)
             elif model_type == 'GLIF':
                 model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=r_seed)
                 model_name = 'glif_ensembles_dales_{}'.format(r_seed)

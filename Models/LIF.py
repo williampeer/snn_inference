@@ -94,6 +94,7 @@ class LIF(nn.Module):
 
     def forward(self, x_in):
         I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in
+        I = I / (self.N-1)
 
         dv = (self.E_L - self.v + I * self.R_I) / self.tau_m  # RI - (v - E_L) / tau_m
         v_next = torch.add(self.v, dv)

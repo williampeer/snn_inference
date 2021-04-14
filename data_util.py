@@ -47,6 +47,10 @@ def save_spiketrain_in_sparse_matlab_format(fname, spike_indices, spike_times):
 
     # sio.savemat(file_name=prefix + path + matlab_export + fname, mdict=mat_data)
     # sio.savemat(file_name='/Users/william/repos/pnmf-fork/data/' + fname, mdict=mat_data)
+    # dir_path = ''
+    # path_parts = (prefix + path + fname).split('/')
+    # for p_i in range(len(path_parts)-1):
+    #     dir_path = dir_path + '/' + path_parts[p_i]
     sio.savemat(file_name=prefix + path + fname, mdict=mat_data)
 
 

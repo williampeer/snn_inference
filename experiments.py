@@ -54,6 +54,11 @@ def poisson_input(rate, t, N):
     return torch.poisson((rate/1000.) * torch.ones((int(t), N))).clamp(0., 1.)  # t x N
 
 
+def continuous_normalised_poisson_noise(p_lambda, t, N):
+    noise = torch.poisson(p_lambda * torch.ones(t, N))
+    return noise / torch.max(noise)  # normalised
+
+
 def release_computational_graph(model, rate_parameter, inputs=None):
     model.reset()
     if hasattr(rate_parameter, 'grad'):
