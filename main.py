@@ -3,13 +3,11 @@ import sys
 import Constants as C
 import exp_suite
 from Models.GLIF import GLIF
-from Models.GLIF_dynamic_R_I import GLIF_dynamic_R_I
 from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from Models.LIF_dynamic_R_I import LIF_dynamic_R_I
-from TargetModels import TargetEnsembleModels
+from TargetModels import TargetModels
 
 
 def main(argv):
@@ -96,10 +94,10 @@ def main(argv):
         elif opt in ("-mt", "--model-type"):
             model_type = args[i]
 
-    all_models = [LIF, GLIF, GLIF_dynamic_R_I, LIF_R, LIF_ASC, LIF_R_ASC]
+    all_models = [LIF, GLIF, LIF_R, LIF_ASC, LIF_R_ASC]
     # models = [GLIF]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC, LIF, GLIF]
-    models = [LIF_R, LIF_ASC, LIF_R_ASC, GLIF, GLIF_dynamic_R_I]
+    models = [LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
     if loss_fn is None:
         loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda']
@@ -115,21 +113,21 @@ def main(argv):
     for m_class in models:
         for loss_fn in loss_functions:
             for f_i in range(3):
-                if m_class.__name__ in [LIF.__name__, LIF_dynamic_R_I.__name__]:
+                if m_class.__name__ in [LIF.__name__]:
                     target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=f_i)
+                    target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
                 elif m_class.__name__ in [LIF_R.__name__]:
                     target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetEnsembleModels.lif_r_ensembles_model_dales_compliant(random_seed=f_i)
+                    target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i)
                 elif m_class.__name__ in [LIF_ASC.__name__]:
                     target_model_name = 'lif_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetEnsembleModels.lif_asc_ensembles_model_dales_compliant(random_seed=f_i)
+                    target_model = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i)
                 elif m_class.__name__ in [LIF_R_ASC.__name__]:
                     target_model_name = 'lif_r_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetEnsembleModels.lif_r_asc_ensembles_model_dales_compliant(random_seed=f_i)
-                elif m_class.__name__ in [GLIF.__name__, GLIF_dynamic_R_I.__name__]:
+                    target_model = TargetModels.lif_r_asc_ensembles_model_dales_compliant(random_seed=f_i)
+                elif m_class.__name__ in [GLIF.__name__]:
                     target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=f_i)
+                    target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
                 else:
                     raise NotImplementedError()
 

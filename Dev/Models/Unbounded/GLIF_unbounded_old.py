@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch import FloatTensor as FT
 
 
-class GLIF_unbounded(nn.Module):
+class GLIF_unbounded_old(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'R_I', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A']
     parameter_init_intervals = {'E_L': [-62., -46.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'R_I': [50., 60.],
                                 'f_v': [0.25, 0.35], 'f_I': [0.2, 0.6], 'delta_theta_s': [10., 12.], 'b_s': [0.35, 0.45],
@@ -12,7 +12,7 @@ class GLIF_unbounded(nn.Module):
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
                  neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
-        super(GLIF_unbounded, self).__init__()
+        super(GLIF_unbounded_old, self).__init__()
 
         if parameters is not None:
             for key in parameters.keys():

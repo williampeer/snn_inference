@@ -38,7 +38,7 @@ class LIF(nn.Module):
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
         self.g = torch.zeros_like(self.v)  # syn. conductance
 
-        self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
+        # self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
         if parameters.__contains__('preset_weights'):
             # print('DEBUG: Setting w to preset weights: {}'.format(parameters['preset_weights']))
             # print('Setting w to preset weights.')
@@ -54,9 +54,10 @@ class LIF(nn.Module):
             else:
                 raise NotImplementedError()
         self.neuron_types = neuron_types
-        self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
+        self.w = nn.Parameter(FT(rand_ws), requires_grad=True)
+        # self.w = nn.Parameter(FT(torch.zeros((N,N))), requires_grad=True)
 
-        self.R_I = nn.Parameter(FT(R_I).clamp(100., 150.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
+        # self.R_I = nn.Parameter(FT(R_I).clamp(100., 150.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
         self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 3.5), requires_grad=True)
@@ -64,7 +65,7 @@ class LIF(nn.Module):
         self.register_backward_clamp_hooks()
 
     def register_backward_clamp_hooks(self):
-        self.R_I.register_hook(lambda grad: static_clamp_for(grad, 100., 150., self.R_I))
+        # self.R_I.register_hook(lambda grad: static_clamp_for(grad, 100., 150., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
         self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 3.5, self.tau_g))
@@ -93,10 +94,16 @@ class LIF(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def forward(self, x_in):
-        I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in
-        I = I / (self.N-1)
+        # I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in
+        # I = I / (self.N-1)
+        I = (self.g).matmul(self.w)
+        I = torch.sigmoid(4 * (I / (self.N))) + 0.9 * x_in  # I in sigm([-4, 4]) -> (-1, 1)   + c*x_in
 
-        dv = (self.E_L - self.v + I * self.R_I) / self.tau_m  # RI - (v - E_L) / tau_m
+        # R_I ~ (theta - E_L) * tau_m
+        norm_R_f = (self.spike_threshold - self.E_L) #* 0.75 * self.tau_m
+        dv = (self.E_L - self.v + I * norm_R_f) / self.tau_m
+
+        # dv = (self.E_L - self.v + I * self.R_I) / self.tau_m
         v_next = torch.add(self.v, dv)
 
         # differentiable soft threshold
@@ -109,4 +116,5 @@ class LIF(nn.Module):
         dg = -torch.div(self.g, self.tau_g)  # -g/tau_g
         self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 
-        return self.spiked
+        # return self.spiked
+        return self.v, self.spiked

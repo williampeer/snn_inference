@@ -152,7 +152,7 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     for i in range(len(membrane_potentials_through_time)):
         legend.append('N.{}'.format(i+1))
     plt.figure()
-    plt.plot(torch.arange(membrane_potentials_through_time.shape[0]), membrane_potentials_through_time)
+    plt.plot(np.arange(membrane_potentials_through_time.shape[0]), membrane_potentials_through_time)
     plt.legend(legend, loc='upper left', ncol=4)
     # plt.title(title)
     plt.xlabel('Time (ms)')
