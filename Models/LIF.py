@@ -97,7 +97,7 @@ class LIF(nn.Module):
         # I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in
         # I = I / (self.N-1)
         I = (self.g).matmul(self.w)
-        I = torch.sigmoid(4 * (I / (self.N))) + 0.9 * x_in  # I in sigm([-4, 4]) -> (-1, 1)   + c*x_in
+        I = torch.sigmoid(2*6*(I)/self.N) + 0.9 * x_in  # I in (-1, 1)   + c*x_in
 
         # R_I ~ (theta - E_L) * tau_m
         norm_R_f = (self.spike_threshold - self.E_L) #* 0.75 * self.tau_m
