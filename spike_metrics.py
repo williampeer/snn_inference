@@ -100,6 +100,11 @@ def firing_rate_distance(model_spikes, target_spikes):
     return torch.sqrt(torch.pow(torch.sub(mean_model_rate, mean_targets_rate), 2).sum() + 1e-18) + silent_penalty
 
 
+def normalised_overall_activity_term(model_spikes):
+    # overall-activity penalty:
+    return (model_spikes.sum() + 1e-09) / model_spikes.shape[1]
+
+
 def shortest_dist_rates(spikes, target_spikes):
     assert spikes.shape[0] > spikes.shape[1], "each time step as a row expected, meaning column by node"
 

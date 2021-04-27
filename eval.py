@@ -1,4 +1,5 @@
-from torch.nn.functional import poisson_nll_loss, kl_div
+from torch.nn.functional import kl_div
+from enum import Enum
 
 import model_util
 import spike_metrics
@@ -41,36 +42,44 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
     return np_loss
 
 
-def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
-    if loss_fn.__contains__('kl_div'):
-        loss = kl_div(output, target)
-    elif loss_fn.__contains__('van_rossum_squared'):
-        loss = spike_metrics.van_rossum_squared_distance(output, target, tau_vr)
-    elif loss_fn.__contains__('mse'):
-        loss = spike_metrics.mse(output, target)
-    elif loss_fn.__contains__('frdvrda'):
-        loss_frd = spike_metrics.firing_rate_distance(output, target)
-        loss_vrd = spike_metrics.van_rossum_dist(output, target, tau_vr)
-        # assuming both are normalised
-        loss = (1. - 0.9*train_f) * loss_frd + (0.1 + 0.9*train_f) * loss_vrd
-    elif loss_fn.__contains__('frdvrd'):
-        loss_frd = spike_metrics.firing_rate_distance(output, target)
-        loss_vrd = spike_metrics.van_rossum_dist(output, target, tau_vr)
-        # assuming both are normalised
-        loss = 0.9 * loss_frd + 0.1 * loss_vrd
-    elif loss_fn.__contains__('vrd'):
-        loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
-    elif loss_fn.__contains__('frd'):
-        loss = spike_metrics.firing_rate_distance(output, target)
-    elif loss_fn.__contains__('kldfrd'):
-        kld_loss = kl_div(output, target)
-        frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
-        loss = kld_loss + frd_loss
+class LossFn(Enum):
+    FIRING_RATE_DIST = 'frd'
+    VAN_ROSSUM_DIST = 'vrd'
+    MSE = 'mse'
+    KL_DIV = 'kl_div'
 
+
+def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
+    lfn = LossFn[loss_fn]
+    if lfn == LossFn.KL_DIV:
+        loss = kl_div(output, target)
+    elif lfn == LossFn.MSE:
+        loss = spike_metrics.mse(output, target)
+    elif lfn == LossFn.VAN_ROSSUM_DIST:
+        loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
+    elif lfn == LossFn.FIRING_RATE_DIST:
+        loss = spike_metrics.firing_rate_distance(output, target)
     else:
         raise NotImplementedError("Loss function not supported.")
 
-    return loss
+    # elif loss_fn.__contains__('frdvrda'):
+    #     loss_frd = spike_metrics.firing_rate_distance(output, target)
+    #     loss_vrd = spike_metrics.van_rossum_dist(output, target, tau_vr)
+    #     # assuming both are normalised
+    #     loss = (1. - 0.9*train_f) * loss_frd + (0.1 + 0.9*train_f) * loss_vrd
+    # elif loss_fn.__contains__('frdvrd'):
+    #     loss_frd = spike_metrics.firing_rate_distance(output, target)
+    #     loss_vrd = spike_metrics.van_rossum_dist(output, target, tau_vr)
+    #     # assuming both are normalised
+    #     loss = 0.9 * loss_frd + 0.1 * loss_vrd
+    # elif loss_fn.__contains__('kldfrd'):
+    #     kld_loss = kl_div(output, target)
+    #     frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
+    #     loss = kld_loss + frd_loss
+
+    activity_term = 0.1 * spike_metrics.normalised_overall_activity_term(output)  # TEST
+
+    return loss + activity_term
 
 # --------------------------------------------------------
 

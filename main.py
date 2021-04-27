@@ -95,12 +95,12 @@ def main(argv):
             model_type = args[i]
 
     all_models = [LIF, GLIF, LIF_R, LIF_ASC, LIF_R_ASC]
-    # models = [GLIF]
+    models = [LIF]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC, LIF, GLIF]
-    models = [LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    # models = [LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
     if loss_fn is None:
-        loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda']
+        loss_functions = ['vrd', 'frd', 'mse', 'kl_div']
     else:
         loss_functions = [loss_fn]
     if model_type is not None and model_type in str(all_models):
