@@ -65,7 +65,7 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
                         neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])  # set to ground truth for this file only
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
-    poisson_input_rate.clamp(1., 40.)
+    poisson_input_rate.clamp(2., 40.)
     parameters = {}
     for p_i, key in enumerate(model.state_dict()):
         parameters[p_i] = [model.state_dict()[key].numpy()]
