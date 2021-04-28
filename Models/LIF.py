@@ -7,8 +7,8 @@ from Models.TORCH_CUSTOM import static_clamp_for
 
 
 class LIF(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'R_I', 'tau_g']
-    parameter_init_intervals = {'E_L': [-55., -45.], 'tau_m': [1.3, 2.3], 'R_I': [135., 140.], 'tau_g': [2., 3.5]}
+    parameter_names = ['w', 'E_L', 'tau_m', 'tau_g']
+    parameter_init_intervals = {'E_L': [-55., -45.], 'tau_m': [1.9, 2.8], 'tau_g': [2.5, 5.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF, self).__init__()
@@ -23,8 +23,8 @@ class LIF(nn.Module):
                     E_L = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'tau_g':
                     tau_g = FT(torch.ones((N,)) * parameters[key])
-                elif key == 'R_I':
-                    R_I = FT(torch.ones((N,)) * parameters[key])
+                # elif key == 'R_I':
+                #     R_I = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'w_mean':
                     w_mean = float(parameters[key])
                 elif key == 'w_var':

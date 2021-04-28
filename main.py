@@ -8,6 +8,7 @@ from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 from TargetModels import TargetModels
+from eval import LossFn
 
 
 def main(argv):
@@ -100,7 +101,10 @@ def main(argv):
     # models = [LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
     if loss_fn is None:
-        loss_functions = ['vrd', 'frd', 'mse', 'kl_div']
+        loss_functions = [LossFn.FIRING_RATE_DIST.name,
+                          LossFn.VAN_ROSSUM_DIST.name,
+                          LossFn.KL_DIV.name,
+                          LossFn.MSE.name]
     else:
         loss_functions = [loss_fn]
     if model_type is not None and model_type in str(all_models):
