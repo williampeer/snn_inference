@@ -30,10 +30,12 @@ class LIF(nn.Module):
                 elif key == 'w_var':
                     w_var = float(parameters[key])
 
-        __constants__ = ['spike_threshold', 'N', 'R_const']
+        __constants__ = ['spike_threshold', 'N', 'norm_R_const']
         self.spike_threshold = T(30.)
         self.N = N
-        self.R_const = T(1.1)
+
+        R_const = 1.1
+        self.norm_R_const = (self.spike_threshold - E_L) * R_const
         # assert not any(tau_m <= 2*self.R_const), "tau_m > 2*R_const for system stability. see forward()"
 
         self.v = E_L * torch.ones((self.N,))
@@ -100,19 +102,18 @@ class LIF(nn.Module):
         # I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in
 
         # I = (self.g).matmul(self.w) + 6 * x_in  # in (-N, 2*N)
-        I = (self.g).matmul(self.w)  # in (-N, 2*N)
         # I = 2*torch.sigmoid(I)-1
         # I = 2.4*torch.sigmoid(10*((I)/self.N) + x_in)-1.2  # I in (-1, 1) + (0., 1.75)
         # I = 2.4*torch.sigmoid(10*((I)/self.N) + x_in)-1.2  # I in (-1, 1) + (0., 1.75)
         # I = 2*torch.sigmoid(I  +4*x_in)-1
-        I = 2*torch.sigmoid(I +6*x_in)-1
         # I = 2*torch.sigmoid(I)-1 + 1.
         # I = I + 1.75*x_in  # linear version
         # I = torch.functional.F.relu(I) + 1.75*x_in  # quicker ReLu-version
 
         # R_I ~ (theta - E_L) * tau_m
-        norm_R_f = (self.spike_threshold - self.E_L) *self.R_const
-        dv = (self.E_L - self.v + I * norm_R_f) / self.tau_m
+        I_syn = (self.g).matmul(self.w)
+        I_tot = 2*torch.sigmoid(I_syn +6*x_in)-1  # in (-1, 1)
+        dv = (self.E_L - self.v + I_tot * self.norm_R_const) / self.tau_m
 
         # dv = (self.E_L - self.v + I * self.R_I) / self.tau_m
         v_next = torch.add(self.v, dv)
