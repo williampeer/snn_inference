@@ -127,5 +127,5 @@ class LIF(nn.Module):
         dg = -torch.div(self.g, self.tau_g)  # -g/tau_g
         self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 
-        # return self.spiked
-        return self.v, self.spiked
+        return self.spiked
+        # return self.v, self.spiked
