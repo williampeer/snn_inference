@@ -2,7 +2,7 @@ import torch
 
 import model_util
 import spike_metrics
-from TargetModels import TargetEnsembleModels
+from TargetModels import TargetModels
 from experiments import poisson_input, release_computational_graph
 
 
@@ -72,8 +72,14 @@ def test_model_grad_is_clamped(model):
 random_seed = 42
 ext_name = 'ensembles_1_dales'
 
-m_LIF = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
-m_GLIF = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+m_LIF = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+m_LIF_R = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+m_LIF_ASC = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+m_LIF_R_ASC = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+m_GLIF = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
 
 test_model_grad_is_clamped(m_LIF)
-# test_model_grad_is_clamped(m_GLIF)
+test_model_grad_is_clamped(m_LIF_R)
+test_model_grad_is_clamped(m_LIF_ASC)
+test_model_grad_is_clamped(m_LIF_R_ASC)
+test_model_grad_is_clamped(m_GLIF)

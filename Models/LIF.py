@@ -30,9 +30,11 @@ class LIF(nn.Module):
                 elif key == 'w_var':
                     w_var = float(parameters[key])
 
-        __constants__ = ['spike_threshold', 'N', 'self_recurrence_mask']
+        __constants__ = ['spike_threshold', 'N', 'R_const']
         self.spike_threshold = T(30.)
         self.N = N
+        self.R_const = T(1.1)
+        # assert not any(tau_m <= 2*self.R_const), "tau_m > 2*R_const for system stability. see forward()"
 
         self.v = E_L * torch.ones((self.N,))
         self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
@@ -59,16 +61,16 @@ class LIF(nn.Module):
 
         # self.R_I = nn.Parameter(FT(R_I).clamp(100., 150.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
-        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.1, 3.), requires_grad=True)
-        self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 3.5), requires_grad=True)
+        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
+        self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 12.), requires_grad=True)
 
         self.register_backward_clamp_hooks()
 
     def register_backward_clamp_hooks(self):
         # self.R_I.register_hook(lambda grad: static_clamp_for(grad, 100., 150., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
-        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.1, 3., self.tau_m))
-        self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 3.5, self.tau_g))
+        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
+        self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 12., self.tau_g))
 
         # row per neuron
         for i in range(len(self.neuron_types)):
@@ -93,14 +95,23 @@ class LIF(nn.Module):
         self.g = self.g.clone().detach()
         self.spiked = self.spiked.clone().detach()
 
+    # Assuming normalised input.
     def forward(self, x_in):
         # I = (self.g).matmul(self.self_recurrence_mask * self.w) + 0.9 * x_in
-        # I = I / (self.N-1)
-        I = (self.g).matmul(self.w)
-        I = torch.sigmoid(2*6*(I)/self.N) + 0.9 * x_in  # I in (-1, 1)   + c*x_in
+
+        # I = (self.g).matmul(self.w) + 6 * x_in  # in (-N, 2*N)
+        I = (self.g).matmul(self.w)  # in (-N, 2*N)
+        # I = 2*torch.sigmoid(I)-1
+        # I = 2.4*torch.sigmoid(10*((I)/self.N) + x_in)-1.2  # I in (-1, 1) + (0., 1.75)
+        # I = 2.4*torch.sigmoid(10*((I)/self.N) + x_in)-1.2  # I in (-1, 1) + (0., 1.75)
+        # I = 2*torch.sigmoid(I  +4*x_in)-1
+        I = 2*torch.sigmoid(I +6*x_in)-1
+        # I = 2*torch.sigmoid(I)-1 + 1.
+        # I = I + 1.75*x_in  # linear version
+        # I = torch.functional.F.relu(I) + 1.75*x_in  # quicker ReLu-version
 
         # R_I ~ (theta - E_L) * tau_m
-        norm_R_f = (self.spike_threshold - self.E_L) #* 0.75 * self.tau_m
+        norm_R_f = (self.spike_threshold - self.E_L) *self.R_const
         dv = (self.E_L - self.v + I * norm_R_f) / self.tau_m
 
         # dv = (self.E_L - self.v + I * self.R_I) / self.tau_m
@@ -116,5 +127,5 @@ class LIF(nn.Module):
         dg = -torch.div(self.g, self.tau_g)  # -g/tau_g
         self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 
-        return self.spiked
-        # return self.v, self.spiked
+        # return self.spiked
+        return self.v, self.spiked

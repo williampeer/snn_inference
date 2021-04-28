@@ -15,24 +15,25 @@ def lif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     np.random.seed(random_seed)
 
     pop_size = int(N / 3)
-    params_pop1 = {'tau_m': 2.8, 'E_L': -42., 'tau_g': 8.5}
-    weights_std = 0.1
-    # weights_std = 0
+    params_pop1 = {'tau_m': 2.8, 'E_L': -42., 'tau_g': 5.5}
+    # weights_std = 0.1
+    weights_std = 0
     hand_coded_params_pop1 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
-                                                torch.cat([T(pop_size*[0.2]), T(pop_size*[0.1]), T(pop_size*[0.06])])}
+                                                torch.cat([T(pop_size*[0.15]), T(pop_size*[0.1]), T(pop_size*[0.06])])}
                                                 # torch.cat([T(pop_size*[0.0]), T(pop_size*[0.0]), T(pop_size*[0.0])])}
 
-    params_pop2 = {'tau_m': 2.6, 'E_L': -55., 'tau_g': 8.0}
+    params_pop2 = {'tau_m': 2.4, 'E_L': -55., 'tau_g': 4.0}
     hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
-                                                torch.cat([T(4*[.2]), T(4*[.5]), T(4*[0.35])])}
+                                                # torch.cat([T(4*[.2]), T(4*[.5]), T(4*[0.35])])}
+                                                torch.cat([T(4*[.3]), T(4*[.4]), T(4*[0.4])])}
                                                 # torch.cat([T(4*[.0]), T(4*[.0]), T(4*[0.0])])}
 
-    params_pop3 = {'tau_m': 2.2, 'E_L': -70., 'tau_g': 2.5}
+    params_pop3 = {'tau_m': 2.2, 'E_L': -70., 'tau_g': 2.6}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
-                                                torch.cat([T(4*[-.15]), T(4*[-.2]), T(4*[-.2])])}
+                                                torch.cat([T(4*[-.2]), T(4*[-.5]), T(4*[-.6])])}
                                                 # torch.cat([T(4*[-.0]), T(4*[-.0]), T(4*[-0.0])])}
 
     params_pop1 = randomise_parameters(params_pop1, coeff=T(0.025), N_dim=pop_size)
@@ -52,7 +53,8 @@ def lif_r_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     np.random.seed(random_seed)
 
     pop_size = int(N / 3)
-    params_pop1 = {'tau_m': 2.5, 'tau_g': 3.0, 'G': 0.9, 'E_L': -39., 'delta_theta_s': 18., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 10.}
+    # params_pop1 = {'tau_m': 2.5, 'tau_g': 3.0, 'G': 0.9, 'E_L': -39., 'delta_theta_s': 18., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 10.}
+    params_pop1 = {'tau_m': 2.8, 'E_L': -42., 'tau_g': 8.5, 'G': 0.9, 'delta_theta_s': 18., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 10.}
     # weights_std = 0.25
     weights_std = 0
     hand_coded_params_pop1 = {'preset_weights': (torch.ones((pop_size, 1)) +
@@ -62,7 +64,8 @@ def lif_r_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
                                                 # torch.cat([T(pop_size * [0.2]), T(pop_size * [0.1]), T(pop_size * [0.03])])}
                                                 torch.cat([T(pop_size * [0.0]), T(pop_size * [0.0]), T(pop_size * [0.0])])}
 
-    params_pop2 = {'tau_m': 1.5, 'tau_g': 2.4, 'G': 0.8, 'E_L': -49., 'delta_theta_s': 14., 'b_s': 0.3, 'f_v': 0.14, 'delta_V': 12.}
+    # params_pop2 = {'tau_m': 1.5, 'tau_g': 2.4, 'G': 0.8, 'E_L': -49., 'delta_theta_s': 14., 'b_s': 0.3, 'f_v': 0.14, 'delta_V': 12.}
+    params_pop2 = {'tau_m': 2.6, 'E_L': -55., 'tau_g': 8.0, 'G': 0.8, 'delta_theta_s': 14., 'b_s': 0.3, 'f_v': 0.14, 'delta_V': 12.}
     hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2 * weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[.02]), T(4*[.3]), T(4*[0.15])])}
@@ -70,7 +73,8 @@ def lif_r_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
                                                 # torch.cat([T(pop_size * [0.04]), T(pop_size * [0.4]), T(pop_size * [0.2])])}
                                                 torch.cat([T(pop_size * [0.0]), T(pop_size * [0.0]), T(pop_size * [0.0])])}
 
-    params_pop3 = {'tau_m': 1.16, 'tau_g': 1.8, 'G': 0.7, 'E_L': -61., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14, 'delta_V': 12.}
+    # params_pop3 = {'tau_m': 1.16, 'tau_g': 1.8, 'G': 0.7, 'E_L': -61., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14, 'delta_V': 12.}
+    params_pop3 = {'tau_m': 2.2, 'E_L': -70., 'tau_g': 2.5, 'G': 0.7, 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14, 'delta_V': 12.}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2 * weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4 * [-.4]), T(4 * [-.2]), T(4 * [-0.02])])}
@@ -132,7 +136,7 @@ def lif_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
                    neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]))
 
 
-def lif_r_asc_ensembles_model_dales_compliant(random_seed, N = 12):
+def lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
 
