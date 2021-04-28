@@ -1,4 +1,4 @@
-from fit_to_data_exp_suite import convergence_check
+from exp_suite import convergence_check
 
 # model = GLIF(device='cpu', parameters={})
 # t = 400
