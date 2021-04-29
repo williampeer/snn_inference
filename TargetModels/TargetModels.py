@@ -5,6 +5,7 @@ from torch import tensor as T
 from Models.GLIF import GLIF
 from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
+from Models.LIF_HS_17 import LIF_HS_17
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 from experiments import randomise_parameters, zip_tensor_dicts
@@ -45,6 +46,44 @@ def lif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
 
     return LIF(parameters=randomised_params, N=N,
+               neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]))
+
+
+def lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
+    torch.manual_seed(random_seed)
+    np.random.seed(random_seed)
+
+    pop_size = int(N / 3)
+    params_pop1 = {'tau_m': 2.8, 'E_L': -42., 'tau_s': 9.0}
+    # weights_std = 0.1
+    weights_std = 0
+    hand_coded_params_pop1 = {'preset_weights': (torch.ones((pop_size, 1)) +
+                                                 (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
+                                                torch.cat([T(pop_size*[0.15]), T(pop_size*[0.1]), T(pop_size*[0.06])])}
+                                                # torch.cat([T(pop_size*[0.0]), T(pop_size*[0.0]), T(pop_size*[0.0])])}
+
+    params_pop2 = {'tau_m': 2.4, 'E_L': -55., 'tau_s': 6.0}
+    hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) +
+                                                 (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
+                                                # torch.cat([T(4*[.2]), T(4*[.5]), T(4*[0.35])])}
+                                                torch.cat([T(4*[.3]), T(4*[.4]), T(4*[0.4])])}
+                                                # torch.cat([T(4*[.0]), T(4*[.0]), T(4*[0.0])])}
+
+    params_pop3 = {'tau_m': 1.8, 'E_L': -70., 'tau_s': 2.}
+    hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
+                                                 (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
+                                                torch.cat([T(4*[-.2]), T(4*[-.3]), T(4*[-.3])])}
+                                                # torch.cat([T(4*[-.0]), T(4*[-.0]), T(4*[-0.0])])}
+
+    params_pop1 = randomise_parameters(params_pop1, coeff=T(0.025), N_dim=pop_size)
+    params_pop1 = zip_tensor_dicts(params_pop1, hand_coded_params_pop1)
+    params_pop2 = randomise_parameters(params_pop2, coeff=T(0.025), N_dim=pop_size)
+    params_pop2 = zip_tensor_dicts(params_pop2, hand_coded_params_pop2)
+    params_pop3 = randomise_parameters(params_pop3, coeff=T(0.025), N_dim=pop_size)
+    params_pop3 = zip_tensor_dicts(params_pop3, hand_coded_params_pop3)
+    randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
+
+    return LIF_HS_17(parameters=randomised_params, N=N,
                neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]))
 
 
