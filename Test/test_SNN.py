@@ -10,14 +10,16 @@ num_neurons = 12
 
 for random_seed in range(1, 6):
     # snn = lif_ensembles_model_dales_compliant(random_seed=random_seed)
-    snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
+    # snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
+    snn = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
 
     # inputs = poisson_input(10., t=4000, N=snn.N)  # now assumes rate in Hz
-    inputs = continuous_normalised_poisson_noise(10., t=2000, N=snn.N)  # now assumes rate in Hz
+    inputs = continuous_normalised_poisson_noise(10., t=1000, N=snn.N)  # now assumes rate in Hz
 
     print('#inputs: {}'.format(inputs.sum()))
     membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
+    # print('snn weights: {}'.format(snn.w))
     print('#spikes: {}'.format(spikes.sum()))
     print('avg. rate: {}'.format(1000*torch.round(spikes).sum() / (spikes.shape[1] * spikes.shape[0])))
     plot_neuron(membrane_potentials.detach().numpy(), title='LIF neuron plot ({:.2f} spikes)'.format(spikes.sum()), uuid='test', fname='test_LIF_poisson_input' + '_' + str(random_seed))
