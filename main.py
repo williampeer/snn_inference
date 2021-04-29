@@ -5,6 +5,7 @@ import exp_suite
 from Models.GLIF import GLIF
 from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
+from Models.LIF_HS_17 import LIF_HS_17
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 from TargetModels import TargetModels
@@ -18,7 +19,7 @@ def main(argv):
     start_seed = 0
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
-    learn_rate = 0.05; N_exp = 4; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.05; N_exp = 2; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     max_train_iters = 20; batch_size = 400; rows_per_train_iter = 4000
@@ -95,8 +96,8 @@ def main(argv):
         elif opt in ("-mt", "--model-type"):
             model_type = args[i]
 
-    all_models = [LIF, GLIF, LIF_R, LIF_ASC, LIF_R_ASC]
-    models = [LIF]
+    all_models = [LIF, GLIF, LIF_R, LIF_ASC, LIF_R_ASC, LIF_HS_17]
+    models = [LIF_HS_17]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC, LIF, GLIF]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
@@ -120,6 +121,9 @@ def main(argv):
                 if m_class.__name__ in [LIF.__name__]:
                     target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                     target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                elif m_class.__name__ in [LIF_HS_17.__name__]:
+                    target_model_name = 'lif_HS_17_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                    target_model = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=f_i)
                 elif m_class.__name__ in [LIF_R.__name__]:
                     target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                     target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i)
