@@ -21,7 +21,7 @@ for random_seed in range(1, 6):
     membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     # print('snn weights: {}'.format(snn.w))
     print('#spikes: {}'.format(spikes.sum()))
-    print('avg. rate: {}'.format(1000*torch.round(spikes).sum() / (spikes.shape[1] * spikes.shape[0])))
+    print('=========avg. rate: {}'.format(1000*torch.round(spikes).sum() / (spikes.shape[1] * spikes.shape[0])))
     plot_neuron(membrane_potentials.detach().numpy(), title='LIF neuron plot ({:.2f} spikes)'.format(spikes.sum()), uuid='test', fname='test_LIF_poisson_input' + '_' + str(random_seed))
 
     zeros = torch.zeros_like(inputs)

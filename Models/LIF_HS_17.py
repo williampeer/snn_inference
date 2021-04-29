@@ -7,8 +7,8 @@ from Models.TORCH_CUSTOM import static_clamp_for
 
 
 class LIF_HS_17(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'tau_g']
-    parameter_init_intervals = {'E_L': [-66., -58.], 'tau_m': [1.9, 2.5], 'tau_s': [5., 6.]}
+    parameter_names = ['w', 'E_L', 'tau_m', 'tau_s']
+    parameter_init_intervals = {'E_L': [-66., -52.], 'tau_m': [1.8, 2.4], 'tau_s': [3.5, 5.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF_HS_17, self).__init__()
