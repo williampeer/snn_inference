@@ -52,7 +52,7 @@ class GLIF(nn.Module):
 
         __constants__ = ['N', 'norm_R_const', 'self_recurrence_mask']
         self.N = N
-        self.norm_R_const = (theta_inf + delta_theta_s - E_L) * 1.1
+        self.norm_R_const = -E_L + 0.5 * (delta_theta_s / b_s - (a_v / b_v) * E_L + theta_inf)
 
         self.v = E_L * torch.ones((self.N,))
         # self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
@@ -137,7 +137,7 @@ class GLIF(nn.Module):
         dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
         v_next = self.v + dv
 
-        gating = (v_next / self.theta_s + self.theta_v).clamp(0., 1.)
+        gating = (v_next / (self.theta_s + self.theta_v)).clamp(0., 1.)
         dv_max = (self.theta_s + self.theta_v - self.E_L)
         ds = (-self.s + gating * (dv / dv_max)) / self.tau_s
         self.s = self.s + ds
@@ -153,7 +153,8 @@ class GLIF(nn.Module):
         d_theta_v = self.a_v * (self.v - self.E_L) - self.b_v * (self.theta_v - self.theta_inf)
         self.theta_v = self.theta_v + not_spiked * d_theta_v
 
-        self.I_additive = (1. - self.f_I) * self.I_additive + spiked * self.I_A
+        # self.I_additive = (1. - self.f_I) * self.I_additive + spiked * self.I_A
+        self.I_additive = self.I_additive - self.f_I * self.I_additive + spiked * self.f_I
 
         return self.v, self.s * self.tau_s
         # return self.s * self.tau_s  # use synaptic current as spike signal

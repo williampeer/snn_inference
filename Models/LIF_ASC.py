@@ -7,8 +7,8 @@ from Models.TORCH_CUSTOM import static_clamp_for
 
 
 class LIF_ASC(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'tau_g', 'G', 'f_v', 'b_s', 'tau_s']
-    parameter_init_intervals = {'E_L': [-62., -45.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'f_I': [0.3, 0.5],
+    parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'G', 'f_v', 'b_s', 'tau_s']
+    parameter_init_intervals = {'E_L': [-66., -45.], 'tau_m': [1.9, 2.6], 'G': [0.7, 0.9], 'f_I': [0.3, 0.5],
                                 'f_v': [0.2, 0.4], 'b_s': [0.2, 0.4], 'I_A': [1.2, 1.5], 'tau_s': [3.5, 5.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
@@ -122,18 +122,19 @@ class LIF_ASC(nn.Module):
         dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
         v_next = self.v + dv
 
-        gating = (v_next / self.self.spike_threshold).clamp(0., 1.)
+        gating = (v_next / self.spike_threshold).clamp(0., 1.)
         dv_max = (self.spike_threshold - self.E_L)
         ds = (-self.s + gating * (dv / dv_max)) / self.tau_s
         self.s = self.s + ds
 
         # non-differentiable, hard threshold
-        spiked = (v_next >= self.theta_s).float()
+        spiked = (v_next >= self.spike_threshold).float()
         not_spiked = (spiked - 1.) / -1.
 
         self.v = torch.add(spiked * self.E_L, not_spiked * v_next)
 
-        self.I_additive = (1. - self.f_I) * self.I_additive + self.spiked * self.I_A
+        # self.I_additive = (1. - self.f_I) * self.I_additive + spiked * self.I_A
+        self.I_additive = self.I_additive - self.f_I * self.I_additive + spiked * self.f_I
 
         return self.v, self.s * self.tau_s
         # return self.s * self.tau_s  # use synaptic current as spike signal

@@ -8,7 +8,7 @@ from Models.TORCH_CUSTOM import static_clamp_for
 class LIF_R_ASC(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'I_A',
                        'tau_s']
-    parameter_init_intervals = {'E_L': [-62., -40.], 'tau_m': [1.2, 2.5], 'G': [0.7, 0.9], 'f_v': [0.2, 0.4],
+    parameter_init_intervals = {'E_L': [-68., -45.], 'tau_m': [1.9, 2.6], 'G': [0.7, 0.9], 'f_v': [0.2, 0.4],
                                 'f_I': [0.2, 0.5], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4], 'delta_V': [8., 14.],
                                 'I_A': [1.2, 1.5], 'tau_s': [3.5, 5.5]}
 
@@ -144,7 +144,8 @@ class LIF_R_ASC(nn.Module):
         theta_s_next = (1 - self.b_s) * self.theta_s
         self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
 
-        self.I_additive = (1. - self.f_I) * self.I_additive + spiked * self.I_A
+        # self.I_additive = (1. - self.f_I) * self.I_additive + spiked * self.I_A
+        self.I_additive = self.I_additive - self.f_I * self.I_additive + spiked * self.f_I
 
         return self.v, self.s * self.tau_s
         # return self.s * self.tau_s  # use synaptic current as spike signal

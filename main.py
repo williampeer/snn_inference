@@ -96,11 +96,11 @@ def main(argv):
         elif opt in ("-mt", "--model-type"):
             model_type = args[i]
 
-    all_models = [LIF, GLIF, LIF_R, LIF_ASC, LIF_R_ASC, LIF_HS_17]
-    models = [LIF_HS_17]
-    # models = [LIF_R, LIF_ASC, LIF_R_ASC, LIF, GLIF]
-    # models = [LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
-    # loss_functions = ['frd', 'vrd', 'frdvrd', 'frdvrda', 'kl_div']
+    all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17]
+    # models = [LIF_HS_17]
+    # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC]
+
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
                           LossFn.VAN_ROSSUM_DIST.name,
