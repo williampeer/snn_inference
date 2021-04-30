@@ -67,7 +67,7 @@ class LIF_HS_17(nn.Module):
     def register_backward_clamp_hooks(self):
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
-        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_g))
+        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_s))
 
         # row per neuron
         for i in range(len(self.neuron_types)):
@@ -108,5 +108,5 @@ class LIF_HS_17(nn.Module):
 
         self.v = torch.add(spiked * self.E_L, not_spiked * v_next)
 
-        # return self.v, self.s * self.tau_s
-        return self.s * self.tau_s  # return linear readout of synaptic current as spike signal
+        return self.v, self.s * self.tau_s
+        # return self.s * self.tau_s  # return linear readout of synaptic current as spike signal
