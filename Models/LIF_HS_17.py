@@ -37,7 +37,6 @@ class LIF_HS_17(nn.Module):
         # assert not any(tau_m <= 2*self.R_const), "tau_m > 2*R_const for system stability. see forward()"
 
         self.v = E_L * torch.ones((self.N,))
-        # self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
         self.s = torch.zeros_like(self.v)  # syn. currents
 
         # self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
@@ -96,17 +95,16 @@ class LIF_HS_17(nn.Module):
         dv = (self.E_L - self.v + I * self.norm_R_const) / self.tau_m
         v_next = torch.add(self.v, dv)
 
-        gating = (torch.functional.F.relu(v_next) / self.spike_threshold).clamp(0., 1.)
-        # gating, _ = torch.min(torch.cat((depol_activation, ))) # g_v in (0, 1) g_v geq 0, integral of g dv = 1
+        gating = (v_next / self.spike_threshold).clamp(0., 1.)
         dv_max = (self.spike_threshold - self.E_L)
         ds = (-self.s + gating * (dv/dv_max)) / self.tau_s
         self.s = self.s + ds
 
-        # non-differentiable, hard threshold
+        # non-differentiable, hard threshold for nonlinear reset dynamics
         spiked = (v_next >= self.spike_threshold).float()
         not_spiked = (spiked - 1.) / -1.
 
         self.v = torch.add(spiked * self.E_L, not_spiked * v_next)
 
-        # return self.v, self.s * self.tau_s
-        return self.s * self.tau_s  # return linear readout of synaptic current as spike signal
+        return self.v, self.s * self.tau_s
+        # return self.s * self.tau_s  # return linear readout of synaptic current as spike signal
