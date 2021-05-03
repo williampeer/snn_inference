@@ -79,7 +79,7 @@ class LIF_R(nn.Module):
     def register_backward_clamp_hooks(self):
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
-        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_g))
+        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_s))
         self.G.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.G))
         self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
         self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
