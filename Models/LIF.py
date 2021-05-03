@@ -8,7 +8,7 @@ from Models.TORCH_CUSTOM import static_clamp_for
 
 class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_s']
-    parameter_init_intervals = {'E_L': [-66., -52.], 'tau_m': [1.8, 2.4], 'tau_g': [3.5, 5.5]}
+    parameter_init_intervals = {'E_L': [-66., -52.], 'tau_m': [1.8, 2.4], 'tau_s': [3.5, 5.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF, self).__init__()
@@ -103,9 +103,10 @@ class LIF(nn.Module):
         self.s = self.s + ds
         v_next = torch.add(self.v, dv)
 
+        # dv_max = (self.spike_threshold - self.E_L)
+        # ds = (-self.s + gating * (dv / dv_max)) / self.tau_s
         gating = (torch.functional.F.relu(v_next) / self.spike_threshold).clamp(0., 1.)
-        dv_max = (self.spike_threshold - self.E_L)
-        ds = (-self.s + gating * (dv / dv_max)) / self.tau_s
+        ds = (-self.s + gating) / self.tau_s
         self.s = self.s + ds
 
         # non-differentiable, hard threshold for nonlinear reset dynamics
