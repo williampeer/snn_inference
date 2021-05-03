@@ -1,16 +1,23 @@
 import torch
+import numpy as np
 
 import model_util
 import spike_metrics
+from Models.LIF import LIF
 from TargetModels import TargetModels
-from experiments import continuous_normalised_poisson_noise
+from experiments import continuous_normalised_poisson_noise, draw_from_uniform
 from plot import plot_neuron, plot_spiketrains_side_by_side
 
 num_neurons = 12
 
 for random_seed in range(1, 6):
     # snn = lif_ensembles_model_dales_compliant(random_seed=random_seed)
-    snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
+    torch.manual_seed(random_seed)
+    np.random.seed(random_seed)
+    model_class = LIF
+    init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
+    snn = model_class(init_params_model)
+    # snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed)

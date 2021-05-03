@@ -1,5 +1,6 @@
 import Log
 from IO import save_poisson_rates
+from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_scalar
 from eval import evaluate_loss
 from experiments import generate_synthetic_data, draw_from_uniform, release_computational_graph
 from fit import fit_mini_batches
@@ -65,7 +66,8 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
                         neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])  # set to ground truth for this file only
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
-    poisson_input_rate.clamp(2., 40.)
+    poisson_input_rate.clamp(5., 20.)
+    poisson_input_rate.register_hook(lambda grad: static_clamp_for_scalar(grad, 5., 20., poisson_input_rate))
     parameters = {}
     for p_i, key in enumerate(model.state_dict()):
         parameters[p_i] = [model.state_dict()[key].numpy()]
@@ -74,7 +76,7 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
     poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
     optim_params = list(model.parameters())
-    optim_params.append(poisson_input_rate)
+    # optim_params.append(poisson_input_rate)
     optim = constants.optimiser(optim_params, lr=constants.learn_rate)
 
     train_losses = []; validation_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False

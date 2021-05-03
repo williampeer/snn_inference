@@ -78,10 +78,10 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
     #     loss = kld_loss + frd_loss
 
     silent_penalty = spike_metrics.silent_penalty_term(output, target)
-    # activity_term = 0.1 * spike_metrics.normalised_overall_activity_term(output)  # TEST
-    # return loss + silent_penalty + activity_term
+    activity_term = 0.5 * spike_metrics.normalised_overall_activity_term(output)  # TEST
+    return loss + silent_penalty + activity_term
     # return loss + silent_penalty  # TEST
-    return loss
+    # return loss
 
 # --------------------------------------------------------
 

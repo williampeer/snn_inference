@@ -3,14 +3,15 @@ import torch.nn as nn
 from torch import FloatTensor as FT
 from torch import tensor as T
 
-from Models.TORCH_CUSTOM import static_clamp_for
+from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_s']
-    parameter_init_intervals = {'E_L': [-66., -52.], 'tau_m': [2.0, 2.4], 'tau_s': [3.5, 5.5]}
+    parameter_init_intervals = {'E_L': [-65., -52.], 'tau_m': [1.9, 2.2], 'tau_s': [2.8, 4.3]}
 
-    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25,
+                 neuron_types=[1., 1., 1., 1., 1., 1., 1., 1., -1., -1., -1., -1.]):
         super(LIF, self).__init__()
         # self.device = device
         assert len(neuron_types) == N, "neuron_types should be of length N"
@@ -23,10 +24,6 @@ class LIF(nn.Module):
                     E_L = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'tau_s':
                     tau_s = FT(torch.ones((N,)) * parameters[key])
-                elif key == 'w_mean':
-                    w_mean = float(parameters[key])
-                elif key == 'w_var':
-                    w_var = float(parameters[key])
 
         __constants__ = ['spike_threshold', 'N', 'norm_R_const', 'self_recurrence_mask']
         self.spike_threshold = T(30.)
@@ -43,18 +40,14 @@ class LIF(nn.Module):
         if parameters.__contains__('preset_weights'):
             # print('DEBUG: Setting w to preset weights: {}'.format(parameters['preset_weights']))
             # print('Setting w to preset weights.')
-            rand_ws = parameters['preset_weights']
+            rand_ws = torch.abs(parameters['preset_weights'])
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
-        for i in range(len(neuron_types)):
-            if neuron_types[i] == -1:
-                rand_ws[i, :] = -torch.abs(FT(rand_ws[i, :]))
-            elif neuron_types[i] == 1:
-                rand_ws[i, :] = torch.abs(FT(rand_ws[i, :]))
-            else:
-                raise NotImplementedError()
-        self.neuron_types = neuron_types
+            rand_ws = rand_ws.clamp(-1., 1.)
+
+        nt = torch.tensor(neuron_types).float()
+        self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)
 
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
@@ -69,14 +62,7 @@ class LIF(nn.Module):
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
         self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_s))
 
-        # row per neuron
-        for i in range(len(self.neuron_types)):
-            if self.neuron_types[i] == -1:
-                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, -1., 0., self.w[i, :]))
-            elif self.neuron_types[i] == 1:
-                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, 0., 1., self.w[i, :]))
-            else:
-                raise NotImplementedError()
+        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
     def reset(self):
         for p in self.parameters():
@@ -92,7 +78,8 @@ class LIF(nn.Module):
 
     # Assuming normalised input.
     def forward(self, x_in):
-        I = (self.s).matmul(self.self_recurrence_mask * self.w) + 1.75 * x_in  # assuming input weights to be Eye(N,N)
+        W_syn = self.w * self.neuron_types
+        I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming input weights to be Eye(N,N)
         dv = (self.E_L - self.v + I * self.norm_R_const) / self.tau_m
         v_next = torch.add(self.v, dv)
 
@@ -112,4 +99,4 @@ class LIF(nn.Module):
         self.v = torch.add(spiked * self.E_L, not_spiked * v_next)
 
         # return self.v, self.s * (self.tau_s)
-        return self.s * self.tau_s  # return linear readout of synaptic current as spike signal
+        return self.s * self.tau_s  # return readout of synaptic current as spike signal
