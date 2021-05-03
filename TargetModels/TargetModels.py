@@ -16,7 +16,7 @@ def lif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     np.random.seed(random_seed)
 
     pop_size = int(N / 3)
-    params_pop1 = {'tau_m': 2.8, 'E_L': -42., 'tau_s': 5.5}
+    params_pop1 = {'tau_m': 2.6, 'E_L': -46., 'tau_s': 6.5}
     weights_std = 0.1
     # weights_std = 0
     hand_coded_params_pop1 = {'preset_weights': (torch.ones((pop_size, 1)) +
@@ -25,7 +25,7 @@ def lif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
                                                 # torch.cat([T(pop_size*[0.0]), T(pop_size*[0.0]), T(pop_size*[0.0])])}
                                                 torch.cat([T(pop_size * [0.15]), T(pop_size * [0.1]), T(pop_size * [0.06])])}
 
-    params_pop2 = {'tau_m': 2.4, 'E_L': -55., 'tau_s': 4.0}
+    params_pop2 = {'tau_m': 2.2, 'E_L': -55., 'tau_s': 4.5}
     hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[.2]), T(4*[.5]), T(4*[0.35])])}
@@ -33,12 +33,12 @@ def lif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
                                                 # torch.cat([T(4*[.0]), T(4*[.0]), T(4*[0.0])])}
                                                 torch.cat([T(4 * [.2]), T(4 * [.6]), T(4 * [.4])])}
 
-    params_pop3 = {'tau_m': 2.2, 'E_L': -70., 'tau_s': 2.6}
+    params_pop3 = {'tau_m': 1.9, 'E_L': -70., 'tau_s': 2.}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[-.2]), T(4*[-.5]), T(4*[-.6])])}
                                                 # torch.cat([T(4*[-.0]), T(4*[-.0]), T(4*[-0.0])])}
-                                                torch.cat([T(4 * [-.1]), T(4 * [-.15]), T(4 * [-.1])])}
+                                                torch.cat([T(4 * [-.07]), T(4 * [-.15]), T(4 * [-.1])])}
 
     params_pop1 = randomise_parameters(params_pop1, coeff=T(0.025), N_dim=pop_size)
     params_pop1 = zip_tensor_dicts(params_pop1, hand_coded_params_pop1)

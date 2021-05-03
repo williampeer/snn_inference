@@ -8,7 +8,7 @@ from Models.TORCH_CUSTOM import static_clamp_for
 
 class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_s']
-    parameter_init_intervals = {'E_L': [-66., -52.], 'tau_m': [1.8, 2.4], 'tau_s': [3.5, 5.5]}
+    parameter_init_intervals = {'E_L': [-66., -52.], 'tau_m': [2.0, 2.4], 'tau_s': [3.5, 5.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF, self).__init__()
@@ -99,14 +99,11 @@ class LIF(nn.Module):
         # gating = (torch.functional.F.relu(v_next) / self.spike_threshold).clamp(0., 1.)
         gating = (v_next / self.spike_threshold).clamp(0., 1.)
         dv_max = (self.spike_threshold - self.E_L)
-        ds = (-self.s + gating * (dv / dv_max)) / self.tau_s
+        ds = (-self.s + gating * (dv / dv_max).clamp(0., 1.)) / self.tau_s
+        # ds = (-self.s + torch.functional.F.relu(dv / dv_max)) / self.tau_s
+        # ds = (-self.s + gating) / self.tau_s
         self.s = self.s + ds
         v_next = torch.add(self.v, dv)
-
-        gating = (torch.functional.F.relu(v_next) / self.spike_threshold).clamp(0., 1.)
-        dv_max = (self.spike_threshold - self.E_L)
-        ds = (-self.s + gating / (dv / dv_max)) / self.tau_s
-        self.s = self.s + ds
 
         # non-differentiable, hard threshold for nonlinear reset dynamics
         spiked = (v_next >= self.spike_threshold).float()
@@ -114,5 +111,5 @@ class LIF(nn.Module):
 
         self.v = torch.add(spiked * self.E_L, not_spiked * v_next)
 
-        # return self.v, self.s * self.tau_s
+        # return self.v, self.s * (self.tau_s)
         return self.s * self.tau_s  # return linear readout of synaptic current as spike signal
