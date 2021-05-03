@@ -4,7 +4,7 @@ from torch import tensor as T
 
 from eval import calculate_loss
 from experiments import poisson_input
-from model_util import feed_inputs_sequentially_return_spiketrain
+from model_util import feed_inputs_sequentially_return_spike_train
 
 
 class test_LIF(nn.Module):
@@ -74,7 +74,7 @@ def train_model():
     optim = torch.optim.Adam(opt_params, lr=0.01)
 
     for t_i in range(5):
-        out_spikes = feed_inputs_sequentially_return_spiketrain(model, poisson_inputs)
+        out_spikes = feed_inputs_sequentially_return_spike_train(model, poisson_inputs)
         # out_spikes = feed_inputs_sequentially_return_spiketrain(model, perm_ins)
         loss = calculate_loss(out_spikes, torch.randint(0, 1, (time_interval, 4), dtype=torch.float), 'van_rossum_dist', tau_vr=torch.tensor(4.0))
         print()

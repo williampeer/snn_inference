@@ -34,14 +34,14 @@ for random_seed in range(15):
     inputs = poisson_input(rate, t=12000, N=snn.N)  # rate in Hz
     print('#inputs: {}'.format(inputs.sum()))
     # membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
-    spikes = model_util.feed_inputs_sequentially_return_spiketrain(snn, inputs)
+    spikes = model_util.feed_inputs_sequentially_return_spike_train(snn, inputs)
     print('#spikes: {}'.format(torch.round(spikes).sum(dim=0)))
     # plot_neuron(membrane_potentials.data, title='GLIF neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_GLIF_poisson_input' + '_' + str(random_seed))
     assert spikes.sum() < 12. * 12 * 12 * 2, "should be less spikes than input rate * 2 per neuron. spikes.sum(): {}".format(spikes.sum())
 
     zeros = torch.zeros_like(inputs)
     # membrane_potentials_zeros, spikes_zeros = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, zeros)
-    spikes_zeros = model_util.feed_inputs_sequentially_return_spiketrain(snn, zeros)
+    spikes_zeros = model_util.feed_inputs_sequentially_return_spike_train(snn, zeros)
     # plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()), fname_ext='test_GLIF_no_input'  + '_' + str(random_seed))
 
     plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_SNNs', title='{} random ({} Hz) and zero input'.format(ext_name, rate),

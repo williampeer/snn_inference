@@ -14,7 +14,7 @@ def feed_inputs_sequentially_return_spikes_and_potentials(model, inputs):
     return membrane_potentials, model_spiketrain
 
 
-def feed_inputs_sequentially_return_spiketrain(model, inputs):
+def feed_inputs_sequentially_return_spike_train(model, inputs):
     print('Feeding {} inputs sequentially through SNN in time'.format(inputs.shape[0]))
     model_spiketrain = model(inputs[0])
     for x_in in inputs[1:]:
@@ -37,7 +37,7 @@ def feed_inputs_sequentially_return_membrane_potentials(model, inputs):
 def generate_model_data(model, inputs):
     print('Simulating model with noise as input')
 
-    model_spiketrain = feed_inputs_sequentially_return_spiketrain(model, inputs)
+    model_spiketrain = feed_inputs_sequentially_return_spike_train(model, inputs)
 
     print('Simulated model data for t =', inputs.shape[0], 'returning spiketrain')
 

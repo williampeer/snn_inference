@@ -103,7 +103,7 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         # parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
         poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
-        max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
+        # max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
         # converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
         converged = False
 

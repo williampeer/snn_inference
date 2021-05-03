@@ -12,7 +12,7 @@ def test_model_grad_is_clamped(model):
     inputs.retain_grad()
     print('#inputs: {}'.format(inputs.sum()))
 
-    spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs)
+    spikes = model_util.feed_inputs_sequentially_return_spike_train(model, inputs)
     print('#spikes: {}'.format(spikes.sum()))
 
     learn_rate = 0.1
@@ -35,7 +35,7 @@ def test_model_grad_is_clamped(model):
 
     inputs =  poisson_input(10., t_interval, model.N)
     inputs.retain_grad()
-    spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs)
+    spikes = model_util.feed_inputs_sequentially_return_spike_train(model, inputs)
     loss_1 = spike_metrics.firing_rate_distance(spikes, poisson_input(100., t_interval, model.N))
     assert loss_1 > loss_0, "much bigger rate difference should give higher loss. loss_0: {}, loss_1: {}".format(loss_0, loss_1)
 
@@ -52,7 +52,7 @@ def test_model_grad_is_clamped(model):
 
         inputs = poisson_input(10., t_interval, model.N)
         inputs.retain_grad()
-        spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs)
+        spikes = model_util.feed_inputs_sequentially_return_spike_train(model, inputs)
         loss_big = spike_metrics.firing_rate_distance(spikes, poisson_input(100., t_interval, model.N))
         assert loss_big > 10., "loss: {}".format(loss_big)
 
