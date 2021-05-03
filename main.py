@@ -101,7 +101,7 @@ def main(argv):
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17]
     # models = [LIF_HS_17]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
-    models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC]
+    models = [LIF_R, LIF_ASC, LIF_R_ASC]
 
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
