@@ -103,10 +103,9 @@ class LIF(nn.Module):
         self.s = self.s + ds
         v_next = torch.add(self.v, dv)
 
-        # dv_max = (self.spike_threshold - self.E_L)
-        # ds = (-self.s + gating * (dv / dv_max)) / self.tau_s
         gating = (torch.functional.F.relu(v_next) / self.spike_threshold).clamp(0., 1.)
-        ds = (-self.s + gating) / self.tau_s
+        dv_max = (self.spike_threshold - self.E_L)
+        ds = (-self.s + gating / (dv / dv_max)) / self.tau_s
         self.s = self.s + ds
 
         # non-differentiable, hard threshold for nonlinear reset dynamics
