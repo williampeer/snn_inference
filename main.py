@@ -19,11 +19,12 @@ def main(argv):
     start_seed = 0
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
-    learn_rate = 0.04; N_exp = 3; tau_van_rossum = 100.0; plot_flag = True
+    learn_rate = 0.001; N_exp = 3; tau_van_rossum = 100.0; plot_flag = True
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     # max_train_iters = 20; batch_size = 400; rows_per_train_iter = 4000
-    max_train_iters = 30; batch_size = 200; rows_per_train_iter = 1000
+    max_train_iters = 30; batch_size = 400; rows_per_train_iter = 2000
+    # max_train_iters = 4; batch_size = 200; rows_per_train_iter = 2000
     # max_train_iters = 8; batch_size = 400; rows_per_train_iter = 2000
     # loss_fn = 'frdvrda'
     # loss_fn = 'frd'
@@ -47,8 +48,8 @@ def main(argv):
 
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 
-    optimiser = 'Adam'
-    # optimiser = 'SGD'
+    # optimiser = 'Adam'
+    optimiser = 'SGD'
     initial_poisson_rate = 10.  # Hz
 
     evaluate_step = 2
