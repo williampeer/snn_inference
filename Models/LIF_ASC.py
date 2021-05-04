@@ -52,7 +52,7 @@ class LIF_ASC(nn.Module):
         if parameters.__contains__('preset_weights'):
             # print('DEBUG: Setting w to preset weights: {}'.format(parameters['preset_weights']))
             # print('Setting w to preset weights.')
-            rand_ws = parameters['preset_weights']
+            rand_ws = torch.abs(parameters['preset_weights'])
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))

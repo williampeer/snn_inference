@@ -39,7 +39,7 @@ def fit_mini_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, o
 
 
         loss.backward(retain_graph=True)
-        # poisson_input_rate.grad = torch.mean(current_inputs.grad)
+        poisson_input_rate.grad = torch.mean(current_inputs.grad)  # TODO: test w. "final" learn rate
 
         optimiser.step()
 
