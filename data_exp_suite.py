@@ -3,7 +3,7 @@ from IO import save_poisson_rates
 from data_util import load_sparse_data, get_spike_train_matrix
 from eval import evaluate_loss
 from experiments import generate_synthetic_data, draw_from_uniform, release_computational_graph
-from fit import fit_mini_batches
+from fit import fit_batches
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)
@@ -91,9 +91,9 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num):
         index_last_step, data_spike_train = get_spike_train_matrix(index_last_step, advance_by_t_steps=constants.rows_per_train_iter,
                                                                    spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
 
-        avg_train_loss, abs_grads_mean, last_loss = fit_mini_batches(model, gen_inputs=None, target_spiketrain=data_spike_train,
-                                                                     poisson_input_rate=poisson_input_rate, optimiser=optim,
-                                                                     constants=constants, train_i=train_i, logger=logger)
+        avg_train_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=None, target_spiketrain=data_spike_train,
+                                                                poisson_input_rate=poisson_input_rate, optimiser=optim,
+                                                                constants=constants, train_i=train_i, logger=logger)
         # release_computational_graph(target_model, constants.initial_poisson_rate, gen_input)
 
         logger.log(parameters=[avg_train_loss, abs_grads_mean])

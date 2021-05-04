@@ -3,7 +3,7 @@ from IO import save_poisson_rates
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_scalar
 from eval import evaluate_loss
 from experiments import generate_synthetic_data, draw_from_uniform, release_computational_graph
-from fit import fit_mini_batches
+from fit import fit_batches
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)
@@ -84,13 +84,11 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
     while not converged and (train_i < constants.train_iters):
         logger.log('training iteration #{}'.format(train_i), [constants.EXP_TYPE])
 
-        # TODO: split into gen_rate, init_rate
-        # targets = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate, t=constants.rows_per_train_iter)
         targets, gen_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
 
-        avg_train_loss, abs_grads_mean, last_loss = fit_mini_batches(model, gen_inputs=gen_input.clone().detach(), target_spiketrain=targets,
-                                                                     poisson_input_rate=poisson_input_rate, optimiser=optim,
-                                                                     constants=constants, train_i=train_i, logger=logger)
+        avg_train_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=gen_input.clone().detach(), target_spiketrain=targets,
+                                                                poisson_input_rate=poisson_input_rate, optimiser=optim,
+                                                                constants=constants, train_i=train_i, logger=logger)
         release_computational_graph(target_model, constants.initial_poisson_rate, gen_input)
 
         logger.log(parameters=[avg_train_loss, abs_grads_mean])
