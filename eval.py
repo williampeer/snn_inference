@@ -62,25 +62,10 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
     else:
         raise NotImplementedError("Loss function not supported.")
 
-    # elif loss_fn.__contains__('frdvrda'):
-    #     loss_frd = spike_metrics.firing_rate_distance(output, target)
-    #     loss_vrd = spike_metrics.van_rossum_dist(output, target, tau_vr)
-    #     # assuming both are normalised
-    #     loss = (1. - 0.9*train_f) * loss_frd + (0.1 + 0.9*train_f) * loss_vrd
-    # elif loss_fn.__contains__('frdvrd'):
-    #     loss_frd = spike_metrics.firing_rate_distance(output, target)
-    #     loss_vrd = spike_metrics.van_rossum_dist(output, target, tau_vr)
-    #     # assuming both are normalised
-    #     loss = 0.9 * loss_frd + 0.1 * loss_vrd
-    # elif loss_fn.__contains__('kldfrd'):
-    #     kld_loss = kl_div(output, target)
-    #     frd_loss = 0.5 * spike_metrics.firing_rate_distance(output, target)  # add term for firing rate.
-    #     loss = kld_loss + frd_loss
-
     silent_penalty = spike_metrics.silent_penalty_term(output, target)
-    activity_term = 0.5 * spike_metrics.normalised_overall_activity_term(output)  # TEST
-    return loss + silent_penalty + activity_term
-    # return loss + silent_penalty  # TEST
+    # activity_term = 0.5 * spike_metrics.normalised_overall_activity_term(output)  # TEST
+    # return loss + silent_penalty + activity_term
+    return loss + silent_penalty  # TEST
     # return loss
 
 # --------------------------------------------------------

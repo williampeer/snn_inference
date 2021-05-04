@@ -23,7 +23,7 @@ def main(argv):
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
 
     # max_train_iters = 20; batch_size = 400; rows_per_train_iter = 4000
-    max_train_iters = 10; batch_size = 400; rows_per_train_iter = 800
+    max_train_iters = 15; batch_size = 400; rows_per_train_iter = 1600
     # max_train_iters = 4; batch_size = 200; rows_per_train_iter = 2000
     # max_train_iters = 8; batch_size = 400; rows_per_train_iter = 2000
     # loss_fn = 'frdvrda'
