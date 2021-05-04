@@ -2,19 +2,19 @@ import torch
 import torch.nn as nn
 from torch import FloatTensor as FT
 
-from Models.TORCH_CUSTOM import static_clamp_for
+from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class GLIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf',
-                       'delta_V', 'I_A', 'tau_s']
-    parameter_init_intervals = {'E_L': [-64., -52.], 'tau_m': [1.5, 2.8], 'G': [0.5, 0.9],  'f_v': [0.2, 0.4],
-                                'f_I': [0.2, 0.5], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4], 'a_v': [0.25, 0.45],
-                                'b_v': [0.25, 0.45], 'theta_inf': [-12., -16.], 'delta_V': [8., 14.], 'I_A': [1.2, 1.5],
-                                'tau_s': [3.5, 5.5]}
+                       'delta_V', 'tau_s', 'R_factor']
+    parameter_init_intervals = {'E_L': [-64., -58.], 'tau_m': [2.5, 2.7], 'G': [0.7, 0.8],  'f_v': [0.25, 0.35],
+                                'f_I': [0.4, 0.5], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35], 'a_v': [0.2, 0.2],
+                                'b_v': [0.25, 0.35], 'theta_inf': [-10., -8.], 'delta_V': [8., 14.],
+                                'tau_s': [3.5, 4.5], 'R_factor': [0.5, 0.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
-                 neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+                 neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]):
         super(GLIF, self).__init__()
 
         if parameters is not None:
@@ -37,28 +37,32 @@ class GLIF(nn.Module):
                     delta_V = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'f_I':
                     f_I = FT(torch.ones((N,)) * parameters[key])
-                elif key == 'I_A':
-                    I_A = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'b_v':
                     b_v = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'a_v':
                     a_v = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'theta_inf':
                     theta_inf = FT(torch.ones((N,)) * parameters[key])
+                elif key == 'R_factor':
+                    R_factor = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'w_mean':
                     w_mean = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'w_var':
                     w_var = FT(torch.ones((N,)) * parameters[key])
 
-        __constants__ = ['N', 'norm_R_const', 'self_recurrence_mask']
+        __constants__ = ['N', 'norm_R_const', 'self_recurrence_mask', 'Theta_max']
         self.N = N
-        self.norm_R_const = -E_L + 0.5 * (delta_theta_s / b_s - (a_v / b_v) * E_L + theta_inf)
+
+        self.Theta_max = (delta_theta_s / b_s - (a_v / b_v) * E_L + delta_V)
+        # self.Theta_max = delta_theta_s/(1+b_s) + delta_V/(1+b_v)
+        # self.norm_R_const = R_factor * self.Theta_max - E_L
+        self.norm_R_const = 1.1*self.Theta_max
 
         self.v = E_L * torch.ones((self.N,))
         # self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
         self.s = torch.zeros_like(self.v)
         self.theta_s = delta_theta_s * torch.ones((self.N,))
-        self.theta_v = torch.ones((self.N,))
+        self.theta_v = delta_V * torch.ones((self.N,))
         self.I_additive = torch.zeros((self.N,))
 
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
@@ -69,15 +73,10 @@ class GLIF(nn.Module):
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
-        for i in range(len(neuron_types)):
-            if neuron_types[i] == -1:
-                rand_ws[i, :] = -torch.abs(FT(rand_ws[i, :]))
-            elif neuron_types[i] == 1:
-                rand_ws[i, :] = torch.abs(FT(rand_ws[i, :]))
-            else:
-                raise NotImplementedError()
-        self.neuron_types = neuron_types
+        nt = torch.tensor(neuron_types).float()
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
+        self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
+
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
         self.tau_s = nn.Parameter(FT(tau_s).clamp(1., 12.), requires_grad=True)
@@ -90,7 +89,6 @@ class GLIF(nn.Module):
         self.b_v = nn.Parameter(FT(b_v).clamp(0.01, 0.95), requires_grad=True)
         self.theta_inf = nn.Parameter(FT(theta_inf).clamp(-25., 0.), requires_grad=True)
         self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
-        self.I_A = nn.Parameter(FT(I_A).clamp(0.5, 3.), requires_grad=True)
 
         self.register_backward_clamp_hooks()
 
@@ -119,35 +117,32 @@ class GLIF(nn.Module):
         self.b_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.b_v))
         self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -20., -10., self.theta_inf))
         self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
-        self.I_A.register_hook(lambda grad: static_clamp_for(grad, 0.5, 3., self.I_A))
 
-        # row per neuron
-        for i in range(len(self.neuron_types)):
-            if self.neuron_types[i] == -1:
-                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, -1., 0., self.w[i, :]))
-            elif self.neuron_types[i] == 1:
-                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, 0., 1., self.w[i, :]))
-            else:
-                raise NotImplementedError()
+        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
 
     def forward(self, x_in):
         # assuming input weights to be Eye(N,N)
-        I = (self.I_additive + self.s).matmul(self.self_recurrence_mask * self.w) + 1.75 * x_in
+        W_syn = self.w * self.neuron_types
+        # I = (self.I_additive + self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
+        I = ((self.I_additive + self.s) / 2).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
+        # I = 1.75 * x_in
+
         dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
         v_next = self.v + dv
-
-        gating = (v_next / (self.theta_s + self.theta_v)).clamp(0., 1.)
-        dv_max = (self.theta_s + self.theta_v - self.E_L)
-        ds = (-self.s + gating * (dv / dv_max)) / self.tau_s
-        self.s = self.s + ds
-
         # non-differentiable, hard threshold
         spiked = (v_next >= self.theta_s + self.theta_v).float()
         not_spiked = (spiked - 1.) / -1.
 
+        gating = ((v_next-self.theta_inf) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
+        # gating = ((v_next) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
+        dv_max = (self.theta_s + self.theta_v - self.E_L)
+        # dv_max = self.Theta_max
+        ds = (-self.s + gating * (dv / dv_max).clamp(0., 1.0)) / self.tau_s
+        self.s = self.s + ds
+
         v_reset = self.E_L + self.f_v * (self.v - self.E_L) - self.delta_V
-        self.v = spiked * v_reset + not_spiked * v_next  # spike reset
+        self.v = torch.add(spiked * v_reset, not_spiked * v_next)
 
         self.theta_s = (1. - self.b_s) * self.theta_s + spiked * self.delta_theta_s  # always decay
         d_theta_v = self.a_v * (self.v - self.E_L) - self.b_v * (self.theta_v - self.theta_inf)
@@ -156,8 +151,8 @@ class GLIF(nn.Module):
         # self.I_additive = (1. - self.f_I) * self.I_additive + spiked * self.I_A
         self.I_additive = self.I_additive - self.f_I * self.I_additive + spiked * self.f_I
 
-        return self.v, self.s * self.tau_s
-        # return self.s * self.tau_s  # use synaptic current as spike signal
+        # return self.v, self.s * self.tau_s
+        return self.s * self.tau_s  # use synaptic current as spike signal
 
         # return self.v, self.spiked
         # return self.spiked

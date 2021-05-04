@@ -45,8 +45,7 @@ class LIF(nn.Module):
         else:
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
             rand_ws = rand_ws.clamp(-1., 1.)
-
-        nt = torch.tensor(neuron_types).float()
+        nt = T(neuron_types).float()
         self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)
 

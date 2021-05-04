@@ -3,16 +3,16 @@ import torch.nn as nn
 from torch import FloatTensor as FT
 from torch import tensor as T
 
-from Models.TORCH_CUSTOM import static_clamp_for
+from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class LIF_R(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V']
-    parameter_init_intervals = {'E_L': [-68., -45.], 'tau_m': [1.9, 2.6], 'tau_s': [3.5, 5.5], 'G': [0.7, 0.85],
-                                'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
+    parameter_init_intervals = {'E_L': [-64., -55.], 'tau_m': [2.5, 2.7], 'tau_s': [2.5, 3.5], 'G': [0.7, 0.8],
+                                'f_v': [0.25, 0.35], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35],
                                 'delta_V': [8., 14.]}
 
-    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF_R, self).__init__()
         # self.device = device
 
@@ -55,14 +55,8 @@ class LIF_R(nn.Module):
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
-        for i in range(len(neuron_types)):
-            if neuron_types[i] == -1:
-                rand_ws[i, :] = -torch.abs(FT(rand_ws[i, :]))
-            elif neuron_types[i] == 1:
-                rand_ws[i, :] = torch.abs(FT(rand_ws[i, :]))
-            else:
-                raise NotImplementedError()
-        self.neuron_types = neuron_types
+        nt = T(neuron_types).float()
+        self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
 
         self.E_L = nn.Parameter(FT(E_L).clamp(-75., -40.), requires_grad=True)
@@ -86,14 +80,7 @@ class LIF_R(nn.Module):
         self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
         self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.b_s))
 
-        # row per neuron
-        for i in range(len(self.neuron_types)):
-            if self.neuron_types[i] == -1:
-                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, -1., 0., self.w[i, :]))
-            elif self.neuron_types[i] == 1:
-                self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, 0., 1., self.w[i, :]))
-            else:
-                raise NotImplementedError()
+        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
     def reset(self):
         for p in self.parameters():
@@ -109,14 +96,15 @@ class LIF_R(nn.Module):
         self.theta_s = self.theta_s.clone().detach()
 
     def forward(self, x_in):
-        I = (self.s).matmul(self.self_recurrence_mask * self.w) + 1.75 * x_in  # assuming input weights to be Eye(N,N)
+        W_syn = self.w * self.neuron_types
+        I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming input weights to be Eye(N,N)
 
         dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
         v_next = torch.add(self.v, dv)
 
         gating = (v_next / self.theta_s).clamp(0., 1.)
         dv_max = (self.theta_s - self.E_L)
-        ds = (-self.s + gating * (dv / dv_max)) / self.tau_s
+        ds = (-self.s + gating * (dv / dv_max).clamp(0., 1.)) / self.tau_s
         self.s = self.s + ds
 
         # non-differentiable, hard threshold for nonlinear reset dynamics
