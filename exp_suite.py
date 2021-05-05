@@ -25,7 +25,7 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                  logger=logger)
         plot_losses(training_loss=train_losses, test_loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
                     custom_title='Loss ({}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__, constants.learn_rate),
-                    fname='training_and_test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn.name, str(constants.tau_van_rossum).replace('.', '_')))
+                    fname='training_and_test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn, str(constants.tau_van_rossum).replace('.', '_')))
 
     logger.log('train_losses: #{}'.format(train_losses))
     mean_test_loss = torch.mean(torch.tensor(test_losses)).clone().detach().numpy()
@@ -179,7 +179,7 @@ def run_exp_loop(logger, constants, model_class, target_model):
 
 def start_exp(constants, model_class, target_model):
     log_fname = model_class.__name__ + '{}_{}_{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'.\
-        format(constants.optimiser.__name__, constants.loss_fn.name, constants.EXP_TYPE.name,
+        format(constants.optimiser.__name__, constants.loss_fn, constants.EXP_TYPE.name,
                '{:1.3f}'.format(constants.learn_rate).replace('.', '_'),
                constants.batch_size, constants.train_iters, constants.rows_per_train_iter, constants.UUID)
     logger = Log.Logger(log_fname)
