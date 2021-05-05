@@ -19,11 +19,11 @@ def main(argv):
     start_seed = 42
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
-    learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
-    max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
+    # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
+    # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     # loss_fn = 'vrd'
-    # learn_rate = 0.01; N_exp = 5; tau_van_rossum = 5.0; plot_flag = True
-    # max_train_iters = 10; batch_size = 100; rows_per_train_iter = 1600
+    learn_rate = 0.1; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
+    max_train_iters = 15; batch_size = 400; rows_per_train_iter = 1600
     # loss_fn = 'frd'
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     loss_fn = None
@@ -49,6 +49,7 @@ def main(argv):
     # data_path = None
     # prefix = '/Users/william/data/target_data/'
     model_type = None
+    # model_type = 'LIF'
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]

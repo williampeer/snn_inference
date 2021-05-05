@@ -30,7 +30,7 @@ def torch_van_rossum_convolution_two_sided(spikes, tau):
 def van_rossum_dist(spikes, target_spikes, tau):
     c1 = torch_van_rossum_convolution(spikes=spikes, tau=tau)
     c2 = torch_van_rossum_convolution(spikes=target_spikes, tau=tau)
-    return euclid_dist(c1, c2)
+    return euclid_dist(c1, c2) / (spikes.shape[0] * spikes.shape[1])
 
 
 def van_rossum_dist_two_sided(spikes, target_spikes, tau):
@@ -67,7 +67,7 @@ def greedy_shortest_dist_vr(spikes, target_spikes, tau):
 
 def euclid_dist(spikes1, spikes2):
     # sqrt((s1 - s2) ** 2)
-    return torch.sqrt(torch.pow(torch.sub(spikes2, spikes1), 2).sum() + 1e-18) / (spikes1.shape[1])
+    return torch.sqrt(torch.pow(torch.sub(spikes2, spikes1), 2).sum() + 1e-18)
 
 
 def mse(s1, s2):
@@ -91,13 +91,15 @@ def silent_penalty_term(model_spikes, target_spikes):
 
 
 def firing_rate_distance(model_spikes, target_spikes):
-    T = model_spikes.shape[0] / 1000.  # from bins or ms to Hz
-    mean_model_rate = model_spikes.sum(dim=0) / T
-    mean_targets_rate = target_spikes.sum(dim=0) / T
+    # T = model_spikes.shape[0] / 1000.  # from bins or ms to Hz
+    mean_model_rate = model_spikes.sum(dim=0)
+    mean_targets_rate = target_spikes.sum(dim=0)
     # assert model_spikes.shape[0] > model_spikes.shape[1]
     # f_penalty(x,y) = sqrt(pow(e^(-x/T.) - e^(-y/T.)).sum() + 1e-18)
     # silent_penalty = torch.sqrt(torch.pow(torch.exp(-mean_model_rate/torch.tensor(T)) - torch.exp(-mean_targets_rate/torch.tensor(T)), 2).sum()+1e-18) / model_spikes.shape[1]
-    return torch.sqrt(torch.pow(torch.sub(mean_targets_rate, mean_model_rate), 2).sum() + 1e-18) / model_spikes.shape[1]
+    # return torch.sub(mean_targets_rate, mean_model_rate).sum() / (model_spikes.shape[0] * model_spikes.shape[1])
+    # return torch.sqrt(torch.pow(torch.sub(mean_targets_rate, mean_model_rate), 2).sum() + 1e-18)
+    return euclid_dist(mean_targets_rate, mean_model_rate) / (model_spikes.shape[0] * model_spikes.shape[1])
 
 
 def normalised_overall_activity_term(model_spikes):
