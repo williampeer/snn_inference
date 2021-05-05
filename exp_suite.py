@@ -95,7 +95,7 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
         train_losses.append(avg_train_loss)
 
         cur_params = model.state_dict()
-        logger.log('current parameters {}'.format(cur_params))
+        # logger.log('current parameters {}'.format(cur_params))
         for p_i, key in enumerate(cur_params):
             parameters[p_i].append(cur_params[key].clone().detach().numpy())
         # parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
@@ -178,7 +178,7 @@ def run_exp_loop(logger, constants, model_class, target_model):
 
 
 def start_exp(constants, model_class, target_model):
-    log_fname = model_class.__name__ + '{}_{}_{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'.\
+    log_fname = model_class.__name__ + '_{}_{}_{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'.\
         format(constants.optimiser.__name__, constants.loss_fn, constants.EXP_TYPE.name,
                '{:1.3f}'.format(constants.learn_rate).replace('.', '_'),
                constants.batch_size, constants.train_iters, constants.rows_per_train_iter, constants.UUID)

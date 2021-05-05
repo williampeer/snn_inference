@@ -61,7 +61,6 @@ class LIF_ASC(nn.Module):
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
 
         self.G = nn.Parameter(FT(G).clamp(0.01, 0.99), requires_grad=True)
-        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.95), requires_grad=True)
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 6.), requires_grad=True)
         self.tau_s = nn.Parameter(FT(tau_s).clamp(1., 12.), requires_grad=True)
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
@@ -73,7 +72,6 @@ class LIF_ASC(nn.Module):
         self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_m))
         self.G.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.G))
         self.f_I.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_I))
-        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.b_s))
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
@@ -90,7 +88,6 @@ class LIF_ASC(nn.Module):
         self.v = self.v.clone().detach()
         # self.spiked = self.spiked.clone().detach()
         self.s = self.s.clone().detach()
-        self.theta_s = self.theta_s.clone().detach()
         self.I_additive = self.I_additive.clone().detach()
 
     def forward(self, x_in):

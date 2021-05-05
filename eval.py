@@ -58,14 +58,14 @@ def calculate_loss(output, target, loss_fn, N, tau_vr=None, train_f=0.):
     elif lfn == LossFn.VAN_ROSSUM_DIST:
         loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
     elif lfn == LossFn.FIRING_RATE_DIST:
-        loss = spike_metrics.firing_rate_distance(output, target)
+        silent_penalty = spike_metrics.silent_penalty_term(output, target)
+        loss = spike_metrics.firing_rate_distance(output, target) + 0.25 * silent_penalty
     else:
         raise NotImplementedError("Loss function not supported.")
 
-    silent_penalty = spike_metrics.silent_penalty_term(output, target)
     # activity_term = 0.5 * spike_metrics.normalised_overall_activity_term(output)  # TEST
     # return loss + silent_penalty + activity_term
-    return loss + silent_penalty  # TEST
+    return loss
     # return loss
 
 # --------------------------------------------------------
