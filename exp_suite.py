@@ -178,9 +178,9 @@ def run_exp_loop(logger, constants, model_class, target_model):
 
 
 def start_exp(constants, model_class, target_model):
-    log_fname = model_class.__name__ + '{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'.\
-        format(constants.EXP_TYPE.name, '{:1.3f}'.format(constants.learn_rate).replace('.', '_'), constants.batch_size,
-               constants.train_iters, constants.rows_per_train_iter, constants.UUID)
+    log_fname = model_class.__name__ + '{}_{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'.\
+        format(constants.optimiser, constants.EXP_TYPE.name, '{:1.3f}'.format(constants.learn_rate).replace('.', '_'),
+               constants.batch_size, constants.train_iters, constants.rows_per_train_iter, constants.UUID)
     logger = Log.Logger(log_fname)
     logger.log('Starting exp. with listed hyperparameters.', [constants.__str__()])
 
