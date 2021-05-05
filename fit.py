@@ -39,7 +39,9 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
 
 
         loss.backward(retain_graph=True)
-        poisson_input_rate.grad = torch.mean(current_inputs.grad)  # TODO: test w. "final" learn rate
+        # poisson_input_rate.grad = torch.mean(current_inputs.grad)  # TODO: test w. "final" learn rate
+        # for p_i, param in enumerate(list(model.parameters())):
+        #     param.grad = param.grad/torch.max(param.grad)  # normalise
 
         optimiser.step()
 
@@ -60,7 +62,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
 
     logger.log('batch losses: {}'.format(batch_losses))
     logger.log('avg_batch_loss: {}'.format(avg_batch_loss), {'train_i': train_i})
-    logger.log(parameters=[train_i, avg_abs_grads])
+    logger.log('train_i #: {},\navg_abs_grads: {}'.format(train_i, avg_abs_grads))
     gen_inputs = None
 
     return avg_batch_loss, np.mean(np.asarray(avg_abs_grads, dtype=np.float)), batch_losses[-1]
