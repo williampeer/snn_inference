@@ -109,7 +109,7 @@ def main(argv):
                           LossFn.KL_DIV.name,
                           LossFn.MSE.name]
     else:
-        loss_functions = [loss_fn]
+        loss_functions = [LossFn(loss_fn)]
     if model_type is not None and model_type in str(all_models):
         for m in all_models:
             if m.__name__ == model_type:
