@@ -92,7 +92,7 @@ def main(argv):
         elif opt in ("-mt", "--model-type"):
             model_type = args[i]
         elif opt in ("-spf", "--silent-penalty-factor"):
-            silent_penalty_factor = args[i]
+            silent_penalty_factor = float(args[i])
 
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17]
     # models = [LIF_HS_17]
