@@ -10,7 +10,7 @@ from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 from TargetModels import TargetModels
 from experiments import continuous_normalised_poisson_noise, draw_from_uniform
-from plot import plot_neuron, plot_spiketrains_side_by_side
+from plot import plot_neuron, plot_spike_trains_side_by_side
 
 num_neurons = 12
 
@@ -55,9 +55,9 @@ for random_seed in range(1, 6):
     print('#spikes no weights: {}'.format(torch.round(spikes_zero_weights).sum()))
     # plot_neuron(membrane_potentials.detach().numpy(), title='LIF neuron plot ({:.2f} spikes)'.format(spikes.sum()),
     #             uuid='test', fname='test_LIF_poisson_input' + '_' + str(random_seed))
-    plot_spiketrains_side_by_side(spikes, spikes_zero_weights, 'test_{}'.format(snn.__class__.__name__),
-                                  title='Test {} spiketrains random input'.format(snn.__class__.__name__),
-                                  legend=['Random weights', 'No weights'])
+    plot_spike_trains_side_by_side(spikes, spikes_zero_weights, 'test_{}'.format(snn.__class__.__name__),
+                                   title='Test {} spiketrains random input'.format(snn.__class__.__name__),
+                                   legend=['Random weights', 'No weights'])
 
     tau_vr = torch.tensor(4.0)
     loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)

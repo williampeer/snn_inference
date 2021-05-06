@@ -66,10 +66,10 @@ def main(argv):
             model_spike_train = plot_data['model_spikes'].detach().numpy()
             target_spike_train = plot_data['target_spikes'].detach().numpy()
 
-            plot.plot_spiketrains_side_by_side(torch.tensor(model_spike_train), torch.tensor(target_spike_train),
+            plot.plot_spike_trains_side_by_side(torch.tensor(model_spike_train), torch.tensor(target_spike_train),
                                                'export', model_type,
-                                               title='Final spike trains {}, {}, {}, $\\alpha={}$'.format(model_type, optimiser, lfn, lr),
-                                               fname='initial_spike_train_{}_{}_{}_exp_{}.eps'.format(model_type, optimiser, lfn, exp_i))
+                                                title='Final spike trains {}, {}, {}, $\\alpha={}$'.format(model_type, optimiser, lfn, lr),
+                                                fname='initial_spike_train_{}_{}_{}_exp_{}.eps'.format(model_type, optimiser, lfn, exp_i))
 
             corrcoeff, mu1, std1, mu2, std2, CV1, CV2 = stats.higher_order_stats(model_spike_train, target_spike_train, bin_size=100)
 

@@ -7,8 +7,8 @@ def test_plot_van_rossum_convolution():
     sample_spiketrain = 1.0 * (torch.rand((200, 3)) < 0.25)
     sample_spiketrain_2 = 1.0 * (torch.rand((200, 3)) < 0.25)
     plot.plot_spike_train(sample_spiketrain, uuid='test_uuid', title="Sample spiketrain")
-    plot.plot_spiketrains_side_by_side(sample_spiketrain, sample_spiketrain_2, 'test_uuid',
-                                       title="Sample side-by-side spike trains")
+    plot.plot_spike_trains_side_by_side(sample_spiketrain, sample_spiketrain_2, 'test_uuid',
+                                        title="Sample side-by-side spike trains")
 
     convolved = spike_metrics.torch_van_rossum_convolution(sample_spiketrain, tau=torch.tensor(2.0))
     # convolved = spike_metrics.convolve_van_rossum_using_clone(sample_spiketrain, tau=torch.tensor(5.0))
@@ -47,7 +47,7 @@ def test_plot_spiketrains_side_by_side():
     sample_spiketrain = 1.0 * (torch.rand((200, 3)) < 0.25)
     sample_spiketrain_2 = 1.0 * (torch.rand((200, 3)) < 0.25)
 
-    plot.plot_spiketrains_side_by_side(sample_spiketrain, sample_spiketrain_2, 'test_uuid', title='Test plot_spiketrains_side_by_side')
+    plot.plot_spike_trains_side_by_side(sample_spiketrain, sample_spiketrain_2, 'test_uuid', title='Test plot_spiketrains_side_by_side')
 
 
 test_plot_van_rossum_convolution()

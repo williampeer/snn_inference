@@ -11,7 +11,7 @@ from Models.GLIF import GLIF
 from TargetModels import TargetEnsembleModels
 from eval import calculate_loss
 from experiments import zip_dicts, draw_from_uniform, generate_synthetic_data
-from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
+from plot import plot_all_param_pairs_with_variance, plot_spike_trains_side_by_side
 
 
 def main(argv):
@@ -128,9 +128,9 @@ def main(argv):
             cur_min_loss = calculate_loss(model_spike_train, targets, loss_fn, tau_vr=4.0).clone().detach().numpy()
             min_loss_per_exp.append(cur_min_loss)
 
-            plot_spiketrains_side_by_side(model_spike_train, targets, exp_type='single_objective_optim', uuid=UUID,
-                                          title='Spike trains model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
-                                          fname='spike_trains_optim_{}_exp_num_{}'.format(optim_name, exp_i))
+            plot_spike_trains_side_by_side(model_spike_train, targets, exp_type='single_objective_optim', uuid=UUID,
+                                           title='Spike trains model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
+                                           fname='spike_trains_optim_{}_exp_num_{}'.format(optim_name, exp_i))
 
             torch.save(recommended_params.copy(),
                        './saved/single_objective_optim/fitted_params_{}_optim_{}_loss_fn_{}_budget_{}_exp_{}.pt'.format(

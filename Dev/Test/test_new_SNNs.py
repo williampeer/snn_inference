@@ -7,7 +7,7 @@ import model_util
 import spike_metrics
 from TargetModels import TargetEnsembleModels
 from experiments import poisson_input, continuous_normalised_poisson_noise
-from plot import plot_spiketrains_side_by_side
+from plot import plot_spike_trains_side_by_side
 
 for random_seed in range(5, 10):
     torch.manual_seed(random_seed)
@@ -50,8 +50,8 @@ for random_seed in range(5, 10):
     # plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()), fname_ext='test_GLIF_no_input'  + '_' + str(random_seed))
 
     # plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_SNNs', title='{} random ({} Hz) and zero input'.format(ext_name, rate),
-    plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_SNNs', title='{} random (\lambda={}) and zero input'.format(ext_name, p_lambda),
-                                  legend=['Poisson input', 'No input'])
+    plot_spike_trains_side_by_side(spikes, spikes_zeros, 'test_SNNs', title='{} random (\lambda={}) and zero input'.format(ext_name, p_lambda),
+                                   legend=['Poisson input', 'No input'])
 
     tau_vr = torch.tensor(4.0)
     loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)

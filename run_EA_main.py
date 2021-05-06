@@ -12,7 +12,7 @@ from Models.Unbounded.LIF_unbounded import LIF_unbounded
 from TargetModels import TargetEnsembleModels
 from eval import calculate_loss
 from experiments import zip_dicts, draw_from_uniform, generate_synthetic_data, release_computational_graph
-from plot import plot_all_param_pairs_with_variance, plot_spiketrains_side_by_side
+from plot import plot_all_param_pairs_with_variance, plot_spike_trains_side_by_side
 
 
 logger = Logger(log_fname='torch_EA_multiobjective_GLIF_v3')
@@ -235,9 +235,9 @@ def main(argv):
         release_computational_graph(cur_model, rate_parameter=recommended_params['rate'])
         release_computational_graph(target_model, rate_parameter=target_rate)
 
-        plot_spiketrains_side_by_side(model_spike_train, target_spike_train, exp_type='multiobjective_optim', uuid=UUID,
-                                      title='Spike trains (Gv2) model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
-                                      fname='spike_trains_{}_optim_{}_exp_num_{}_GLIF_v2'.format(model_type, optim_name, exp_i))
+        plot_spike_trains_side_by_side(model_spike_train, target_spike_train, exp_type='multiobjective_optim', uuid=UUID,
+                                       title='Spike trains (Gv2) model and target ({}, loss: {:.2f})'.format(optim_name, cur_min_loss),  #recommendation.loss),
+                                       fname='spike_trains_{}_optim_{}_exp_num_{}_GLIF_v2'.format(model_type, optim_name, exp_i))
 
         torch.save(recommended_params.copy(),
                    './saved/multiobjective_optim/fitted_params_{}_optim_{}_budget_{}_exp_{}.pt'.format(

@@ -40,7 +40,7 @@ def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiket
     plt.close()
 
 
-def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='default', title=False, fname=False, legend=None, export=False):
+def plot_spike_trains_side_by_side(model_spikes, target_spikes, uuid, exp_type='default', title=False, fname=False, legend=None, export=False):
     assert model_spikes.shape[0] > model_spikes.shape[1], \
         "assert one node per column, one bin per row. spikes shape: {}".format(model_spikes.shape)
     assert model_spikes.shape[0] == target_spikes.shape[0], \

@@ -76,9 +76,9 @@ def main(argv):
                     fname = f.split('/')[-1]
                     fname = fname.split('.pt')[0].replace('.', '_')
                     save_fname = 'export_{}.eps'.format(fname)
-                    plot.plot_spiketrains_side_by_side(plot_data['model_spikes'], plot_data['target_spikes'], 'export',
-                                                       plot_data['exp_type'], 'Spike trains (Poisson input)',
-                                                       save_fname, export=True)
+                    plot.plot_spike_trains_side_by_side(plot_data['model_spikes'], plot_data['target_spikes'], 'export',
+                                                        plot_data['exp_type'], 'Spike trains (Poisson input)',
+                                                        save_fname, export=True)
 
                     # dev
                     s1 = plot_data['model_spikes'].detach().numpy()
