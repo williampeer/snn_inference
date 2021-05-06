@@ -35,7 +35,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         spikes = model_util.feed_inputs_sequentially_return_spike_train(model, current_inputs)
 
         loss = calculate_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(),
-                              loss_fn=constants.loss_fn, N = model.N, tau_vr = tau_vr, train_f=float(train_i)/constants.train_iters)
+                              loss_fn=constants.loss_fn, tau_vr = tau_vr, silent_penalty_factor=constants.silent_penalty_factor)
 
 
         loss.backward(retain_graph=True)

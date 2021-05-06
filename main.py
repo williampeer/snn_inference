@@ -27,6 +27,7 @@ def main(argv):
     # loss_fn = 'frd'
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     loss_fn = None
+    silent_penalty_factor = None
 
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'
@@ -90,6 +91,8 @@ def main(argv):
             exp_type_str = args[i]
         elif opt in ("-mt", "--model-type"):
             model_type = args[i]
+        elif opt in ("-spf", "--silent-penalty-factor"):
+            silent_penalty_factor = args[i]
 
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17]
     # models = [LIF_HS_17]
@@ -137,7 +140,8 @@ def main(argv):
                 constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
                                         tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
                                         initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
-                                        plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name, exp_type_str=exp_type_str)
+                                        plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name,
+                                        exp_type_str=exp_type_str, silent_penalty_factor=silent_penalty_factor)
 
                 exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
