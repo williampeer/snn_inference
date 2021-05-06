@@ -23,7 +23,7 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
 
-    loss = calculate_loss(model_spike_train, target_spiketrain, loss_fn=constants.loss_fn, N=model.N,
+    loss = calculate_loss(model_spike_train, target_spiketrain, loss_fn=constants.loss_fn,
                           tau_vr=constants.tau_van_rossum)
     print('loss:', loss)
 
