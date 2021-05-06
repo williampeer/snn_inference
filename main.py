@@ -22,7 +22,7 @@ def main(argv):
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     # loss_fn = 'vrd'
-    learn_rate = 0.1; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
+    learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     max_train_iters = 15; batch_size = 400; rows_per_train_iter = 1600
     # loss_fn = 'frd'
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
@@ -99,7 +99,7 @@ def main(argv):
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
                           LossFn.VAN_ROSSUM_DIST.name,
-                          LossFn.KL_DIV.name,
+                          # LossFn.KL_DIV.name,
                           LossFn.MSE.name]
     else:
         loss_functions = [LossFn(loss_fn).name]
