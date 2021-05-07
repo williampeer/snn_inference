@@ -159,8 +159,7 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     plt.ylabel(ylabel)
     # plt.show()
     full_path = './figures/' + exp_type + '/' + uuid + '/'
-    # IO.makedir_if_not_exists('/figures/' + exp_type + '/')
-    # IO.makedir_if_not_exists(full_path)
+    IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
 
 
