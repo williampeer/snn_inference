@@ -1,3 +1,4 @@
+import torch.nn.functional
 from torch.nn.functional import kl_div
 from enum import Enum
 
@@ -58,7 +59,8 @@ def calculate_loss(output, target, loss_fn, tau_vr=None, silent_penalty_factor=N
     elif lfn == LossFn.VAN_ROSSUM_DIST:
         loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
     elif lfn == LossFn.FIRING_RATE_DIST:
-        loss = spike_metrics.firing_rate_distance(output, target)
+        surrogate_gradient_output = torch.nn.functional.sigmoid(8*output-6*torch.ones_like(output))
+        loss = spike_metrics.firing_rate_distance(surrogate_gradient_output, target)
     else:
         raise NotImplementedError("Loss function not supported.")
 
