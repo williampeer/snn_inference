@@ -132,7 +132,8 @@ class LIF_R_ASC(nn.Module):
         self.I_additive = self.I_additive - self.f_I * self.I_additive + spiked * self.f_I
 
         # return self.v, self.s * self.tau_s
-        return self.s * self.tau_s  # use synaptic current as spike signal
+        # return self.s * self.tau_s  # use synaptic current as spike signal
+        return self.s * (self.tau_s + 1) / 2.  # return readout of synaptic current as spike signal
 
         # return self.v, self.spiked
         # return self.spiked
