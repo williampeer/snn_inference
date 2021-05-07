@@ -30,7 +30,7 @@ def torch_van_rossum_convolution_two_sided(spikes, tau):
 def van_rossum_dist(spikes, target_spikes, tau):
     c1 = torch_van_rossum_convolution(spikes=spikes, tau=tau)
     c2 = torch_van_rossum_convolution(spikes=target_spikes, tau=tau)
-    return euclid_dist(c1, c2) / (spikes.shape[0] * spikes.shape[1])
+    return euclid_dist(c1, c2) / (spikes.shape[0])
 
 
 def van_rossum_dist_two_sided(spikes, target_spikes, tau):
