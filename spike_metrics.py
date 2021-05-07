@@ -98,15 +98,14 @@ def silent_penalty_term(spikes, targets):
 
 
 def firing_rate_distance(model_spikes, target_spikes):
-    # T = model_spikes.shape[0] / 1000.  # from bins or ms to Hz
     mean_model_rate = model_spikes.sum(dim=0)
     mean_targets_rate = target_spikes.sum(dim=0)
+    return euclid_dist(mean_targets_rate, mean_model_rate) / (model_spikes.shape[0])
     # assert model_spikes.shape[0] > model_spikes.shape[1]
     # f_penalty(x,y) = sqrt(pow(e^(-x/T.) - e^(-y/T.)).sum() + 1e-18)
     # silent_penalty = torch.sqrt(torch.pow(torch.exp(-mean_model_rate/torch.tensor(T)) - torch.exp(-mean_targets_rate/torch.tensor(T)), 2).sum()+1e-18) / model_spikes.shape[1]
     # return torch.sub(mean_targets_rate, mean_model_rate).sum() / (model_spikes.shape[0] * model_spikes.shape[1])
     # return torch.sqrt(torch.pow(torch.sub(mean_targets_rate, mean_model_rate), 2).sum() + 1e-18)
-    return euclid_dist(mean_targets_rate, mean_model_rate) / (model_spikes.shape[0] * model_spikes.shape[1])
 
 
 def normalised_overall_activity_term(model_spikes):

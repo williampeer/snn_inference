@@ -62,3 +62,5 @@ for random_seed in range(1, 6):
     tau_vr = torch.tensor(4.0)
     loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)
     print('tau_vr: {}, loss: {}'.format(tau_vr, loss))
+    loss_rate = spike_metrics.firing_rate_distance(spikes, spikes_zero_weights)
+    print('firing rate loss: {}'.format(loss_rate))
