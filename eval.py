@@ -58,7 +58,7 @@ def calculate_loss(output, target, loss_fn, tau_vr=None, silent_penalty_factor=N
     elif lfn == LossFn.VAN_ROSSUM_DIST:
         loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
     elif lfn == LossFn.FIRING_RATE_DIST:
-        loss = spike_metrics.firing_rate_distance(output, target)
+        loss = spike_metrics.firing_rate_distance(torch.round(output), target)
     else:
         raise NotImplementedError("Loss function not supported.")
 
