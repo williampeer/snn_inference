@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import torch
 import matplotlib.cm as cm
@@ -90,6 +91,46 @@ def plot_spike_trains_side_by_side(model_spikes, target_spikes, uuid, exp_type='
     # plt.title(title)
 
     full_path = './figures/' + exp_type + '/' +  uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+    fig.savefig(fname=full_path + fname)
+    # plt.show()
+    plt.close()
+
+
+def plot_spike_train_projection(spikes, uuid='test', exp_type='default', title=False, fname=False, legend=None, export=False):
+    fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    ax = Axes3D(fig)
+
+    time_indices = torch.reshape(torch.arange(spikes.shape[0]), (spikes.shape[0], 1)).float()
+    # ensure binary values:
+    spike_history = torch.round(spikes)
+    model_spike_times = spike_history * time_indices
+
+    # ensure binary values:
+    for neuron_i in range(spike_history.shape[1]):
+        if model_spike_times[:, neuron_i].nonzero().sum() > 0:
+            spike_times_reshaped = torch.reshape(model_spike_times[:, neuron_i].nonzero(), (1, -1))
+            ax.scatter3D(spike_times_reshaped.numpy(),
+                         (torch.ones_like(spike_times_reshaped) * neuron_i + 1.1).numpy(),
+                         zs=0, label='Model')
+
+    plt.xlabel('Time ($ms$)')
+    plt.ylabel('Neuron')
+    ax.set_zlabel('Parameters $P \in \Re^\mathbf{D}$')
+    ax.set_zticks(range(-1, 2))
+    if neuron_i > 20:
+        ax.set_yticks(range(int((neuron_i + 1) / 10), neuron_i + 1, int((neuron_i + 1) / 10)))
+    else:
+        ax.set_yticks(range(1, neuron_i + 2))
+    ax.set_xticks(range(0, 5000, 1000))
+    ax.set_ylim(0, neuron_i + 2)
+
+    if not fname:
+        fname = 'spike_train_projection' + IO.dt_descriptor()
+
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
     fig.savefig(fname=full_path + fname)
