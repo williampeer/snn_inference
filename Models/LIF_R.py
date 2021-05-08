@@ -116,6 +116,6 @@ class LIF_R(nn.Module):
         self.v = torch.add(spiked * v_reset, not_spiked * v_next)
 
         # return self.v, self.s * self.tau_s
-        # return self.s * self.tau_s  # use synaptic current as spike signal
-        return self.s * (self.tau_s + 1) / 2.  # return readout of synaptic current as spike signal
+        return self.s * self.tau_s  # use synaptic current as spike signal
+        # return self.s * (self.tau_s + 1) / 2.  # return readout of synaptic current as spike signal
 
