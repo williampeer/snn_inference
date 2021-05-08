@@ -51,6 +51,7 @@ def main(argv):
     # prefix = '/Users/william/data/target_data/'
     model_type = None
     # model_type = 'LIF'
+    norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
