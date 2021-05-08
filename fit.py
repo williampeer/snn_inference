@@ -39,10 +39,12 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
 
 
         loss.backward(retain_graph=True)
+
         # poisson_input_rate.grad = torch.mean(current_inputs.grad)  # TODO: test w. "final" learn rate
         for p_i, param in enumerate(list(model.parameters())):
             logger.log('grad for param #{}: {}'.format(p_i, param.grad))
-        #     param.grad = param.grad/torch.max(param.grad)  # normalise
+            if constants.norm_grad_flag is True:
+                param.grad = param.grad/torch.max(param.grad)  # normalise
 
         optimiser.step()
 

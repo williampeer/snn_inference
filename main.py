@@ -93,6 +93,8 @@ def main(argv):
             model_type = args[i]
         elif opt in ("-spf", "--silent-penalty-factor"):
             silent_penalty_factor = float(args[i])
+        elif opt in ("-ng", "--normalised-gradients"):
+            norm_grad_flag = bool(args[i])
 
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17]
     # models = [LIF_HS_17]
@@ -141,7 +143,8 @@ def main(argv):
                                         tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
                                         initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
                                         plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name,
-                                        exp_type_str=exp_type_str, silent_penalty_factor=silent_penalty_factor)
+                                        exp_type_str=exp_type_str, silent_penalty_factor=silent_penalty_factor,
+                                        norm_grad_flag=norm_grad_flag)
 
                 exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
