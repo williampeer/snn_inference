@@ -44,7 +44,9 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         for p_i, param in enumerate(list(model.parameters())):
             logger.log('grad for param #{}: {}'.format(p_i, param.grad))
             if constants.norm_grad_flag is True:
-                param.grad = param.grad/torch.max(param.grad)  # normalise
+                max_grad = torch.max(param.grad)
+                if max_grad > 0:
+                    param.grad = param.grad/torch.max(param.grad)  # normalise
 
         optimiser.step()
 
