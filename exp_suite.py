@@ -82,6 +82,16 @@ def fit_model_to_target_model(logger, constants, model_class, params_model, exp_
 
     train_losses = []; validation_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
     max_grads_mean = np.float(0.)
+
+    gen_outputs, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
+                                                      t=constants.rows_per_train_iter)
+    validation_loss = evaluate_loss(model, inputs=gen_inputs, p_rate=poisson_input_rate.clone().detach(),
+                                    target_spiketrain=gen_outputs, label='train i: {}'.format(train_i),
+                                    exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
+                                    constants=constants, converged=converged)
+    logger.log('pre-training loss:', parameters=['validation loss', validation_loss])
+    validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
+
     while not converged and (train_i < constants.train_iters):
         logger.log('training iteration #{}'.format(train_i), [constants.EXP_TYPE])
 

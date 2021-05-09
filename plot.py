@@ -211,7 +211,11 @@ def plot_losses(training_loss, test_loss, uuid, exp_type='default', custom_title
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_losses')
 
     plt.figure()
-    plt.plot(training_loss)
+    if len(test_loss) > len(training_loss):
+        plt.plot(range(1, len(training_loss)+1), training_loss)
+    else:
+        plt.plot(training_loss)
+
     plt.plot(test_loss)
     plt.legend(['Training loss', 'Test loss'])
     plt.xlabel('Epoch')

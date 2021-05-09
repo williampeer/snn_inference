@@ -118,7 +118,7 @@ def main(argv):
 
     for m_class in models:
         for loss_fn in loss_functions:
-            for f_i in range(3, 6):
+            for f_i in range(3, 7):
                 if m_class.__name__ in [LIF.__name__]:
                     target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                     target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
