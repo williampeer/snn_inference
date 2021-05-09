@@ -55,7 +55,7 @@ def main(argv):
                     lfn = loss_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
 
                     exp_type = 'Synthetic'
-                    cur_fname = 'spikes_{}_{}_{}_{}_{}_{}_exp_num_{}'.format(exp_type, model_type, optimiser, lfn, lr, id, exp_num).replace('=', '_')
+                    cur_fname = 'spikes_{}_{}_{}_{}_{}_{}_exp_num_{}_60s'.format(exp_type, model_type, optimiser, lfn, lr, id, exp_num).replace('=', '_')
                     save_file_name = prefix + path + archive_name + cur_fname + '.mat'
 
                     if optimiser == 'SGD':

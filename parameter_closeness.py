@@ -5,9 +5,15 @@ import torch
 from torch import FloatTensor as FT
 from torch import tensor as T
 
+from Models.GLIF import GLIF
 from Models.LIF import LIF
+from Models.LIF_ASC import LIF_ASC
+from Models.LIF_R import LIF_R
+from Models.LIF_R_ASC import LIF_R_ASC
 from experiments import draw_from_uniform, zip_dicts
-from plot import bar_plot_pair_custom_labels, bar_plot_crosscorrdiag, bar_plot_two_grps
+from plot import bar_plot_pair_custom_labels, bar_plot_two_grps
+
+class_lookup = {'LIF': LIF, 'LIF_R': LIF_R, 'LIF_ASC': LIF_ASC, 'LIF_R_ASC': LIF_R_ASC, 'GLIF': GLIF}
 
 
 def get_init_params(model_class, exp_num, N=12):
@@ -36,7 +42,7 @@ def euclid_dist(p1, p2):
     # sqrt((s1 - s2) ** 2)
     return np.sqrt(np.power((p1 - p2), 2).sum()) / len(p1)
 
-all_exps_path = '/Users/william/repos/archives_snn_inference/archive 12/saved/plot_data/'
+all_exps_path = '/Users/william/repos/archives_snn_inference/archive 11/saved/plot_data/'
 folders = os.listdir(all_exps_path)
 experiment_averages = {}
 # res_per_exp = {}
@@ -63,7 +69,8 @@ for exp_folder in folders:
             lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
 
     # assert len(param_files) == 1, "should only be one plot_all_param_pairs_with_variance-file per folder. len: {}".format(len(param_files))
-    if model_type == 'LIF' and len(param_files) == 1:
+    # if model_type == 'LIF' and len(param_files) == 1:
+    if optimiser == 'SGD' and len(param_files) == 1:
         print('Succes! Processing exp: {}'.format(exp_folder + '/' + param_files[0]))
         exp_data = torch.load(full_folder_path + param_files[0])
         param_names = exp_data['plot_data']['param_names']
@@ -87,8 +94,8 @@ for exp_folder in folders:
         for p_i in range(len(m_p_by_exp)):
             per_exp = []
             for e_i in range(len(m_p_by_exp[p_i])):
-                init_model_params = get_init_params(LIF, e_i)
-                c_d = euclid_dist(init_model_params[param_names[p_i]], t_p_by_exp[p_i])
+                init_model_params = get_init_params(class_lookup[model_type], e_i)
+                c_d = euclid_dist(init_model_params[param_names[p_i]].numpy(), t_p_by_exp[p_i])
                 per_exp.append(c_d)
             experiment_averages[config]['init_dist'][param_names[p_i]].append(np.mean(per_exp))
             experiment_averages[config]['init_std'][param_names[p_i]].append(np.std(per_exp))
@@ -109,10 +116,13 @@ keys_list.sort()
 labels = []
 for k_i, k_v in enumerate(keys_list):
     # if not (k_v.__contains__('vrdfrda') or k_v.__contains__('pnll')):
-    if not (k_v.__contains__('vrdfrda') or k_v.__contains__('pnll')):
+    # if not (k_v.__contains__('vrdfrda') or k_v.__contains__('pnll')):
+    if True:
     # if k_v not in ['LIF_Adam_vrdfrda_0_05', 'LIF_Adam_pnll_0_05']:
-        labels.append(k_v.replace('LIF_Adam_', '').replace('LIF_SGD_', '').replace('_', '\n')
-                      .replace('frdvrda', '$d_A$').replace('frdvrd', '$d_C$').replace('frd', '$d_r$').replace('vrd', '$d_v$'))
+        labels.append(k_v
+                      # .replace('LIF_Adam_', '').replace('LIF_SGD_', '').replace('_', '\n')
+                      # .replace('frdvrda', '$d_A$').replace('frdvrd', '$d_C$')
+                      .replace('frd', '$d_F$').replace('vrd', '$d_V$'))
         print('processing exp results for config: {}'.format(k_v))
         flat_ds = []; flat_stds = []
         for d_i, d in enumerate(experiment_averages[k_v]['dist'].values()):

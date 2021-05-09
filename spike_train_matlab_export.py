@@ -10,7 +10,7 @@ from model_util import generate_model_data
 from plot import plot_spike_train
 
 
-def load_and_export_sim_data(model_path, fname=False, t = 5 * 60 * 1000):
+def load_and_export_sim_data(model_path, fname=False, t = 60 * 1000):
     # print('Argument List:', str(argv))
 
     # loss_fn = model_path.split('loss_fn_')[1].split('_budget')[0]
@@ -67,7 +67,7 @@ def simulate_and_save_model_spike_train(model, poisson_rate, t, exp_num, model_n
     # save_fname_input = 'poisson_inputs_{}_t_{:.0f}s_rate_{}'.format(model_name, t/1000., poisson_rate).replace('.', '_') + '.mat'
     # save_spiketrain_in_sparse_matlab_format(fname=save_fname_input, spike_indices=input_indices, spike_times=input_times)
     # save_model_params(model, fname=save_fname_input.replace('.mat', '_params'))
-    save_fname_output = 'fitted_spikes_{}_{}_{}'.format(model_name, id, exp_num).replace('.', '_')
+    save_fname_output = 'fitted_spikes_{}_{}_{}_t_{}'.format(model_name, id, exp_num, t).replace('.', '_')
     if not fname:
         fname = save_fname_output
     if spike_train is not None:
