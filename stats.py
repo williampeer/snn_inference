@@ -28,7 +28,8 @@ def binned_avg_firing_rate_per_neuron(spikes, bin_size):
     mean_per_node = torch.zeros((spikes.shape[1],))
     for node_i in range(spikes.shape[1]):
         avgs = binned_firing_rates(spikes[:, node_i], bin_size)
-        std_per_node[node_i], mean_per_node[node_i] = torch.std_mean(torch.tensor(avgs))
+        std_per_node[node_i] = torch.std(torch.tensor(avgs))
+        mean_per_node[node_i] = torch.mean(torch.tensor(avgs))
     return std_per_node, mean_per_node
 
 

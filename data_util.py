@@ -29,7 +29,7 @@ def convert_to_sparse_vectors(spiketrain, t_offset=0.):
     for ms_i in range(spiketrain.shape[0]):
         for node_i in range(spiketrain.shape[1]):
             if spiketrain[ms_i][node_i] != 0:
-                assert spiketrain[ms_i][node_i] <= 1, \
+                assert spiketrain[ms_i][node_i] <= 2, \
                     "element out of range. row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])
                 # assert spiketrain[ms_i][node_i] == 1, \
                 #     "found element that was neither 0 nor 1. row: {}, col: {}, value:{}".format(ms_i, node_i, spiketrain[ms_i][node_i])

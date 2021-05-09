@@ -17,7 +17,7 @@ def main(argv):
     # opts = [opt for opt in argv if opt.startswith("-")]
     # args = [arg for arg in argv if not arg.startswith("-")]
 
-    experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
+    experiments_path = '/Users/william/repos/archives_snn_inference/archive 11/saved/plot_data/'
     # load_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-24_15-14-04-415/plot_all_param_pairs_with_variance01-26_01-24-16-739.pt'
 
     # for i, opt in enumerate(opts):
@@ -59,14 +59,14 @@ def main(argv):
                 lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
                 # break
 
-        if model_type != 'LIF':  # file mask
-            # print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
-            # print(len(plot_spiketrains_files))
+        if optimiser != 'SGD':  # file mask
+        #     print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
+        #     print(len(plot_spiketrains_files))
             pass
         else:
-            if len(plot_spike_trains_files) == 55:
+            if len(plot_spike_trains_files) == 150:  # TODO: fix 🍝
                 for f_i in range(5):
-                    f = plot_spike_trains_files[f_i * 11]
+                    f = plot_spike_trains_files[f_i * 30]
                     data = torch.load(full_folder_path + f)
                     print('Loaded saved plot data.')
 
@@ -75,7 +75,7 @@ def main(argv):
 
                     fname = f.split('/')[-1]
                     fname = fname.split('.pt')[0].replace('.', '_')
-                    save_fname = 'export_{}.eps'.format(fname)
+                    save_fname = 'export_{}_{}.eps'.format(id, fname)
                     plot.plot_spike_trains_side_by_side(plot_data['model_spikes'], plot_data['target_spikes'], 'export',
                                                         plot_data['exp_type'], 'Spike trains (Poisson input)',
                                                         save_fname, export=True)
@@ -104,7 +104,7 @@ def main(argv):
 
                 fname = f.split('/')[-1]
                 fname = fname.split('.pt')[0].replace('.', '_')
-                save_fname = 'export_{}.eps'.format(fname)
+                save_fname = 'export_{}_{}.eps'.format(id, fname)
                 print('Saving to fname: {}'.format(save_fname))
                 print('target params', plot_data['target_params'])
                 fixed_exp_params = {}
