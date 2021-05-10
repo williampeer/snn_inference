@@ -17,8 +17,7 @@ def main(argv):
     # opts = [opt for opt in argv if opt.startswith("-")]
     # args = [arg for arg in argv if not arg.startswith("-")]
 
-    experiments_path = '/Users/william/repos/archives_snn_inference/archive 11/saved/plot_data/'
-    # load_path = '/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-24_15-14-04-415/plot_all_param_pairs_with_variance01-26_01-24-16-739.pt'
+    experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
 
     # for i, opt in enumerate(opts):
     #     if opt == '-h':

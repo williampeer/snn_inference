@@ -31,10 +31,10 @@ def main(argv):
             snn = model_class(N=num_neurons, parameters=init_params_model,
                               neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])  # set to ground truth for this file only
 
-            cur_fname = 'initial_model_spikes_{}_exp_num_{}_seed_{}'.format(model_name, exp_i, non_overlapping_offset+exp_i)
+            cur_fname = 'initial_model_spikes_{}_exp_num_{}_seed_{}_60s'.format(model_name, exp_i, non_overlapping_offset+exp_i)
             save_file_name = prefix + path + cur_fname + '.mat'
             if not os.path.exists(save_file_name):
-                simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=5*60*1000, exp_num=exp_i,
+                simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=60*1000, exp_num=exp_i,
                                                     model_name=model_name, fname=cur_fname)
             else:
                 print('file exists. skipping..')

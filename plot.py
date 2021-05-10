@@ -8,7 +8,7 @@ from scipy.stats import gaussian_kde
 import IO
 import data_util
 
-plt.rcParams.update({'font.size': 14})
+plt.rcParams.update({'font.size': 12})
 
 
 def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiketrain_test'):
@@ -749,7 +749,8 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
     r_max = np.max([np.array(y1), np.array(y2)])
     rstd_max = np.max([np.array(y1_std), np.array(y2_std)])
     summed_max = r_max + rstd_max
-    plt.ylim(0, summed_max + rstd_max*0.05)
+    if not np.isnan(summed_max) and not np.isinf(summed_max):
+        plt.ylim(0, summed_max + rstd_max*0.05)
     # plt.ylim(0, 15)
     if labels:
         plt.xticks(xs, labels)
@@ -757,6 +758,7 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
         plt.xticks(xs)
     if xlabel:
         plt.xlabel(xlabel)
+    plt.ylabel('Relative distance')
     # if title:
     #     plt.title(title)
     # else:
@@ -904,7 +906,7 @@ def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, tit
         plt.bar(xs, y1, width=width)
         plt.bar(xs2, y2, width=width)
 
-    plt.legend(['Adam', 'SGD'], loc='upper right')
+    # plt.legend(['Adam', 'SGD'], loc='upper right')
 
     if baseline:
         plt.plot([xs[0]-width/2, xs2[-1]+width/2], [baseline, baseline], 'k--')
@@ -912,7 +914,8 @@ def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, tit
     r_max = np.max(np.array(y1))
     rstd_max = np.max(np.array(y1_std))
     summed_max = r_max + rstd_max
-    plt.ylim(0, summed_max + rstd_max*0.05)
+    if not np.isnan(summed_max) and not np.isinf(summed_max):
+        plt.ylim(0, summed_max + rstd_max*0.05)
     # plt.ylim(0, 15)
     if labels:
         plt.xticks(np.concatenate((xs, xs2)), labels)

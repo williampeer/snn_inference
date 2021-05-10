@@ -42,7 +42,7 @@ def euclid_dist(p1, p2):
     # sqrt((s1 - s2) ** 2)
     return np.sqrt(np.power((p1 - p2), 2).sum()) / len(p1)
 
-all_exps_path = '/Users/william/repos/archives_snn_inference/archive 11/saved/plot_data/'
+all_exps_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
 folders = os.listdir(all_exps_path)
 experiment_averages = {}
 # res_per_exp = {}
@@ -63,6 +63,7 @@ for exp_folder in folders:
         elif optimiser is None and f.__contains__('plot_losses'):
             f_data = torch.load(full_folder_path + f)
             custom_title = f_data['plot_data']['custom_title']
+            spf = custom_title.split('spf=')[-1].split(')')[0]
             optimiser = custom_title.split(', ')[1].strip(' ')
             model_type = custom_title.split(',')[0].split('(')[-1]
             lr = custom_title.split(', ')[-1].strip(' =lr').strip(')')
@@ -70,10 +71,12 @@ for exp_folder in folders:
 
     # assert len(param_files) == 1, "should only be one plot_all_param_pairs_with_variance-file per folder. len: {}".format(len(param_files))
     # if model_type == 'LIF' and len(param_files) == 1:
-    if optimiser == 'SGD' and len(param_files) == 1:
+    # if model_type == 'GLIF' and optimiser == 'SGD' and len(param_files) == 1:
+    if optimiser == 'SGD' and spf == 'None' and len(param_files) == 1:
         print('Succes! Processing exp: {}'.format(exp_folder + '/' + param_files[0]))
         exp_data = torch.load(full_folder_path + param_files[0])
-        param_names = exp_data['plot_data']['param_names']
+        # param_names = exp_data['plot_data']['param_names']
+        param_names = class_lookup[model_type].parameter_names
         m_p_by_exp = exp_data['plot_data']['param_means']
         t_p_by_exp = list(exp_data['plot_data']['target_params'].values())
 
@@ -95,6 +98,7 @@ for exp_folder in folders:
             per_exp = []
             for e_i in range(len(m_p_by_exp[p_i])):
                 init_model_params = get_init_params(class_lookup[model_type], e_i)
+                # if(param_names[p_i] in init_model_params.keys()):
                 c_d = euclid_dist(init_model_params[param_names[p_i]].numpy(), t_p_by_exp[p_i])
                 per_exp.append(c_d)
             experiment_averages[config]['init_dist'][param_names[p_i]].append(np.mean(per_exp))
@@ -115,14 +119,25 @@ keys_list = list(experiment_averages.keys())
 keys_list.sort()
 labels = []
 for k_i, k_v in enumerate(keys_list):
+    model_type = k_v.split('_SGD_')[0]
+    param_names = class_lookup[model_type].parameter_names
+    label_param_names = map(lambda x: '${}$'.format(x.replace('delta_theta_', '\delta\\theta_').replace('delta_V', '\delta_V').replace('tau', '\\tau')), param_names)
     # if not (k_v.__contains__('vrdfrda') or k_v.__contains__('pnll')):
     # if not (k_v.__contains__('vrdfrda') or k_v.__contains__('pnll')):
     if True:
     # if k_v not in ['LIF_Adam_vrdfrda_0_05', 'LIF_Adam_pnll_0_05']:
         labels.append(k_v
+                      .replace('LIF_SGD_', 'LIF\n')
+                      .replace('LIF_R_SGD_', 'R\n')
+                      .replace('LIF_ASC_SGD_', 'A\n')
+                      .replace('LIF_R_ASC_SGD_', 'R_A\n')
+                      .replace('GLIF_', 'GLIF\n')
+                      # .replace('_', '\n')
                       # .replace('LIF_Adam_', '').replace('LIF_SGD_', '').replace('_', '\n')
                       # .replace('frdvrda', '$d_A$').replace('frdvrd', '$d_C$')
-                      .replace('frd', '$d_F$').replace('vrd', '$d_V$'))
+                      .replace('FIRING_RATE_DIST', '$d_F$')
+                      .replace('VAN_ROSSUM_DIST', '$d_V$')
+                      .replace('MSE', '$mse$'))
         print('processing exp results for config: {}'.format(k_v))
         flat_ds = []; flat_stds = []
         for d_i, d in enumerate(experiment_averages[k_v]['dist'].values()):
@@ -136,9 +151,11 @@ for k_i, k_v in enumerate(keys_list):
             flat_stds_init.append(s[0])
 
         norm_kern = np.array(flat_ds_init)
+        norm_kern[np.isnan(norm_kern)] = 1.0
+
         bar_plot_pair_custom_labels(np.array(flat_ds_init)/norm_kern, np.array(flat_ds)/norm_kern,
                                     np.array(flat_stds_init)/norm_kern, np.array(flat_stds)/norm_kern,
-                                    param_names, 'export', 'test',
+                                    label_param_names, 'export', 'test',
                                     'exp_export_all_euclid_dist_params_{}.eps'.format(k_v),
                                     'Avg Euclid dist per param for configuration {}'.format(k_v.replace('0_0', '0.0')).replace('_', ', '),
                                     legend=['Initial model', 'Fitted model'])
@@ -152,11 +169,18 @@ for k_i, k_v in enumerate(keys_list):
 
 # norm_kern = 1.
 # norm_kern = np.max(exp_avg_init_ds)
-bar_plot_two_grps(np.array(exp_avg_ds[:4]),
-                  np.array(exp_avg_stds[:4]),
-                  np.array(exp_avg_ds[4:]),
-                  np.array(exp_avg_stds[4:]),
-                  labels, 'export', 'test',
-                  'exp_export_all_euclid_dist_params_across_exp.eps',
-                  'Avg Euclid dist for all parameters across experiments',
-                  baseline=1.0)
+# bar_plot_two_grps(np.array(exp_avg_ds[:4]),
+#                   np.array(exp_avg_stds[:4]),
+#                   np.array(exp_avg_ds[4:]),
+#                   np.array(exp_avg_stds[4:]),
+#                   labels, 'export', 'test',
+#                   'exp_export_all_euclid_dist_params_across_exp.eps',
+#                   'Avg Euclid dist for all parameters across experiments',
+#                   baseline=1.0)
+bar_plot_pair_custom_labels(np.array(exp_avg_init_ds), np.array(exp_avg_ds),
+                            np.array(exp_avg_init_stds), np.array(exp_avg_stds),
+                            labels, 'export', 'test',
+                            'exp_export_all_euclid_dist_params_across_exp.eps',
+                            'Avg Euclid dist for all parameters across experiments',
+                            legend=['Initial model', 'Fitted model'], baseline=1.0)
+
