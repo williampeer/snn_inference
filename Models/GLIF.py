@@ -11,7 +11,7 @@ class GLIF(nn.Module):
     parameter_init_intervals = {'E_L': [-64., -58.], 'tau_m': [2.7, 2.8], 'G': [0.7, 0.8],  'f_v': [0.25, 0.35],
                                 'f_I': [0.35, 0.45], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35], 'a_v': [0.15, 0.2],
                                 'b_v': [0.25, 0.35], 'theta_inf': [-10., -8.], 'delta_V': [8., 14.],
-                                'tau_s': [3., 4.], 'R_factor': [0.4, 0.4]}
+                                'tau_s': [3., 4.]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
                  neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]):

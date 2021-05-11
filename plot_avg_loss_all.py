@@ -16,7 +16,7 @@ def main(argv):
 
     load_paths = []
     # load_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-20_15-05-33-991/plot_spiketrains_side_by_side01-21_21-55-15-927.pt']
-    experiments_path = '/Users/william/repos/archives_snn_inference/archive 14 data/saved/plot_data/'
+    experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
     archive = '14_data'
     folders = os.listdir(experiments_path)
     loss_res = {}
@@ -43,59 +43,60 @@ def main(argv):
                 plot_losses_files.append(f)
 
                 # break
-        # if model_type != 'LIF':
-        #     pass
-        # elif len(plot_losses_files) == 0:
-        if len(plot_losses_files) == 0:
-            print("Incomplete exp.: No loss files.")
-            # print(len(plot_spiketrains_files))
+        if optimiser != 'SGD':
             pass
         else:
-            config = '{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr.replace('.', '_'))
-            print('Processing exp: {} (configuration: {})'.format(folder_path, config))
-            plot_spiketrains_files.sort()  # check that alphabetically
-            if not loss_res.__contains__(config):
-                loss_res[config] = {'train_loss': [], 'test_loss': []}
-                # loss_res[config]['train_loss'] = []
-                # loss_res[config]['test_loss'] = []
+            # elif len(plot_losses_files) == 0:
+            if len(plot_losses_files) == 0:
+                print("Incomplete exp.: No loss files.")
+                # print(len(plot_spiketrains_files))
+                pass
+            else:
+                config = '{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr.replace('.', '_'))
+                print('Processing exp: {} (configuration: {})'.format(folder_path, config))
+                plot_spiketrains_files.sort()  # check that alphabetically
+                if not loss_res.__contains__(config):
+                    loss_res[config] = {'train_loss': [], 'test_loss': []}
+                    # loss_res[config]['train_loss'] = []
+                    # loss_res[config]['test_loss'] = []
 
-            # cur_hyperconf = '{}, {}, {}, $\\alpha={}$'.format(model_type, optimiser, lfn, lr)
-            # fname_prefix = model_type + '_' + optimiser + '_' + lfn
-            # save_fname = '{}_{}_train_iter_{}.eps'.format(fname_prefix, id, train_i)
-            # custom_title = 'Average firing rates, '+cur_hyperconf+', {} iteration(s)'.format(train_i)
+                # cur_hyperconf = '{}, {}, {}, $\\alpha={}$'.format(model_type, optimiser, lfn, lr)
+                # fname_prefix = model_type + '_' + optimiser + '_' + lfn
+                # save_fname = '{}_{}_train_iter_{}.eps'.format(fname_prefix, id, train_i)
+                # custom_title = 'Average firing rates, '+cur_hyperconf+', {} iteration(s)'.format(train_i)
 
-            train_losses = []; test_losses = []
-            for loss_file in plot_losses_files:
-                data = torch.load(full_folder_path + loss_file)
-                print('Loaded saved plot data.')
+                train_losses = []; test_losses = []
+                for loss_file in plot_losses_files:
+                    data = torch.load(full_folder_path + loss_file)
+                    print('Loaded saved plot data.')
 
-                plot_data = data['plot_data']
-                # plot_fn = data['plot_fn']
-                cur_train_loss = plot_data['training_loss']
-                cur_test_loss = plot_data['test_loss']
+                    plot_data = data['plot_data']
+                    # plot_fn = data['plot_fn']
+                    cur_train_loss = plot_data['training_loss']
+                    cur_test_loss = plot_data['test_loss']
 
-                # diverged_outlier_loss = False
-                for l_i in range(len(cur_train_loss)):
-                    max_val = 150.
-                    if cur_train_loss[l_i] > max_val:
-                        cur_train_loss[l_i] = max_val
-                    if cur_test_loss[l_i] > max_val:
-                        cur_test_loss[l_i] = max_val
-                        # diverged_outlier_loss = True
-                # if not diverged_outlier_loss:
-                train_losses.append(cur_train_loss)
-                test_losses.append(cur_test_loss)
+                    # diverged_outlier_loss = False
+                    for l_i in range(len(cur_train_loss)):
+                        max_val = 150.
+                        if cur_train_loss[l_i] > max_val:
+                            cur_train_loss[l_i] = max_val
+                        if cur_test_loss[l_i] > max_val:
+                            cur_test_loss[l_i] = max_val
+                            # diverged_outlier_loss = True
+                    # if not diverged_outlier_loss:
+                    train_losses.append(cur_train_loss)
+                    test_losses.append(cur_test_loss)
 
-            avg_train_loss = np.mean(np.asarray(train_losses), axis=0)
-            std_train_loss = np.std(np.asarray(train_losses), axis=0)
-            avg_test_loss = np.mean(np.asarray(test_losses), axis=0)
-            std_test_loss = np.std(np.asarray(test_losses), axis=0)
+                avg_train_loss = np.mean(np.asarray(train_losses), axis=0)
+                std_train_loss = np.std(np.asarray(train_losses), axis=0)
+                avg_test_loss = np.mean(np.asarray(test_losses), axis=0)
+                std_test_loss = np.std(np.asarray(test_losses), axis=0)
 
-            loss_res[config]['train_loss'].append(avg_train_loss)
-            loss_res[config]['test_loss'].append(avg_test_loss)
+                loss_res[config]['train_loss'].append(avg_train_loss)
+                loss_res[config]['test_loss'].append(avg_test_loss)
 
-            # plot.plot_avg_losses(avg_train_loss, std_train_loss, avg_test_loss, std_test_loss, uuid='export',
-            #                      custom_title=custom_title, fname='', custom_title='')
+                # plot.plot_avg_losses(avg_train_loss, std_train_loss, avg_test_loss, std_test_loss, uuid='export',
+                #                      custom_title=custom_title, fname='', custom_title='')
 
     conf_keys = list(loss_res.keys())
     conf_keys.sort()

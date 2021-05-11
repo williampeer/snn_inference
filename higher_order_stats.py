@@ -91,11 +91,12 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 
         print('m_k', m_k)
         # baseline = 0.202
-        baseline = 0.325
-        if m_k is 'LIF':
-            baseline = 0.202
-        elif m_k is 'GLIF':
-            baseline = 0.325
+        # baseline = 0.325
+        baseline = 0.
+        # if m_k is 'LIF':
+        #     baseline = 0.202
+        # elif m_k is 'GLIF':
+        #     baseline = 0.325
         # for l_i in range(len(labels)):
         #     labels[l_i] = labels[l_i].replace('')
         # plot.bar_plot_crosscorrdiag(y1=avg_diag_corrs, y1_std=avg_diag_corrs_std, labels=labels,
@@ -113,7 +114,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 # def main(argv):
 # print('Argument List:', str(argv))
 
-experiments_path = '/Users/william/repos/archives_snn_inference/archive 14 data/saved/plot_data/'
+experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
 custom_uuid = 'data'
 folders = os.listdir(experiments_path)
 experiment_averages = {}
@@ -150,10 +151,10 @@ for folder_path in folders:
         pass
     # elif model_type != 'LIF_R' or lfn not in ['frd']: # file mask
     # elif lfn not in ['frd'] or model_type == 'GLIF' or model_type == 'LIF': # file mask
-    elif lfn not in ['frd']: # file mask
-        # print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
-        # print(len(plot_spiketrains_files))
-        pass
+    # elif lfn not in ['frd']: # file mask
+    #     # print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
+    #     # print(len(plot_spiketrains_files))
+    #     pass
     else:
         print('Processing final spike trains for configuration: {}, {}, {}'.format(model_type, optimiser, lfn))
         plot_spiketrains_files.sort()  # check that alphabetically

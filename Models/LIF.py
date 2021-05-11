@@ -8,7 +8,7 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_s']
-    parameter_init_intervals = {'E_L': [-65., -52.], 'tau_m': [1.9, 2.2], 'tau_s': [2.8, 4.3]}
+    parameter_init_intervals = {'E_L': [-65., -52.], 'tau_m': [1.9, 2.3], 'tau_s': [3., 4.3]}
 
     def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25,
                  neuron_types=[1., 1., 1., 1., 1., 1., 1., 1., -1., -1., -1., -1.]):
