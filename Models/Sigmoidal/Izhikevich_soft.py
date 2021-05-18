@@ -6,13 +6,13 @@ from torch import tensor as T
 from Models.TORCH_CUSTOM import static_clamp_for
 
 
-class Izhikevich(nn.Module):
+class Izhikevich_soft(nn.Module):
     parameter_names = ['w', 'a', 'b', 'c', 'd', 'R_I', 'tau_g']
     parameter_init_intervals = {'a': [0.02, 0.05], 'b': [0.25, 0.27], 'c': [-65., -55.], 'd': [4., 8.], 'R_I': [40., 50.],
                                 'tau_g': [2., 3.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
-        super(Izhikevich, self).__init__()
+        super(Izhikevich_soft, self).__init__()
         # self.device = device
 
         if parameters:
