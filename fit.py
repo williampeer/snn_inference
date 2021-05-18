@@ -11,6 +11,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
     if gen_inputs is not None:
         assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
             "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
+        gen_inputs = gen_inputs.clone().detach()
 
     tau_vr = torch.tensor(constants.tau_van_rossum)
     batch_size = constants.batch_size
@@ -37,8 +38,10 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         loss = calculate_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(),
                               loss_fn=constants.loss_fn, tau_vr = tau_vr, silent_penalty_factor=constants.silent_penalty_factor)
 
-
-        loss.backward(retain_graph=True)
+        if batch_i<batch_N-1:
+            loss.backward(retain_graph=True)
+        else:
+            loss.backward()
 
         # poisson_input_rate.grad = torch.mean(current_inputs.grad)  # TODO: test w. "final" learn rate
         for p_i, param in enumerate(list(model.parameters())):
@@ -47,8 +50,6 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
                 max_grad = torch.max(param.grad)
                 if max_grad > 0:
                     param.grad = param.grad/torch.max(param.grad)  # normalise
-
-        optimiser.step()
 
         # print('list(model.parameters())', list(model.parameters()))
         for p_i, param in enumerate(list(model.parameters())):
@@ -60,8 +61,9 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         print('batch loss: {}'.format(loss))
         batch_losses.append(float(loss.clone().detach().data))
 
-        release_computational_graph(model, poisson_input_rate, current_inputs)
-        spikes = None; loss = None; current_inputs = None
+    optimiser.step()
+    release_computational_graph(model, poisson_input_rate, current_inputs)
+    spikes = None; loss = None; current_inputs = None
 
     avg_batch_loss = np.mean(np.asarray(batch_losses, dtype=np.float))
 

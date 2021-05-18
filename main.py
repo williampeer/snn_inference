@@ -1,6 +1,7 @@
 import sys
 
 import Constants as C
+import data_util
 import exp_suite
 from Models.GLIF import GLIF
 from Models.LIF import LIF
@@ -8,6 +9,11 @@ from Models.LIF_ASC import LIF_ASC
 from Models.LIF_HS_17 import LIF_HS_17
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
+from Models.Sigmoidal.GLIF_soft import GLIF_soft
+from Models.Sigmoidal.LIF_ASC_soft import LIF_ASC_soft
+from Models.Sigmoidal.LIF_R_ASC_soft import LIF_R_ASC_soft
+from Models.Sigmoidal.LIF_R_soft import LIF_R_soft
+from Models.Sigmoidal.LIF_soft import LIF_soft
 from TargetModels import TargetModels
 from eval import LossFn
 
@@ -18,15 +24,16 @@ def main(argv):
     # Default values
     start_seed = 42
     # exp_type_str = C.ExperimentType.SanityCheck.name
-    exp_type_str = C.ExperimentType.Synthetic.name
+    # exp_type_str = C.ExperimentType.Synthetic.name
+    exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    # loss_fn = 'vrd'
-    learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
-    max_train_iters = 40; batch_size = 400; rows_per_train_iter = 1600
-    # loss_fn = 'frd'
+    learn_rate = 0.0051; N_exp = 3; tau_van_rossum = 5.0; plot_flag = True
+    max_train_iters = 30; batch_size = 400; rows_per_train_iter = 2000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
-    loss_fn = None
+    loss_fn = 'frd'
+    # loss_fn = 'vrd'
+    # loss_fn = None
     silent_penalty_factor = None
 
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
@@ -47,10 +54,9 @@ def main(argv):
 
     evaluate_step = 1
     # evaluate_step = int(max(max_train_iters/10, 1))
-    # data_path = None
-    # prefix = '/Users/william/data/target_data/'
-    model_type = None
-    # model_type = 'LIF'
+    data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4.mat'
+    # model_type = None
+    model_type = 'LIF'
     norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -96,10 +102,14 @@ def main(argv):
             silent_penalty_factor = float(args[i])
         elif opt in ("-ng", "--normalised-gradients"):
             norm_grad_flag = bool(args[i])
+        elif opt in ("-dp", "--data-path"):
+            data_path = str(args[i])
 
-    all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17]
+    all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17,
+                  LIF_soft, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
     # models = [LIF_HS_17]
-    models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    models = [LIF_soft, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC]
 
     if loss_fn is None:
@@ -118,36 +128,51 @@ def main(argv):
 
     for m_class in models:
         for loss_fn in loss_functions:
-            for f_i in range(3, 7):
-                if m_class.__name__ in [LIF.__name__]:
-                    target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
-                elif m_class.__name__ in [LIF_HS_17.__name__]:
-                    target_model_name = 'lif_HS_17_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=f_i)
-                elif m_class.__name__ in [LIF_R.__name__]:
-                    target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i)
-                elif m_class.__name__ in [LIF_ASC.__name__]:
-                    target_model_name = 'lif_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i)
-                elif m_class.__name__ in [LIF_R_ASC.__name__]:
-                    target_model_name = 'lif_r_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i)
-                elif m_class.__name__ in [GLIF.__name__]:
-                    target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                    target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
-                else:
-                    raise NotImplementedError()
+            if exp_type_str == C.ExperimentType.Synthetic.name:
+                for f_i in range(3, 6):
+                    if m_class.__name__ in [LIF.__name__, LIF_soft.__name__]:
+                        target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                        target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                    elif m_class.__name__ in [LIF_HS_17.__name__]:
+                        target_model_name = 'lif_HS_17_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                        target_model = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__]:
+                        target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                        target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                    elif m_class.__name__ in [LIF_ASC.__name__, LIF_ASC_soft.__name__]:
+                        target_model_name = 'lif_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                        target_model = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                    elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__]:
+                        target_model_name = 'lif_r_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                        target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                    elif m_class.__name__ in [GLIF.__name__, GLIF_soft.__name__]:
+                        target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                        target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                    else:
+                        raise NotImplementedError()
 
-                constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
-                                        tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
-                                        initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
-                                        plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name,
+                    constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
+                                            tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
+                                            initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
+                                            plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name,
+                                            exp_type_str=exp_type_str, silent_penalty_factor=silent_penalty_factor,
+                                            norm_grad_flag=norm_grad_flag, data_path=data_path)
+
+                    exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
+
+            elif exp_type_str == C.ExperimentType.DataDriven.name:
+                constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp,
+                                        batch_size=batch_size,
+                                        tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter,
+                                        optimiser=optimiser,
+                                        initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn,
+                                        evaluate_step=evaluate_step,
+                                        plot_flag=plot_flag, start_seed=start_seed,
                                         exp_type_str=exp_type_str, silent_penalty_factor=silent_penalty_factor,
-                                        norm_grad_flag=norm_grad_flag)
+                                        norm_grad_flag=norm_grad_flag, data_path=data_path)
 
-                exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
+                exp_suite.start_exp(constants=constants, model_class=m_class)
+
 
 
 if __name__ == "__main__":
