@@ -26,19 +26,18 @@ def lif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
                                                 torch.cat([T(pop_size * [0.15]), T(pop_size * [0.1]), T(pop_size * [0.06])])}
 
     params_pop2 = {'tau_m': 2.2, 'E_L': -55., 'tau_s': 4.5}
-    hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) +
-                                                 (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
+    hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) + (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[.2]), T(4*[.5]), T(4*[0.35])])}
                                                 # torch.cat([T(4*[.3]), T(4*[.4]), T(4*[0.4])])}
                                                 # torch.cat([T(4*[.0]), T(4*[.0]), T(4*[0.0])])}
-                                                torch.cat([T(4 * [.2]), T(4 * [.6]), T(4 * [.4])])}
+                                                torch.cat([T(pop_size * [.2]), T(pop_size * [.6]), T(pop_size * [.4])])}
 
     params_pop3 = {'tau_m': 1.9, 'E_L': -70., 'tau_s': 2.}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[-.2]), T(4*[-.5]), T(4*[-.6])])}
                                                 # torch.cat([T(4*[-.0]), T(4*[-.0]), T(4*[-0.0])])}
-                                                torch.cat([T(4 * [-.07]), T(4 * [-.15]), T(4 * [-.1])])}
+                                                torch.cat([T(pop_size * [-.07]), T(pop_size * [-.15]), T(pop_size * [-.1])])}
 
     params_pop1 = randomise_parameters(params_pop1, coeff=T(0.025), N_dim=pop_size)
     params_pop1 = zip_tensor_dicts(params_pop1, hand_coded_params_pop1)
@@ -48,8 +47,10 @@ def lif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     params_pop3 = zip_tensor_dicts(params_pop3, hand_coded_params_pop3)
     randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
 
-    return LIF(parameters=randomised_params, N=N,
-               neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]))
+    neuron_types = np.ones((N,))
+    for i in range(int(N / 3)):
+        neuron_types[-(1 + i)] = -1
+    return LIF(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
 
 def lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
@@ -86,8 +87,10 @@ def lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     params_pop3 = zip_tensor_dicts(params_pop3, hand_coded_params_pop3)
     randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
 
-    return LIF_HS_17(parameters=randomised_params, N=N,
-               neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]))
+    neuron_types = np.ones((N,))
+    for i in range(int(N / 3)):
+        neuron_types[-(1 + i)] = -1
+    return LIF_HS_17(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
 
 def lif_r_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
@@ -112,20 +115,20 @@ def lif_r_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2 * weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[.02]), T(4*[.3]), T(4*[0.15])])}
-                                                # torch.cat([T(4 * [.08]), T(4 * [.38]), T(4 * [0.32])])}
+                                                # torch.cat([T(pop_size * [.08]), T(pop_size * [.38]), T(pop_size * [0.32])])}
                                                 # torch.cat([T(pop_size * [0.04]), T(pop_size * [0.4]), T(pop_size * [0.2])])}
                                                 # torch.cat([T(pop_size * [0.0]), T(pop_size * [0.0]), T(pop_size * [0.0])])}
-                                                torch.cat([T(4 * [.1]), T(4 * [.4]), T(4 * [.25])])}
+                                                torch.cat([T(pop_size * [.1]), T(pop_size * [.4]), T(pop_size * [.25])])}
 
     # params_pop3 = {'tau_m': 1.16, 'tau_s': 1.8, 'G': 0.7, 'E_L': -61., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14, 'delta_V': 12.}
     params_pop3 = {'tau_m': 2.3, 'E_L': -70., 'G': 0.7, 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14, 'delta_V': 12., 'tau_s': 2.5}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2 * weights_std * torch.randn((pop_size, N))) - weights_std) *
-                                                # torch.cat([T(4 * [-.4]), T(4 * [-.2]), T(4 * [-0.02])])}
+                                                # torch.cat([T(pop_size * [-.4]), T(pop_size * [-.2]), T(pop_size * [-0.02])])}
                                                 # torch.cat([T(4*[-.3]), T(4*[-.28]), T(4*[-0.07])])}
                                                 # torch.cat([T(pop_size * [-0.32]), T(pop_size * [-0.25]), T(pop_size * [-0.15])])}
                                                 # torch.cat([T(pop_size * [0.0]), T(pop_size * [0.0]), T(pop_size * [0.0])])}
-                                                torch.cat([T(4 * [-.15]), T(4 * [-.2]), T(4 * [-.3])])}
+                                                torch.cat([T(pop_size * [-.15]), T(pop_size * [-.2]), T(pop_size * [-.3])])}
 
     params_pop1 = randomise_parameters(params_pop1, coeff=T(0.025), N_dim=pop_size)
     params_pop1 = zip_tensor_dicts(params_pop1, hand_coded_params_pop1)
@@ -135,8 +138,10 @@ def lif_r_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     params_pop3 = zip_tensor_dicts(params_pop3, hand_coded_params_pop3)
     randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
 
-    return LIF_R(parameters=randomised_params, N=N,
-                 neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]))
+    neuron_types = np.ones((N,))
+    for i in range(int(N / 3)):
+        neuron_types[-(1 + i)] = -1
+    return LIF_R(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
 
 def lif_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
@@ -162,16 +167,16 @@ def lif_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
                                                 # torch.cat([T(4*[.1]), T(4*[.43]), T(4*[0.34])])}
                                                 # torch.cat([T(pop_size * [0.04]), T(pop_size * [0.36]), T(pop_size * [0.15])])}
                                                 # torch.cat([T(4*[.0]), T(4*[.0]), T(4*[0.0])])}
-                                                torch.cat([T(4 * [.1]), T(4 * [.25]), T(4 * [.2])])}
+                                                torch.cat([T(pop_size * [.1]), T(pop_size * [.25]), T(pop_size * [.2])])}
 
     params_pop3 = {'tau_m': 2.1, 'E_L': -62., 'f_I': 0.35, 'G': 0.75, 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
                    'delta_V': 12., 'tau_s': 2.2}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[-.16]), T(4*[-.4]), T(4*[-0.12])])}
-                                                # torch.cat([T(4 * [-.36]), T(4 * [-.22]), T(4 * [-0.08])])}
+                                                # torch.cat([T(pop_size * [-.36]), T(pop_size * [-.22]), T(pop_size * [-0.08])])}
                                                 # torch.cat([T(4*[-.0]), T(4*[-.0]), T(4*[-0.0])])}
-                                                torch.cat([T(4 * [-.04]), T(4 * [-.15]), T(4 * [-.1])])}
+                                                torch.cat([T(pop_size * [-.04]), T(pop_size * [-.15]), T(pop_size * [-.1])])}
 
     params_pop1 = randomise_parameters(params_pop1, coeff=T(0.025), N_dim=pop_size)
     params_pop1 = zip_tensor_dicts(params_pop1, hand_coded_params_pop1)
@@ -181,8 +186,10 @@ def lif_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     params_pop3 = zip_tensor_dicts(params_pop3, hand_coded_params_pop3)
     randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
 
-    return LIF_ASC(parameters=randomised_params, N=N,
-                   neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]))
+    neuron_types = np.ones((N,))
+    for i in range(int(N / 3)):
+        neuron_types[-(1 + i)] = -1
+    return LIF_ASC(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
 
 def lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
@@ -208,16 +215,16 @@ def lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
                                                 # torch.cat([T(4*[.1]), T(4*[.43]), T(4*[0.34])])}
                                                 # torch.cat([T(pop_size * [0.06]), T(pop_size * [0.3]), T(pop_size * [0.2])])}
                                                 # torch.cat([T(4*[.0]), T(4*[.0]), T(4*[0.0])])}
-                                                torch.cat([T(4 * [.08]), T(4 * [.25]), T(4 * [.2])])}
+                                                torch.cat([T(pop_size * [.08]), T(pop_size * [.25]), T(pop_size * [.2])])}
 
     params_pop3 = {'tau_m': 2.15, 'E_L': -68., 'f_I': 0.35, 'G': 0.7, 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
                    'delta_V': 12., 'tau_s': 2.4}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2 * weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[-.16]), T(4*[-.4]), T(4*[-0.12])])}
-                                                # torch.cat([T(4 * [-.4]), T(4 * [-.2]), T(4 * [-0.02])])}
+                                                # torch.cat([T(pop_size * [-.4]), T(pop_size * [-.2]), T(pop_size * [-0.02])])}
                                                 # torch.cat([T(4*[-.0]), T(4*[-.0]), T(4*[-0.0])])}
-                                                torch.cat([T(4 * [-.04]), T(4 * [-.1]), T(4 * [-.1])])}
+                                                torch.cat([T(pop_size * [-.04]), T(pop_size * [-.1]), T(pop_size * [-.1])])}
 
     params_pop1 = randomise_parameters(params_pop1, coeff=T(0.025), N_dim=pop_size)
     params_pop1 = zip_tensor_dicts(params_pop1, hand_coded_params_pop1)
@@ -227,8 +234,10 @@ def lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     params_pop3 = zip_tensor_dicts(params_pop3, hand_coded_params_pop3)
     randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
 
-    return LIF_R_ASC(parameters=randomised_params, N=N,
-                     neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]))
+    neuron_types = np.ones((N,))
+    for i in range(int(N / 3)):
+        neuron_types[-(1 + i)] = -1
+    return LIF_R_ASC(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
 
 def glif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
@@ -252,18 +261,18 @@ def glif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[.02]), T(4*[.3]), T(4*[0.15])])}
-                                                # torch.cat([T(4 * [.08]), T(4 * [.38]), T(4 * [0.32])])}
+                                                # torch.cat([T(pop_size * [.08]), T(pop_size * [.38]), T(pop_size * [0.32])])}
                                                 # torch.cat([T(pop_size * [0.0]), T(pop_size * [0.0]), T(pop_size * [0.0])])}
-                                                torch.cat([T(4 * [.1]), T(4 * [.25]), T(4 * [.2])])}
+                                                torch.cat([T(pop_size * [.1]), T(pop_size * [.25]), T(pop_size * [.2])])}
 
     params_pop3 = {'tau_m': 2.3, 'G': 0.7, 'E_L': -64., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14, 'delta_V': 12.,
                    'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -8., 'tau_s': 2.4}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
-                                                # torch.cat([T(4 * [-.4]), T(4 * [-.2]), T(4 * [-0.02])])}
-                                                # torch.cat([T(4 * [-.4]), T(4 * [-.2]), T(4 * [-0.02])])}
+                                                # torch.cat([T(pop_size * [-.4]), T(pop_size * [-.2]), T(pop_size * [-0.02])])}
+                                                # torch.cat([T(pop_size * [-.4]), T(pop_size * [-.2]), T(pop_size * [-0.02])])}
                                                 # torch.cat([T(pop_size * [0.0]), T(pop_size * [0.0]), T(pop_size * [0.0])])}
-                                                torch.cat([T(4 * [-.06]), T(4 * [-.2]), T(4 * [-.15])])}
+                                                torch.cat([T(pop_size * [-.06]), T(pop_size * [-.2]), T(pop_size * [-.15])])}
 
     params_pop1 = randomise_parameters(params_pop1, coeff=T(0.025), N_dim=pop_size)
     params_pop1 = zip_tensor_dicts(params_pop1, hand_coded_params_pop1)
@@ -273,5 +282,7 @@ def glif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     params_pop3 = zip_tensor_dicts(params_pop3, hand_coded_params_pop3)
     randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
 
-    return GLIF(parameters=randomised_params, N=N,
-                neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]))
+    neuron_types = np.ones((N,))
+    for i in range(int(N / 3)):
+        neuron_types[-(1 + i)] = -1
+    return GLIF(parameters=randomised_params, N=N, neuron_types=neuron_types)

@@ -50,20 +50,20 @@ class LIF(nn.Module):
         self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)
 
-        # self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
-        # self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
-        # self.tau_s = nn.Parameter(FT(tau_s).clamp(1., 12.), requires_grad=True)
-        self.E_L = FT(E_L).clamp(-80., -35.)  # change to const. if not req. grad to avoid nn.Param parsing
-        self.tau_m = FT(tau_m).clamp(1.5, 8.)
-        self.tau_s = FT(tau_s).clamp(1., 12.)
+        self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
+        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
+        self.tau_s = nn.Parameter(FT(tau_s).clamp(1., 12.), requires_grad=True)
+        # self.E_L = FT(E_L).clamp(-80., -35.)  # change to const. if not req. grad to avoid nn.Param parsing
+        # self.tau_m = FT(tau_m).clamp(1.5, 8.)
+        # self.tau_s = FT(tau_s).clamp(1., 12.)
 
         self.register_backward_clamp_hooks()
 
     def register_backward_clamp_hooks(self):
         # self.R_I.register_hook(lambda grad: static_clamp_for(grad, 100., 150., self.R_I))
-        # self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
-        # self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
-        # self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_s))
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
+        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
+        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_s))
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 

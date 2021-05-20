@@ -58,8 +58,12 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         for p_i, param in enumerate(list(model.parameters())):
             # print('p_i, param.grad', p_i, param.grad)
             avg_abs_grads[p_i].append(np.mean(np.abs(param.grad.clone().detach().numpy())))
-        avg_abs_grads[p_i + 1].append(np.abs(poisson_input_rate.grad.clone().detach().numpy()))
-        # print('p_i+1, poisson_input_rate.grad', p_i + 1, poisson_input_rate.grad)
+
+        if constants.EXP_TYPE is not ExperimentType.SanityCheck:
+            avg_abs_grads[p_i + 1].append(np.abs(poisson_input_rate.grad.clone().detach().numpy()))
+            # print('p_i+1, poisson_input_rate.grad', p_i + 1, poisson_input_rate.grad)
+        else:
+            avg_abs_grads[p_i + 1].append(0.)
 
         print('batch loss: {}'.format(loss))
         batch_losses.append(float(loss.clone().detach().data))

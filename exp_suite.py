@@ -65,8 +65,10 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
 
 def fit_model(logger, constants, model_class, params_model, exp_num, target_model=None, target_parameters=None, num_neurons=12):
     params_model['N'] = num_neurons
-    model = model_class(N=num_neurons, parameters=params_model,
-                        neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])  # set to ground truth for this file only
+    neuron_types = np.ones((num_neurons,))
+    for i in range(int(num_neurons/3)):
+        neuron_types[-(1+i)] = -1
+    model = model_class(N=num_neurons, parameters=params_model, neuron_types=neuron_types)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
     poisson_input_rate.clamp(5., 20.)
@@ -85,15 +87,18 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     train_losses = []; validation_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
     max_grads_mean = np.float(0.)
 
+    inputs = None
     if constants.EXP_TYPE is ExperimentType.DataDriven:
         node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
         next_step, targets = get_spike_train_matrix(index_last_step=0, advance_by_t_steps=constants.rows_per_train_iter,
-                               spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
+                                                    spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
     else:
         targets, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
                                                       t=constants.rows_per_train_iter)
+        if constants.EXP_TYPE == ExperimentType.SanityCheck:
+            inputs = gen_inputs
 
-    validation_loss = evaluate_loss(model, inputs=None, p_rate=poisson_input_rate.clone().detach(),
+    validation_loss = evaluate_loss(model, inputs=inputs, p_rate=poisson_input_rate.clone().detach(),
                                     target_spiketrain=targets, label='train i: {}'.format(train_i),
                                     exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
                                     constants=constants, converged=converged)

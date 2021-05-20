@@ -6,13 +6,13 @@ from torch import tensor as T
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
-class LIF_soft_full(nn.Module):
+class LIF_soft_weights_only(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_g']
     # parameter_init_intervals = {'E_L': [-55., -48.], 'tau_m': [1.9, 2.3], 'tau_g': [3., 4.5]}
-    parameter_init_intervals = {'E_L': [-50., -50.], 'tau_m': [2., 2.], 'tau_g': [3.2, 3.2]}
-
-    def __init__(self, parameters, N=12, w_mean=0.6, w_var=0.4, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
-        super(LIF_soft_full, self).__init__()
+    const_tau = 1.8
+    parameter_init_intervals = {'E_L': [-50., -50.], 'tau_m': [const_tau, const_tau], 'tau_g': [const_tau, const_tau]}
+    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+        super(LIF_soft_weights_only, self).__init__()
         # self.device = device
         assert len(neuron_types) == N, "neuron_types should be of length N"
 
@@ -57,20 +57,20 @@ class LIF_soft_full(nn.Module):
         # self.w = nn.Parameter(FT(torch.zeros((N,N))), requires_grad=True)
 
         # self.R_I = nn.Parameter(FT(R_I).clamp(100., 150.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
-        self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
-        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
-        self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 12.), requires_grad=True)
-        # self.E_L = FT(E_L).clamp(-80., -35.)  # change to const. if not req. grad to avoid nn.Param parsing
-        # self.tau_m = FT(tau_m).clamp(1.5, 8.)
-        # self.tau_g = FT(tau_g).clamp(1.5, 12.)
+        # self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
+        # self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
+        # self.tau_g = nn.Parameter(FT(tau_g).clamp(1.5, 12.), requires_grad=True)
+        self.E_L = FT(E_L).clamp(-80., -35.)  # change to const. if not req. grad to avoid nn.Param parsing
+        self.tau_m = FT(tau_m).clamp(1.5, 8.)
+        self.tau_g = FT(tau_g).clamp(1.5, 12.)
 
         self.register_backward_clamp_hooks()
 
     def register_backward_clamp_hooks(self):
         # self.R_I.register_hook(lambda grad: static_clamp_for(grad, 100., 150., self.R_I))
-        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
-        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
-        self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 12., self.tau_g))
+        # self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
+        # self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
+        # self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1.5, 12., self.tau_g))
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 

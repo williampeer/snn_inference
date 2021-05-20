@@ -1,7 +1,6 @@
 import sys
 
 import Constants as C
-import data_util
 import exp_suite
 from Models.GLIF import GLIF
 from Models.LIF import LIF
@@ -9,13 +8,13 @@ from Models.LIF_ASC import LIF_ASC
 from Models.LIF_HS_17 import LIF_HS_17
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from Models.LIF_full import LIF_full
+from Models.LIF_weights_only import LIF_weights_only
 from Models.Sigmoidal.GLIF_soft import GLIF_soft
 from Models.Sigmoidal.LIF_ASC_soft import LIF_ASC_soft
 from Models.Sigmoidal.LIF_R_ASC_soft import LIF_R_ASC_soft
 from Models.Sigmoidal.LIF_R_soft import LIF_R_soft
 from Models.Sigmoidal.LIF_soft import LIF_soft
-from Models.Sigmoidal.LIF_soft_full import LIF_soft_full
+from Models.Sigmoidal.LIF_soft_weights_only import LIF_soft_weights_only
 from TargetModels import TargetModels
 from eval import LossFn
 
@@ -28,17 +27,17 @@ def main(argv):
 
     # Default values
     start_seed = 42
-    # exp_type_str = C.ExperimentType.SanityCheck.name
+    exp_type_str = C.ExperimentType.SanityCheck.name
     # exp_type_str = C.ExperimentType.Synthetic.name
-    exp_type_str = C.ExperimentType.DataDriven.name
+    # exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.1; N_exp = 4; tau_van_rossum = 10.0; plot_flag = True
-    max_train_iters = 20; batch_size = 200; rows_per_train_iter = 800
+    learn_rate = 0.02; N_exp = 4; tau_van_rossum = 10.0; plot_flag = True
+    max_train_iters = 20; batch_size = 1000; rows_per_train_iter = 4000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
-    loss_fn = 'frd'
+    # loss_fn = 'frd'
     # loss_fn = 'vrd'
-    # loss_fn = None
+    loss_fn = None
     silent_penalty_factor = None
 
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
@@ -57,14 +56,18 @@ def main(argv):
     optimiser = 'SGD'
     initial_poisson_rate = 10.  # Hz
 
+    network_size = 3
+
     evaluate_step = 1
     # evaluate_step = int(max(max_train_iters/10, 1))
-    data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4.mat'
+    data_path = None
+    # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4.mat'
+
     # model_type = None
     model_type = 'LIF'
-    # model_type = 'LIF_full'
+    # model_type = 'LIF_weights_only'
     # model_type = 'LIF_soft'
-    # model_type = 'LIF_soft_full'
+    # model_type = 'LIF_soft_weights_only'
     norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -74,7 +77,8 @@ def main(argv):
             print('main.py -s <script> -lr <learning-rate> -ti <training-iterations> -N <number-of-experiments> '
                   '-bs <batch-size> -tvr <van-rossum-time-constant> -rpti <rows-per-training-iteration> '
                   '-optim <optimiser> -ipr <initial-poisson-rate> -es <evaluate-step> -tmn <target-model-number> '
-                  '-trn <target-rate-number>')
+                  '-ss <start-seed> -et <experiment-type> -mt <model-type> -spf <silent-penalty-factor> '
+                  '-ng <normalised-gradients> -dp <data-path>')
             sys.exit()
         elif opt in ("-lr", "--learning-rate"):
             learn_rate = float(args[i])
@@ -98,8 +102,6 @@ def main(argv):
             loss_fn = args[i]
         elif opt in ("-sp", "--should-plot"):
             plot_flag = bool(args[i])
-        elif opt in ("-trn", "--target-rate-number"):
-            trn = int(args[i])
         elif opt in ("-ss", "--start-seed"):
             start_seed = int(args[i])
         elif opt in ("-et", "--experiment-type"):
@@ -112,20 +114,22 @@ def main(argv):
             norm_grad_flag = bool(args[i])
         elif opt in ("-dp", "--data-path"):
             data_path = str(args[i])
+        elif opt in ("-ns", "--network-size"):
+            network_size = str(args[i])
 
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17,
                   LIF_soft, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft,
-                  LIF_full, LIF_soft_full]
+                  LIF_weights_only, LIF_soft_weights_only]
     # models = [LIF_HS_17]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
-    models = [LIF_soft, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
+    models = [LIF_soft_weights_only, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC]
 
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
-                          LossFn.VAN_ROSSUM_DIST.name,
+                          LossFn.VAN_ROSSUM_DIST.name]#,
                           # LossFn.KL_DIV.name,
-                          LossFn.MSE.name]
+                          # LossFn.MSE.name]
     else:
         loss_functions = [LossFn(loss_fn).name]
     if model_type is not None and model_type in str(all_models):
@@ -137,26 +141,26 @@ def main(argv):
 
     for m_class in models:
         for loss_fn in loss_functions:
-            if exp_type_str == C.ExperimentType.Synthetic.name:
+            if exp_type_str in [C.ExperimentType.Synthetic.name, C.ExperimentType.SanityCheck.name]:
                 for f_i in range(3, 6):
-                    if m_class.__name__ in [LIF.__name__, LIF_soft.__name__]:
+                    if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_soft_weights_only.__name__, LIF_soft.__name__]:
                         target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                        target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     elif m_class.__name__ in [LIF_HS_17.__name__]:
                         target_model_name = 'lif_HS_17_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                        target_model = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     elif m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__]:
                         target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                        target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     elif m_class.__name__ in [LIF_ASC.__name__, LIF_ASC_soft.__name__]:
                         target_model_name = 'lif_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                        target_model = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__]:
                         target_model_name = 'lif_r_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                        target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     elif m_class.__name__ in [GLIF.__name__, GLIF_soft.__name__]:
                         target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
+                        target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     else:
                         raise NotImplementedError()
 
