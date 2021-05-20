@@ -9,17 +9,22 @@ from Models.LIF_ASC import LIF_ASC
 from Models.LIF_HS_17 import LIF_HS_17
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
+from Models.LIF_full import LIF_full
 from Models.Sigmoidal.GLIF_soft import GLIF_soft
 from Models.Sigmoidal.LIF_ASC_soft import LIF_ASC_soft
 from Models.Sigmoidal.LIF_R_ASC_soft import LIF_R_ASC_soft
 from Models.Sigmoidal.LIF_R_soft import LIF_R_soft
 from Models.Sigmoidal.LIF_soft import LIF_soft
+from Models.Sigmoidal.LIF_soft_full import LIF_soft_full
 from TargetModels import TargetModels
 from eval import LossFn
 
 
 def main(argv):
     print('Argument List:', str(argv))
+
+    # device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    # print('Using {} device'.format(device))
 
     # Default values
     start_seed = 42
@@ -28,8 +33,8 @@ def main(argv):
     exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.0051; N_exp = 3; tau_van_rossum = 5.0; plot_flag = True
-    max_train_iters = 30; batch_size = 400; rows_per_train_iter = 2000
+    learn_rate = 0.1; N_exp = 4; tau_van_rossum = 10.0; plot_flag = True
+    max_train_iters = 20; batch_size = 200; rows_per_train_iter = 800
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     loss_fn = 'frd'
     # loss_fn = 'vrd'
@@ -57,6 +62,9 @@ def main(argv):
     data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4.mat'
     # model_type = None
     model_type = 'LIF'
+    # model_type = 'LIF_full'
+    # model_type = 'LIF_soft'
+    # model_type = 'LIF_soft_full'
     norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -106,7 +114,8 @@ def main(argv):
             data_path = str(args[i])
 
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17,
-                  LIF_soft, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
+                  LIF_soft, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft,
+                  LIF_full, LIF_soft_full]
     # models = [LIF_HS_17]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     models = [LIF_soft, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
@@ -172,7 +181,6 @@ def main(argv):
                                         norm_grad_flag=norm_grad_flag, data_path=data_path)
 
                 exp_suite.start_exp(constants=constants, model_class=m_class)
-
 
 
 if __name__ == "__main__":

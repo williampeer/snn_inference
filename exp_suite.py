@@ -101,6 +101,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
 
     while not converged and (train_i < constants.train_iters):
+        train_i += 1
         logger.log('training iteration #{}'.format(train_i), [constants.EXP_TYPE])
 
         if constants.EXP_TYPE is ExperimentType.DataDriven:
@@ -152,7 +153,6 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
 
         targets = None; validation_loss = None
-        train_i += 1
 
     stats_training_iterations(parameters, model, poisson_input_rate, train_losses, validation_losses, constants, logger,
                               constants.EXP_TYPE.name, target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
@@ -175,6 +175,7 @@ def run_exp_loop(logger, constants, model_class, target_model=None):
             non_overlapping_offset = constants.start_seed + constants.N_exp + 1
             torch.manual_seed(non_overlapping_offset + exp_i)
             np.random.seed(non_overlapping_offset + exp_i)
+
             if target_model is not None:
                 target_model.load_state_dict(target_model.state_dict())
                 num_neurons = int(target_model.v.shape[0])

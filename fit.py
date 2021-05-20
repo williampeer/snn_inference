@@ -23,7 +23,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         avg_abs_grads.append([])
 
     optimiser.zero_grad()
-    poisson_input_rate.grad = torch.tensor(0.)
+    # poisson_input_rate.grad = torch.tensor(0.)
     for batch_i in range(batch_N):
         print('batch #{}'.format(batch_i))
 
@@ -33,15 +33,18 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         else:
             current_inputs = poisson_input(rate=poisson_input_rate, t=batch_size, N=model.N)
             current_inputs.retain_grad()
-        spikes = model_util.feed_inputs_sequentially_return_spike_train(model, current_inputs)
 
+        spikes = model_util.feed_inputs_sequentially_return_spike_train(model, current_inputs)
         loss = calculate_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(),
                               loss_fn=constants.loss_fn, tau_vr = tau_vr, silent_penalty_factor=constants.silent_penalty_factor)
 
-        if batch_i<batch_N-1:
-            loss.backward(retain_graph=True)
-        else:
-            loss.backward()
+        # if batch_i<batch_N-1:
+        # loss.backward(retain_graph=True)
+        # else:
+        # optimiser.zero_grad()
+        loss.backward(retain_graph=True)
+        # optimiser.step()
+        # loss.backward()
 
         # poisson_input_rate.grad = torch.mean(current_inputs.grad)  # TODO: test w. "final" learn rate
         for p_i, param in enumerate(list(model.parameters())):
@@ -61,6 +64,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         print('batch loss: {}'.format(loss))
         batch_losses.append(float(loss.clone().detach().data))
 
+    # loss.backward()
     optimiser.step()
     release_computational_graph(model, poisson_input_rate, current_inputs)
     spikes = None; loss = None; current_inputs = None

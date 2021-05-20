@@ -6,13 +6,13 @@ from torch import tensor as T
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
-class LIF_soft(nn.Module):
+class LIF_soft_full(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_g']
     # parameter_init_intervals = {'E_L': [-55., -48.], 'tau_m': [1.9, 2.3], 'tau_g': [3., 4.5]}
     parameter_init_intervals = {'E_L': [-50., -50.], 'tau_m': [2., 2.], 'tau_g': [3.2, 3.2]}
 
     def __init__(self, parameters, N=12, w_mean=0.6, w_var=0.4, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
-        super(LIF_soft, self).__init__()
+        super(LIF_soft_full, self).__init__()
         # self.device = device
         assert len(neuron_types) == N, "neuron_types should be of length N"
 
