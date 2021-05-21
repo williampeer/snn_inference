@@ -137,13 +137,15 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         # converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
         converged = False
 
+        gen_input = None
         if constants.EXP_TYPE is ExperimentType.DataDriven:
             node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
             next_step, targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
                                                         spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
-            gen_input = None
         else:
-            targets, gen_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
+            targets, sanity_check_gen_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
+            if constants.EXP_TYPE is ExperimentType.SanityCheck:
+                gen_input = sanity_check_gen_input
 
         avg_train_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=gen_input, target_spiketrain=targets,
                                                                 poisson_input_rate=poisson_input_rate, optimiser=optim,
