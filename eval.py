@@ -46,6 +46,8 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
 class LossFn(Enum):
     FIRING_RATE_DIST = 'frd'
     VAN_ROSSUM_DIST = 'vrd'
+    FANO_FACTOR_DIST = 'FF'
+    CV_DIST = 'CV'
     MSE = 'mse'
     KL_DIV = 'kl_div'
 
@@ -62,6 +64,10 @@ def calculate_loss(output, target, loss_fn, tau_vr=None, silent_penalty_factor=N
         # surrogate_gradient_output = torch.sigmoid(8*output-6*torch.ones_like(output))
         # loss = spike_metrics.firing_rate_distance(surrogate_gradient_output, target)
         loss = spike_metrics.firing_rate_distance(output, target)
+    elif lfn == LossFn.FANO_FACTOR:
+        loss = spike_metrics.fano_factor_dist(output, target)
+    elif lfn == LossFn.CV:
+        loss = spike_metrics.CV_dist(output, target)
     else:
         raise NotImplementedError("Loss function not supported.")
 

@@ -108,6 +108,32 @@ def firing_rate_distance(model_spikes, target_spikes):
     # return torch.sqrt(torch.pow(torch.sub(mean_targets_rate, mean_model_rate), 2).sum() + 1e-18)
 
 
+def fano_factor_dist(out, tar, bins=4):
+    bin_len = int(out.shape[0]/4)
+    out_counts = []
+    tar_counts = []
+    for b_i in range(bins):
+        out_counts.append(out[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
+        tar_counts.append(tar[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
+
+    F_out = torch.var(out_counts) / torch.mean(out_counts)
+    F_tar = torch.var(tar_counts) / torch.mean(tar_counts)
+    return euclid_dist(F_out, F_tar)
+
+
+def CV_dist(out, tar, bins=4):
+    bin_len = int(out.shape[0]/4)
+    out_counts = []
+    tar_counts = []
+    for b_i in range(bins):
+        out_counts.append(out[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
+        tar_counts.append(tar[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
+
+    F_out = torch.std(out_counts) / torch.mean(out_counts)
+    F_tar = torch.std(tar_counts) / torch.mean(tar_counts)
+    return euclid_dist(F_out, F_tar)
+
+
 def normalised_overall_activity_term(model_spikes):
     # overall-activity penalty:
     return (model_spikes.sum() + 1e-09) / model_spikes.shape[1]

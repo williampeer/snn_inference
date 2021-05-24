@@ -1,6 +1,7 @@
 import sys
 
 import Constants as C
+import data_util
 import exp_suite
 from Models.GLIF import GLIF
 from Models.LIF import LIF
@@ -33,7 +34,7 @@ def main(argv):
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 1e-03; N_exp = 2; tau_van_rossum = 10.0; plot_flag = True
-    max_train_iters = 20; batch_size = 1000; rows_per_train_iter = 4000
+    max_train_iters = 12; batch_size = 4000; rows_per_train_iter = 4000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     # loss_fn = 'frd'
     # loss_fn = 'vrd'
@@ -55,17 +56,16 @@ def main(argv):
     # optimiser = 'Adam'
     optimiser = 'SGD'
     initial_poisson_rate = 10.  # Hz
-
     network_size = 3
 
     evaluate_step = 1
     # evaluate_step = int(max(max_train_iters/10, 1))
-    data_path = None
-    # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4.mat'
+    # data_path = None
+    data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4.mat'
 
     # model_type = None
-    model_type = 'LIF'
-    # model_type = 'LIF_weights_only'
+    # model_type = 'LIF'
+    model_type = 'LIF_weights_only'
     # model_type = 'LIF_soft'
     # model_type = 'LIF_soft_weights_only'
     norm_grad_flag = False
@@ -115,7 +115,7 @@ def main(argv):
         elif opt in ("-dp", "--data-path"):
             data_path = str(args[i])
         elif opt in ("-ns", "--network-size"):
-            network_size = str(args[i])
+            network_size = int(args[i])
 
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17,
                   LIF_soft, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft,
@@ -127,7 +127,9 @@ def main(argv):
 
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
-                          LossFn.VAN_ROSSUM_DIST.name]#,
+                          LossFn.VAN_ROSSUM_DIST.name,
+                          LossFn.FANO_FACTOR_DIST.name,
+                          LossFn.CV_DIST.name]
                           # LossFn.KL_DIV.name,
                           # LossFn.MSE.name]
     else:
