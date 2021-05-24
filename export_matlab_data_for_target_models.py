@@ -29,19 +29,19 @@ def main(argv):
         # model_name = model_class.__name__
         num_neurons = 12
 
-        for f_i in range(3, 7):
+        for f_i in range(4, 5):
             torch.manual_seed(f_i)
             np.random.seed(f_i)
 
             # init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-            snn = m_fn(random_seed=f_i, N=num_neurons)
+            # snn = m_fn(random_seed=f_i, N=num_neurons)
             # random_seed = f_i
-            # snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
+            snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i)
 
             cur_fname = 'target_model_spikes_{}_seed_{}'.format(snn.__class__.__name__, f_i)
             save_file_name = prefix + path + cur_fname + '.mat'
             if not os.path.exists(save_file_name):
-                simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=5*60*1000, exp_num=f_i,
+                simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=30*60*1000, exp_num=f_i,
                                                     model_name=snn.__class__.__name__, fname=cur_fname)
             else:
                 print('file exists. skipping..')
