@@ -34,7 +34,7 @@ def main(argv):
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 1e-03; N_exp = 2; tau_van_rossum = 10.0; plot_flag = True
-    max_train_iters = 12; batch_size = 10000; rows_per_train_iter = 10000
+    max_train_iters = 12; batch_size = 20000; rows_per_train_iter = 20000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     # loss_fn = 'frd'
     loss_fn = 'FF'

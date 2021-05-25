@@ -146,7 +146,7 @@ def fano_factor_dist(out, tar, bins=4):
 #     return euclid_dist(F_out, F_tar)
 
 
-def CV_dist(out, tar, bins=4):
+def CV_dist(out, tar, bins=5):
     bin_len = int(out.shape[0]/bins)
     out_counts = torch.zeros((bins,out.shape[1]))
     tar_counts = torch.zeros((bins,tar.shape[1]))
