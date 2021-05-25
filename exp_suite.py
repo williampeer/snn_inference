@@ -178,7 +178,7 @@ def run_exp_loop(logger, constants, model_class, target_model=None):
 
     recovered_param_per_exp = {}; poisson_rate_per_exp = []
     for exp_i in range(constants.start_seed, constants.start_seed+constants.N_exp):
-        # try:
+        try:
             non_overlapping_offset = constants.start_seed + constants.N_exp + 1
             torch.manual_seed(non_overlapping_offset + exp_i)
             np.random.seed(non_overlapping_offset + exp_i)
@@ -207,9 +207,9 @@ def run_exp_loop(logger, constants, model_class, target_model=None):
                 else:
                     recovered_param_per_exp[key].append(recovered_parameters[key])
             poisson_rate_per_exp.append(poisson_rates[-1])
-        # except Exception as e:
-        #     logger.log('Exception occurred: {}'.format(e))
-        #     print(e)
+        except Exception as e:
+            logger.log('Exception occurred: {}'.format(e))
+            print(e)
 
     logger.log('poisson_rate_per_exp', poisson_rate_per_exp)
     save_poisson_rates(poisson_rate_per_exp, uuid=constants.UUID, fname='poisson_rates_per_exp.pt')

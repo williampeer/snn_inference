@@ -37,9 +37,9 @@ def main(argv):
     max_train_iters = 12; batch_size = 20000; rows_per_train_iter = 20000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     # loss_fn = 'frd'
-    loss_fn = 'FF'
+    # loss_fn = 'FF'
     # loss_fn = 'CV'
-    # loss_fn = None
+    loss_fn = None
     silent_penalty_factor = None
 
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
@@ -64,8 +64,8 @@ def main(argv):
     # data_path = None
     data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4.mat'
 
-    # model_type = None
-    model_type = 'LIF'
+    model_type = None
+    # model_type = 'LIF'
     # model_type = 'LIF_weights_only'
     # model_type = 'LIF_soft'
     # model_type = 'LIF_soft_weights_only'
