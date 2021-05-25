@@ -34,10 +34,11 @@ def main(argv):
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 1e-03; N_exp = 2; tau_van_rossum = 10.0; plot_flag = True
-    max_train_iters = 12; batch_size = 4000; rows_per_train_iter = 4000
+    max_train_iters = 12; batch_size = 10000; rows_per_train_iter = 10000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     # loss_fn = 'frd'
     loss_fn = 'FF'
+    # loss_fn = 'CV'
     # loss_fn = None
     silent_penalty_factor = None
 
@@ -64,8 +65,8 @@ def main(argv):
     data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4.mat'
 
     # model_type = None
-    # model_type = 'LIF'
-    model_type = 'LIF_weights_only'
+    model_type = 'LIF'
+    # model_type = 'LIF_weights_only'
     # model_type = 'LIF_soft'
     # model_type = 'LIF_soft_weights_only'
     norm_grad_flag = False

@@ -108,37 +108,51 @@ def firing_rate_distance(model_spikes, target_spikes):
     # return torch.sqrt(torch.pow(torch.sub(mean_targets_rate, mean_model_rate), 2).sum() + 1e-18)
 
 
-# def fano_factor_dist(out, tar, bins=4):
-#     bin_len = int(out.shape[0]/4)
-#     out_counts = []
-#     tar_counts = []
-#     for b_i in range(bins):
-#         out_counts.append(out[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
-#         tar_counts.append(tar[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
-#
-#     F_out = torch.var(out_counts) / torch.mean(out_counts)
-#     F_tar = torch.var(tar_counts) / torch.mean(tar_counts)
-#     return euclid_dist(F_out, F_tar)
-def get_spike_times_helper(spikes):
-    times = torch.range(1, spikes.shape[0]) * torch.ones_like(spikes)  # TODO: check
-    return times[spikes > 0]
+def fano_factor_dist(out, tar, bins=4):
+    bin_len = int(out.shape[0]/bins)
+    out_counts = torch.zeros((bins,out.shape[1]))
+    tar_counts = torch.zeros((bins,tar.shape[1]))
+    for b_i in range(bins):
+        out_counts[b_i] = (out[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
+        tar_counts[b_i] = (tar[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
 
-def fano_factor_dist(out, tar):
-    out_isi = get_spike_times_helper(out[1:-1]) - get_spike_times_helper(out[:-2])
-    tar_isi = get_spike_times_helper(tar[1:-1]) - get_spike_times_helper(tar[:-2])
-
-    F_out = torch.var(out_isi) / torch.mean(out_isi)
-    F_tar = torch.var(tar_isi) / torch.mean(tar_isi)
+    F_out = torch.var(out_counts) / torch.mean(out_counts)
+    F_tar = torch.var(tar_counts) / torch.mean(tar_counts)
     return euclid_dist(F_out, F_tar)
+# def get_spike_times_helper(spikes, threshold=0.5):
+#     times = torch.reshape(torch.arange(spikes.shape[0]), (-1, 1)) * torch.ones_like(spikes)
+#     spike_times_per_neuron = []
+#     for neur_i in range(spikes.shape[1]):
+#         spike_times_per_neuron.append(times[:, neur_i][spikes[:, neur_i] > threshold])
+#         # spike_times_per_neuron.append(times[:, neur_i][torch.round(spikes[:, neur_i]) > 0])
+#
+#     return spike_times_per_neuron
+#
+# def fano_factor_dist(out, tar):
+#     out_spike_times = get_spike_times_helper(out)
+#     tar_spike_times = get_spike_times_helper(tar)
+#
+#     F_out = torch.zeros((len(out_spike_times),))
+#     F_tar = torch.zeros((len(out_spike_times),))
+#     for neur_i in range(len(out_spike_times)):
+#         out_isi_i = out_spike_times[neur_i][1:-1] - out_spike_times[neur_i][:-2]
+#         tar_isi_i = tar_spike_times[neur_i][1:-1] - tar_spike_times[neur_i][:-2]
+#
+#         # F_out_i = torch.var(out_isi_i) / torch.mean(out_isi_i)
+#         # F_tar_i = torch.var(tar_isi_i) / torch.mean(tar_isi_i)
+#         F_out[neur_i] = torch.var(out_isi_i) / torch.mean(out_isi_i)
+#         F_tar[neur_i] = torch.var(tar_isi_i) / torch.mean(tar_isi_i)
+#
+#     return euclid_dist(F_out, F_tar)
 
 
 def CV_dist(out, tar, bins=4):
-    bin_len = int(out.shape[0]/4)
-    out_counts = []
-    tar_counts = []
+    bin_len = int(out.shape[0]/bins)
+    out_counts = torch.zeros((bins,out.shape[1]))
+    tar_counts = torch.zeros((bins,tar.shape[1]))
     for b_i in range(bins):
-        out_counts.append(out[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
-        tar_counts.append(tar[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
+        out_counts[b_i] = (out[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
+        tar_counts[b_i] = (tar[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
 
     F_out = torch.std(out_counts) / torch.mean(out_counts)
     F_tar = torch.std(tar_counts) / torch.mean(tar_counts)

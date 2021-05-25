@@ -64,9 +64,9 @@ def calculate_loss(output, target, loss_fn, tau_vr=None, silent_penalty_factor=N
         # surrogate_gradient_output = torch.sigmoid(8*output-6*torch.ones_like(output))
         # loss = spike_metrics.firing_rate_distance(surrogate_gradient_output, target)
         loss = spike_metrics.firing_rate_distance(output, target)
-    elif lfn == LossFn.FANO_FACTOR:
+    elif lfn == LossFn.FANO_FACTOR_DIST:
         loss = spike_metrics.fano_factor_dist(output, target)
-    elif lfn == LossFn.CV:
+    elif lfn == LossFn.CV_DIST:
         loss = spike_metrics.CV_dist(output, target)
     else:
         raise NotImplementedError("Loss function not supported.")
