@@ -37,8 +37,8 @@ def main(argv):
     max_train_iters = 12; batch_size = 4000; rows_per_train_iter = 4000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     # loss_fn = 'frd'
-    # loss_fn = 'vrd'
-    loss_fn = None
+    loss_fn = 'FF'
+    # loss_fn = None
     silent_penalty_factor = None
 
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'

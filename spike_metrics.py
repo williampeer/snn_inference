@@ -108,16 +108,27 @@ def firing_rate_distance(model_spikes, target_spikes):
     # return torch.sqrt(torch.pow(torch.sub(mean_targets_rate, mean_model_rate), 2).sum() + 1e-18)
 
 
-def fano_factor_dist(out, tar, bins=4):
-    bin_len = int(out.shape[0]/4)
-    out_counts = []
-    tar_counts = []
-    for b_i in range(bins):
-        out_counts.append(out[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
-        tar_counts.append(tar[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
+# def fano_factor_dist(out, tar, bins=4):
+#     bin_len = int(out.shape[0]/4)
+#     out_counts = []
+#     tar_counts = []
+#     for b_i in range(bins):
+#         out_counts.append(out[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
+#         tar_counts.append(tar[b_i*bin_len:(b_i+1)*bin_len].sum(dim=0))
+#
+#     F_out = torch.var(out_counts) / torch.mean(out_counts)
+#     F_tar = torch.var(tar_counts) / torch.mean(tar_counts)
+#     return euclid_dist(F_out, F_tar)
+def get_spike_times_helper(spikes):
+    times = torch.range(1, spikes.shape[0]) * torch.ones_like(spikes)  # TODO: check
+    return times[spikes > 0]
 
-    F_out = torch.var(out_counts) / torch.mean(out_counts)
-    F_tar = torch.var(tar_counts) / torch.mean(tar_counts)
+def fano_factor_dist(out, tar):
+    out_isi = get_spike_times_helper(out[1:-1]) - get_spike_times_helper(out[:-2])
+    tar_isi = get_spike_times_helper(tar[1:-1]) - get_spike_times_helper(tar[:-2])
+
+    F_out = torch.var(out_isi) / torch.mean(out_isi)
+    F_tar = torch.var(tar_isi) / torch.mean(tar_isi)
     return euclid_dist(F_out, F_tar)
 
 
