@@ -71,9 +71,9 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_N_3_duration_300000.mat'
     data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_3_seed_4_duration_300000.mat'
 
-    # model_type = None
+    model_type = None
     # model_type = 'LIF'
-    model_type = 'LIF_weights_only'
+    # model_type = 'LIF_weights_only'
     # model_type = 'LIF_soft'
     # model_type = 'LIF_soft_weights_only'
     norm_grad_flag = False
@@ -137,6 +137,7 @@ def main(argv):
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
                           LossFn.VAN_ROSSUM_DIST.name,
+                          LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           LossFn.FANO_FACTOR_DIST.name,
                           LossFn.CV_DIST.name]
                           # LossFn.KL_DIV.name,
