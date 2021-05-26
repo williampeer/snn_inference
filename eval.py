@@ -51,6 +51,7 @@ class LossFn(Enum):
     MSE = 'mse'
     KL_DIV = 'kl_div'
     PEARSON_CORRELATION_COEFFICIENT = 'PCC'
+    RATE_FANO_HYBRID = 'rfh'
 
 
 def calculate_loss(output, target, loss_fn, tau_vr=None, silent_penalty_factor=None):
@@ -71,6 +72,8 @@ def calculate_loss(output, target, loss_fn, tau_vr=None, silent_penalty_factor=N
         loss = spike_metrics.CV_dist(output, target)
     elif lfn == LossFn.PEARSON_CORRELATION_COEFFICIENT:
         loss = spike_metrics.correlation_metric_distance(output, target)
+    elif lfn == LossFn.RATE_FANO_HYBRID:
+        loss = spike_metrics.firing_rate_distance(output, target) + 0.25*spike_metrics.fano_factor_dist(output, target)
     else:
         raise NotImplementedError("Loss function not supported.")
 
