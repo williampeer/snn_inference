@@ -19,7 +19,24 @@ from spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
 def main(argv):
+    num_neurons = 12
+    duration = 5 * 60 * 1000
+    glif_only_flag = False
+
     print('Argument List:', str(argv))
+
+    opts = [opt for opt in argv if opt.startswith("-")]
+    args = [arg for arg in argv if not arg.startswith("-")]
+    for i, opt in enumerate(opts):
+        if opt == '-h':
+            print('main.py -N <num-neurons> -d <duration> -GF <glif-only-flag>')
+            sys.exit()
+        elif opt in ("-d", "--duration"):
+            duration = int(args[i])
+        elif opt in ("-N", "--num-neurons"):
+            num_neurons = int(args[i])
+        elif opt in ("-GF", "--glif-only-flag"):
+            glif_only_flag = bool(args[i])
 
     for m_fn in [lif_continuous_ensembles_model_dales_compliant,
                  lif_r_continuous_ensembles_model_dales_compliant,
@@ -27,21 +44,23 @@ def main(argv):
                  lif_r_asc_continuous_ensembles_model_dales_compliant,
                  glif_continuous_ensembles_model_dales_compliant]:
         # model_name = model_class.__name__
-        num_neurons = 12
 
         for f_i in range(3, 7):
             torch.manual_seed(f_i)
             np.random.seed(f_i)
 
             # init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-            snn = m_fn(random_seed=f_i, N=num_neurons)
-            # random_seed = f_i
-            # snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
+            if not glif_only_flag:
+                random_seed = f_i
+                snn = m_fn(random_seed=random_seed, N=num_neurons)
+            else:
+                random_seed = 4
+                snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
 
-            cur_fname = 'target_model_spikes_{}_seed_{}'.format(snn.__class__.__name__, f_i)
+            cur_fname = 'target_model_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.__class__.__name__, num_neurons, random_seed, duration)
             save_file_name = prefix + path + cur_fname + '.mat'
             if not os.path.exists(save_file_name):
-                simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=5*60*1000, exp_num=f_i,
+                simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=duration, exp_num=f_i,
                                                     model_name=snn.__class__.__name__, fname=cur_fname)
             else:
                 print('file exists. skipping..')
