@@ -55,7 +55,7 @@ def main(argv):
                 snn = m_fn(random_seed=random_seed, N=num_neurons)
             else:
                 random_seed = 4
-                snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
+                snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
 
             cur_fname = 'target_model_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.__class__.__name__, num_neurons, random_seed, duration)
             save_file_name = prefix + path + cur_fname + '.mat'
