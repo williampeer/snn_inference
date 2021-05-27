@@ -69,7 +69,7 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4.mat'
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_duration_300000.mat'
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_N_3_duration_300000.mat'
-    data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_3_seed_4_duration_300000.mat'
+    data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_3_seed_4_duration_1800000.mat'
 
     model_type = None
     # model_type = 'LIF'
