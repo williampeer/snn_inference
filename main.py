@@ -46,8 +46,8 @@ def main(argv):
     # loss_fn = 'PCC'
     # loss_fn = 'rfh'
     # loss_fn = 'rph'
-    loss_fn = 'kl_div'
-    # loss_fn = None
+    # loss_fn = 'kl_div'
+    loss_fn = None
     silent_penalty_factor = None
 
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
@@ -144,9 +144,9 @@ def main(argv):
                           LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
                           LossFn.RATE_FANO_HYBRID.name,
-                          LossFn.RATE_PCC_HYBRID.name]
+                          LossFn.RATE_PCC_HYBRID.name,
                           # LossFn.CV_DIST.name]
-                          # LossFn.KL_DIV.name,
+                          LossFn.KL_DIV.name]
                           # LossFn.MSE.name]
     else:
         loss_functions = [LossFn(loss_fn).name]
