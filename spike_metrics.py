@@ -67,9 +67,9 @@ def greedy_shortest_dist_vr(spikes, target_spikes, tau):
     return torch.mean(min_distances)
 
 
-def euclid_dist(spikes1, spikes2):
+def euclid_dist(vec1, vec2):
     # sqrt((s1 - s2) ** 2)
-    return torch.sqrt(torch.pow(torch.sub(spikes2, spikes1), 2).sum() + 1e-18)
+    return torch.sqrt(torch.pow(torch.sub(vec2, vec1), 2).sum() + 1e-18)
 
 
 def mse(s1, s2):
@@ -102,7 +102,7 @@ def silent_penalty_term(spikes, targets):
 def firing_rate_distance(model_spikes, target_spikes):
     mean_model_rate = model_spikes.sum(dim=0)
     mean_targets_rate = target_spikes.sum(dim=0)
-    return euclid_dist(mean_targets_rate, mean_model_rate)
+    return euclid_dist(mean_targets_rate, mean_model_rate) / (model_spikes.shape[0] / 1000.)  # Hz
     # assert model_spikes.shape[0] > model_spikes.shape[1]
     # f_penalty(x,y) = sqrt(pow(e^(-x/T.) - e^(-y/T.)).sum() + 1e-18)
     # silent_penalty = torch.sqrt(torch.pow(torch.exp(-mean_model_rate/torch.tensor(T)) - torch.exp(-mean_targets_rate/torch.tensor(T)), 2).sum()+1e-18) / model_spikes.shape[1]
