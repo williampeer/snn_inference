@@ -1,5 +1,7 @@
 import torch
 
+NUM_BINS = 6
+
 
 # an approximation using torch.where
 def torch_van_rossum_convolution(spikes, tau):
@@ -100,7 +102,7 @@ def silent_penalty_term(spikes, targets):
 def firing_rate_distance(model_spikes, target_spikes):
     mean_model_rate = model_spikes.sum(dim=0)
     mean_targets_rate = target_spikes.sum(dim=0)
-    return euclid_dist(mean_targets_rate, mean_model_rate) / (model_spikes.shape[0])
+    return euclid_dist(mean_targets_rate, mean_model_rate)
     # assert model_spikes.shape[0] > model_spikes.shape[1]
     # f_penalty(x,y) = sqrt(pow(e^(-x/T.) - e^(-y/T.)).sum() + 1e-18)
     # silent_penalty = torch.sqrt(torch.pow(torch.exp(-mean_model_rate/torch.tensor(T)) - torch.exp(-mean_targets_rate/torch.tensor(T)), 2).sum()+1e-18) / model_spikes.shape[1]
@@ -108,7 +110,7 @@ def firing_rate_distance(model_spikes, target_spikes):
     # return torch.sqrt(torch.pow(torch.sub(mean_targets_rate, mean_model_rate), 2).sum() + 1e-18)
 
 
-def fano_factor_dist(out, tar, bins=5):
+def fano_factor_dist(out, tar, bins=NUM_BINS):
     bin_len = int(out.shape[0]/bins)
     out_counts = torch.zeros((bins,out.shape[1]))
     tar_counts = torch.zeros((bins,tar.shape[1]))
@@ -157,7 +159,7 @@ def calc_pearsonr(counts_out, counts_tar):
 
 
 # correlation metric over binned spike counts
-def correlation_metric_distance(out, tar, bins=10):
+def correlation_metric_distance(out, tar, bins=NUM_BINS):
     bin_len = int(out.shape[0] / bins)
     out_counts = torch.zeros((bins, out.shape[1]))
     tar_counts = torch.zeros((bins, tar.shape[1]))
@@ -168,10 +170,10 @@ def correlation_metric_distance(out, tar, bins=10):
     # pcorrcoeff = audtorch.metrics.functional.pearsonr(tar_counts, out_counts)
     pcorrcoeff = calc_pearsonr(tar_counts, out_counts)
     neg_dist = torch.ones_like(pcorrcoeff) - pcorrcoeff  # max 0.
-    return torch.sqrt(torch.pow(neg_dist, 2) + 1e-18).sum()
+    return torch.sqrt(torch.pow(neg_dist, 2) + 1e-18).sum() / out.shape[0]
 
 
-def CV_dist(out, tar, bins=5):
+def CV_dist(out, tar, bins=NUM_BINS):
     bin_len = int(out.shape[0]/bins)
     out_counts = torch.zeros((bins,out.shape[1]))
     tar_counts = torch.zeros((bins,tar.shape[1]))
