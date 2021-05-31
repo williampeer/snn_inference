@@ -58,7 +58,7 @@ class LossFn(Enum):
 def calculate_loss(output, target, loss_fn, tau_vr=None, silent_penalty_factor=None):
     lfn = LossFn[loss_fn]
     if lfn == LossFn.KL_DIV:
-        loss = kl_div(output, target)
+        loss = - kl_div(output, target)
     elif lfn == LossFn.MSE:
         loss = spike_metrics.mse(output, target)
     elif lfn == LossFn.VAN_ROSSUM_DIST:
