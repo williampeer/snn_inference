@@ -35,7 +35,7 @@ def feed_inputs_sequentially_return_membrane_potentials(model, inputs):
 
 
 def generate_model_data(model, inputs):
-    print('Simulating model with noise as input')
+    print('Simulating model with provided input')
 
     model_spiketrain = feed_inputs_sequentially_return_spike_train(model, inputs)
 

@@ -1,7 +1,7 @@
 import Log
 from Constants import ExperimentType
 from IO import save_poisson_rates
-from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_scalar
+from Models.TORCH_CUSTOM import static_clamp_for_scalar
 from data_util import load_sparse_data, get_spike_train_matrix
 from eval import evaluate_loss
 from experiments import generate_synthetic_data, draw_from_uniform, release_computational_graph
@@ -109,6 +109,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         train_i += 1
         logger.log('training iteration #{}'.format(train_i), [constants.EXP_TYPE])
 
+        # Train:
         if constants.EXP_TYPE is ExperimentType.DataDriven:
             node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
             next_step, targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
@@ -137,6 +138,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         # converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
         converged = False
 
+        # Test
         gen_input = None
         if constants.EXP_TYPE is ExperimentType.DataDriven:
             node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
@@ -146,7 +148,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
             targets, sanity_check_gen_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
             if constants.EXP_TYPE is ExperimentType.SanityCheck:
                 gen_input = sanity_check_gen_input
-
+        # TODO: Refactor input gen into the eval loss fn.
         validation_loss = evaluate_loss(model, inputs=gen_input, p_rate=poisson_input_rate.clone().detach(),
                                         target_spiketrain=targets, label='train i: {}'.format(train_i),
                                         exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
@@ -155,6 +157,8 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         logger.log(parameters=['validation loss', validation_loss])
         validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
 
+        if constants.EXP_TYPE is not ExperimentType.DataDriven:
+            release_computational_graph(target_model, constants.initial_poisson_rate, gen_input)
         targets = None; validation_loss = None
 
     stats_training_iterations(parameters, model, poisson_input_rate, train_losses, validation_losses, constants, logger,
