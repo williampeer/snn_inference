@@ -147,10 +147,6 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
             if constants.EXP_TYPE is ExperimentType.SanityCheck:
                 gen_input = sanity_check_gen_input
 
-        avg_train_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=gen_input, target_spiketrain=targets,
-                                                                poisson_input_rate=poisson_input_rate, optimiser=optim,
-                                                                constants=constants, train_i=train_i, logger=logger)
-
         validation_loss = evaluate_loss(model, inputs=gen_input, p_rate=poisson_input_rate.clone().detach(),
                                         target_spiketrain=targets, label='train i: {}'.format(train_i),
                                         exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
