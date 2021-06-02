@@ -83,8 +83,8 @@ def van_rossum_squared_distance(s1, s2, tau):
 
 
 def silent_penalty_term(spikes, targets):
-    normalised_spike_rate = spikes.sum(dim=0) / (spikes.shape[0] * spikes.shape[1])
-    normalised_target_rate = targets.sum(dim=0) / (targets.shape[0] * targets.shape[1])
+    normalised_spike_rate = spikes.sum(dim=0) / (spikes.shape[0])
+    normalised_target_rate = targets.sum(dim=0) / (targets.shape[0])
     # f_penalty(x,y) = se^(-x/(N*t))
     return torch.pow(torch.exp(-normalised_spike_rate) - torch.exp(-normalised_target_rate), 2).sum()
     # return torch.exp(-normalised_spike_rate).sum()
@@ -101,7 +101,7 @@ def silent_penalty_term(spikes, targets):
 
 def firing_rate_distance(model_spikes, target_spikes):
     mean_model_rate = model_spikes.sum(dim=0) * 1000. / model_spikes.shape[0]  # Hz
-    mean_targets_rate = target_spikes.sum(dim=0) * 1000. / model_spikes.shape[0]  # Hz
+    mean_targets_rate = target_spikes.sum(dim=0) * 1000. / target_spikes.shape[0]  # Hz
     return euclid_dist(mean_targets_rate, mean_model_rate)
     # assert model_spikes.shape[0] > model_spikes.shape[1]
     # f_penalty(x,y) = sqrt(pow(e^(-x/T.) - e^(-y/T.)).sum() + 1e-18)
@@ -150,9 +150,9 @@ def fano_factor_dist(out, tar, bins=NUM_BINS):
 
 def calc_pearsonr(counts_out, counts_tar):
     mu_out = torch.mean(counts_out, dim=0)
-    std_out = torch.std(counts_out, dim=0) * counts_out.shape[0]  # Bessel correction correction
+    std_out = torch.std(counts_out, dim=0)  # * counts_out.shape[0]  # Bessel correction correction
     mu_tar = torch.mean(counts_tar, dim=0)
-    std_tar = torch.std(counts_tar, dim=0) * counts_out.shape[0]  # Bessel correction correction
+    std_tar = torch.std(counts_tar, dim=0)  # * counts_out.shape[0]  # Bessel correction correction
 
     pcorrcoeff = (counts_out - torch.ones_like(counts_out) * mu_out) * (counts_tar - torch.ones_like(counts_tar) * mu_tar) / (std_out * std_tar)
     return pcorrcoeff
