@@ -140,10 +140,10 @@ def main(argv):
 
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
-                          # LossFn.VAN_ROSSUM_DIST.name,
+                          LossFn.VAN_ROSSUM_DIST.name,
                           LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
-                          LossFn.RATE_FANO_HYBRID.name,
+                          # LossFn.RATE_FANO_HYBRID.name,
                           LossFn.RATE_PCC_HYBRID.name,
                           # LossFn.CV_DIST.name]
                           LossFn.KL_DIV.name]
