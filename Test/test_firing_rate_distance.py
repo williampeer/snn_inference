@@ -2,6 +2,7 @@ from experiments import poisson_input
 
 import torch
 
+from plot import plot_spike_trains_side_by_side
 from spike_metrics import firing_rate_distance
 from stats import firing_rate_per_neuron
 
@@ -26,6 +27,7 @@ def test_sum_per_node():
 
 
 def spiketrain_is_approx_rate(spiketrain, rate=10.):
+    print("\n\n======= def spiketrain_is_approx_rate(): =======\n")
     # rates = firing_rate_per_neuron(spiketrain) * t / 1000.
     rates = spiketrain.sum(dim=0) * 1000. / spiketrain.shape[0]  # Hz
 
@@ -39,6 +41,7 @@ def spiketrain_is_approx_rate(spiketrain, rate=10.):
 
 
 def test_firing_rate_per_neuron():
+    print("\n\n======= def test_firing_rate_per_neuron(): =======\n")
     N = 12; t=1000000; rate = 20.
     # spikes = poisson_input(rate=rate, t=t, N=N)
     # spikes2 = (poisson_input(rate=rate, t=t, N=N) > 0.5).float()
@@ -98,5 +101,53 @@ def test_firing_rate_per_neuron():
     assert sut_loss_almost_silent_to_normal > sut_loss_to_lower_rate, "loss normal to almost silent should be higher than loss lower rates"
 
 
+def test_gd_emulation_sanity():
+    print("\n\n======= def test_gd_emulation_sanity(): =======\n")
+    N = 3; t = 12000; tar_rate = 10.
+    t_spikes = (torch.rand((t, N)) < (tar_rate / 1000.)).float()
+
+    prev_loss = 10e10
+    print('Emulating GD towards correct rate, interval length t={}..'.format(t))
+    for i in range(6):
+        m_rate = 20. - 2.*i
+        m_spikes = (torch.rand((t, N)) < (m_rate / 1000.)).float()
+
+        cur_loss = firing_rate_distance(m_spikes, t_spikes)
+        print('loss: {}, train iter #{}, m_rate: {}'.format(cur_loss, i, m_rate))
+        # evaluate_loss(model, None, m_rate, t_spikes.clone().detach(), label='', exp_type='test', train_i=None, exp_num='test')
+        plot_spike_trains_side_by_side(m_spikes, t_spikes, uuid='test', exp_type='test',
+                                       title='Spike trains test set ({}, loss: {:.3f})'.format('test', cur_loss),
+                                       fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format('frd_test', 0, i))
+
+        assert prev_loss > cur_loss, "prev loss: {} should be gt cur_loss: {} w rate: {} (closer to t_rate: {})."\
+            .format(prev_loss, cur_loss, m_rate, tar_rate)
+        prev_loss = cur_loss.clone().detach()
+
+
+def test_gd_emulation_towards_silent_sanity():
+    print("\n\n======= def test_gd_emulation_towards_silent_sanity(): =======\n")
+    N = 3; t = 12000; tar_rate = 10.
+    t_spikes = (torch.rand((t, N)) < (tar_rate / 1000.)).float()
+
+    prev_loss = 1e-03
+    print('Emulating GD towards zero rate, interval length t={}..'.format(t))
+    for i in range(6):
+        m_rate = 10. - 2.*i
+        m_spikes = (torch.rand((t, N)) < (m_rate / 1000.)).float()
+
+        cur_loss = firing_rate_distance(m_spikes, t_spikes)
+        print('loss: {}, train iter #{}, m_rate: {}'.format(cur_loss, i, m_rate))
+        # evaluate_loss(model, None, m_rate, t_spikes.clone().detach(), label='', exp_type='test', train_i=None, exp_num='test')
+        plot_spike_trains_side_by_side(m_spikes, t_spikes, uuid='test', exp_type='test',
+                                       title='Spike trains test set ({}, loss: {:.3f})'.format('test', cur_loss),
+                                       fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format('frd_test', 0, i))
+
+        assert prev_loss < cur_loss, "prev loss: {} should be lt cur_loss: {} w lower rate: {} (further away from t_rate: {})."\
+            .format(prev_loss, cur_loss, m_rate, tar_rate)
+        prev_loss = cur_loss.clone().detach()
+
+
 # test_sum_per_node()
 test_firing_rate_per_neuron()
+test_gd_emulation_sanity()
+test_gd_emulation_towards_silent_sanity()
