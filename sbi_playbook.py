@@ -1,5 +1,3 @@
-import sys
-
 import torch
 from sbi import utils as utils
 from sbi import analysis as analysis
@@ -16,7 +14,7 @@ torch.autograd.set_detect_anomaly(True)
 
 t_interval = 16000
 N = 3
-num_dim = 1 + N**2 + 3*N
+num_dim = 1 + 3*N + N**2
 
 # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_N_3_duration_300000.mat'
 # node_indices, spike_times, spike_indices = data_util.load_sparse_data(full_path=data_path)
@@ -33,12 +31,14 @@ tar_parameters = torch.hstack([torch.tensor([tar_in_rate]), tar_model.E_L.data, 
 # prior = utils.BoxUniform(low=-2*torch.ones(num_dim), high=2*torch.ones(num_dim))
 weights_low = torch.flatten(torch.zeros((N, N)))
 weights_high = torch.flatten(torch.ones((N, N)))
-limits_low = torch.hstack((torch.tensor([2., -70., 1.6, 2.]), weights_low))
-limits_high = torch.hstack((torch.tensor([20., -42., 3.0, 5.0]), weights_high))
+# limits_low = torch.hstack((torch.tensor([2., -70., 1.6, 2.]), weights_low))
+# limits_high = torch.hstack((torch.tensor([20., -42., 3.0, 5.0]), weights_high))
+limits_low = torch.hstack((torch.tensor([2.]), torch.ones((N,))*-70., torch.ones((N,))*1.6, torch.ones((N,))*2., weights_low))
+limits_high = torch.hstack((torch.tensor([20.]), torch.ones((N,))*-42., torch.ones((N,))*3.0, torch.ones((N,))*5.0, weights_high))
 prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
 
-def simulator(parameter_set):
+def LIF_simulator(parameter_set):
     params = {'E_L': parameter_set[1], 'tau_m': parameter_set[2], 'tau_s': parameter_set[3],
               'preset_weights': torch.reshape(parameter_set[4:], (N, N))}
     model = LIF_no_grad(parameters=params, N=N, neuron_types=[1, 1, -1])  # TODO: Auto-assign neuron-types for varying N != 12
@@ -49,6 +49,9 @@ def simulator(parameter_set):
 
 
 def posterior_stats(posterior, method=None):
+    print('====== def posterior_stats(posterior, method=None): =====')
+    print(posterior)
+
     observation = torch.reshape(targets, (1, -1))
     samples = posterior.sample((10000,), x=observation)
     log_probability = posterior.log_prob(samples, x=observation)
@@ -64,8 +67,8 @@ def posterior_stats(posterior, method=None):
         print("except: {}".format(e))
 
 
-methods = ['SNPE', 'SNLE', 'SNRE']
-# methods = ['SNPE']
+# methods = ['SNPE', 'SNLE', 'SNRE']
+methods = ['SNPE']
 res = {}
 # posterior_snpe = infer(simulator, prior, method='SNPE', num_simulations=5000)
 # posterior_snle = infer(simulator, prior, method='SNLE', num_simulations=5000)
@@ -74,6 +77,6 @@ res = {}
 # posterior_stats(posterior_snle, method='SNLE')
 # posterior_stats(posterior_snre, method='SNRE')
 for m in methods:
-    posterior = infer(simulator, prior, method=m, num_simulations=5000)
+    posterior = infer(LIF_simulator, prior, method=m, num_simulations=5000)
     res[m] = posterior
     posterior_stats(posterior, method=m)
