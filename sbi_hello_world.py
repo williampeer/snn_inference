@@ -46,12 +46,13 @@ def posterior_stats(posterior, method=None):
     observation = torch.reshape(targets, (1, -1))
     samples = posterior.sample((10000,), x=observation)
     log_probability = posterior.log_prob(samples, x=observation)
-    fig = analysis.pairplot(samples, limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim))
+    fig, ax = analysis.pairplot(samples, limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim))
     if method is None:
         method = IO.dt_descriptor()
     fig.savefig('./figures/analysis_pairplot_{}.png'.format(method))
 
 methods = ['SNPE', 'SNLE', 'SNRE']
+res = {}
 # posterior_snpe = infer(simulator, prior, method='SNPE', num_simulations=5000)
 # posterior_snle = infer(simulator, prior, method='SNLE', num_simulations=5000)
 # posterior_snre = infer(simulator, prior, method='SNRE', num_simulations=5000)
@@ -60,4 +61,5 @@ methods = ['SNPE', 'SNLE', 'SNRE']
 # posterior_stats(posterior_snre, method='SNRE')
 for m in methods:
     posterior = infer(simulator, prior, method=m, num_simulations=5000)
+    res[m] = posterior
     posterior_stats(posterior, method=m)
