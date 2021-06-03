@@ -16,7 +16,7 @@ torch.autograd.set_detect_anomaly(True)
 
 t_interval = 16000
 N = 3
-num_dim = N**2 + 3*N
+num_dim = 1 + N**2 + 3*N
 
 # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_N_3_duration_300000.mat'
 # node_indices, spike_times, spike_indices = data_util.load_sparse_data(full_path=data_path)
@@ -26,6 +26,7 @@ tar_in_rate = 10.
 tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
 inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
 targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
+tar_parameters = torch.hstack([torch.tensor([tar_in_rate]), tar_model.E_L.data, tar_model.tau_m.data, tar_model.tau_s.data, torch.flatten(tar_model.w.data)])
 
 # TODO: Programmatically create prior given model init params
 #   parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [1.6, 1.6], 'tau_s': [2.5, 2.5]}
@@ -51,12 +52,20 @@ def posterior_stats(posterior, method=None):
     observation = torch.reshape(targets, (1, -1))
     samples = posterior.sample((10000,), x=observation)
     log_probability = posterior.log_prob(samples, x=observation)
-    fig, ax = analysis.pairplot(samples, limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim))
-    if method is None:
-        method = IO.dt_descriptor()
-    fig.savefig('./figures/analysis_pairplot_{}.png'.format(method))
+    try:
+        fig, ax = analysis.pairplot(samples,
+                                    points=tar_parameters,
+                                    limits=torch.stack((limits_low, limits_high), dim=1),
+                                    figsize=(num_dim, num_dim))
+        if method is None:
+            method = IO.dt_descriptor()
+        fig.savefig('./figures/analysis_pairplot_{}.png'.format(method))
+    except Exception as e:
+        print("except: {}".format(e))
+
 
 methods = ['SNPE', 'SNLE', 'SNRE']
+# methods = ['SNPE']
 res = {}
 # posterior_snpe = infer(simulator, prior, method='SNPE', num_simulations=5000)
 # posterior_snle = infer(simulator, prior, method='SNLE', num_simulations=5000)

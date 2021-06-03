@@ -2,7 +2,7 @@ from experiments import poisson_input
 
 import torch
 
-from plot import plot_spike_trains_side_by_side
+from plot import plot_spike_trains_side_by_side, plot_losses
 from spike_metrics import firing_rate_distance
 from stats import firing_rate_per_neuron
 
@@ -108,8 +108,9 @@ def test_gd_emulation_sanity():
 
     prev_loss = 10e10
     print('Emulating GD towards correct rate, interval length t={}..'.format(t))
-    for i in range(6):
-        m_rate = 20. - 2.*i
+    losses = []
+    for i in range(11):
+        m_rate = 20. - i
         m_spikes = (torch.rand((t, N)) < (m_rate / 1000.)).float()
 
         cur_loss = firing_rate_distance(m_spikes, t_spikes)
@@ -122,6 +123,10 @@ def test_gd_emulation_sanity():
         assert prev_loss > cur_loss, "prev loss: {} should be gt cur_loss: {} w rate: {} (closer to t_rate: {})."\
             .format(prev_loss, cur_loss, m_rate, tar_rate)
         prev_loss = cur_loss.clone().detach()
+        losses.append(prev_loss.clone().detach())
+    plot_losses(training_loss=losses, test_loss=[], uuid='test', exp_type='test',
+                custom_title='Loss ({}, {}, lr={}, spf={})'.format('GD emul', 'GD emul', 'GD emul', 'None'),
+                fname='training_and_test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(0, 'emul', 'None'))
 
 
 def test_gd_emulation_towards_silent_sanity():
@@ -131,6 +136,7 @@ def test_gd_emulation_towards_silent_sanity():
 
     prev_loss = 1e-03
     print('Emulating GD towards zero rate, interval length t={}..'.format(t))
+    losses = []
     for i in range(6):
         m_rate = 10. - 2.*i
         m_spikes = (torch.rand((t, N)) < (m_rate / 1000.)).float()
@@ -138,13 +144,17 @@ def test_gd_emulation_towards_silent_sanity():
         cur_loss = firing_rate_distance(m_spikes, t_spikes)
         print('loss: {}, train iter #{}, m_rate: {}'.format(cur_loss, i, m_rate))
         # evaluate_loss(model, None, m_rate, t_spikes.clone().detach(), label='', exp_type='test', train_i=None, exp_num='test')
-        plot_spike_trains_side_by_side(m_spikes, t_spikes, uuid='test', exp_type='test',
+        plot_spike_trains_side_by_side(m_spikes, t_spikes, uuid='test', exp_type='test_towards_zero',
                                        title='Spike trains test set ({}, loss: {:.3f})'.format('test', cur_loss),
                                        fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format('frd_test', 0, i))
 
         assert prev_loss < cur_loss, "prev loss: {} should be lt cur_loss: {} w lower rate: {} (further away from t_rate: {})."\
             .format(prev_loss, cur_loss, m_rate, tar_rate)
         prev_loss = cur_loss.clone().detach()
+        losses.append(prev_loss.clone().detach())
+    plot_losses(training_loss=losses, test_loss=[], uuid='test', exp_type='test_towards_zero',
+                custom_title='Loss ({}, {}, lr={}, spf={})'.format('GD emul', 'GD emul', 'GD emul', 'None'),
+                fname='training_and_test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(0, 'emul', 'None'))
 
 
 # test_sum_per_node()
