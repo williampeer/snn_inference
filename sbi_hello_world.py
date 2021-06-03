@@ -8,19 +8,24 @@ from sbi.inference.base import infer
 import IO
 import data_util
 from Models.no_grad.LIF_no_grad import LIF_no_grad
+from TargetModels.TargetModels import lif_continuous_ensembles_model_dales_compliant
 from experiments import poisson_input
 from model_util import feed_inputs_sequentially_return_spike_train
 
 torch.autograd.set_detect_anomaly(True)
 
-t_interval = 10000
+t_interval = 16000
 N = 3
 num_dim = N**2 + 3*N
 
-data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_N_3_duration_300000.mat'
-node_indices, spike_times, spike_indices = data_util.load_sparse_data(full_path=data_path)
-next_step, targets = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=t_interval,
-                                                      spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
+# data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_N_3_duration_300000.mat'
+# node_indices, spike_times, spike_indices = data_util.load_sparse_data(full_path=data_path)
+# next_step, targets = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=t_interval,
+#                                                       spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
+tar_in_rate = 10.
+tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
+inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
+targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
 
 # TODO: Programmatically create prior given model init params
 #   parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [1.6, 1.6], 'tau_s': [2.5, 2.5]}
