@@ -58,7 +58,7 @@ def plot_spike_trains_side_by_side(model_spikes, target_spikes, uuid, exp_type='
     time_indices = torch.reshape(torch.arange(model_spikes.shape[0]), (model_spikes.shape[0], 1)).float()
 
     # ensure binary values:
-    model_spike_history = torch.round(model_spikes)
+    model_spike_history = (model_spikes > 0.25).float()  # TODO: Change tmp hack here
     target_spike_history = torch.round(target_spikes)
     model_spike_times = model_spike_history * time_indices
     target_spike_times = target_spike_history * time_indices

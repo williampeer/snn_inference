@@ -19,7 +19,7 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
 
     print('-- sanity-checks --')
     print('model:')
-    sanity_checks(torch.round(model_spike_train))
+    sanity_checks(model_spike_train)
     print('target:')
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
