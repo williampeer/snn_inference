@@ -48,8 +48,8 @@ def main(argv):
     # loss_fn = 'rph'
     # loss_fn = 'kl_div'
     # loss_fn = None
-    silent_penalty_factor = 100.0
-    # silent_penalty_factor = None
+    # silent_penalty_factor = 10.0
+    silent_penalty_factor = None
 
     # batch_size = 100; rows_per_train_iter = 2000; loss_fn = 'kl_div'
     # batch_size = 20; rows_per_train_iter = 4000; loss_fn = 'poisson_nll'

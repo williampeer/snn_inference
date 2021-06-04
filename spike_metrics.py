@@ -83,8 +83,8 @@ def van_rossum_squared_distance(s1, s2, tau):
 
 
 def silent_penalty_term(spikes, targets):
-    normalised_spike_rate = spikes.sum(dim=0) / (spikes.shape[0])
-    normalised_target_rate = targets.sum(dim=0) / (targets.shape[0])
+    normalised_spike_rate = spikes.sum(dim=0) * 1000. / (spikes.shape[0])  # Hz
+    normalised_target_rate = targets.sum(dim=0) * 1000. / (targets.shape[0])  # Hz
     # f_penalty(x,y) = se^(-x/(N*t))
     return torch.pow(torch.exp(-normalised_spike_rate) - torch.exp(-normalised_target_rate), 2).sum()
     # return torch.exp(-normalised_spike_rate).sum()
