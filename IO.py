@@ -6,6 +6,7 @@ import data_util
 
 PATH = './saved/'
 PLOT_PATH = 'plot_data/'
+JUST_DATA_PATH = 'data/'
 fname_ext = '.pt'
 
 
@@ -58,6 +59,17 @@ def save_plot_data(data, uuid, plot_fn='unknown', fname=False):
         'plot_data': data,
         'plot_fn': plot_fn
     }, PATH+PLOT_PATH+uuid+'/'+fname+fname_ext)
+
+
+def save_data(data, uuid, description='default', fname=False):
+    makedir_if_not_exists(PATH+PLOT_PATH+uuid)
+
+    if not fname:
+        fname = 'saved_data_' + dt_descriptor()
+    torch.save({
+        'data': data,
+        'description': description
+    }, PATH+JUST_DATA_PATH+uuid+'/'+fname+fname_ext)
 
 
 def dt_descriptor():

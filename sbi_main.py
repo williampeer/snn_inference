@@ -77,6 +77,13 @@ def sbi(method):
     posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
                     limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim))
 
+    try:
+        dt_descr = IO.dt_descriptor()
+        IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descr),
+                     fname='res_{}_dt_{}'.format(method, dt_descr))
+    except Exception as e:
+        print("except: {}".format(e))
+
     return res
 
 
