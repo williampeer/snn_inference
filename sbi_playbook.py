@@ -77,6 +77,6 @@ res = {}
 # posterior_stats(posterior_snle, method='SNLE')
 # posterior_stats(posterior_snre, method='SNRE')
 for m in methods:
-    posterior = infer(LIF_simulator, prior, method=m, num_simulations=5000)
+    posterior = infer(LIF_simulator, prior, method=m, num_simulations=10000)
     res[m] = posterior
     posterior_stats(posterior, method=m)
