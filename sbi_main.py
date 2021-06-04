@@ -20,9 +20,8 @@ torch.autograd.set_detect_anomaly(True)
 t_interval = 16000
 N = 3
 
-def main(argv):
-    num_dim = 1 + 3 * N + N ** 2
 
+def main(argv):
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
     method = None
@@ -40,6 +39,13 @@ def main(argv):
         # elif opt in ("-N", "--num-neurons"):
         #     num_neurons = int(args[i])
 
+    if method is not None:
+        _ = sbi(method)
+
+
+def sbi(method):
+    num_dim = 1 + 3 * N + N ** 2
+
     tar_in_rate = 10.
     tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
@@ -56,7 +62,6 @@ def main(argv):
     limits_low = torch.hstack((torch.tensor([2.]), torch.ones((N,))*-70., torch.ones((N,))*1.6, torch.ones((N,))*2., weights_low))
     limits_high = torch.hstack((torch.tensor([20.]), torch.ones((N,))*-42., torch.ones((N,))*3.0, torch.ones((N,))*5.0, weights_high))
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
-
 
     res = {}
     # posterior_snpe = infer(simulator, prior, method='SNPE', num_simulations=5000)
