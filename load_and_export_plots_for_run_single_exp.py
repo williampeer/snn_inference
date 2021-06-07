@@ -78,7 +78,7 @@ def main(argv):
                 # dev
                 s1 = plot_data['model_spikes'].detach().numpy()
                 s2 = plot_data['target_spikes'].detach().numpy()
-                bin_size = 400
+                bin_size = 500
                 corrs = stats.spike_train_corr_new(s1=s1, s2=s2, bin_size=bin_size)
                 plot.heatmap_spike_train_correlations(corrs[12:, :12], axes=['Fitted model', 'Target model'],
                                                       exp_type=plot_data['exp_type'], uuid='export',
