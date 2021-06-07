@@ -84,26 +84,26 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     # optim_params.append(poisson_input_rate)
     optim = constants.optimiser(optim_params, lr=constants.learn_rate)
 
-    train_losses = []; validation_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
+    test_losses = []; train_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
     max_grads_mean = np.float(0.)
 
     inputs = None
     if constants.EXP_TYPE is ExperimentType.DataDriven:
         node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
-        next_step, targets = get_spike_train_matrix(index_last_step=0, advance_by_t_steps=constants.rows_per_train_iter,
-                                                    spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
+        next_step, train_targets = get_spike_train_matrix(index_last_step=0, advance_by_t_steps=constants.rows_per_train_iter,
+                                                          spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
     else:
-        targets, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
-                                                      t=constants.rows_per_train_iter)
+        train_targets, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
+                                                            t=constants.rows_per_train_iter)
         if constants.EXP_TYPE == ExperimentType.SanityCheck:
             inputs = gen_inputs
 
-    validation_loss = evaluate_loss(model, inputs=inputs, p_rate=poisson_input_rate.clone().detach(),
-                                    target_spiketrain=targets, label='train i: {}'.format(train_i),
-                                    exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
-                                    constants=constants, converged=converged)
-    logger.log('pre-training loss:', parameters=['validation loss', validation_loss])
-    validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
+    train_loss = evaluate_loss(model, inputs=inputs, p_rate=poisson_input_rate.clone().detach(),
+                               target_spiketrain=train_targets, label='train i: {}'.format(train_i),
+                               exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
+                               constants=constants, converged=converged)
+    logger.log('pre-training loss:', parameters=['validation loss', train_loss])
+    train_losses = np.concatenate((train_losses, np.asarray([train_loss])))
 
     while not converged and (train_i < constants.train_iters):
         train_i += 1
@@ -112,20 +112,20 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         # Train:
         if constants.EXP_TYPE is ExperimentType.DataDriven:
             node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
-            next_step, targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
-                                                        spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
-            gen_input = None
+            next_step, train_targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
+                                                              spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
+            gen_train_input = None
         else:
-            targets, gen_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
+            train_targets, gen_train_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
 
-        avg_train_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=gen_input, target_spiketrain=targets,
-                                                                poisson_input_rate=poisson_input_rate, optimiser=optim,
-                                                                constants=constants, train_i=train_i, logger=logger)
+        avg_unseen_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=gen_train_input, target_spiketrain=train_targets,
+                                                                 poisson_input_rate=poisson_input_rate, optimiser=optim,
+                                                                 constants=constants, train_i=train_i, logger=logger)
         if constants.EXP_TYPE is not ExperimentType.DataDriven:
-            release_computational_graph(target_model, constants.initial_poisson_rate, gen_input)
+            release_computational_graph(target_model, constants.initial_poisson_rate, gen_train_input)
 
-        logger.log(parameters=[avg_train_loss, abs_grads_mean])
-        train_losses.append(avg_train_loss)
+        logger.log(parameters=[avg_unseen_loss, abs_grads_mean])
+        test_losses.append(avg_unseen_loss)
 
         cur_params = model.state_dict()
         # logger.log('current parameters {}'.format(cur_params))
@@ -137,37 +137,39 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         # max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
         # converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
         converged = False
-
-        # Test
-        gen_input = None
-        if constants.EXP_TYPE is ExperimentType.DataDriven:
-            node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
-            next_step, targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
-                                                        spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
-        else:
-            targets, sanity_check_gen_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
-            if constants.EXP_TYPE is ExperimentType.SanityCheck:
-                gen_input = sanity_check_gen_input
-        # TODO: Refactor input gen into the eval loss fn.
-        validation_loss = evaluate_loss(model, inputs=gen_input, p_rate=poisson_input_rate.clone().detach(),
-                                        target_spiketrain=targets, label='train i: {}'.format(train_i),
-                                        exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
-                                        constants=constants, converged=converged)
+        #
+        # # Test
+        # gen_train_input = None
+        # if constants.EXP_TYPE is ExperimentType.DataDriven:
+        #     node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
+        #     next_step, train_targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
+        #                                                 spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
+        # else:
+        #     train_targets, sanity_check_gen_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
+        #     if constants.EXP_TYPE is ExperimentType.SanityCheck:
+        #         gen_train_input = sanity_check_gen_input
+        # # TODO: Refactor input gen into the eval loss fn.
+        train_loss = evaluate_loss(model, inputs=gen_train_input, p_rate=poisson_input_rate.clone().detach(),
+                                   target_spiketrain=train_targets, label='train i: {}'.format(train_i),
+                                   exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
+                                   constants=constants, converged=converged)
         # validation_loss = last_loss
-        logger.log(parameters=['validation loss', validation_loss])
-        validation_losses = np.concatenate((validation_losses, np.asarray([validation_loss])))
+        logger.log(parameters=['train loss', train_loss])
+        train_losses = np.concatenate((train_losses, np.asarray([train_loss])))
 
         if constants.EXP_TYPE is not ExperimentType.DataDriven:
-            release_computational_graph(target_model, constants.initial_poisson_rate, gen_input)
-        targets = None; validation_loss = None
+            release_computational_graph(target_model, constants.initial_poisson_rate, gen_train_input)
+        train_targets = None; train_loss = None
 
-    stats_training_iterations(parameters, model, poisson_input_rate, train_losses, validation_losses, constants, logger,
-                              constants.EXP_TYPE.name, target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
+    stats_training_iterations(model_parameters=parameters, model=model, poisson_rate=poisson_input_rate,
+                              train_losses=train_losses, test_losses=test_losses,
+                              constants=constants, logger=logger, exp_type_str=constants.EXP_TYPE.name,
+                              target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
     final_model_parameters = {}
     for p_i, key in enumerate(model.state_dict()):
         final_model_parameters[p_i] = [model.state_dict()[key].numpy()]
     model = None
-    return final_model_parameters, train_losses, validation_losses, train_i, poisson_rates
+    return final_model_parameters, test_losses, train_losses, train_i, poisson_rates
 
 
 def run_exp_loop(logger, constants, model_class, target_model=None):
@@ -179,37 +181,37 @@ def run_exp_loop(logger, constants, model_class, target_model=None):
     recovered_param_per_exp = {}; poisson_rate_per_exp = []
     for exp_i in range(constants.start_seed, constants.start_seed+constants.N_exp):
         # try:
-            non_overlapping_offset = constants.start_seed + constants.N_exp + 1
-            torch.manual_seed(non_overlapping_offset + exp_i)
-            np.random.seed(non_overlapping_offset + exp_i)
+        non_overlapping_offset = constants.start_seed + constants.N_exp + 1
+        torch.manual_seed(non_overlapping_offset + exp_i)
+        np.random.seed(non_overlapping_offset + exp_i)
 
-            if target_model is not None:
-                target_model.load_state_dict(target_model.state_dict())
-                num_neurons = int(target_model.v.shape[0])
+        if target_model is not None:
+            target_model.load_state_dict(target_model.state_dict())
+            num_neurons = int(target_model.v.shape[0])
+        else:
+            # num_neurons = 12
+            node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
+            num_neurons = len(node_indices)
+
+        init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
+
+        recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
+            fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model, target_parameters=target_parameters, num_neurons=num_neurons)
+        logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
+
+        if train_i >= constants.train_iters:
+            print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
+                  .format(exp_i, train_i, train_losses, test_losses))
+
+        for p_i, key in enumerate(recovered_parameters):
+            if exp_i == constants.start_seed:
+                recovered_param_per_exp[key] = [recovered_parameters[key]]
             else:
-                # num_neurons = 12
-                node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
-                num_neurons = len(node_indices)
-
-            init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-
-            recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
-                fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model, target_parameters=target_parameters, num_neurons=num_neurons)
-            logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
-
-            if train_i >= constants.train_iters:
-                print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
-                      .format(exp_i, train_i, train_losses, test_losses))
-
-            for p_i, key in enumerate(recovered_parameters):
-                if exp_i == constants.start_seed:
-                    recovered_param_per_exp[key] = [recovered_parameters[key]]
-                else:
-                    recovered_param_per_exp[key].append(recovered_parameters[key])
-            poisson_rate_per_exp.append(poisson_rates[-1])
-        # except Exception as e:
-        #     logger.log('Exception occurred: {}'.format(e))
-        #     print(e)
+                recovered_param_per_exp[key].append(recovered_parameters[key])
+        poisson_rate_per_exp.append(poisson_rates[-1])
+    # except Exception as e:
+    #     logger.log('Exception occurred: {}'.format(e))
+    #     print(e)
 
     logger.log('poisson_rate_per_exp', poisson_rate_per_exp)
     save_poisson_rates(poisson_rate_per_exp, uuid=constants.UUID, fname='poisson_rates_per_exp.pt')
@@ -217,17 +219,17 @@ def run_exp_loop(logger, constants, model_class, target_model=None):
     parameter_names.append('p_rate')
     if constants.plot_flag:
         plot_all_param_pairs_with_variance(recovered_param_per_exp,
-                                       uuid=constants.UUID,
-                                       exp_type=constants.EXP_TYPE.name,
-                                       target_params=target_parameters,
-                                       param_names=parameter_names,
-                                       custom_title="Average inferred parameters across experiments [{}, {}]".format(
-                                           model_class.__name__, constants.optimiser),
-                                       logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
+                                           uuid=constants.UUID,
+                                           exp_type=constants.EXP_TYPE.name,
+                                           target_params=target_parameters,
+                                           param_names=parameter_names,
+                                           custom_title="Average inferred parameters across experiments [{}, {}]".format(
+                                               model_class.__name__, constants.optimiser),
+                                           logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
 
 
 def start_exp(constants, model_class, target_model=None):
-    log_fname = model_class.__name__ + '_{}_{}_{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'.\
+    log_fname = model_class.__name__ + '_{}_{}_{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'. \
         format(constants.optimiser.__name__, constants.loss_fn, constants.EXP_TYPE.name,
                '{:1.3f}'.format(constants.learn_rate).replace('.', '_'),
                constants.batch_size, constants.train_iters, constants.rows_per_train_iter, constants.UUID)

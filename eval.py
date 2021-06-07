@@ -35,8 +35,8 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
 
     if train_i % constants.evaluate_step == 0 or converged or train_i == constants.train_iters -1:
         plot_spike_trains_side_by_side(model_spike_train, target_spiketrain, uuid=constants.UUID, exp_type=exp_type_str,
-                                       title='Spike trains test set ({}, loss: {:.3f})'.format(label, loss),
-                                       fname='spiketrains_test_set_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))
+                                       title='Spike trains ({}, loss: {:.3f})'.format(label, loss),
+                                       fname='spiketrains_set_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))
     np_loss = loss.clone().detach().numpy()
     release_computational_graph(model, p_rate, inputs)
     loss = None
