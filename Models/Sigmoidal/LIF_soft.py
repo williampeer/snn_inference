@@ -10,8 +10,8 @@ class LIF_soft(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_g']
     # parameter_init_intervals = {'E_L': [-55., -48.], 'tau_m': [1.9, 2.3], 'tau_g': [3., 4.5]}
     # parameter_init_intervals = {'E_L': [-50., -50.], 'tau_m': [2., 2.], 'tau_g': [3.2, 3.2]}
-    const_tau = 1.8
-    parameter_init_intervals = {'E_L': [-50., -50.], 'tau_m': [const_tau, const_tau], 'tau_g': [const_tau, const_tau]}
+    const_tau = 1.4
+    parameter_init_intervals = {'E_L': [-50., -50.], 'tau_m': [const_tau, const_tau], 'tau_g': [2.2, 2.2]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF_soft, self).__init__()

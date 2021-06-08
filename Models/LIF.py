@@ -82,7 +82,7 @@ class LIF(nn.Module):
     # Assuming normalised input.
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types
-        I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming input weights to be Eye(N,N)
+        I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming external input weights to be Eye(N,N)
         dv = (self.E_L - self.v + I * self.norm_R_const) / self.tau_m
         v_next = torch.add(self.v, dv)
 

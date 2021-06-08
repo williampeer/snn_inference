@@ -33,13 +33,13 @@ def main(argv):
     exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.02; N_exp = 2; tau_van_rossum = 5.0; plot_flag = True
+    learn_rate = 0.003; N_exp = 2; tau_van_rossum = 20.0; plot_flag = True
     max_train_iters = 15
     interval_size = 12000
     batch_size = interval_size; rows_per_train_iter = interval_size
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
-    loss_fn = 'frd'
+    # loss_fn = 'frd'
     # loss_fn = 'vrd'
     # loss_fn = 'FF'
     # loss_fn = 'CV'
@@ -47,7 +47,7 @@ def main(argv):
     # loss_fn = 'rfh'
     # loss_fn = 'rph'
     # loss_fn = 'kl_div'
-    # loss_fn = None
+    loss_fn = None
     # silent_penalty_factor = 10.0
     silent_penalty_factor = None
 
@@ -76,10 +76,10 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_N_3_duration_300000.mat'
     data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_3_seed_4_duration_1800000.mat'
 
-    # model_type = None
-    model_type = 'LIF'
-    # model_type = 'LIF_weights_only'
+    model_type = None
+    # model_type = 'LIF'
     # model_type = 'LIF_soft'
+    # model_type = 'LIF_weights_only'
     # model_type = 'LIF_soft_weights_only'
     norm_grad_flag = False
 
@@ -136,18 +136,19 @@ def main(argv):
     # models = [LIF_HS_17]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF_soft_weights_only, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
-    models = [LIF, LIF_weights_only, LIF_soft, LIF_soft_weights_only]
+    # models = [LIF, LIF_weights_only, LIF_soft, LIF_soft_weights_only]
+    models = [LIF,LIF_soft,  LIF_weights_only, LIF_soft_weights_only]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC]
 
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
                           LossFn.VAN_ROSSUM_DIST.name,
-                          LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
+                          # LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
                           # LossFn.RATE_FANO_HYBRID.name,
-                          LossFn.RATE_PCC_HYBRID.name,
+                          LossFn.RATE_PCC_HYBRID.name]  #,
                           # LossFn.CV_DIST.name]
-                          LossFn.KL_DIV.name]
+                          # LossFn.KL_DIV.name]
                           # LossFn.MSE.name]
     else:
         loss_functions = [LossFn(loss_fn).name]

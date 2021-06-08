@@ -25,6 +25,27 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                  fname='inferred_param_trajectories_{}_exp_num_{}_train_iters_{}'
                                                  .format(model.__class__.__name__, exp_num, train_i),
                                                  logger=logger)
+
+        # ------------- trajectories weights ------------------
+        model_weights = model_parameters[0]
+        tar_weights = target_parameters[0]
+        assert len(model_weights[0].shape) == 2, "weights should be 2D"
+        weights_params = {}; tar_weights_params = {}; w_names = []
+        for n_i in range(model.N):
+            weights_params[n_i] = model_weights[n_i]
+            tar_weights_params[n_i] = tar_weights[n_i]
+            w_names.append('w_{}'.format(n_i))
+
+        plot_parameter_inference_trajectories_2d(weights_params, target_params=tar_weights_params,
+                                                 uuid=constants.UUID,
+                                                 exp_type=exp_type_str,
+                                                 param_names=parameter_names,
+                                                 custom_title='Inferred weights across training iterations',
+                                                 fname='inferred_weights_param_trajectories_{}_exp_num_{}_train_iters_{}'
+                                                 .format(model.__class__.__name__, exp_num, train_i),
+                                                 logger=logger)
+        # ------------------------------------------------------
+
         plot_losses(training_loss=train_losses, test_loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
                     custom_title='Loss ({}, {}, lr={}, spf={})'.format(model.__class__.__name__, constants.optimiser.__name__,
                                                                        constants.learn_rate, constants.silent_penalty_factor),
@@ -86,24 +107,18 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
 
     test_losses = []; train_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
     max_grads_mean = np.float(0.)
+    next_step = 0
 
-    inputs = None
-    if constants.EXP_TYPE is ExperimentType.DataDriven:
-        node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
-        next_step, train_targets = get_spike_train_matrix(index_last_step=0, advance_by_t_steps=constants.rows_per_train_iter,
-                                                          spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
-    else:
-        train_targets, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
-                                                            t=constants.rows_per_train_iter)
-        if constants.EXP_TYPE == ExperimentType.SanityCheck:
-            inputs = gen_inputs
-
-    train_loss = evaluate_loss(model, inputs=inputs, p_rate=poisson_input_rate.clone().detach(),
-                               target_spiketrain=train_targets, label='train i: {}'.format(train_i),
-                               exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
-                               constants=constants, converged=converged)
-    logger.log('pre-training loss:', parameters=['validation loss', train_loss])
-    train_losses = np.concatenate((train_losses, np.asarray([train_loss])))
+    # inputs = None
+    # if constants.EXP_TYPE is ExperimentType.DataDriven:
+    #     node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
+    #     next_step, train_targets = get_spike_train_matrix(index_last_step=0, advance_by_t_steps=constants.rows_per_train_iter,
+    #                                                       spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
+    # else:
+    #     train_targets, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
+    #                                                         t=constants.rows_per_train_iter)
+    #     if constants.EXP_TYPE == ExperimentType.SanityCheck:
+    #         inputs = gen_inputs
 
     while not converged and (train_i < constants.train_iters):
         train_i += 1
