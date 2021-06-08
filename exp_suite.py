@@ -28,13 +28,16 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
 
         # ------------- trajectories weights ------------------
         model_weights = model_parameters[0]
-        tar_weights = target_parameters[0]
+        tar_weights = False
+        if target_parameters:
+            tar_weights = target_parameters[0]
         assert len(model_weights[0].shape) == 2, "weights should be 2D"
         weights_params = {}; tar_weights_params = {}; w_names = []
         for n_i in range(model.N):
-            weights_params[n_i] = model_weights[n_i]
-            tar_weights_params[n_i] = tar_weights[n_i]
             w_names.append('w_{}'.format(n_i))
+            weights_params[n_i] = model_weights[n_i]
+            if tar_weights:
+                tar_weights_params[n_i] = tar_weights[n_i]
 
         plot_parameter_inference_trajectories_2d(weights_params, target_params=tar_weights_params,
                                                  uuid=constants.UUID,
