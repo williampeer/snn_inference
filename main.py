@@ -34,12 +34,12 @@ def main(argv):
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 0.003; N_exp = 2; tau_van_rossum = 20.0; plot_flag = True
-    max_train_iters = 15
+    max_train_iters = 25
     interval_size = 12000
     batch_size = interval_size; rows_per_train_iter = interval_size
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
-    # loss_fn = 'frd'
+    loss_fn = 'frd'
     # loss_fn = 'vrd'
     # loss_fn = 'FF'
     # loss_fn = 'CV'
@@ -47,7 +47,7 @@ def main(argv):
     # loss_fn = 'rfh'
     # loss_fn = 'rph'
     # loss_fn = 'kl_div'
-    loss_fn = None
+    # loss_fn = None
     # silent_penalty_factor = 10.0
     silent_penalty_factor = None
 
@@ -75,9 +75,10 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_duration_300000.mat'
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_N_3_duration_300000.mat'
     data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_3_seed_4_duration_1800000.mat'
+    # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_12_seed_4_duration_900000.mat'
 
-    model_type = None
-    # model_type = 'LIF'
+    # model_type = None
+    model_type = 'LIF'
     # model_type = 'LIF_soft'
     # model_type = 'LIF_weights_only'
     # model_type = 'LIF_soft_weights_only'

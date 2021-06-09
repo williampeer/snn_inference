@@ -1,19 +1,13 @@
 import sys
 
-import torch
 import numpy as np
+import torch
 
 import model_util
 import spike_metrics
-from Models.GLIF import GLIF
-from Models.LIF import LIF
-from Models.LIF_ASC import LIF_ASC
-from Models.LIF_R import LIF_R
-from Models.LIF_R_ASC import LIF_R_ASC
-from Models.Sigmoidal.LIF_soft import LIF_soft_weights_only
 from TargetModels import TargetModels
-from experiments import continuous_normalised_poisson_noise, draw_from_uniform
-from plot import plot_neuron, plot_spike_trains_side_by_side, plot_spike_train_projection
+from experiments import continuous_normalised_poisson_noise
+from plot import plot_spike_trains_side_by_side, plot_spike_train_projection
 
 num_neurons = 12
 
@@ -21,26 +15,32 @@ for random_seed in range(3, 7):
     # snn = lif_ensembles_model_dales_compliant(random_seed=random_seed)
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
-    model_class = LIF_soft_weights_only
-    init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-    snn = model_class(init_params_model)
+    # model_class = LIF_soft_weights_only
+    # init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
+    # snn = model_class(init_params_model)
     # snn = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
-    # snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
+    snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
 
     # inputs = poisson_input(10., t=4000, N=snn.N)  # now assumes rate in Hz
-    inputs = continuous_normalised_poisson_noise(10., t=4*1000, N=snn.N)  # now assumes rate in Hz
+    inputs = continuous_normalised_poisson_noise(10., t=6000, N=snn.N)  # now assumes rate in Hz
 
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(inputs.sum()))
     # membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     spikes = model_util.feed_inputs_sequentially_return_spike_train(snn, inputs)
     # print('snn weights: {}'.format(snn.w))
-    print('#spikes: {}'.format(torch.round(spikes).sum()))
-    print('=========avg. rate: {}'.format(1000*torch.round(spikes).sum() / (spikes.shape[1] * spikes.shape[0])))
+    hard_thresh_spikes_sum = torch.round(spikes).sum()
+    print('spikes sum: {}'.format(hard_thresh_spikes_sum))
+    soft_thresh_spikes_sum = (spikes > 0.333).sum()
+    zero_thresh_spikes_sum = (spikes > 0).sum()
+    print('thresholded spikes sum: {}'.format(torch.round(spikes).sum()))
+    print('=========avg. hard rate: {}'.format(1000*hard_thresh_spikes_sum / (spikes.shape[1] * spikes.shape[0])))
+    print('=========avg. soft rate: {}'.format(1000*soft_thresh_spikes_sum / (spikes.shape[1] * spikes.shape[0])))
+    print('=========avg. zero thresh rate: {}'.format(1000*zero_thresh_spikes_sum / (spikes.shape[1] * spikes.shape[0])))
     plot_spike_train_projection(spikes, fname='test_projection_{}_poisson_input'.format(snn.__class__.__name__) + '_' + str(random_seed))
 
     # plot_neuron(membrane_potentials.detach().numpy(), title='{} neuron plot ({:.2f} spikes)'.format(snn.__class__.__name__, spikes.sum()),

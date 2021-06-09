@@ -27,17 +27,17 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                  logger=logger)
 
         # ------------- trajectories weights ------------------
-        model_weights = model_parameters[0]
-        tar_weights = False
+        tar_weights_params = None
         if target_parameters:
-            tar_weights = target_parameters[0]
-        assert len(model_weights[0].shape) == 2, "weights should be 2D"
-        weights_params = {}; tar_weights_params = {}; w_names = []
-        for n_i in range(model.N):
+            tar_weights_params = { 0: np.mean(target_parameters[0], axis=1) }
+
+        weights = model_parameters[0]
+        assert len(weights[0].shape) == 2, "weights should be 2D"
+        weights_params = {}; w_names = []
+        weights_params[0] = [np.mean(weights[0], axis=1)]
+        for n_i in range(1, train_i):
+            weights_params[0].append(np.mean(weights[n_i], axis=1))
             w_names.append('w_{}'.format(n_i))
-            weights_params[n_i] = model_weights[n_i]
-            if tar_weights:
-                tar_weights_params[n_i] = tar_weights[n_i]
 
         plot_parameter_inference_trajectories_2d(weights_params, target_params=tar_weights_params,
                                                  uuid=constants.UUID,
@@ -112,16 +112,22 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     max_grads_mean = np.float(0.)
     next_step = 0
 
-    # inputs = None
-    # if constants.EXP_TYPE is ExperimentType.DataDriven:
-    #     node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
-    #     next_step, train_targets = get_spike_train_matrix(index_last_step=0, advance_by_t_steps=constants.rows_per_train_iter,
-    #                                                       spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
-    # else:
-    #     train_targets, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
-    #                                                         t=constants.rows_per_train_iter)
-    #     if constants.EXP_TYPE == ExperimentType.SanityCheck:
-    #         inputs = gen_inputs
+    inputs = None
+    if constants.EXP_TYPE is ExperimentType.DataDriven:
+        node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
+        next_step, train_targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
+                                                          spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
+    else:
+        train_targets, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
+                                                            t=constants.rows_per_train_iter)
+        if constants.EXP_TYPE == ExperimentType.SanityCheck:
+            inputs = gen_inputs
+
+    loss_prior_to_training = evaluate_loss(model, inputs=inputs, p_rate=poisson_input_rate.clone().detach(),
+                                           target_spiketrain=train_targets, label='train i: {}'.format(train_i),
+                                           exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
+                                           constants=constants, converged=converged)
+    test_losses.append(loss_prior_to_training)
 
     while not converged and (train_i < constants.train_iters):
         train_i += 1
@@ -194,7 +200,7 @@ def run_exp_loop(logger, constants, model_class, target_model=None):
     target_parameters = {}
     if target_model is not None:
         for param_i, key in enumerate(target_model.state_dict()):
-            target_parameters[param_i - 1] = target_model.state_dict()[key].clone().detach().numpy()
+            target_parameters[param_i] = target_model.state_dict()[key].clone().detach().numpy()
 
     recovered_param_per_exp = {}; poisson_rate_per_exp = []
     for exp_i in range(constants.start_seed, constants.start_seed+constants.N_exp):

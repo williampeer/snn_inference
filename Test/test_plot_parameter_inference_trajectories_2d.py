@@ -1,13 +1,14 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
 from Models.LIF import LIF
 from experiments import draw_from_uniform
 from plot import plot_parameter_inference_trajectories_2d
 
-num_neurons = 3
+num_neurons = 12
 init_params_model = draw_from_uniform(LIF.parameter_init_intervals, num_neurons)
-model = LIF(parameters=init_params_model, N=num_neurons, neuron_types=[1, 1, -1])
+model = LIF(parameters=init_params_model, N=num_neurons)#, neuron_types=[1, 1, -1])
 recovered_parameters = {}
 target_parameters = {}
 for param_i, param in enumerate(list(model.parameters())):
@@ -51,12 +52,15 @@ plot_parameter_inference_trajectories_2d(recovered_parameters, target_params=tar
                                          custom_title='Test plot_parameter_inference_trajectories_2d', logger=False)
 
 weights = recovered_parameters[0]
-tar_weights = target_parameters[0]
 assert len(weights[0].shape) == 2, "weights should be 2D"
-weights_params = {}; tar_weights_params = {}; w_names = []
-for n_i in range(model.N):
-    weights_params[n_i] = weights[n_i]
-    tar_weights_params[n_i] = tar_weights[n_i]
+tar_weights_params = {0: np.mean(target_parameters[0], axis=1)}
+weights_params = {}; w_names = []
+# weights_params[0] = [np.reshape(weights[0], (-1,))]
+weights_params[0] = [np.mean(weights[0], axis=1)]
+for n_i in range(1,4):
+    # weights_params[0].append(np.reshape(weights[n_i], (-1,)))
+    weights_params[0].append(np.mean(weights[n_i], axis=1))
+    # tar_weights_params[0] = np.reshape(tar_weights[n_i], (-1,))
     w_names.append('w_{}'.format(n_i))
 
 plot_parameter_inference_trajectories_2d(weights_params, target_params=tar_weights_params, param_names=w_names,

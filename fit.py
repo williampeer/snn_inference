@@ -35,6 +35,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
             current_inputs.retain_grad()
 
         spikes = model_util.feed_inputs_sequentially_return_spike_train(model, current_inputs)
+
         # returns tensor, maintains gradient
         loss = calculate_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(),
                               loss_fn=constants.loss_fn, tau_vr=tau_vr, silent_penalty_factor=constants.silent_penalty_factor)

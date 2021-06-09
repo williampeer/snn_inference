@@ -9,7 +9,7 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_s']
     # parameter_init_intervals = {'E_L': [-65., -52.], 'tau_m': [1.9, 2.3], 'tau_s': [3., 4.3]}
-    parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [1.6, 1.6], 'tau_s': [2.5, 2.5]}
+    parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [3.3, 3.3], 'tau_s': [2.5, 2.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25,
                  neuron_types=[1., 1., 1., 1., 1., 1., 1., 1., -1., -1., -1., -1.]):
@@ -95,13 +95,16 @@ class LIF(nn.Module):
         self.s = self.s + ds
         v_next = torch.add(self.v, dv)
 
+        # differentiable soft threshold
+        soft_spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
         # non-differentiable, hard threshold for nonlinear reset dynamics
         spiked = (v_next >= self.spike_threshold).float()
         not_spiked = (spiked - 1.) / -1.
 
         self.v = torch.add(spiked * self.E_L, not_spiked * v_next)
 
-        # return self.v, self.s * (self.tau_s)
-        return self.s * self.tau_s  # return readout of synaptic current as spike signal
+        return soft_spiked  # return sigmoidal spiked
+        # return self.s * 2*self.tau_s  # return readout of synaptic current as spike signal
+        # return self.s * self.tau_s  # return readout of synaptic current as spike signal
         # return self.v, self.s * (self.tau_s + 1)/2.  # return readout of synaptic current as spike signal
         # return self.s * (self.tau_s + 1)/2.  # return readout of synaptic current as spike signal
