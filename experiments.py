@@ -61,7 +61,8 @@ def continuous_normalised_poisson_noise(p_lambda, t, N):
 
 
 def release_computational_graph(model, rate_parameter, inputs=None):
-    model.reset()
+    if model is not None:
+        model.reset()
     if hasattr(rate_parameter, 'grad'):
         rate_parameter.grad = None
         # print('debug in hasattr(rate_parameter, \'grad\')')

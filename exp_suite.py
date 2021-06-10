@@ -134,19 +134,22 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         logger.log('training iteration #{}'.format(train_i), [constants.EXP_TYPE])
 
         # Train:
+        train_input = None
         if constants.EXP_TYPE is ExperimentType.DataDriven:
             node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
             next_step, train_targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
                                                               spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
-            gen_train_input = None
+            train_input = None
         else:
             train_targets, gen_train_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
+            if constants.EXP_TYPE == ExperimentType.SanityCheck:
+                train_input = gen_train_input
 
-        avg_unseen_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=gen_train_input, target_spiketrain=train_targets,
+        avg_unseen_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=train_input, target_spiketrain=train_targets,
                                                                  poisson_input_rate=poisson_input_rate, optimiser=optim,
                                                                  constants=constants, train_i=train_i, logger=logger)
-        if constants.EXP_TYPE is not ExperimentType.DataDriven:
-            release_computational_graph(target_model, constants.initial_poisson_rate, gen_train_input)
+        # if constants.EXP_TYPE is not ExperimentType.DataDriven:
+        release_computational_graph(target_model, constants.initial_poisson_rate, train_input)
 
         logger.log(parameters=[avg_unseen_loss, abs_grads_mean])
         test_losses.append(avg_unseen_loss)
@@ -161,19 +164,8 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         # max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
         # converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
         converged = False
-        #
-        # # Test
-        # gen_train_input = None
-        # if constants.EXP_TYPE is ExperimentType.DataDriven:
-        #     node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
-        #     next_step, train_targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
-        #                                                 spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
-        # else:
-        #     train_targets, sanity_check_gen_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
-        #     if constants.EXP_TYPE is ExperimentType.SanityCheck:
-        #         gen_train_input = sanity_check_gen_input
-        # # TODO: Refactor input gen into the eval loss fn.
-        train_loss = evaluate_loss(model, inputs=gen_train_input, p_rate=poisson_input_rate.clone().detach(),
+
+        train_loss = evaluate_loss(model, inputs=train_input, p_rate=poisson_input_rate.clone().detach(),
                                    target_spiketrain=train_targets, label='train i: {}'.format(train_i),
                                    exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
                                    constants=constants, converged=converged)
@@ -181,8 +173,8 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         logger.log(parameters=['train loss', train_loss])
         train_losses = np.concatenate((train_losses, np.asarray([train_loss])))
 
-        if constants.EXP_TYPE is not ExperimentType.DataDriven:
-            release_computational_graph(target_model, constants.initial_poisson_rate, gen_train_input)
+        # if constants.EXP_TYPE is not ExperimentType.DataDriven:
+        release_computational_graph(target_model, constants.initial_poisson_rate, train_input)
         train_targets = None; train_loss = None
 
     stats_training_iterations(model_parameters=parameters, model=model, poisson_rate=poisson_input_rate,
