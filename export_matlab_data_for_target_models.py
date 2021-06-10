@@ -19,8 +19,8 @@ from spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
 def main(argv):
-    num_neurons = 12
-    duration = 5 * 60 * 1000
+    num_neurons = 3
+    duration = 15 * 60 * 1000
     glif_only_flag = False
 
     print('Argument List:', str(argv))
@@ -38,11 +38,11 @@ def main(argv):
         elif opt in ("-GF", "--glif-only-flag"):
             glif_only_flag = bool(args[i])
 
-    for m_fn in [lif_continuous_ensembles_model_dales_compliant,
-                 lif_r_continuous_ensembles_model_dales_compliant,
-                 lif_asc_continuous_ensembles_model_dales_compliant,
-                 lif_r_asc_continuous_ensembles_model_dales_compliant,
-                 glif_continuous_ensembles_model_dales_compliant]:
+    for m_fn in [lif_continuous_ensembles_model_dales_compliant]:  #,
+                 # lif_r_continuous_ensembles_model_dales_compliant,
+                 # lif_asc_continuous_ensembles_model_dales_compliant,
+                 # lif_r_asc_continuous_ensembles_model_dales_compliant,
+                 # glif_continuous_ensembles_model_dales_compliant]:
         # model_name = model_class.__name__
 
         for f_i in range(3, 7):
