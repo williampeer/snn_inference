@@ -41,9 +41,8 @@ def main(argv):
     for m_fn in [lif_continuous_ensembles_model_dales_compliant,
                  lif_r_continuous_ensembles_model_dales_compliant,
                  lif_asc_continuous_ensembles_model_dales_compliant,
-                 lif_r_asc_continuous_ensembles_model_dales_compliant]:
-                 # glif_continuous_ensembles_model_dales_compliant]:
-        # model_name = model_class.__name__
+                 lif_r_asc_continuous_ensembles_model_dales_compliant,
+                 glif_continuous_ensembles_model_dales_compliant]:
 
         for f_i in range(3, 7):
             torch.manual_seed(f_i)
