@@ -108,7 +108,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     # optim_params.append(poisson_input_rate)
     optim = constants.optimiser(optim_params, lr=constants.learn_rate)
 
-    test_losses = []; train_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
+    test_losses = np.array([]); train_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
     max_grads_mean = np.float(0.)
     next_step = 0
 
@@ -127,7 +127,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
                                            target_spiketrain=train_targets, label='train i: {}'.format(train_i),
                                            exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
                                            constants=constants, converged=converged)
-    test_losses.append(loss_prior_to_training)
+    test_losses = np.concatenate((test_losses, np.asarray([loss_prior_to_training])))
 
     while not converged and (train_i < constants.train_iters):
         train_i += 1
@@ -152,7 +152,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         release_computational_graph(target_model, constants.initial_poisson_rate, train_input)
 
         logger.log(parameters=[avg_unseen_loss, abs_grads_mean])
-        test_losses.append(avg_unseen_loss)
+        test_losses = np.concatenate((test_losses, np.asarray([avg_unseen_loss])))
 
         cur_params = model.state_dict()
         # logger.log('current parameters {}'.format(cur_params))

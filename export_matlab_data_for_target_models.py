@@ -38,10 +38,10 @@ def main(argv):
         elif opt in ("-GF", "--glif-only-flag"):
             glif_only_flag = bool(args[i])
 
-    for m_fn in [lif_continuous_ensembles_model_dales_compliant]:  #,
-                 # lif_r_continuous_ensembles_model_dales_compliant,
-                 # lif_asc_continuous_ensembles_model_dales_compliant,
-                 # lif_r_asc_continuous_ensembles_model_dales_compliant,
+    for m_fn in [lif_continuous_ensembles_model_dales_compliant,
+                 lif_r_continuous_ensembles_model_dales_compliant,
+                 lif_asc_continuous_ensembles_model_dales_compliant,
+                 lif_r_asc_continuous_ensembles_model_dales_compliant]:
                  # glif_continuous_ensembles_model_dales_compliant]:
         # model_name = model_class.__name__
 

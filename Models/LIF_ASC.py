@@ -113,8 +113,11 @@ class LIF_ASC(nn.Module):
         # self.I_additive = (1. - self.f_I) * self.I_additive + spiked * self.I_A
         self.I_additive = self.I_additive - self.f_I * self.I_additive + spiked * self.f_I  # normalised I_A in [0, 1)
 
+        # differentiable soft threshold
+        soft_spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
+        return soft_spiked  # return sigmoidal spiked
         # return self.v, self.s * self.tau_s
-        return self.s * self.tau_s  # use synaptic current as spike signal
+        # return self.s * self.tau_s  # use synaptic current as spike signal
         # return self.s * (self.tau_s + 1) / 2.  # return readout of synaptic current as spike signal
 
         # return self.v, self.spiked

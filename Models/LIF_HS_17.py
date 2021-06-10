@@ -107,4 +107,8 @@ class LIF_HS_17(nn.Module):
         self.v = torch.add(spiked * self.E_L, not_spiked * v_next)
 
         # return self.v, self.s * self.tau_s
-        return self.s * self.tau_s  # return linear readout of synaptic current as spike signal
+        # return self.s * self.tau_s  # return linear readout of synaptic current as spike signal
+
+        # differentiable soft threshold
+        soft_spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
+        return soft_spiked  # return sigmoidal spiked

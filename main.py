@@ -33,7 +33,7 @@ def main(argv):
     exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.003; N_exp = 2; tau_van_rossum = 20.0; plot_flag = True
+    learn_rate = 0.002; N_exp = 2; tau_van_rossum = 20.0; plot_flag = True
     max_train_iters = 25
     interval_size = 12000
     batch_size = interval_size; rows_per_train_iter = interval_size
@@ -138,7 +138,7 @@ def main(argv):
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF_soft_weights_only, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
     # models = [LIF, LIF_weights_only, LIF_soft, LIF_soft_weights_only]
-    models = [LIF,LIF_soft,  LIF_weights_only, LIF_soft_weights_only]
+    models = [LIF, LIF_soft, LIF_weights_only, LIF_soft_weights_only]
     # models = [LIF_R, LIF_ASC, LIF_R_ASC]
 
     if loss_fn is None:
@@ -163,7 +163,7 @@ def main(argv):
     for m_class in models:
         for loss_fn in loss_functions:
             if exp_type_str in [C.ExperimentType.Synthetic.name, C.ExperimentType.SanityCheck.name]:
-                for f_i in range(3, 6):
+                for f_i in range(3, 7):
                     if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_soft_weights_only.__name__, LIF_soft.__name__]:
                         target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
@@ -195,17 +195,20 @@ def main(argv):
                     exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
             elif exp_type_str == C.ExperimentType.DataDriven.name:
-                constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp,
-                                        batch_size=batch_size,
-                                        tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter,
-                                        optimiser=optimiser,
-                                        initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn,
-                                        evaluate_step=evaluate_step,
-                                        plot_flag=plot_flag, start_seed=start_seed,
-                                        exp_type_str=exp_type_str, silent_penalty_factor=silent_penalty_factor,
-                                        norm_grad_flag=norm_grad_flag, data_path=data_path)
+                for f_i in range(3, 7):
+                    data_path = data_util.prefix + data_util.path + 'target_model_spikes_{}_N_{}_seed_{}_duration_{}' \
+                        .format(m_class.__name__, network_size, f_i, 15 * 60 * 1000)
+                    # only for target_parameters
+                    target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
 
-                exp_suite.start_exp(constants=constants, model_class=m_class)
+                    constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
+                                            tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
+                                            initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
+                                            plot_flag=plot_flag, start_seed=start_seed, exp_type_str=exp_type_str,
+                                            silent_penalty_factor=silent_penalty_factor, norm_grad_flag=norm_grad_flag,
+                                            data_path=data_path)
+
+                    exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
 
 if __name__ == "__main__":
