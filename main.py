@@ -139,8 +139,8 @@ def main(argv):
     # models = [LIF_soft_weights_only, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
     # models = [LIF, LIF_weights_only, LIF_soft, LIF_soft_weights_only]
     # models = [LIF, LIF_soft, LIF_weights_only, LIF_soft_weights_only]
-    models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
-    # models = [LIF_R, LIF_ASC, LIF_R_ASC]
+    # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
+    models = [LIF, LIF_ASC]
 
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
