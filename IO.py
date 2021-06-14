@@ -62,7 +62,7 @@ def save_plot_data(data, uuid, plot_fn='unknown', fname=False):
 
 
 def save_data(data, uuid, description='default', fname=False):
-    makedir_if_not_exists(PATH+PLOT_PATH+uuid)
+    makedir_if_not_exists(PATH+JUST_DATA_PATH+uuid)
 
     if not fname:
         fname = 'saved_data_' + dt_descriptor()
