@@ -23,7 +23,7 @@ N = 3
 
 def main(argv):
     # methods = ['SNPE', 'SNLE', 'SNRE']
-    methods = ['SNPE']
+    # methods = ['SNPE']
     method = None
 
     print('Argument List:', str(argv))
@@ -41,8 +41,6 @@ def main(argv):
 
     if method is not None:
         return sbi(method)
-    else:
-        return sbi(methods[0])
 
 
 def sbi(method):
