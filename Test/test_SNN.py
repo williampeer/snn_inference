@@ -19,9 +19,9 @@ for random_seed in range(3, 7):
     # init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
     # snn = model_class(init_params_model)
     # snn = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
-    # snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
+    snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
-    snn = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
+    # snn = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
 

@@ -49,13 +49,11 @@ class LIF(nn.Module):
         nt = T(neuron_types).float()
         self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)
+        # self.weights = nn.Parameter(torch.randn((6,)), requires_grad=True)
 
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
-        self.tau_s = nn.Parameter(FT(tau_s).clamp(1., 12.), requires_grad=True)
-        # self.E_L = FT(E_L).clamp(-80., -35.)  # change to const. if not req. grad to avoid nn.Param parsing
-        # self.tau_m = FT(tau_m).clamp(1.5, 8.)
-        # self.tau_s = FT(tau_s).clamp(1., 12.)
+        self.tau_s = nn.Parameter(FT(tau_s).clamp(1.5, 10.), requires_grad=True)
 
         self.register_backward_clamp_hooks()
 
@@ -63,7 +61,7 @@ class LIF(nn.Module):
         # self.R_I.register_hook(lambda grad: static_clamp_for(grad, 100., 150., self.R_I))
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
-        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_s))
+        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1.5, 10., self.tau_s))
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
@@ -83,6 +81,7 @@ class LIF(nn.Module):
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types
         I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming external input weights to be Eye(N,N)
+        # I = (self.s).matmul(self.weights) + 1.75 * x_in  # assuming external input weights to be Eye(N,N)
         dv = (self.E_L - self.v + I * self.norm_R_const) / self.tau_m
         v_next = torch.add(self.v, dv)
 

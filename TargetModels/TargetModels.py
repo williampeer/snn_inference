@@ -3,11 +3,11 @@ import torch
 from torch import tensor as T
 
 from Models.GLIF import GLIF
-from Models.LIF import LIF
 from Models.LIF_ASC import LIF_ASC
 from Models.LIF_HS_17 import LIF_HS_17
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
+from Models.no_grad.LIF_no_grad import LIF_no_grad
 from experiments import randomise_parameters, zip_tensor_dicts
 
 
@@ -43,7 +43,7 @@ def lif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     neuron_types = np.ones((N,))
     for i in range(int(N / 3)):
         neuron_types[-(1 + i)] = -1
-    return LIF(parameters=randomised_params, N=N, neuron_types=neuron_types)
+    return LIF_no_grad(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
 
 def lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
