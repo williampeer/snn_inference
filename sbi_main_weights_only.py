@@ -67,8 +67,8 @@ def sbi(method):
 
     res = {}
 
-    # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10000)
-    posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
+    posterior = infer(LIF_simulator, prior, method=method, num_simulations=10000)
+    # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
     res[method] = posterior
     posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
                     limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim))
@@ -111,8 +111,8 @@ def posterior_stats(posterior, method, observation, points, limits, figsize):
     print(posterior)
 
     # observation = torch.reshape(targets, (1, -1))
-    # samples = posterior.sample((10000,), x=observation)
-    samples = posterior.sample((10,), x=observation)
+    samples = posterior.sample((10000,), x=observation)
+    # samples = posterior.sample((10,), x=observation)
     # log_probability = posterior.log_prob(samples, x=observation)
     try:
         fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=figsize)
