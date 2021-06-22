@@ -50,25 +50,23 @@ def sbi(method):
     tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
     targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
-    tar_parameters = torch.flatten(tar_model.w.data)
+    parsed_weights = torch.zeros((N ** 2 - N,))
+    ctr = 0
+    for n_i in range(N):
+        for n_j in range(N):
+            if (n_i != n_j):
+                parsed_weights[ctr] = tar_model.w[n_i, n_j]
+                ctr += 1
+    tar_parameters = torch.hstack([parsed_weights])
 
-    weights_low = torch.flatten(torch.zeros((N, N)))
-    weights_high = torch.flatten(torch.ones((N, N)))
-    # limits_low = torch.hstack((torch.tensor([2., -70., 1.6, 2.]), weights_low))
-    # limits_high = torch.hstack((torch.tensor([20., -42., 3.0, 5.0]), weights_high))
+    weights_low = torch.zeros((N**2-N,))
+    weights_high = torch.ones((N**2-N,))
     limits_low = weights_low
     limits_high = weights_high
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
     res = {}
-    # posterior_snpe = infer(simulator, prior, method='SNPE', num_simulations=5000)
-    # posterior_snle = infer(simulator, prior, method='SNLE', num_simulations=5000)
-    # posterior_snre = infer(simulator, prior, method='SNRE', num_simulations=5000)
-    # posterior_stats(posterior_snpe, method='SNPE')
-    # posterior_stats(posterior_snle, method='SNLE')
-    # posterior_stats(posterior_snre, method='SNRE')
 
-    # for m in methods:
     posterior = infer(LIF_simulator, prior, method=method, num_simulations=10000)
     res[method] = posterior
     posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
@@ -88,8 +86,18 @@ def LIF_simulator(parameter_set):
     tar_in_rate = 10.
     tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
 
+    parsed_preset_weights = parameter_set[(1 + 3 * N):]
+    assert len(parsed_preset_weights) == (N**2-N), "len(parsed_preset_weights): {}, should be N**2-N".format(len(parsed_preset_weights))
+    preset_weights = torch.zeros((N, N))
+    ctr = 0
+    for n_i in range(N):
+        for n_j in range(N):
+            if (n_i != n_j):
+                preset_weights[n_i, n_j] = parsed_preset_weights[ctr]
+                ctr += 1
+
     params = {'E_L': tar_model.E_L.data, 'tau_m': tar_model.tau_m.data, 'tau_s': tar_model.tau_s.data,
-              'preset_weights': torch.reshape(parameter_set, (N, N))}
+              'preset_weights': preset_weights}
     model = LIF_no_grad(parameters=params, N=N, neuron_types=[1, 1, -1])
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
     outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)

@@ -28,3 +28,5 @@ __pycache__
 *.txt
 *.pt
 ._*.mat
+
+sbi-logs/*

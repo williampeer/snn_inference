@@ -50,15 +50,6 @@ def sbi(method):
     tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
     parsed_weights = torch.zeros((N**2-N,))
-    # for w_i in range(N**2-N):
-    #     n_i = int((w_i) / N)
-    #     n_j = w_i % N
-    #     if n_j >= n_i:
-    #         n_j = (n_j + 1) % N
-    #         if n_j == 0:
-    #             n_i = n_i+1
-    #
-    #     parsed_weights[w_i] = tar_model.w[n_i, n_j]
     ctr = 0
     for n_i in range(N):
         for n_j in range(N):
@@ -109,13 +100,6 @@ def LIF_simulator(parameter_set):
     parsed_preset_weights = parameter_set[(1 + 3 * N):]
     assert len(parsed_preset_weights) == (N**2-N), "len(parsed_preset_weights): {}, should be N**2-N".format(len(parsed_preset_weights))
     preset_weights = torch.zeros((N, N))
-    # for n_ctr in range(N**2-N):
-    #     n_i = int(n_ctr/N)
-    #     n_j = n_ctr % N
-    #     if n_j >= n_i:
-    #         n_j = n_j + 1
-    #
-    #     preset_weights[n_i, n_j] = parsed_preset_weights[n_ctr]
     ctr = 0
     for n_i in range(N):
         for n_j in range(N):
