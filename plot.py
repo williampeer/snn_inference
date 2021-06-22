@@ -74,11 +74,11 @@ def plot_spike_trains_side_by_side(model_spikes, target_spikes, uuid, exp_type='
     for neuron_i in range(model_spike_history.shape[1]):
         if model_spike_times[:, neuron_i].nonzero().sum() > 0:
             plt.plot(torch.reshape(model_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
-                     neuron_i + 1.1, '.b', markersize=4.0, label='Model')
+                     neuron_i + 1.1, '.b', markersize=3.0, label='Model')
     for neuron_i in range(target_spike_times.shape[1]):
         if target_spike_times[:, neuron_i].nonzero().sum() > 0:
             plt.plot(torch.reshape(target_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
-                     neuron_i + 0.9, '.g', markersize=4.0-0.04*int(neuron_i/10), label='Target')
+                     neuron_i + 0.9, '.g', markersize=3.0-0.04*int(neuron_i/10), label='Target')
 
     plt.xlabel('Time (ms)')
     plt.ylabel('Neuron')

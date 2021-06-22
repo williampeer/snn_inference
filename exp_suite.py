@@ -1,6 +1,7 @@
 import Log
 from Constants import ExperimentType
 from IO import save_poisson_rates
+from Models.LIF_fixed_weights import LIF_fixed_weights
 from Models.TORCH_CUSTOM import static_clamp_for_scalar
 from data_util import load_sparse_data, get_spike_train_matrix
 from eval import evaluate_loss
@@ -92,6 +93,9 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     neuron_types = np.ones((num_neurons,))
     for i in range(int(num_neurons/3)):
         neuron_types[-(1+i)] = -1
+
+    if model_class.__name__.__contains__('fixed_weights'):
+        params_model['preset_weights'] = target_model.w.clone().detach()
     model = model_class(N=num_neurons, parameters=params_model, neuron_types=neuron_types)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)

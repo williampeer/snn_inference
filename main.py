@@ -9,6 +9,7 @@ from Models.LIF_ASC import LIF_ASC
 from Models.LIF_HS_17 import LIF_HS_17
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
+from Models.LIF_fixed_weights import LIF_fixed_weights
 from Models.LIF_weights_only import LIF_weights_only
 from Models.Sigmoidal.GLIF_soft import GLIF_soft
 from Models.Sigmoidal.LIF_ASC_soft import LIF_ASC_soft
@@ -29,8 +30,8 @@ def main(argv):
     # Default values
     start_seed = 42
     # exp_type_str = C.ExperimentType.SanityCheck.name
-    # exp_type_str = C.ExperimentType.Synthetic.name
-    exp_type_str = C.ExperimentType.DataDriven.name
+    exp_type_str = C.ExperimentType.Synthetic.name
+    # exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 0.005; N_exp = 2; tau_van_rossum = 20.0; plot_flag = True
@@ -77,8 +78,9 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_3_seed_4_duration_1800000.mat'
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_12_seed_4_duration_900000.mat'
 
-    model_type = None
+    # model_type = None
     # model_type = 'LIF'
+    model_type = 'LIF_fixed_weights'
     # model_type = 'LIF_soft'
     # model_type = 'LIF_weights_only'
     # model_type = 'LIF_soft_weights_only'
@@ -133,7 +135,7 @@ def main(argv):
 
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17,
                   LIF_soft, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft,
-                  LIF_weights_only, LIF_soft_weights_only]
+                  LIF_weights_only, LIF_fixed_weights, LIF_soft_weights_only]
     # models = [LIF_HS_17]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF_soft_weights_only, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
@@ -165,7 +167,7 @@ def main(argv):
         for loss_fn in loss_functions:
             if exp_type_str in [C.ExperimentType.Synthetic.name, C.ExperimentType.SanityCheck.name]:
                 for f_i in range(3, 7):
-                    if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_soft_weights_only.__name__, LIF_soft.__name__]:
+                    if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_fixed_weights.__name__, LIF_soft_weights_only.__name__, LIF_soft.__name__]:
                         target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     elif m_class.__name__ in [LIF_HS_17.__name__]:
