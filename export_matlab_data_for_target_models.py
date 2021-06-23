@@ -56,11 +56,11 @@ def main(argv):
                 random_seed = 4
                 snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
 
-            cur_fname = 'target_model_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.__class__.__name__, num_neurons, random_seed, duration)
+            cur_fname = 'target_model_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.name(), num_neurons, random_seed, duration)
             save_file_name = prefix + path + cur_fname + '.mat'
             if not os.path.exists(save_file_name):
                 simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=duration, exp_num=f_i,
-                                                    model_name=snn.__class__.__name__, fname=cur_fname)
+                                                    model_name=snn.name(), fname=cur_fname)
             else:
                 print('file exists. skipping..')
 

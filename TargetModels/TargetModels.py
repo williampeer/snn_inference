@@ -18,16 +18,16 @@ def lif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     weights_std = 0.1
     pop_size = int(N / 3)
 
-    params_pop1 = {'tau_m': 4.6, 'E_L': -50., 'tau_s': 6.5}
+    params_pop1 = {'tau_m': 4.6, 'E_L': -50., 'tau_s': 6.5, 'spike_threshold': 30.}
     hand_coded_params_pop1 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 torch.cat([T(pop_size * [0.15]), T(pop_size * [0.1]), T(pop_size * [0.06])])}
 
-    params_pop2 = {'tau_m': 3.5, 'E_L': -60., 'tau_s': 4.5}
+    params_pop2 = {'tau_m': 3.5, 'E_L': -60., 'tau_s': 4.5, 'spike_threshold': 30.}
     hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size, 1)) + (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 torch.cat([T(pop_size * [.08]), T(pop_size * [.3]), T(pop_size * [.15])])}
 
-    params_pop3 = {'tau_m': 3.5, 'E_L': -68., 'tau_s': 2.5}
+    params_pop3 = {'tau_m': 3.5, 'E_L': -68., 'tau_s': 2.5, 'spike_threshold': 30.}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 torch.cat([T(pop_size * [-.06]), T(pop_size * [-.1]), T(pop_size * [-.1])])}
@@ -151,7 +151,7 @@ def lif_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
                                                 # torch.cat([T(pop_size*[0.28]), T(pop_size*[0.2]), T(pop_size*[0.15])])}
                                                 # torch.cat([T(pop_size * [0.2]), T(pop_size * [0.08]), T(pop_size * [0.03])])}
                                                 # torch.cat([T(pop_size*[0.0]), T(pop_size*[0.0]), T(pop_size*[0.0])])}
-                                                torch.cat([T(pop_size * [0.12]), T(pop_size * [0.09]), T(pop_size * [0.07])])}
+                                                torch.cat([T(pop_size * [0.15]), T(pop_size * [0.08]), T(pop_size * [0.05])])}
 
     params_pop2 = {'tau_m': 4.5, 'E_L': -62., 'f_I': 0.4, 'G': 0.9, 'delta_theta_s': 16., 'b_s': 0.3, 'f_v': 0.14,
                    'delta_V': 12., 'tau_s': 4.5}
@@ -160,16 +160,16 @@ def lif_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
                                                 # torch.cat([T(4*[.1]), T(4*[.43]), T(4*[0.34])])}
                                                 # torch.cat([T(pop_size * [0.04]), T(pop_size * [0.36]), T(pop_size * [0.15])])}
                                                 # torch.cat([T(4*[.0]), T(4*[.0]), T(4*[0.0])])}
-                                                torch.cat([T(pop_size * [.08]), T(pop_size * [.3]), T(pop_size * [.2])])}
+                                                torch.cat([T(pop_size * [.08]), T(pop_size * [.35]), T(pop_size * [.25])])}
 
-    params_pop3 = {'tau_m': 3.8, 'E_L': -68., 'f_I': 0.35, 'G': 0.9, 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
-                   'delta_V': 12., 'tau_s': 3.}
+    params_pop3 = {'tau_m': 4., 'E_L': -68., 'f_I': 0.35, 'G': 0.9, 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
+                   'delta_V': 12., 'tau_s': 2.6}
     hand_coded_params_pop3 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
                                                 # torch.cat([T(4*[-.16]), T(4*[-.4]), T(4*[-0.12])])}
                                                 # torch.cat([T(pop_size * [-.36]), T(pop_size * [-.22]), T(pop_size * [-0.08])])}
                                                 # torch.cat([T(4*[-.0]), T(4*[-.0]), T(4*[-0.0])])}
-                                                torch.cat([T(pop_size * [-.15]), T(pop_size * [-.25]), T(pop_size * [-.2])])}
+                                                torch.cat([T(pop_size * [-.2]), T(pop_size * [-.3]), T(pop_size * [-.3])])}
 
     params_pop1 = randomise_parameters(params_pop1, coeff=T(0.025), N_dim=pop_size)
     params_pop1 = zip_tensor_dicts(params_pop1, hand_coded_params_pop1)

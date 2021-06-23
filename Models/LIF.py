@@ -7,9 +7,9 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class LIF(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'tau_s']
+    parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'spike_threshold']
     # parameter_init_intervals = {'E_L': [-65., -52.], 'tau_m': [1.9, 2.3], 'tau_s': [3., 4.3]}
-    parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [2.5, 2.5], 'tau_s': [3.0, 3.0]}
+    parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [2.5, 2.5], 'tau_s': [3.0, 3.0], 'spike_threshold': [30., 30.]}
 
     def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25,
                  neuron_types=[1., 1., 1., 1., 1., 1., 1., 1., -1., -1., -1., -1.]):
@@ -25,13 +25,12 @@ class LIF(nn.Module):
                     E_L = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'tau_s':
                     tau_s = FT(torch.ones((N,)) * parameters[key])
+                elif key == 'spike_threshold':
+                    spike_threshold = FT(torch.ones((N,)) * parameters[key])
 
-        __constants__ = ['spike_threshold', 'N', 'norm_R_const', 'self_recurrence_mask']
-        self.spike_threshold = T(30.)
+        __constants__ = ['N', 'self_recurrence_mask']
         self.N = N
 
-        R_const = 1.1
-        self.norm_R_const = (self.spike_threshold - E_L) * R_const
         # assert not any(tau_m <= 2*self.R_const), "tau_m > 2*R_const for system stability. see forward()"
 
         self.v = E_L * torch.ones((self.N,))
@@ -54,6 +53,8 @@ class LIF(nn.Module):
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)  # change to const. if not req. grad to avoid nn.Param parsing
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
         self.tau_s = nn.Parameter(FT(tau_s).clamp(1.5, 10.), requires_grad=True)
+        self.spike_threshold = nn.Parameter(FT(spike_threshold).clamp(0., 50.), requires_grad=True)
+        # self.spike_threshold = T(30.)
 
         self.register_backward_clamp_hooks()
 
@@ -62,6 +63,7 @@ class LIF(nn.Module):
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
         self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1.5, 10., self.tau_s))
+        self.spike_threshold.register_hook(lambda grad: static_clamp_for(grad, 0., 50., self.spike_threshold))
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
@@ -82,7 +84,10 @@ class LIF(nn.Module):
         W_syn = self.w * self.neuron_types
         I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming external input weights to be Eye(N,N)
         # I = (self.s).matmul(self.weights) + 1.75 * x_in  # assuming external input weights to be Eye(N,N)
-        dv = (self.E_L - self.v + I * self.norm_R_const) / self.tau_m
+
+        R_const = 1.1
+        norm_R_const = (self.spike_threshold - self.E_L) * R_const
+        dv = (self.E_L - self.v + I * norm_R_const) / self.tau_m
         v_next = torch.add(self.v, dv)
 
         # gating = (torch.functional.F.relu(v_next) / self.spike_threshold).clamp(0., 1.)
@@ -95,14 +100,15 @@ class LIF(nn.Module):
         v_next = torch.add(self.v, dv)
 
         # differentiable soft threshold
-        soft_spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
         # non-differentiable, hard threshold for nonlinear reset dynamics
         spiked = (v_next >= self.spike_threshold).float()
         not_spiked = (spiked - 1.) / -1.
 
         self.v = torch.add(spiked * self.E_L, not_spiked * v_next)
 
+        soft_spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
         return soft_spiked  # return sigmoidal spiked
+        # return gating
         # return self.s * 2*self.tau_s  # return readout of synaptic current as spike signal
         # return self.s * self.tau_s  # return readout of synaptic current as spike signal
         # return self.v, self.s * (self.tau_s + 1)/2.  # return readout of synaptic current as spike signal

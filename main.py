@@ -198,11 +198,25 @@ def main(argv):
                     exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
             elif exp_type_str == C.ExperimentType.DataDriven.name:
-                for f_i in range(3, 6):
-                    data_path = data_util.prefix + data_util.path + 'target_model_spikes_{}_N_{}_seed_{}_duration_{}' \
-                        .format(m_class.__name__, network_size, f_i, 15 * 60 * 1000)
+                for f_i in range(3, 7):
+                    # data_path = data_util.prefix + data_util.path + 'target_model_spikes_{}_N_{}_seed_{}_duration_{}' \
+                    #     .format(m_class.__name__, network_size, f_i, 15 * 60 * 1000)
                     # only for target_parameters
-                    target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_fixed_weights.__name__,
+                                            LIF_soft_weights_only.__name__, LIF_soft.__name__]:
+                        target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    elif m_class.__name__ in [LIF_HS_17.__name__]:
+                        target_model = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__]:
+                        target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    elif m_class.__name__ in [LIF_ASC.__name__, LIF_ASC_soft.__name__]:
+                        target_model = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__]:
+                        target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    elif m_class.__name__ in [GLIF.__name__, GLIF_soft.__name__]:
+                        target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    else:
+                        raise NotImplementedError()
 
                     constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
                                             tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,

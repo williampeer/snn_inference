@@ -72,6 +72,7 @@ def release_computational_graph(model, rate_parameter, inputs=None):
 
 
 def generate_synthetic_data(gen_model, poisson_rate, t):
+    gen_model.reset()
     # gen_input = poisson_input(rate=poisson_rate, t=t, N=gen_model.N)
     gen_input = continuous_normalised_poisson_noise(p_lambda=poisson_rate, t=t, N=gen_model.N)
     gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)

@@ -66,6 +66,9 @@ class LIF_no_grad(nn.Module):
         self.v = self.v.clone().detach()
         self.s = self.s.clone().detach()
 
+    def name(self):
+        return 'LIF'
+
     # Assuming normalised input.
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types
@@ -90,6 +93,7 @@ class LIF_no_grad(nn.Module):
 
         soft_spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
         return soft_spiked
+        # return gating
         # return self.v, self.s * (self.tau_s)
         # return self.s * self.tau_s  # return readout of synaptic current as spike signal
         # return self.v, self.s * (self.tau_s + 1)/2.  # return readout of synaptic current as spike signal

@@ -63,12 +63,12 @@ def sbi(method):
     # TODO: Programmatically create prior given model init params
     #   parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [1.6, 1.6], 'tau_s': [2.5, 2.5]}
     # prior = utils.BoxUniform(low=-2*torch.ones(num_dim), high=2*torch.ones(num_dim))
-    weights_low = torch.zeros((N**2-N,))
-    weights_high = torch.ones((N**2-N,))
+    # weights_low = torch.zeros((N**2-N,))
+    # weights_high = torch.ones((N**2-N,))
     # limits_low = torch.hstack((torch.tensor([2., -70., 1.6, 2.]), weights_low))
     # limits_high = torch.hstack((torch.tensor([20., -42., 3.0, 5.0]), weights_high))
-    limits_low = torch.hstack((torch.tensor([4.]), torch.ones((N,))*-80., torch.ones((N,))*1.5, torch.ones((N,))*1.5, weights_low))
-    limits_high = torch.hstack((torch.tensor([20.]), torch.ones((N,))*-35., torch.ones((N,))*8.0, torch.ones((N,))*10.0, weights_high))
+    limits_low = torch.hstack((torch.tensor([4.]), torch.ones((N,))*-80., torch.ones((N,))*1.5, torch.ones((N,))*1.5))
+    limits_high = torch.hstack((torch.tensor([20.]), torch.ones((N,))*-35., torch.ones((N,))*8.0, torch.ones((N,))*10.0))
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
     res = {}
