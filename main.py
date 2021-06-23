@@ -201,9 +201,6 @@ def main(argv):
 
             elif exp_type_str == C.ExperimentType.DataDriven.name:
                 for f_i in range(3, 6):
-                    data_path = data_util.prefix + data_util.path + 'target_model_spikes_{}_N_{}_seed_{}_duration_{}' \
-                        .format(m_class.__name__, network_size, f_i, 15 * 60 * 1000)
-
                     # only for target_parameters
                     if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_fixed_weights.__name__,
                                             LIF_soft_weights_only.__name__, LIF_soft.__name__]:
@@ -220,6 +217,9 @@ def main(argv):
                         target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     else:
                         raise NotImplementedError()
+
+                    data_path = data_util.prefix + data_util.path + 'target_model_spikes_{}_N_{}_seed_{}_duration_{}' \
+                        .format(target_model.name(), network_size, f_i, 15 * 60 * 1000)
 
                     constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
                                             tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
