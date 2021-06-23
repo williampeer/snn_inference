@@ -9,7 +9,7 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 class LIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'spike_threshold']
     # parameter_init_intervals = {'E_L': [-65., -52.], 'tau_m': [1.9, 2.3], 'tau_s': [3., 4.3]}
-    parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [2.5, 2.5], 'tau_s': [3.0, 3.0], 'spike_threshold': [30., 30.]}
+    parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [2.5, 2.5], 'tau_s': [3.0, 3.0], 'spike_threshold': [25., 25.]}
 
     def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25,
                  neuron_types=[1., 1., 1., 1., 1., 1., 1., 1., -1., -1., -1., -1.]):
