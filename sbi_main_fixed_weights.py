@@ -49,39 +49,20 @@ def sbi(method):
     tar_in_rate = 10.
     tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
-    parsed_weights = torch.zeros((N**2-N,))
-    ctr = 0
-    for n_i in range(N):
-        for n_j in range(N):
-            if (n_i != n_j):
-                parsed_weights[ctr] = abs(tar_model.w[n_i, n_j])
-                ctr += 1
-    tar_parameters = torch.hstack([torch.tensor([tar_in_rate]), tar_model.E_L.data, tar_model.tau_m.data, tar_model.tau_s.data, parsed_weights])
+
+    tar_parameters = torch.hstack([torch.tensor([tar_in_rate]), tar_model.E_L.data, tar_model.tau_m.data, tar_model.tau_s.data])
 
     targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
 
-    # TODO: Programmatically create prior given model init params
-    #   parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [1.6, 1.6], 'tau_s': [2.5, 2.5]}
-    # prior = utils.BoxUniform(low=-2*torch.ones(num_dim), high=2*torch.ones(num_dim))
-    # weights_low = torch.zeros((N**2-N,))
-    # weights_high = torch.ones((N**2-N,))
-    # limits_low = torch.hstack((torch.tensor([2., -70., 1.6, 2.]), weights_low))
-    # limits_high = torch.hstack((torch.tensor([20., -42., 3.0, 5.0]), weights_high))
     limits_low = torch.hstack((torch.tensor([4.]), torch.ones((N,))*-80., torch.ones((N,))*1.5, torch.ones((N,))*1.5))
     limits_high = torch.hstack((torch.tensor([20.]), torch.ones((N,))*-35., torch.ones((N,))*8.0, torch.ones((N,))*10.0))
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
     res = {}
-    # posterior_snpe = infer(simulator, prior, method='SNPE', num_simulations=5000)
-    # posterior_snle = infer(simulator, prior, method='SNLE', num_simulations=5000)
-    # posterior_snre = infer(simulator, prior, method='SNRE', num_simulations=5000)
-    # posterior_stats(posterior_snpe, method='SNPE')
-    # posterior_stats(posterior_snle, method='SNLE')
-    # posterior_stats(posterior_snre, method='SNRE')
 
     # for m in methods:
     posterior = infer(LIF_simulator, prior, method=method, num_simulations=10000)
-    # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
+    # posterior = infer(LIF_simulator, prior, method=method, num_simulations=20)
     res[method] = posterior
     posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
                     limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim))
@@ -97,19 +78,10 @@ def sbi(method):
 
 
 def LIF_simulator(parameter_set):
-    parsed_preset_weights = parameter_set[(1 + 3 * N):]
-    assert len(parsed_preset_weights) == (N**2-N), "len(parsed_preset_weights): {}, should be N**2-N".format(len(parsed_preset_weights))
-    preset_weights = torch.zeros((N, N))
-    ctr = 0
-    for n_i in range(N):
-        for n_j in range(N):
-            if (n_i != n_j):
-                preset_weights[n_i, n_j] = parsed_preset_weights[ctr]
-                ctr += 1
-
+    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
     # print('preset_weights: {}'.format(preset_weights))
     params = {'E_L': parameter_set[1:(1+N)], 'tau_m': parameter_set[(1+N):(1+2*N)], 'tau_s': parameter_set[(1+2*N):(1+3*N)],
-              'preset_weights': preset_weights}
+              'preset_weights': tar_model.w.clone().detach()}
     model = LIF_no_grad(parameters=params, N=N, neuron_types=[1, 1, -1])  # TODO: Auto-assign neuron-types for varying N != 12
     inputs = poisson_input(rate=parameter_set[0], t=t_interval, N=N)
     outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
@@ -123,7 +95,7 @@ def posterior_stats(posterior, method, observation, points, limits, figsize):
 
     # observation = torch.reshape(targets, (1, -1))
     samples = posterior.sample((10000,), x=observation)
-    # samples = posterior.sample((10,), x=observation)
+    # samples = posterior.sample((20,), x=observation)
     # log_probability = posterior.log_prob(samples, x=observation)
     try:
         fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=figsize)
