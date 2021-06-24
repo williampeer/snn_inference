@@ -35,12 +35,12 @@ def main(argv):
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 0.01; N_exp = 3; tau_van_rossum = 20.0; plot_flag = True
-    max_train_iters = 16
+    max_train_iters = 20
     interval_size = 8000
     batch_size = interval_size; rows_per_train_iter = interval_size
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
-    loss_fn = 'frd'
+    # loss_fn = 'frd'
     # loss_fn = 'vrd'
     # loss_fn = 'FF'
     # loss_fn = 'CV'
@@ -48,7 +48,7 @@ def main(argv):
     # loss_fn = 'rfh'
     # loss_fn = 'rph'
     # loss_fn = 'kl_div'
-    # loss_fn = None
+    loss_fn = None
     # silent_penalty_factor = 10.0
     silent_penalty_factor = None
 
@@ -144,7 +144,11 @@ def main(argv):
     # models = [LIF, LIF_weights_only, LIF_soft, LIF_soft_weights_only]
     # models = [LIF, LIF_soft, LIF_weights_only, LIF_soft_weights_only]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
-    models = [LIF, LIF_fixed_weights, LIF_weights_only]
+    # models = [LIF, LIF_fixed_weights, LIF_weights_only]
+    models = [LIF_R,
+              LIF_R_ASC,
+              LIF, LIF_weights_only, LIF_fixed_weights,
+              GLIF]
 
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
@@ -200,7 +204,7 @@ def main(argv):
                     exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
             elif exp_type_str == C.ExperimentType.DataDriven.name:
-                for f_i in range(3, 6):
+                for f_i in range(3, 7):
                     # only for target_parameters
                     if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_fixed_weights.__name__,
                                             LIF_soft_weights_only.__name__, LIF_soft.__name__]:
