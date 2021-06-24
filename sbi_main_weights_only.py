@@ -130,3 +130,4 @@ def posterior_stats(posterior, method, observation, points, limits, figsize):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+    sys.exit(0)
