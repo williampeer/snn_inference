@@ -17,11 +17,11 @@ torch.autograd.set_detect_anomaly(True)
 # node_indices, spike_times, spike_indices = data_util.load_sparse_data(full_path=data_path)
 # next_step, targets = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=t_interval,
 #                                                       spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
-t_interval = 16000
-N = 3
 
 
 def main(argv):
+    t_interval = 16000
+    N = 3
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
     method = None
@@ -36,14 +36,42 @@ def main(argv):
             sys.exit()
         elif opt in ("-m", "--method"):
             method = str(args[i])
-        # elif opt in ("-N", "--num-neurons"):
-        #     num_neurons = int(args[i])
+        elif opt in ("-N", "--num-neurons"):
+            N = int(args[i])
+        elif opt in ("-t", "--t-interval"):
+            t_interval = int(args[i])
 
     if method is not None:
-        _ = sbi(method)
+        return sbi(method, t_interval, N)
 
 
-def sbi(method):
+def sbi(method, t_interval, N):
+    def LIF_simulator(parameter_set):
+        tar_in_rate = 10.
+        tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
+
+        parsed_preset_weights = parameter_set
+        assert len(parsed_preset_weights) == (N ** 2 - N), "len(parsed_preset_weights): {}, should be N**2-N".format(
+            len(parsed_preset_weights))
+        preset_weights = torch.zeros((N, N))
+        ctr = 0
+        for n_i in range(N):
+            for n_j in range(N):
+                if (n_i != n_j):
+                    preset_weights[n_i, n_j] = parsed_preset_weights[ctr]
+                    ctr += 1
+
+        params = {'E_L': tar_model.E_L.data, 'tau_m': tar_model.tau_m.data, 'tau_s': tar_model.tau_s.data,
+                  'preset_weights': preset_weights}
+        programmatic_neuron_types = torch.ones((N,))
+        for n_i in range(int(2 * N / 3), N):
+            programmatic_neuron_types[n_i] = -1
+        model = LIF_no_grad(parameters=params, N=N, neuron_types=programmatic_neuron_types)
+        inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
+        outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
+        model.reset()
+        return outputs
+
     num_dim = 1 + 3 * N + N ** 2
 
     tar_in_rate = 10.
@@ -81,32 +109,6 @@ def sbi(method):
         print("except: {}".format(e))
 
     return res
-
-
-def LIF_simulator(parameter_set):
-    tar_in_rate = 10.
-    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
-
-    parsed_preset_weights = parameter_set
-    assert len(parsed_preset_weights) == (N**2-N), "len(parsed_preset_weights): {}, should be N**2-N".format(len(parsed_preset_weights))
-    preset_weights = torch.zeros((N, N))
-    ctr = 0
-    for n_i in range(N):
-        for n_j in range(N):
-            if (n_i != n_j):
-                preset_weights[n_i, n_j] = parsed_preset_weights[ctr]
-                ctr += 1
-
-    params = {'E_L': tar_model.E_L.data, 'tau_m': tar_model.tau_m.data, 'tau_s': tar_model.tau_s.data,
-              'preset_weights': preset_weights}
-    programmatic_neuron_types = torch.ones((N,))
-    for n_i in range(int(2 * N / 3), N):
-        programmatic_neuron_types[n_i] = -1
-    model = LIF_no_grad(parameters=params, N=N, neuron_types=programmatic_neuron_types)
-    inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
-    outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
-    model.reset()
-    return outputs
 
 
 def posterior_stats(posterior, method, observation, points, limits, figsize):

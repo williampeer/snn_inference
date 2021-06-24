@@ -38,6 +38,8 @@ def main(argv):
             method = str(args[i])
         elif opt in ("-N", "--num-neurons"):
             N = int(args[i])
+        elif opt in ("-t", "--t-interval"):
+            t_interval = int(args[i])
 
     if method is not None:
         return sbi(method, t_interval, N)
