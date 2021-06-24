@@ -40,7 +40,7 @@ def main(argv):
 
     for m_fn in [lif_continuous_ensembles_model_dales_compliant,
                  lif_r_continuous_ensembles_model_dales_compliant,
-                 lif_asc_continuous_ensembles_model_dales_compliant,
+                 # lif_asc_continuous_ensembles_model_dales_compliant,
                  lif_r_asc_continuous_ensembles_model_dales_compliant,
                  glif_continuous_ensembles_model_dales_compliant]:
 

@@ -7,6 +7,9 @@ from Models.LIF_ASC import LIF_ASC
 from Models.LIF_HS_17 import LIF_HS_17
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
+from Models.no_grad.GLIF_no_grad import GLIF_no_grad
+from Models.no_grad.LIF_R_ASC_no_grad import LIF_R_ASC_no_grad
+from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
 from Models.no_grad.LIF_no_grad import LIF_no_grad
 from experiments import randomise_parameters, zip_tensor_dicts
 
@@ -134,7 +137,7 @@ def lif_r_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     neuron_types = np.ones((N,))
     for i in range(int(N / 3)):
         neuron_types[-(1 + i)] = -1
-    return LIF_R(parameters=randomised_params, N=N, neuron_types=neuron_types)
+    return LIF_R_no_grad(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
 
 def lif_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
@@ -230,7 +233,7 @@ def lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     neuron_types = np.ones((N,))
     for i in range(int(N / 3)):
         neuron_types[-(1 + i)] = -1
-    return LIF_R_ASC(parameters=randomised_params, N=N, neuron_types=neuron_types)
+    return LIF_R_ASC_no_grad(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
 
 def glif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
@@ -278,4 +281,4 @@ def glif_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     neuron_types = np.ones((N,))
     for i in range(int(N / 3)):
         neuron_types[-(1 + i)] = -1
-    return GLIF(parameters=randomised_params, N=N, neuron_types=neuron_types)
+    return GLIF_no_grad(parameters=randomised_params, N=N, neuron_types=neuron_types)
