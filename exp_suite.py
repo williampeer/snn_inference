@@ -240,8 +240,11 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
                 recovered_param_per_exp[key] = [recovered_parameters[key]]
             else:
                 recovered_param_per_exp[key].append(recovered_parameters[key])
-        poisson_rate_per_exp.append(poisson_rates[-1])
+        if poisson_rates is not None and len(poisson_rates) > 0:
+            poisson_rate_per_exp.append(poisson_rates[-1])
 
+    if poisson_rate_per_exp is not None and len(poisson_rate_per_exp) > 0:
+        recovered_param_per_exp['p_rate'] = poisson_rate_per_exp
     logger.log('poisson_rate_per_exp', poisson_rate_per_exp)
     save_poisson_rates(poisson_rate_per_exp, uuid=constants.UUID, fname='poisson_rates_per_exp.pt')
     parameter_names = model_class.parameter_names

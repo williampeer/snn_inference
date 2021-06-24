@@ -9,7 +9,7 @@ from TargetModels import TargetModels
 from experiments import continuous_normalised_poisson_noise
 from plot import plot_spike_trains_side_by_side, plot_spike_train_projection
 
-num_neurons = 12
+num_neurons = 10
 
 for random_seed in range(3, 7):
     # snn = lif_ensembles_model_dales_compliant(random_seed=random_seed)
@@ -18,12 +18,10 @@ for random_seed in range(3, 7):
     # model_class = LIF_soft_weights_only
     # init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
     # snn = model_class(init_params_model)
-    # snn = TargetModels.lif_HS_17_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
-    # snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
-    # snn = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
-    snn = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
-    # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
-    # snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
+    # snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
+    # snn = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
+    # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
+    snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
 
     # inputs = poisson_input(10., t=4000, N=snn.N)  # now assumes rate in Hz
     inputs = continuous_normalised_poisson_noise(10., t=12000, N=snn.N)  # now assumes rate in Hz

@@ -110,7 +110,10 @@ def LIF_simulator(parameter_set):
     # print('preset_weights: {}'.format(preset_weights))
     params = {'E_L': parameter_set[1:(1+N)], 'tau_m': parameter_set[(1+N):(1+2*N)], 'tau_s': parameter_set[(1+2*N):(1+3*N)],
               'preset_weights': preset_weights}
-    model = LIF_no_grad(parameters=params, N=N, neuron_types=[1, 1, -1])  # TODO: Auto-assign neuron-types for varying N != 12
+    programmatic_neuron_types = torch.ones((N,))
+    for n_i in range(int(2*N/3), N):
+        programmatic_neuron_types[n_i] = -1
+    model = LIF_no_grad(parameters=params, N=N, neuron_types=programmatic_neuron_types)
     inputs = poisson_input(rate=parameter_set[0], t=t_interval, N=N)
     outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
     model.reset()
