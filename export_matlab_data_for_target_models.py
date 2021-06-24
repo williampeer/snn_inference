@@ -4,17 +4,11 @@ import sys
 import numpy as np
 import torch
 
-from Models.GLIF import GLIF
-from Models.LIF import LIF
-from Models.LIF_ASC import LIF_ASC
-from Models.LIF_R import LIF_R
-from Models.LIF_R_ASC import LIF_R_ASC
 from TargetModels import TargetModels
 from TargetModels.TargetModels import lif_continuous_ensembles_model_dales_compliant, \
-    lif_r_continuous_ensembles_model_dales_compliant, lif_asc_continuous_ensembles_model_dales_compliant, \
-    lif_r_asc_continuous_ensembles_model_dales_compliant, glif_continuous_ensembles_model_dales_compliant
+    lif_r_continuous_ensembles_model_dales_compliant, lif_r_asc_continuous_ensembles_model_dales_compliant, \
+    glif_continuous_ensembles_model_dales_compliant
 from data_util import prefix, path
-from experiments import draw_from_uniform
 from spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
