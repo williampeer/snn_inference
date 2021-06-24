@@ -92,7 +92,7 @@ class LIF_R_ASC_no_grad(nn.Module):
         self.I_additive = self.I_additive.clone().detach()
 
     def name(self):
-        return LIF_R_ASC.__class__.__name__
+        return LIF_R_ASC.__name__
 
     def forward(self, x_in):
         # assuming input weights to be Eye(N,N)

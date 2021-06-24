@@ -103,7 +103,7 @@ class GLIF_no_grad(nn.Module):
         self.I_additive = self.I_additive.clone().detach()
 
     def name(self):
-        return GLIF.__class__.__name__
+        return GLIF.__name__
 
     def forward(self, x_in):
         # assuming input weights to be Eye(N,N)

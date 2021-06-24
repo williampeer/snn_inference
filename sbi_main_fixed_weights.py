@@ -47,7 +47,7 @@ def sbi(method):
     num_dim = 1 + 3 * N + N ** 2
 
     tar_in_rate = 10.
-    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
+    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
 
     tar_parameters = torch.hstack([torch.tensor([tar_in_rate]), tar_model.E_L.data, tar_model.tau_m.data, tar_model.tau_s.data])
@@ -78,7 +78,7 @@ def sbi(method):
 
 
 def LIF_simulator(parameter_set):
-    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
+    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
     # print('preset_weights: {}'.format(preset_weights))
     params = {'E_L': parameter_set[1:(1+N)], 'tau_m': parameter_set[(1+N):(1+2*N)], 'tau_s': parameter_set[(1+2*N):(1+3*N)],
               'preset_weights': tar_model.w.clone().detach()}

@@ -68,7 +68,7 @@ class LIF_no_grad(nn.Module):
         self.s = self.s.clone().detach()
 
     def name(self):
-        return LIF.__class__.__name__
+        return LIF.__name__
 
     # Assuming normalised input.
     def forward(self, x_in):

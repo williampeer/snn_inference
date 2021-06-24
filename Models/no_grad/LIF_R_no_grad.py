@@ -83,7 +83,7 @@ class LIF_R_no_grad(nn.Module):
         self.theta_s = self.theta_s.clone().detach()
 
     def name(self):
-        return LIF_R.__class__.__name__
+        return LIF_R.__name__
 
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types

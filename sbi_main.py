@@ -47,7 +47,7 @@ def sbi(method):
     num_dim = 1 + 3 * N + N ** 2
 
     tar_in_rate = 10.
-    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
+    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
     parsed_weights = torch.zeros((N**2-N,))
     ctr = 0

@@ -47,7 +47,7 @@ def sbi(method):
     num_dim = 1 + 3 * N + N ** 2
 
     tar_in_rate = 10.
-    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
+    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
     targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
     parsed_weights = torch.zeros((N ** 2 - N,))
@@ -85,7 +85,7 @@ def sbi(method):
 
 def LIF_simulator(parameter_set):
     tar_in_rate = 10.
-    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=0, N=N)
+    tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
 
     parsed_preset_weights = parameter_set
     assert len(parsed_preset_weights) == (N**2-N), "len(parsed_preset_weights): {}, should be N**2-N".format(len(parsed_preset_weights))
