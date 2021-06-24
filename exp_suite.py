@@ -28,26 +28,28 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                  logger=logger)
 
         # ------------- trajectories weights ------------------
-        tar_weights_params = None
-        if target_parameters:
-            tar_weights_params = { 0: np.mean(target_parameters[0], axis=1) }
+        if model.state_dict().__contains__('w'):
+            tar_weights_params = None
+            if target_parameters:
+                tar_weights_params = { 0: np.mean(target_parameters[0], axis=1) }
 
-        weights = model_parameters[0]
-        assert len(weights[0].shape) == 2, "weights should be 2D"
-        weights_params = {}; w_names = []
-        weights_params[0] = [np.mean(weights[0], axis=1)]
-        for n_i in range(1, train_i):
-            weights_params[0].append(np.mean(weights[n_i], axis=1))
-            w_names.append('w_{}'.format(n_i))
+            # TODO: Fix for model_fixed_weights
+            weights = model_parameters[0]
+            assert len(weights[0].shape) == 2, "weights should be 2D"
+            weights_params = {}; w_names = []
+            weights_params[0] = [np.mean(weights[0], axis=1)]
+            for n_i in range(1, train_i):
+                weights_params[0].append(np.mean(weights[n_i], axis=1))
+                w_names.append('w_{}'.format(n_i))
 
-        plot_parameter_inference_trajectories_2d(weights_params, target_params=tar_weights_params,
-                                                 uuid=constants.UUID,
-                                                 exp_type=exp_type_str,
-                                                 param_names=parameter_names,
-                                                 custom_title='Inferred weights across training iterations',
-                                                 fname='inferred_weights_param_trajectories_{}_exp_num_{}_train_iters_{}'
-                                                 .format(model.__class__.__name__, exp_num, train_i),
-                                                 logger=logger)
+            plot_parameter_inference_trajectories_2d(weights_params, target_params=tar_weights_params,
+                                                     uuid=constants.UUID,
+                                                     exp_type=exp_type_str,
+                                                     param_names=parameter_names,
+                                                     custom_title='Inferred weights across training iterations',
+                                                     fname='inferred_weights_param_trajectories_{}_exp_num_{}_train_iters_{}'
+                                                     .format(model.__class__.__name__, exp_num, train_i),
+                                                     logger=logger)
         # ------------------------------------------------------
 
         plot_losses(training_loss=train_losses, test_loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
