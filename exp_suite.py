@@ -111,12 +111,12 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     parameters = {}
     for p_i, key in enumerate(model.state_dict()):
         parameters[p_i] = [model.state_dict()[key].numpy()]
-    # parameters[p_i + 1] = [poisson_input_rate.clone().detach().numpy()]
+    parameters[p_i + 1] = [poisson_input_rate.clone().detach().numpy()]
     poisson_rates = []
     poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
     optim_params = list(model.parameters())
-    # optim_params.append(poisson_input_rate)
+    optim_params.append(poisson_input_rate)
     optim = constants.optimiser(optim_params, lr=constants.learn_rate)
 
     test_losses = np.array([]); train_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
@@ -166,10 +166,10 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         test_losses = np.concatenate((test_losses, np.asarray([avg_unseen_loss])))
 
         cur_params = model.state_dict()
-        # logger.log('current parameters {}'.format(cur_params))
+        logger.log('current parameters {}'.format(cur_params))
         for p_i, key in enumerate(cur_params):
             parameters[p_i].append(cur_params[key].clone().detach().numpy())
-        # parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
+        parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
         poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
         # max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
@@ -199,7 +199,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     return final_model_parameters, test_losses, train_losses, train_i, poisson_rates
 
 
-def run_exp_loop(logger, constants, model_class, target_model=None):
+def run_exp_loop(logger, constants, model_class, target_model=None, error_logger=Log.Logger('DEFAULT_ERR_LOG')):
     target_parameters = {}
     if target_model is not None:
         for param_i, key in enumerate(target_model.state_dict()):
@@ -207,7 +207,6 @@ def run_exp_loop(logger, constants, model_class, target_model=None):
 
     recovered_param_per_exp = {}; poisson_rate_per_exp = []
     for exp_i in range(constants.start_seed, constants.start_seed+constants.N_exp):
-        # try:
         non_overlapping_offset = constants.start_seed + constants.N_exp + 1
         torch.manual_seed(non_overlapping_offset + exp_i)
         np.random.seed(non_overlapping_offset + exp_i)
@@ -222,8 +221,14 @@ def run_exp_loop(logger, constants, model_class, target_model=None):
 
         init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
 
-        recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
-            fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model, target_parameters=target_parameters, num_neurons=num_neurons)
+        try:
+            recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
+                fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model, target_parameters=target_parameters, num_neurons=num_neurons)
+        except Exception as e:
+            logger.log('======== ERROR ===========\nException occurred: {}'.format(e))
+            error_logger.log('Exception occurred: {}'.format(e))
+            print(e)
+
         logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
 
         if train_i >= constants.train_iters:
@@ -236,9 +241,6 @@ def run_exp_loop(logger, constants, model_class, target_model=None):
             else:
                 recovered_param_per_exp[key].append(recovered_parameters[key])
         poisson_rate_per_exp.append(poisson_rates[-1])
-    # except Exception as e:
-    #     logger.log('Exception occurred: {}'.format(e))
-    #     print(e)
 
     logger.log('poisson_rate_per_exp', poisson_rate_per_exp)
     save_poisson_rates(poisson_rate_per_exp, uuid=constants.UUID, fname='poisson_rates_per_exp.pt')
@@ -261,9 +263,10 @@ def start_exp(constants, model_class, target_model=None):
                '{:1.3f}'.format(constants.learn_rate).replace('.', '_'),
                constants.batch_size, constants.train_iters, constants.rows_per_train_iter, constants.UUID)
     logger = Log.Logger(log_fname)
+    err_logger = Log.Logger('ERROR_LOG_{}'.format(log_fname))
     logger.log('Starting exp. with listed hyperparameters.', [constants.__str__()])
 
     # if target_model is not None and constants.EXP_TYPE in [ExperimentType.SanityCheck, ExperimentType.Synthetic]:
-    run_exp_loop(logger, constants, model_class, target_model)
+    run_exp_loop(logger, constants, model_class, target_model, err_logger)
     # elif constants.EXP_TYPE is ExperimentType.DataDriven and constants.data_path is not None:
     #     run_exp_loop_data(logger, constants, model_class)
