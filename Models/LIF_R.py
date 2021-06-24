@@ -95,6 +95,9 @@ class LIF_R(nn.Module):
         self.s = self.s.clone().detach()
         self.theta_s = self.theta_s.clone().detach()
 
+    def name(self):
+        return self.__class__.__name__
+
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types
         I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming input weights to be Eye(N,N)

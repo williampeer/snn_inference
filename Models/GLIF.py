@@ -120,6 +120,8 @@ class GLIF(nn.Module):
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
+    def name(self):
+        return self.__class__.__name__
 
     def forward(self, x_in):
         # assuming input weights to be Eye(N,N)

@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch import FloatTensor as FT
 from torch import tensor as T
 
+from Models.LIF import LIF
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
@@ -81,6 +82,9 @@ class LIF_weights_only(nn.Module):
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()
         self.s = self.s.clone().detach()
+
+    def name(self):
+        return LIF.__class__.__name__
 
     # Assuming normalised input.
     def forward(self, x_in):
