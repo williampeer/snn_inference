@@ -160,7 +160,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
                                                                  poisson_input_rate=poisson_input_rate, optimiser=optim,
                                                                  constants=constants, train_i=train_i, logger=logger)
         # if constants.EXP_TYPE is not ExperimentType.DataDriven:
-        release_computational_graph(target_model, constants.initial_poisson_rate, gen_train_input)
+        release_computational_graph(target_model, constants.initial_poisson_rate)
 
         logger.log(parameters=[avg_unseen_loss, abs_grads_mean])
         test_losses = np.concatenate((test_losses, np.asarray([avg_unseen_loss])))
@@ -185,7 +185,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         train_losses = np.concatenate((train_losses, np.asarray([train_loss])))
 
         # if constants.EXP_TYPE is not ExperimentType.DataDriven:
-        release_computational_graph(target_model, constants.initial_poisson_rate, gen_train_input)
+        release_computational_graph(target_model, constants.initial_poisson_rate)
         release_computational_graph(model, poisson_input_rate, train_input)
         train_targets = None; train_loss = None
 
