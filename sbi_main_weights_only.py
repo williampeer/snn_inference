@@ -123,7 +123,7 @@ def posterior_stats(posterior, method, observation, points, limits, figsize):
         fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=figsize)
         if method is None:
             method = IO.dt_descriptor()
-        fig.savefig('./figures/analysis_pairplot_{}.png'.format(method))
+        fig.savefig('./figures/analysis_pairplot_{}_{}.png'.format(method, IO.dt_descriptor()))
     except Exception as e:
         print("except: {}".format(e))
 
