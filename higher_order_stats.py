@@ -78,7 +78,9 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
         plot.bar_plot_pair_custom_labels_two_grps(y1=res_mu_m, y2=res_mu_t, y1_std=res_mu_m_std, y2_std=res_mu_t_std, labels=labels,
                                          exp_type='export', uuid='ho_stats' + '/' + custom_uuid, fname='bar_plot_avg_mu_across_exp_{}.eps'.format(m_k),
                                          title='Avg. spike count across experiments ({})'.format(m_k),
-                                                  ylabel='Firing rate ($Hz$)')
+                                                  ylabel='Firing rate ($Hz$)',
+                                                  legend=['$d_f$', '$\\rho+d_f$', '$d_V$'])
+                                                  # legend= 1000 * ['test'])
         # plot.bar_plot_pair_custom_labels(y1=res_std_m, y2=res_std_t, y1_std=res_std_m_std, y2_std=res_std_t_std,
         #                                  labels=labels,
         #                                  exp_type='export', uuid=m_k, fname='bar_plot_avg_std_across_exp_{}.eps'.format(m_k),
@@ -114,7 +116,8 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 # def main(argv):
 # print('Argument List:', str(argv))
 
-experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
+# experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive (5)/saved/plot_data/'
 custom_uuid = 'data'
 folders = os.listdir(experiments_path)
 experiment_averages = {}
@@ -180,14 +183,15 @@ for folder_path in folders:
 
         # avg_rates_model = []; avg_rates_target = []
         # corrcoeff_sum = None; mum = []; mut = []; stdm = []; stdt = []; CVm = []; CVt = []
-        for exp_i in range(int(len(plot_spiketrains_files) / 11)):  # gen data for [0 + 11 * i]
+        for exp_i in range(int(len(plot_spiketrains_files) / 21)):  # gen data for [0 + 11 * i]
             print('exp_i: {}'.format(exp_i))
-            cur_full_path = full_folder_path + plot_spiketrains_files[11 * exp_i]
+            cur_full_path = full_folder_path + plot_spiketrains_files[21 * exp_i]
 
             data = torch.load(cur_full_path)
             plot_data = data['plot_data']
             model_spike_train = plot_data['model_spikes'].detach().numpy()
             target_spike_train = plot_data['target_spikes'].detach().numpy()
+            N = model_spike_train[0].shape[0]
 
             # plot.plot_spiketrains_side_by_side(torch.tensor(model_spike_train), torch.tensor(target_spike_train),
             #                                    'export', model_type,
@@ -196,8 +200,8 @@ for folder_path in folders:
 
             corrcoeff, mu1, std1, mu2, std2, CV1, CV2 = stats.higher_order_stats(model_spike_train, target_spike_train, bin_size=100)
 
-            if not np.isnan(corrcoeff[12:, :12]).any():
-                avg_diag_corr = (np.eye(12) * corrcoeff[12:, :12]).sum() / 12.
+            if not np.isnan(corrcoeff[N:, :N]).any():
+                avg_diag_corr = (np.eye(N) * corrcoeff[N:, :N]).sum() / float(N)
                 # avg_diag_corr_std = (np.eye(12) * corrcoeff).sum() / 12.
                 experiment_averages[model_type][optimiser][lfn]['all_corrcoeff'].append(np.copy(avg_diag_corr))
             else:

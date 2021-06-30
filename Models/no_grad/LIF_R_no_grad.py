@@ -85,6 +85,16 @@ class LIF_R_no_grad(nn.Module):
     def name(self):
         return LIF_R.__name__
 
+    def params_wrapper(self):
+        return { 0: self.w.data.numpy(), 1: self.E_L.data.numpy(), 2: self.tau_m.data.numpy(), 3: self.tau_s.data.numpy(),
+                 4: self.G.data.numpy(), 5: self.f_v.data.numpy(), 6: self.delta_theta_s.data.numpy(),
+                 7: self.b_s.data.numpy(), 8: self.delta_V.data.numpy() }
+
+    # def params_wrapper(self):
+    #     return { 'w': self.w.data, 'E_L': self.E_L.data, 'tau_m': self.tau_m.data, 'tau_s': self.tau_s.data,
+    #              'G': self.G.data, 'f_v': self.f_v.data, 'delta_theta_s': self.delta_theta_s.data,
+    #              'b_s': self.b_s.data, 'delta_V': self.delta_V.data }
+
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types
         I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming input weights to be Eye(N,N)

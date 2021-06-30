@@ -12,8 +12,14 @@ from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 from experiments import draw_from_uniform, zip_dicts
 from plot import bar_plot_pair_custom_labels, bar_plot_two_grps
+from TargetModels.TargetModels import *
 
 class_lookup = {'LIF': LIF, 'LIF_R': LIF_R, 'LIF_ASC': LIF_ASC, 'LIF_R_ASC': LIF_R_ASC, 'GLIF': GLIF}
+target_fn_lookup = {'LIF': lif_continuous_ensembles_model_dales_compliant,
+                    'LIF_R': lif_r_continuous_ensembles_model_dales_compliant,
+                    'LIF_ASC': lif_asc_continuous_ensembles_model_dales_compliant,
+                    'LIF_R_ASC': lif_r_asc_continuous_ensembles_model_dales_compliant,
+                    'GLIF': glif_continuous_ensembles_model_dales_compliant}
 
 
 def get_init_params(model_class, exp_num, N=12):
@@ -22,7 +28,10 @@ def get_init_params(model_class, exp_num, N=12):
 
     w_mean = 0.3;
     w_var = 0.2;
-    neuron_types = T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])
+    programmatic_neuron_types = torch.ones((N,))
+    for n_i in range(int(2 * N / 3), N):
+        programmatic_neuron_types[n_i] = -1
+    neuron_types = programmatic_neuron_types
     rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((N, N))
     for i in range(len(neuron_types)):
         if neuron_types[i] == -1:
@@ -42,7 +51,9 @@ def euclid_dist(p1, p2):
     # sqrt((s1 - s2) ** 2)
     return np.sqrt(np.power((p1 - p2), 2).sum()) / len(p1)
 
-all_exps_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
+# all_exps_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
+# all_exps_path = '/home/william/repos/archives_snn_inference/archive (5)/saved/plot_data/'
+all_exps_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
 folders = os.listdir(all_exps_path)
 experiment_averages = {}
 # res_per_exp = {}
@@ -72,13 +83,14 @@ for exp_folder in folders:
     # assert len(param_files) == 1, "should only be one plot_all_param_pairs_with_variance-file per folder. len: {}".format(len(param_files))
     # if model_type == 'LIF' and len(param_files) == 1:
     # if model_type == 'GLIF' and optimiser == 'SGD' and len(param_files) == 1:
-    if optimiser == 'SGD' and spf == 'None' and len(param_files) == 1:
+    if optimiser == 'SGD' and model_type == 'LIF_R' and spf == 'None' and len(param_files) == 1:
         print('Succes! Processing exp: {}'.format(exp_folder + '/' + param_files[0]))
         exp_data = torch.load(full_folder_path + param_files[0])
         # param_names = exp_data['plot_data']['param_names']
         param_names = class_lookup[model_type].parameter_names
         m_p_by_exp = exp_data['plot_data']['param_means']
-        t_p_by_exp = list(exp_data['plot_data']['target_params'].values())
+        model_N = m_p_by_exp[1][0][0].shape[0]
+        # t_p_by_exp = list(exp_data['plot_data']['target_params'].values())
 
         # config = '{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr.replace('.', '_'))
         config = '{}_{}_{}'.format(model_type, optimiser, lfn)
@@ -97,8 +109,10 @@ for exp_folder in folders:
         for p_i in range(len(m_p_by_exp)):
             per_exp = []
             for e_i in range(len(m_p_by_exp[p_i])):
-                init_model_params = get_init_params(class_lookup[model_type], e_i)
+                init_model_params = get_init_params(class_lookup[model_type], e_i, N=model_N)
                 # if(param_names[p_i] in init_model_params.keys()):
+                target_model = target_fn_lookup[model_type](random_seed=3 + e_i, N=model_N)
+                t_p_by_exp = target_model.params_wrapper()
                 c_d = euclid_dist(init_model_params[param_names[p_i]].numpy(), t_p_by_exp[p_i])
                 per_exp.append(c_d)
             experiment_averages[config]['init_dist'][param_names[p_i]].append(np.mean(per_exp))
@@ -107,6 +121,8 @@ for exp_folder in folders:
         for p_i in range(len(m_p_by_exp)):
             per_exp = []
             for e_i in range(len(m_p_by_exp[p_i])):
+                target_model = target_fn_lookup[model_type](random_seed=3 + e_i, N=model_N)
+                t_p_by_exp = target_model.params_wrapper()
                 c_d = euclid_dist(m_p_by_exp[p_i][e_i][0], t_p_by_exp[p_i])
                 per_exp.append(c_d)
             experiment_averages[config]['dist'][param_names[p_i]].append(np.mean(per_exp))
@@ -150,13 +166,14 @@ for k_i, k_v in enumerate(keys_list):
         for s_i, s in enumerate(experiment_averages[k_v]['init_std'].values()):
             flat_stds_init.append(s[0])
 
-        norm_kern = np.array(flat_ds_init)
+        # norm_kern = np.array(flat_ds_init)
+        norm_kern = np.ones_like(flat_ds_init)
         norm_kern[np.isnan(norm_kern)] = 1.0
 
         bar_plot_pair_custom_labels(np.array(flat_ds_init)/norm_kern, np.array(flat_ds)/norm_kern,
                                     np.array(flat_stds_init)/norm_kern, np.array(flat_stds)/norm_kern,
                                     label_param_names, 'export', 'test',
-                                    'exp_export_all_euclid_dist_params_{}.eps'.format(k_v),
+                                    'exp_export_all_euclid_dist_params_{}.png'.format(k_v),
                                     'Avg Euclid dist per param for configuration {}'.format(k_v.replace('0_0', '0.0')).replace('_', ', '),
                                     legend=['Initial model', 'Fitted model'])
 
@@ -180,7 +197,7 @@ for k_i, k_v in enumerate(keys_list):
 bar_plot_pair_custom_labels(np.array(exp_avg_init_ds), np.array(exp_avg_ds),
                             np.array(exp_avg_init_stds), np.array(exp_avg_stds),
                             labels, 'export', 'test',
-                            'exp_export_all_euclid_dist_params_across_exp.eps',
+                            'exp_export_all_euclid_dist_params_across_exp.png',
                             'Avg Euclid dist for all parameters across experiments',
                             legend=['Initial model', 'Fitted model'], baseline=1.0)
 

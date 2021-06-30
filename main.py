@@ -40,7 +40,7 @@ def main(argv):
     batch_size = interval_size; rows_per_train_iter = interval_size
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
-    # loss_fn = 'frd'
+    loss_fn = 'frd'
     # loss_fn = 'vrd'
     # loss_fn = 'FF'
     # loss_fn = 'CV'
@@ -48,7 +48,7 @@ def main(argv):
     # loss_fn = 'rfh'
     # loss_fn = 'rph'
     # loss_fn = 'kl_div'
-    loss_fn = None
+    # loss_fn = None
     # silent_penalty_factor = 10.0
     silent_penalty_factor = None
 
@@ -67,7 +67,7 @@ def main(argv):
     # optimiser = 'Adam'
     optimiser = 'SGD'
     initial_poisson_rate = 10.  # Hz
-    network_size = 3
+    network_size = 10
 
     evaluate_step = 1
     # evaluate_step = int(max(max_train_iters/10, 1))
@@ -80,6 +80,7 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_LIF_R_N_3_seed_4_duration_900000.mat'  # !!!!!
 
     model_type = None
+    # model_type = 'GLIF'
     # model_type = 'LIF'
     # model_type = 'LIF_weights_only'
     # model_type = 'LIF_fixed_weights'
@@ -147,8 +148,8 @@ def main(argv):
     # models = [LIF, LIF_fixed_weights, LIF_weights_only]
     models = [LIF_R,
               LIF_R_ASC,
-              LIF, LIF_weights_only, LIF_fixed_weights,
-              GLIF]
+              GLIF,
+              LIF, LIF_weights_only, LIF_fixed_weights]
 
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,

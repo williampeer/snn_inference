@@ -105,6 +105,12 @@ class GLIF_no_grad(nn.Module):
     def name(self):
         return GLIF.__name__
 
+    def params_wrapper(self):
+        return {0: self.w.data.numpy(), 1: self.E_L.data.numpy(), 2: self.tau_m.data.numpy(), 3: self.G.data.numpy(),
+                4: self.f_v.data.numpy(), 5: self.f_I.data.numpy(), 6: self.delta_theta_s.data.numpy(),
+                7: self.b_s.data.numpy(), 8: self.a_v.data.numpy(), 9: self.b_v.data.numpy(),
+                10: self.theta_inf.data.numpy(), 11: self.delta_V.data.numpy(), 12: self.tau_s.data.numpy()}
+
     def forward(self, x_in):
         # assuming input weights to be Eye(N,N)
         W_syn = self.w * self.neuron_types

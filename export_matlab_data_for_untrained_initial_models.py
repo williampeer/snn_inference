@@ -17,19 +17,23 @@ from spike_train_matlab_export import simulate_and_save_model_spike_train
 def main(argv):
     print('Argument List:', str(argv))
 
-    for model_class in [LIF, LIF_ASC, LIF_R, LIF_R_ASC, GLIF]:
+    # for model_class in [LIF, LIF_ASC, LIF_R, LIF_R_ASC, GLIF]:
+    for model_class in [LIF_R]:
         model_name = model_class.__name__
-        num_neurons = 12
+        N = 10
 
-        for exp_i in range(5):
+        for exp_i in range(4):
             start_seed = 42
             non_overlapping_offset = start_seed + 5 + 1
             torch.manual_seed(non_overlapping_offset + exp_i)
             np.random.seed(non_overlapping_offset + exp_i)
 
-            init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-            snn = model_class(N=num_neurons, parameters=init_params_model,
-                              neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])  # set to ground truth for this file only
+            init_params_model = draw_from_uniform(model_class.parameter_init_intervals, N)
+            programmatic_neuron_types = torch.ones((N,))
+            for n_i in range(int(2 * N / 3), N):
+                programmatic_neuron_types[n_i] = -1
+            neuron_types = programmatic_neuron_types
+            snn = model_class(N=N, parameters=init_params_model, neuron_types=neuron_types)
 
             cur_fname = 'initial_model_spikes_{}_exp_num_{}_seed_{}_60s'.format(model_name, exp_i, non_overlapping_offset+exp_i)
             save_file_name = prefix + path + cur_fname + '.mat'

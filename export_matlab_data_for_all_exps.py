@@ -12,7 +12,7 @@ def main(argv):
     print('Argument List:', str(argv))
     offset = 42
 
-    experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive (5)/saved/'
     archive_name = 'data/'
     plot_data_path = experiments_path + 'plot_data/'
     folders = os.listdir(experiments_path)
@@ -54,13 +54,13 @@ def main(argv):
                     lr = custom_title.split(', ')[-1].strip(' =lr').strip(')').replace('.', '')
                     lfn = loss_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
 
-                    exp_type = 'Synthetic'
+                    exp_type = 'DataDriven'
                     cur_fname = 'spikes_{}_{}_{}_{}_{}_{}_exp_num_{}_60s'.format(exp_type, model_type, optimiser, lfn, lr, id, exp_num).replace('=', '_')
                     save_file_name = prefix + path + archive_name + cur_fname + '.mat'
 
                     if optimiser == 'SGD':
                         print('checking: {}'.format(save_file_name))
-                        if os.path.exists(prefix + path + archive_name) and not os.path.exists(save_file_name):
+                        if not os.path.exists(prefix + path + archive_name) or not os.path.exists(save_file_name):
                             makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
                             load_and_export_sim_data(full_folder_path + f, fname=archive_name + cur_fname)
                         else:

@@ -715,7 +715,7 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
         plt.xticks(xs)
     if xlabel:
         plt.xlabel(xlabel)
-    plt.ylabel('Relative distance')
+    plt.ylabel('Distance')
     # if title:
     #     plt.title(title)
     # else:
@@ -754,10 +754,10 @@ def bar_plot_pair_custom_labels_two_grps(y1, y2, y1_std, y2_std, labels, exp_typ
     plt.bar(xs2-width/2, y1[half:], yerr=y1_std[half:], width=width)
     plt.bar(xs2+width/2, y2[half:], yerr=y2_std[half:], width=width)
 
-    if not legend:
-        plt.legend(['Fitted Adam', 'Target', 'Fitted SGD', 'Target'], loc='lower left', ncol=2)
-    else:
-        plt.legend(legend)
+    # if not legend:
+    #     plt.legend(['Fitted Adam', 'Target', 'Fitted SGD', 'Target'], loc='lower left', ncol=2)
+    # else:
+    #     plt.legend(legend)
 
     # if baseline:
     #     plt.plot(xs, np.ones_like(y1) * baseline, 'g--')
