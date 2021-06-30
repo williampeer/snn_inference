@@ -66,7 +66,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
                                          y1_std=np.zeros_like(stds_model_rates),
                                          y2_std=np.zeros_like(stds_model_rates),
                                          labels=labels,
-                                         exp_type='export', uuid=m_k, fname='rate_bar_plot_avg_rate_CV_{}.eps'.format(m_k),
+                                         exp_type='export', uuid=m_k, fname='rate_bar_plot_avg_rate_CV_{}.png'.format(m_k),
                                          title='Avg. CV for firing rate across experiments ({})'.format(m_k))
 
 
@@ -77,7 +77,8 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 load_paths = []
 # load_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-20_15-05-33-991/plot_spiketrains_side_by_side01-21_21-55-15-927.pt']
 # experiments_path = '/Users/william/repos/archives_snn_inference/archive 10/saved/plot_data/'
-experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
+# experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive (5)/saved/plot_data/'
 folders = os.listdir(experiments_path)
 experiment_averages = {}
 for folder_path in folders:
@@ -91,8 +92,10 @@ for folder_path in folders:
         id = 'None'
     plot_spiketrains_files = []
     for f in files:
+        print(f)
         if f.__contains__('plot_spiketrains_side_by_side'):
             plot_spiketrains_files.append(f)
+            print('appended {}'.format(f))
         elif f.__contains__('plot_losses'):
             f_data = torch.load(full_folder_path + f)
             custom_title = f_data['plot_data']['custom_title']
@@ -102,7 +105,9 @@ for folder_path in folders:
             lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
             # break
 
-    if len(plot_spiketrains_files) != 55 or model_type != 'LIF':  # file mask
+    if len(plot_spiketrains_files) != 21 * 3 or model_type != 'LIF_R':  # file mask
+        print('len plot_spiketrains_files: {}'.format(len(plot_spiketrains_files)))
+        print('model_type: {}'.format(model_type))
         # print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
         # print(len(plot_spiketrains_files))
         pass
@@ -123,9 +128,10 @@ for folder_path in folders:
                                                                    'avg_target_rate': [], 'stds_target_rates' : []}
 
         avg_rates_model = []; stds_model_rates = []; avg_rates_target = []; stds_target_rates = []
-        for exp_i in range(int(len(plot_spiketrains_files) / 11)):  # gen data for [0 + 11 * i]
+        for exp_i in range(int(len(plot_spiketrains_files) / 21)):  # gen data for [0 + 11 * i]
             print('exp_i: {}'.format(exp_i))
-            cur_full_path = full_folder_path + plot_spiketrains_files[11 * exp_i]
+            cur_full_path = full_folder_path + plot_spiketrains_files[21 * (exp_i+1)-1]
+            # cur_full_path = full_folder_path + plot_spiketrains_files[21 * exp_i]
 
             cur_hyperconf = '{}, {}, {}, $\\alpha={}$'.format(model_type, optimiser, lfn, lr)
             fname_prefix = model_type + '_' + optimiser + '_' + lfn
