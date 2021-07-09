@@ -83,50 +83,51 @@ for exp_folder in folders:
     # assert len(param_files) == 1, "should only be one plot_all_param_pairs_with_variance-file per folder. len: {}".format(len(param_files))
     # if model_type == 'LIF' and len(param_files) == 1:
     # if model_type == 'GLIF' and optimiser == 'SGD' and len(param_files) == 1:
-    if optimiser == 'SGD' and model_type == 'LIF_R' and spf == 'None' and len(param_files) == 1:
+    if optimiser == 'SGD' and model_type in ['LIF_R', 'LIF_R_ASC', 'GLIF'] and spf == 'None' and len(param_files) == 1:
         print('Succes! Processing exp: {}'.format(exp_folder + '/' + param_files[0]))
         exp_data = torch.load(full_folder_path + param_files[0])
         # param_names = exp_data['plot_data']['param_names']
         param_names = class_lookup[model_type].parameter_names
         m_p_by_exp = exp_data['plot_data']['param_means']
-        model_N = m_p_by_exp[1][0][0].shape[0]
-        # t_p_by_exp = list(exp_data['plot_data']['target_params'].values())
+        if(len(m_p_by_exp)>0):
+            model_N = m_p_by_exp[1][0][0].shape[0]
+            # t_p_by_exp = list(exp_data['plot_data']['target_params'].values())
 
-        # config = '{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr.replace('.', '_'))
-        config = '{}_{}_{}'.format(model_type, optimiser, lfn)
-        # distances = {}
-        # stds = {}
-        # distances_init = {}
-        # stds_init = {}
-        if not experiment_averages.__contains__(config):
-            experiment_averages[config] = { 'dist' : {}, 'std': {}, 'init_dist': {}, 'init_std': {}}
-            for k in range(len(m_p_by_exp)):
-                experiment_averages[config]['dist'][param_names[k]] = []
-                experiment_averages[config]['std'][param_names[k]] = []
-                experiment_averages[config]['init_dist'][param_names[k]] = []
-                experiment_averages[config]['init_std'][param_names[k]] = []
+            # config = '{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr.replace('.', '_'))
+            config = '{}_{}_{}'.format(model_type, optimiser, lfn)
+            # distances = {}
+            # stds = {}
+            # distances_init = {}
+            # stds_init = {}
+            if not experiment_averages.__contains__(config):
+                experiment_averages[config] = { 'dist' : {}, 'std': {}, 'init_dist': {}, 'init_std': {}}
+                for k in range(len(m_p_by_exp)):
+                    experiment_averages[config]['dist'][param_names[k]] = []
+                    experiment_averages[config]['std'][param_names[k]] = []
+                    experiment_averages[config]['init_dist'][param_names[k]] = []
+                    experiment_averages[config]['init_std'][param_names[k]] = []
 
-        for p_i in range(len(m_p_by_exp)):
-            per_exp = []
-            for e_i in range(len(m_p_by_exp[p_i])):
-                init_model_params = get_init_params(class_lookup[model_type], e_i, N=model_N)
-                # if(param_names[p_i] in init_model_params.keys()):
-                target_model = target_fn_lookup[model_type](random_seed=3 + e_i, N=model_N)
-                t_p_by_exp = target_model.params_wrapper()
-                c_d = euclid_dist(init_model_params[param_names[p_i]].numpy(), t_p_by_exp[p_i])
-                per_exp.append(c_d)
-            experiment_averages[config]['init_dist'][param_names[p_i]].append(np.mean(per_exp))
-            experiment_averages[config]['init_std'][param_names[p_i]].append(np.std(per_exp))
+            for p_i in range(len(m_p_by_exp)):
+                per_exp = []
+                for e_i in range(len(m_p_by_exp[p_i])):
+                    init_model_params = get_init_params(class_lookup[model_type], e_i, N=model_N)
+                    # if(param_names[p_i] in init_model_params.keys()):
+                    target_model = target_fn_lookup[model_type](random_seed=3 + e_i, N=model_N)
+                    t_p_by_exp = target_model.params_wrapper()
+                    c_d = euclid_dist(init_model_params[param_names[p_i]].numpy(), t_p_by_exp[p_i])
+                    per_exp.append(c_d)
+                experiment_averages[config]['init_dist'][param_names[p_i]].append(np.mean(per_exp))
+                experiment_averages[config]['init_std'][param_names[p_i]].append(np.std(per_exp))
 
-        for p_i in range(len(m_p_by_exp)):
-            per_exp = []
-            for e_i in range(len(m_p_by_exp[p_i])):
-                target_model = target_fn_lookup[model_type](random_seed=3 + e_i, N=model_N)
-                t_p_by_exp = target_model.params_wrapper()
-                c_d = euclid_dist(m_p_by_exp[p_i][e_i][0], t_p_by_exp[p_i])
-                per_exp.append(c_d)
-            experiment_averages[config]['dist'][param_names[p_i]].append(np.mean(per_exp))
-            experiment_averages[config]['std'][param_names[p_i]].append(np.std(per_exp))
+            for p_i in range(len(m_p_by_exp)):
+                per_exp = []
+                for e_i in range(len(m_p_by_exp[p_i])):
+                    target_model = target_fn_lookup[model_type](random_seed=3 + e_i, N=model_N)
+                    t_p_by_exp = target_model.params_wrapper()
+                    c_d = euclid_dist(m_p_by_exp[p_i][e_i][0], t_p_by_exp[p_i])
+                    per_exp.append(c_d)
+                experiment_averages[config]['dist'][param_names[p_i]].append(np.mean(per_exp))
+                experiment_averages[config]['std'][param_names[p_i]].append(np.std(per_exp))
 
 
 # unpack

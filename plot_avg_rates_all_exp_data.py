@@ -85,7 +85,7 @@ load_paths = []
 # experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
 offset = 42
 t_interval = 10000
-experiments_path = '/home/william/repos/archives_snn_inference/archive (5)/saved/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/'
 archive_name = 'data/'
 plot_data_path = experiments_path + 'plot_data/'
 folders = os.listdir(experiments_path)
@@ -104,7 +104,7 @@ for folder_path in folders:
     for f in files:  # for exp_i in specific folder exp path
         model_type = f.split('_exp_num_')[0]
 
-        if f.__contains__('exp_num') and model_type == 'LIF_R':
+        if f.__contains__('exp_num') and model_type not in ['LIF', 'LIF_no_grad']:
             print('Success! Processing exp: {}'.format(f))
 
             exp_num = int(f.split('_exp_num_')[1].split('_')[0])

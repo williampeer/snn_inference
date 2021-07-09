@@ -12,7 +12,7 @@ def main(argv):
     print('Argument List:', str(argv))
     offset = 42
 
-    experiments_path = '/home/william/repos/archives_snn_inference/archive (5)/saved/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/'
     archive_name = 'data/'
     plot_data_path = experiments_path + 'plot_data/'
     folders = os.listdir(experiments_path)
@@ -58,7 +58,7 @@ def main(argv):
                     cur_fname = 'spikes_{}_{}_{}_{}_{}_{}_exp_num_{}_60s'.format(exp_type, model_type, optimiser, lfn, lr, id, exp_num).replace('=', '_')
                     save_file_name = prefix + path + archive_name + cur_fname + '.mat'
 
-                    if optimiser == 'SGD':
+                    if optimiser == 'SGD' and not (model_type == 'LIF' or model_type == 'LIF_no_grad'):
                         print('checking: {}'.format(save_file_name))
                         if not os.path.exists(prefix + path + archive_name) or not os.path.exists(save_file_name):
                             makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)

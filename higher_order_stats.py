@@ -117,7 +117,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 # print('Argument List:', str(argv))
 
 # experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
-experiments_path = '/home/william/repos/archives_snn_inference/archive (5)/saved/plot_data/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
 custom_uuid = 'data'
 folders = os.listdir(experiments_path)
 experiment_averages = {}
@@ -183,9 +183,12 @@ for folder_path in folders:
 
         # avg_rates_model = []; avg_rates_target = []
         # corrcoeff_sum = None; mum = []; mut = []; stdm = []; stdt = []; CVm = []; CVt = []
-        for exp_i in range(int(len(plot_spiketrains_files) / 21)):  # gen data for [0 + 11 * i]
+        # for exp_i in range(int(len(plot_spiketrains_files) / 21)):  # gen data for [0 + 11 * i]
+        N_exp = 3
+        for exp_i in range(N_exp):  # gen data for [0 + 11 * i]
+            modulus_op = int(len(plot_spiketrains_files) / N_exp)
             print('exp_i: {}'.format(exp_i))
-            cur_full_path = full_folder_path + plot_spiketrains_files[21 * exp_i]
+            cur_full_path = full_folder_path + plot_spiketrains_files[modulus_op * exp_i]
 
             data = torch.load(cur_full_path)
             plot_data = data['plot_data']

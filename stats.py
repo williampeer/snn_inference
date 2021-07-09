@@ -90,7 +90,7 @@ def higher_order_stats(s1, s2, bin_size=20):
     N = s1.shape[1]
     for m_i in range(N):
         if s1_spikes[m_i] < 0.01 or s2_spikes[m_i] < 0.01:
-            corrcoef[12 + m_i, :] = 0.
+            corrcoef[N + m_i, :] = 0.
             corrcoef[:, m_i] = 0.
 
     return np.abs(corrcoef), mu1, std1, mu2, std2, CV1, CV2
