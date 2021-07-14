@@ -115,7 +115,7 @@ class GLIF(nn.Module):
         self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.b_s))
         self.a_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.a_v))
         self.b_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.95, self.b_v))
-        self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -20., -10., self.theta_inf))
+        self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -25., 0., self.theta_inf))
         self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
