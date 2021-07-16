@@ -69,18 +69,18 @@ def main(argv):
 
 
 def sbi(method, t_interval, N, model_class, param_number, budget):
-    tar_model_fn_lookup = { 'LIF': lif_continuous_ensembles_model_dales_compliant,
-                            'LIF_R': lif_r_continuous_ensembles_model_dales_compliant,
-                            'LIF_R_ASC': lif_r_asc_continuous_ensembles_model_dales_compliant,
-                            'GLIF': glif_continuous_ensembles_model_dales_compliant }
+    tar_model_fn_lookup = { 'LIF_no_grad': lif_continuous_ensembles_model_dales_compliant,
+                            'LIF_R_no_grad': lif_r_continuous_ensembles_model_dales_compliant,
+                            'LIF_R_ASC_no_grad': lif_r_asc_continuous_ensembles_model_dales_compliant,
+                            'GLIF_no_grad': glif_continuous_ensembles_model_dales_compliant }
     tar_in_rate = 10.
-    tar_model_fn = tar_model_fn_lookup[model_class.name()]
+    tar_model_fn = tar_model_fn_lookup[model_class.__name__]
     tar_model = tar_model_fn(random_seed=42, N=N)
 
     def simulator(parameter_set):
         programmatic_params_dict = {}
         for i in range(len(model_class.parameter_names)):
-            programmatic_params_dict[model_class.parameter_names[i]] = tar_model.parameters()[i].data
+            programmatic_params_dict[model_class.parameter_names[i]] = list(tar_model.parameters())[i].data  # TODO: fix
 
         if param_number == 0:
             parsed_preset_weights = parameter_set
