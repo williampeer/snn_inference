@@ -7,10 +7,10 @@ from Models.LIF_R import LIF_R
 
 
 class LIF_R_no_grad(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V']
-    parameter_init_intervals = {'E_L': [-64., -55.], 'tau_m': [2.5, 2.7], 'tau_s': [2.5, 3.5], 'G': [0.7, 0.8],
+    parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V', 'tau_s']
+    parameter_init_intervals = { 'E_L': [-64., -55.], 'tau_m': [2.5, 2.7], 'G': [0.7, 0.8],
                                 'f_v': [0.25, 0.35], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35],
-                                'delta_V': [8., 14.]}
+                                'delta_V': [8., 14.], 'tau_s': [2.5, 3.5] }
 
     def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF_R_no_grad, self).__init__()
@@ -83,6 +83,21 @@ class LIF_R_no_grad(nn.Module):
 
     def name(self):
         return LIF_R.__name__
+
+    def get_parameters(self):
+        params_list = []
+        # parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V']
+        params_list.append(self.w.data)
+        params_list.append(self.E_L.data)
+        params_list.append(self.tau_m.data)
+        params_list.append(self.G.data)
+        params_list.append(self.f_v.data)
+        params_list.append(self.delta_theta_s.data)
+        params_list.append(self.b_s.data)
+        params_list.append(self.delta_V.data)
+        params_list.append(self.tau_s.data)
+
+        return params_list
 
     def params_wrapper(self):
         return { 0: self.w.data.numpy(), 1: self.E_L.data.numpy(), 2: self.tau_m.data.numpy(), 3: self.tau_s.data.numpy(),

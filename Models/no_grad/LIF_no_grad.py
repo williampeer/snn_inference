@@ -70,6 +70,16 @@ class LIF_no_grad(nn.Module):
     def name(self):
         return LIF.__name__
 
+    def get_parameters(self):
+        params_list = []
+        # parameter_names = ['w', 'E_L', 'tau_m', 'tau_s']
+        params_list.append(self.w.data)
+        params_list.append(self.E_L.data)
+        params_list.append(self.tau_m.data)
+        params_list.append(self.tau_s.data)
+
+        return params_list
+
     # Assuming normalised input.
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types

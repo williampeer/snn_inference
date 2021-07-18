@@ -105,6 +105,26 @@ class GLIF_no_grad(nn.Module):
     def name(self):
         return GLIF.__name__
 
+    def get_parameters(self):
+        params_list = []
+        # parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'tau_s']
+        params_list.append(self.w.data)
+        params_list.append(self.E_L.data)
+        params_list.append(self.tau_m.data)
+        params_list.append(self.G.data)
+        params_list.append(self.f_v.data)
+        params_list.append(self.f_I.data)
+        params_list.append(self.delta_theta_s.data)
+        params_list.append(self.b_s.data)
+        params_list.append(self.a_v.data)
+        params_list.append(self.b_v.data)
+        params_list.append(self.theta_inf.data)
+        params_list.append(self.delta_V.data)
+        params_list.append(self.tau_s.data)
+
+        return params_list
+
+
     def params_wrapper(self):
         return {0: self.w.data.numpy(), 1: self.E_L.data.numpy(), 2: self.tau_m.data.numpy(), 3: self.G.data.numpy(),
                 4: self.f_v.data.numpy(), 5: self.f_I.data.numpy(), 6: self.delta_theta_s.data.numpy(),

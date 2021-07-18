@@ -80,7 +80,7 @@ def sbi(method, t_interval, N, model_class, param_number, budget):
     def simulator(parameter_set):
         programmatic_params_dict = {}
         for i in range(len(model_class.parameter_names)):
-            programmatic_params_dict[model_class.parameter_names[i]] = list(tar_model.parameters())[i].data  # TODO: fix
+            programmatic_params_dict[model_class.parameter_names[i]] = tar_model.get_parameters()[i]
 
         if param_number == 0:
             parsed_preset_weights = parameter_set
