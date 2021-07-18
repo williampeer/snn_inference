@@ -117,19 +117,26 @@ def sbi(method, t_interval, N, model_class, param_number, budget):
     # tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
     targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
-    parsed_weights = torch.zeros((N ** 2 - N,))
-    ctr = 0
-    for n_i in range(N):
-        for n_j in range(N):
-            if (n_i != n_j):
-                parsed_weights[ctr] = tar_model.w[n_i, n_j]
-                ctr += 1
-    tar_parameters = torch.hstack([parsed_weights])
 
-    weights_low = torch.zeros((N**2-N,))
-    weights_high = torch.ones((N**2-N,))
-    limits_low = weights_low
-    limits_high = weights_high
+    if param_number == 0:
+        parsed_weights = torch.zeros((N ** 2 - N,))
+        ctr = 0
+        for n_i in range(N):
+            for n_j in range(N):
+                if (n_i != n_j):
+                    parsed_weights[ctr] = tar_model.w[n_i, n_j]
+                    ctr += 1
+        tar_parameters = torch.hstack([parsed_weights])
+
+        weights_low = torch.zeros((N**2-N,))
+        weights_high = torch.ones((N**2-N,))
+        limits_low = weights_low
+        limits_high = weights_high
+    else:
+        limits_low = torch.ones((N,)) * model_class.param_lin_constraints[param_number][0]
+        limits_high = torch.ones((N,)) * model_class.param_lin_constraints[param_number][1]
+        tar_parameters = tar_model.get_parameters()[param_number]
+
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
     res = {}

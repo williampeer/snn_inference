@@ -70,7 +70,7 @@ class LIF_R_ASC(nn.Module):
         self.f_I = nn.Parameter(FT(f_I).clamp(0.01, 0.99), requires_grad=True)
         self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
         self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.99), requires_grad=True)
-        self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
+        self.delta_V = nn.Parameter(FT(delta_V).clamp(1., 35.), requires_grad=True)
 
         self.register_backward_clamp_hooks()
 

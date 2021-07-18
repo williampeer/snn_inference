@@ -11,6 +11,7 @@ class LIF_no_grad(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_s']
     # parameter_init_intervals = {'E_L': [-65., -52.], 'tau_m': [1.9, 2.3], 'tau_s': [3., 4.3]}
     parameter_init_intervals = {'E_L': [-60., -60.], 'tau_m': [1.6, 1.6], 'tau_s': [2.5, 2.5]}
+    param_lin_constraints = [[-80., -35.], [1.5, 8.], [1., 12.]]
 
     def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25,
                  neuron_types=[1., 1., 1., 1., 1., 1., 1., 1., -1., -1., -1., -1.]):

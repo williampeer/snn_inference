@@ -88,7 +88,7 @@ class GLIF(nn.Module):
         self.a_v = nn.Parameter(FT(a_v).clamp(0.01, 0.95), requires_grad=True)
         self.b_v = nn.Parameter(FT(b_v).clamp(0.01, 0.95), requires_grad=True)
         self.theta_inf = nn.Parameter(FT(theta_inf).clamp(-25., 0.), requires_grad=True)
-        self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)
+        self.delta_V = nn.Parameter(FT(delta_V).clamp(1., 35.), requires_grad=True)
 
         self.register_backward_clamp_hooks()
 

@@ -11,6 +11,8 @@ class LIF_R_no_grad(nn.Module):
     parameter_init_intervals = { 'E_L': [-64., -55.], 'tau_m': [2.5, 2.7], 'G': [0.7, 0.8],
                                 'f_v': [0.25, 0.35], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35],
                                 'delta_V': [8., 14.], 'tau_s': [2.5, 3.5] }
+    param_lin_constraints = [[-80., -35.], [1.5, 8.], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
+                             [1., 35.], [1., 12.]]
 
     def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF_R_no_grad, self).__init__()
@@ -66,7 +68,7 @@ class LIF_R_no_grad(nn.Module):
         self.tau_s = FT(tau_s).clamp(1., 12,)
         self.delta_theta_s = FT(delta_theta_s).clamp(6., 30.)
         self.f_v = FT(f_v).clamp(0.01, 0.99)
-        self.delta_V = FT(delta_V).clamp(0.01, 35.)
+        self.delta_V = FT(delta_V).clamp(1., 35.)
 
     def reset(self):
         for p in self.parameters():

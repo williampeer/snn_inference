@@ -13,6 +13,8 @@ class GLIF_no_grad(nn.Module):
                                 'f_I': [0.35, 0.45], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35], 'a_v': [0.15, 0.2],
                                 'b_v': [0.25, 0.35], 'theta_inf': [-10., -8.], 'delta_V': [8., 14.],
                                 'tau_s': [3., 4.]}
+    param_lin_constraints = [[-80., -35.], [1.5, 8.], [0.01, 0.99], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
+                             [0.01, 0.95], [0.01, 0.95], [-25., 0.], [1., 35.], [1., 12.]]
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]):
         super(GLIF_no_grad, self).__init__()
@@ -88,7 +90,7 @@ class GLIF_no_grad(nn.Module):
         self.a_v = FT(a_v).clamp(0.01, 0.95)
         self.b_v = FT(b_v).clamp(0.01, 0.95)
         self.theta_inf = FT(theta_inf).clamp(-25., 0.)
-        self.delta_V = FT(delta_V).clamp(0.01, 35.)
+        self.delta_V = FT(delta_V).clamp(1., 35.)
 
     def reset(self):
         for p in self.parameters():

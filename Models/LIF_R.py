@@ -66,7 +66,7 @@ class LIF_R(nn.Module):
         self.tau_s = nn.Parameter(FT(tau_s).clamp(1., 12,), requires_grad=True)
         self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
         self.f_v = nn.Parameter(FT(f_v).clamp(0.01, 0.99), requires_grad=True)  # Sample values: f_v = 0.15; delta_V = 12.
-        self.delta_V = nn.Parameter(FT(delta_V).clamp(0.01, 35.), requires_grad=True)  ##
+        self.delta_V = nn.Parameter(FT(delta_V).clamp(1., 35.), requires_grad=True)  ##
 
         self.register_backward_clamp_hooks()
 
