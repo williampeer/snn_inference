@@ -145,7 +145,8 @@ def sbi(method, t_interval, N, model_class, param_number, budget):
     # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
     res[method] = posterior
     posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
-                    limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget)
+                    limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
+                    m_name=tar_model.name())
 
     try:
         dt_descr = IO.dt_descriptor()
@@ -157,7 +158,7 @@ def sbi(method, t_interval, N, model_class, param_number, budget):
     return res
 
 
-def posterior_stats(posterior, method, observation, points, limits, figsize, budget):
+def posterior_stats(posterior, method, observation, points, limits, figsize, budget, m_name):
     print('====== def posterior_stats(posterior, method=None): =====')
     print(posterior)
 
@@ -169,7 +170,7 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
         fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=figsize)
         if method is None:
             method = IO.dt_descriptor()
-        fig.savefig('./figures/analysis_pairplot_{}_{}.png'.format(method, IO.dt_descriptor()))
+        fig.savefig('./figures/analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, IO.dt_descriptor()))
     except Exception as e:
         print("except: {}".format(e))
 

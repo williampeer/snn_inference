@@ -12,7 +12,8 @@ def main(argv):
     print('Argument List:', str(argv))
     offset = 42
 
-    experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/'
+    experiments_path = '/media/william/p6/archive/saved/'
     archive_name = 'data/'
     plot_data_path = experiments_path + 'plot_data/'
     folders = os.listdir(experiments_path)

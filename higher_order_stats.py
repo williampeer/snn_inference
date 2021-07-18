@@ -110,14 +110,17 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
                                    y2=avg_diag_corrs[lh:], y2_std=avg_diag_corrs_std[lh:],
                                    labels=labels,
                                    exp_type='export', uuid='ho_stats' + '/' + custom_uuid, fname='bar_plot_avg_diag_corrs_{}.eps'.format(m_k),
-                                   title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline)
+                                   title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline,
+                                   ylabel='Correlation coefficient')
 
 
 # def main(argv):
 # print('Argument List:', str(argv))
 
 # experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
-experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
+# experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
+# experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/plot_data/'
+experiments_path = '/media/william/p6/archive (8)/saved/'
 custom_uuid = 'data'
 folders = os.listdir(experiments_path)
 experiment_averages = {}

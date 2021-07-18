@@ -10,7 +10,7 @@ from spike_train_matlab_export import load_and_export_sim_data
 def main(argv):
     print('Argument List:', str(argv))
 
-    experiments_path = '/home/william/repos/archives_snn_inference/archive (5)/saved/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/'
 
     initial_models_path = 'initial_models'
     id = 'initial_model'

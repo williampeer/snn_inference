@@ -78,7 +78,8 @@ load_paths = []
 # load_paths += ['/Users/william/repos/archives_snn_inference/archive 9/saved/plot_data/01-20_15-05-33-991/plot_spiketrains_side_by_side01-21_21-55-15-927.pt']
 # experiments_path = '/Users/william/repos/archives_snn_inference/archive 10/saved/plot_data/'
 # experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
-experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
+# experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/plot_data/'
 folders = os.listdir(experiments_path)
 experiment_averages = {}
 for folder_path in folders:

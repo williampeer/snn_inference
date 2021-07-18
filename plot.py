@@ -735,13 +735,6 @@ def bar_plot_pair_custom_labels_two_grps(y1, y2, y1_std, y2_std, labels, exp_typ
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_pair_custom_labels')
 
 
-    # if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
-    #     plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)
-    # else:
-    #     plt.bar(xs-0.15, y1, width=0.3)
-    # if hasattr(y2_std, 'shape') or hasattr(y2_std, 'append'):
-    #     plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3)
-    # else:
     num_els = len(y1)
     half = int(num_els/2)
     rest = num_els-half
@@ -753,14 +746,6 @@ def bar_plot_pair_custom_labels_two_grps(y1, y2, y1_std, y2_std, labels, exp_typ
     plt.bar(xs+width/2, y2[:half], yerr=y2_std[:half], width=width)
     plt.bar(xs2-width/2, y1[half:], yerr=y1_std[half:], width=width)
     plt.bar(xs2+width/2, y2[half:], yerr=y2_std[half:], width=width)
-
-    # if not legend:
-    #     plt.legend(['Fitted Adam', 'Target', 'Fitted SGD', 'Target'], loc='lower left', ncol=2)
-    # else:
-    #     plt.legend(legend)
-
-    # if baseline:
-    #     plt.plot(xs, np.ones_like(y1) * baseline, 'g--')
 
     r_max = np.max([np.array(y1), np.array(y2)])
     rstd_max = np.max([np.array(y1_std), np.array(y2_std)])
@@ -847,16 +832,6 @@ def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, tit
     xs2 = np.linspace(1+len(y1)+2*width, 1+len(y1)+len(y2)+2*width, len(y2))
 
     if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
-        # if baseline:
-        #     above_threshold_1 = np.maximum(y1 - np.ones_like(y1) * baseline, 0)
-        #     below_threshold_1 = np.minimum(y1, baseline)
-        #     plt.bar(xs, above_threshold_1, yerr=y1_std, width=0.5*width)
-        #     plt.bar(xs, above_threshold_1, yerr=y1_std, width=0.5*width, bottom=below_threshold_1)
-        #     above_threshold_2 = np.maximum(y2 - np.ones_like(y2) * baseline, 0)
-        #     below_threshold_2 = np.minimum(y2, baseline)
-        #     plt.bar(xs2, below_threshold_2, yerr=y2_std, width=0.5 * width)
-        #     plt.bar(xs2, above_threshold_2, yerr=y2_std, width=0.5 * width, bottom=below_threshold_2)
-        # else:
         plt.bar(xs, y1, yerr=y1_std, width=width)
         plt.bar(xs2, y2, yerr=y2_std, width=width)
     else:
@@ -882,7 +857,7 @@ def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, tit
     if xlabel:
         plt.xlabel(xlabel)
     if ylabel:
-        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
     else:
         plt.ylabel('Relative distance')
     # if title:
