@@ -106,13 +106,21 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
         #                                  title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline)
         lh = int(len(avg_diag_corrs)/2)
         if not (np.any(np.isnan(avg_diag_corrs)) or np.any(np.isnan(avg_diag_corrs_std))):
-            plot.bar_plot_two_grps(y1=avg_diag_corrs[:lh], y1_std=avg_diag_corrs_std[:lh],
-                                   y2=avg_diag_corrs[lh:], y2_std=avg_diag_corrs_std[lh:],
-                                   labels=labels,
-                                   exp_type='export', uuid='ho_stats' + '/' + custom_uuid, fname='bar_plot_avg_diag_corrs_{}.eps'.format(m_k),
-                                   title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline,
-                                   ylabel='Correlation coefficient')
-
+            if lh>0:
+                plot.bar_plot_two_grps(y1=avg_diag_corrs[:lh], y1_std=avg_diag_corrs_std[:lh],
+                                       y2=avg_diag_corrs[lh:], y2_std=avg_diag_corrs_std[lh:],
+                                       labels=labels,
+                                       exp_type='export', uuid='ho_stats' + '/' + custom_uuid, fname='bar_plot_avg_diag_corrs_{}.eps'.format(m_k),
+                                       title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline,
+                                       ylabel='Correlation coefficient')
+            else:  # only one elem.
+                plot.bar_plot_two_grps(y1=avg_diag_corrs, y1_std=avg_diag_corrs_std,
+                                       y2=avg_diag_corrs, y2_std=avg_diag_corrs_std,
+                                       labels=labels,
+                                       exp_type='export', uuid='ho_stats' + '/' + custom_uuid,
+                                       fname='bar_plot_avg_diag_corrs_{}.eps'.format(m_k),
+                                       title='Avg. diag. corrs. across experiments ({})'.format(m_k), baseline=baseline,
+                                       ylabel='Correlation coefficient')
 
 # def main(argv):
 # print('Argument List:', str(argv))
@@ -120,7 +128,9 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 # experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
 # experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
 # experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/plot_data/'
-experiments_path = '/media/william/p6/archive (8)/saved/'
+# experiments_path = '/media/william/p6/archive (8)/saved/'
+# experiments_path = '/media/william/p6/archives_pre_0907/archive (5)/saved/plot_data/'
+experiments_path = '/media/william/p6/archive_0907/archive/saved/plot_data/'
 custom_uuid = 'data'
 folders = os.listdir(experiments_path)
 experiment_averages = {}
