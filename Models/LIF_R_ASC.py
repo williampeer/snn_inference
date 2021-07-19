@@ -6,7 +6,7 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class LIF_R_ASC(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'delta_V', 'tau_s']
+    parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'delta_V', 'tau_s']  # 0,2,3,6,9
     parameter_init_intervals = {'E_L': [-68., -45.], 'tau_m': [2.5, 2.7], 'G': [0.7, 0.8], 'f_v': [0.2, 0.4], 'f_I': [0.3, 0.4],
                                 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4], 'delta_V': [8., 14.], 'tau_s': [3., 4.]}
 

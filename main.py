@@ -34,7 +34,7 @@ def main(argv):
     exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.02; N_exp = 3; tau_van_rossum = 20.0; plot_flag = True
+    learn_rate = 0.004; N_exp = 3; tau_van_rossum = 20.0; plot_flag = True
     max_train_iters = 30
     interval_size = 8000
     batch_size = interval_size; rows_per_train_iter = interval_size
@@ -146,9 +146,7 @@ def main(argv):
     # models = [LIF, LIF_soft, LIF_weights_only, LIF_soft_weights_only]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF, LIF_fixed_weights, LIF_weights_only]
-    models = [LIF_R,
-              LIF_R_ASC,
-              GLIF]
+    models = [GLIF, LIF_R_ASC, LIF_R]
 
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name,
