@@ -46,9 +46,9 @@ def main(argv):
     # loss_fn = 'CV'
     # loss_fn = 'PCC'
     # loss_fn = 'rfh'
-    loss_fn = 'rph'
+    # loss_fn = 'rph'
     # loss_fn = 'kl_div'
-    # loss_fn = None
+    loss_fn = None
     # silent_penalty_factor = 10.0
     silent_penalty_factor = None
 
