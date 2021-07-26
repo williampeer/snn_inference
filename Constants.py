@@ -52,8 +52,10 @@ class Constants:
             self.optimiser = optim.SGD
         elif optimiser == 'Adam':
             self.optimiser = optim.Adam
+        elif optimiser == 'RMSprop':
+            self.optimiser = optim.RMSprop
         else:
-            print('Optimiser not supported. Please use either SGD or Adam.')
+            raise NotImplementedError('Optimiser not supported. Please use either SGD or Adam.')
 
     def __str__(self):
         return 'data_bin_size: {}, target_bin_size: {}, learn_rate: {}, train_iters: {}, N_exp: {}, batch_size: {},' \

@@ -130,7 +130,9 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 # experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/plot_data/'
 # experiments_path = '/media/william/p6/archive (8)/saved/'
 # experiments_path = '/media/william/p6/archives_pre_0907/archive (5)/saved/plot_data/'
-experiments_path = '/media/william/p6/archive_0907/archive/saved/plot_data/'
+# experiments_path = '/media/william/p6/archive_0907/archive/saved/plot_data/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/plot_data/'
+
 custom_uuid = 'data'
 folders = os.listdir(experiments_path)
 experiment_averages = {}

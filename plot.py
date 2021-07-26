@@ -676,7 +676,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     plt.close()
 
 
-def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, xlabel=False, legend=False, baseline=False):
+def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, legend=False, baseline=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -715,7 +715,10 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
         plt.xticks(xs)
     if xlabel:
         plt.xlabel(xlabel)
-    plt.ylabel('Distance')
+    if ylabel:
+        plt.ylabel(ylabel)
+    else:
+        plt.ylabel('Distance')
     # if title:
     #     plt.title(title)
     # else:

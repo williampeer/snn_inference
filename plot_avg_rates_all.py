@@ -56,7 +56,8 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
         plot.bar_plot_pair_custom_labels(y1=avg_model_rates, y2=avg_target_rates, y1_std=avg_model_rates_std, y2_std=avg_target_rates_std,
                                          labels=labels,
                                          exp_type='export', uuid=m_k, fname='rate_bar_plot_avg_rate_across_exp_{}'.format(m_k),
-                                         title='Avg. firing rates across experiments ({})'.format(m_k))
+                                         title='Avg. firing rates across experiments ({})'.format(m_k),
+                                         ylabel='Firing rate')
         # plot.bar_plot_pair_custom_labels(y1=stds_model_rates, y2=stds_target_rates_std, y1_std=stds_model_rates_std, y2_std=stds_target_rates_std,
         #                                  labels=labels,
         #                                  exp_type='export', uuid=m_k, fname='rate_bar_plot_avg_rate_std_across_exp_{}'.format(m_k),
@@ -67,7 +68,8 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
                                          y2_std=np.zeros_like(stds_model_rates),
                                          labels=labels,
                                          exp_type='export', uuid=m_k, fname='rate_bar_plot_avg_rate_CV_{}.png'.format(m_k),
-                                         title='Avg. CV for firing rate across experiments ({})'.format(m_k))
+                                         title='Avg. CV for firing rate across experiments ({})'.format(m_k),
+                                         ylabel='Rate CV')
 
 
 # print('Argument List:', str(argv))
@@ -80,7 +82,9 @@ load_paths = []
 # experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
 # experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
 # experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/plot_data/'
-experiments_path = '/media/william/p6/archive_0907/archive/saved/plot_data/'
+# experiments_path = '/media/william/p6/archive_0907/archive/saved/plot_data/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/plot_data/'
+
 folders = os.listdir(experiments_path)
 experiment_averages = {}
 for folder_path in folders:
