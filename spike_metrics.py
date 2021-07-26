@@ -45,7 +45,7 @@ def van_rossum_dist_one_to_K(spikes, target_spikes, tau):
     c1 = torch_van_rossum_convolution(spikes=spikes.reshape((-1, 1)), tau=tau)
     c1 = torch.ones((1, target_spikes.shape[1])) * c1.reshape((-1, 1))  # broadcast
     c2 = torch_van_rossum_convolution(spikes=target_spikes, tau=tau)
-    euclid_per_node = torch.sqrt(torch.pow(torch.sub(c1, c2), 2) + 1e-18).sum(dim=0)
+    euclid_per_node = torch.sqrt(torch.pow(torch.sub(c1, c2), 2) + 1e-12).sum(dim=0)
     return euclid_per_node
 
 
@@ -170,7 +170,7 @@ def correlation_metric_distance(out, tar, bins=NUM_BINS):
     # pcorrcoeff = audtorch.metrics.functional.pearsonr(tar_counts, out_counts)
     pcorrcoeff = calc_pearsonr(tar_counts, out_counts)
     neg_dist = torch.ones_like(pcorrcoeff) - pcorrcoeff  # max 0.
-    return torch.sqrt(torch.pow(neg_dist, 2) + 1e-18).sum() / out.shape[0]
+    return torch.sqrt(torch.pow(neg_dist, 2) + 1e-12).sum() / out.shape[0]
 
 
 def CV_dist(out, tar, bins=NUM_BINS):
@@ -199,7 +199,7 @@ def shortest_dist_rates(spikes, target_spikes):
     target_rates = target_spikes.sum(axis=0) * 1000. / target_spikes.shape[0]
     target_rates, _ = torch.sort(target_rates)
 
-    return torch.sqrt(torch.pow(torch.sub(spike_rates, target_rates), 2).sum() + 1e-18)
+    return torch.sqrt(torch.pow(torch.sub(spike_rates, target_rates), 2).sum() + 1e-12)
 
 
 def shortest_dist_rates_w_silent_penalty(spikes, target_spikes):
@@ -210,6 +210,6 @@ def shortest_dist_rates_w_silent_penalty(spikes, target_spikes):
     target_rates = target_spikes.sum(dim=0) * 1000. / target_spikes.shape[0]
     target_rates, _ = torch.sort(target_rates)
 
-    silent_penalty = torch.sqrt(torch.pow(torch.exp(-spike_rates) - torch.exp(target_rates), 2).sum() + 1e-18)
-    return torch.sqrt(torch.pow(torch.sub(spike_rates, target_rates), 2).sum() + 1e-18) + silent_penalty
+    silent_penalty = torch.sqrt(torch.pow(torch.exp(-spike_rates) - torch.exp(target_rates), 2).sum() + 1e-12)
+    return torch.sqrt(torch.pow(torch.sub(spike_rates, target_rates), 2).sum() + 1e-12) + silent_penalty
 
