@@ -8,9 +8,9 @@ from Models.LIF_R import LIF_R
 
 class LIF_R_no_grad(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V', 'tau_s']
-    parameter_init_intervals = { 'E_L': [-64., -55.], 'tau_m': [2.5, 2.7], 'G': [0.7, 0.8],
+    parameter_init_intervals = { 'E_L': [-64., -55.], 'tau_m': [3.5, 4.0], 'G': [0.7, 0.8],
                                 'f_v': [0.25, 0.35], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35],
-                                'delta_V': [8., 14.], 'tau_s': [2.5, 3.5] }
+                                'delta_V': [8., 14.], 'tau_s': [5., 6.] }
     param_lin_constraints = [[-80., -35.], [1.5, 8.], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
                              [1., 35.], [1., 12.]]
 

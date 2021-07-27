@@ -366,42 +366,6 @@ def calculate_kde(p1, p2, logger):
     return Z, Xgrid, x_min, x_max, y_min, y_max
 
 
-def plot_parameter_pair_with_variance(p1_means, p2_means, target_params, path, xlabel='Parameter 1', ylabel='Parameter 2',
-                                      custom_title=False, logger=False):
-    try:
-        Z, Xgrid, x_min, x_max, y_min, y_max = calculate_kde(p1_means, p2_means, logger)
-
-        plt.figure()
-        # Plot the result as an image
-        plt.imshow(Z.reshape(Xgrid.shape),
-                   origin='lower', aspect='auto',
-                   extent=[x_min, x_max, y_min, y_max],
-                   cmap='Blues')
-        cb = plt.colorbar()
-        cb.set_label("density")
-
-        if target_params:
-            plt.plot(target_params[0], target_params[1], 'oy')
-            plt.legend(['True value'])
-
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        # if custom_title:
-        #     plt.title(custom_title)
-        # else:
-        #     plt.title('Inferred KDE')
-
-        # plt.imsave(fname, image)
-        plt.savefig(fname=path)
-        # plt.show()
-        plt.close()
-    except:
-        if not logger:
-            print('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means))
-        else:
-            logger.log('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means), ['plot.plot_parameter_pair_with_variance'])
-
-
 # TODO: fix spaghetti-implementation
 def decompose_param_plot(param_2D, target_params, name, path, custom_title=False):
     params_by_exp = np.array(param_2D).T
@@ -506,39 +470,6 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
             #                                       custom_title=custom_title, logger=logger)
 
 
-# def decompose_param_pair_trajectory_plot(param_2D, target_params, xlabel, ylabel, path):
-#     params_by_exp = np.array(param_2D).T
-#     num_of_parameters = params_by_exp.shape[0]
-#
-#     fig, axs = plt.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1)
-#     plt.xlabel(xlabel)
-#     plt.ylabel(ylabel)
-#     [axi.set_axis_off() for axi in axs.ravel()]
-#     dot_msize = 5.0
-#
-#     for i in range(num_of_parameters):
-#         for j in range(i + 1, num_of_parameters):
-#             # 2D plot between p_i and p_j
-#             cur_ax = axs[i, j - 1]
-#             try:
-#                 p_len = len(params_by_exp[i])
-#                 colors = cm.rainbow(np.linspace(0, 1, p_len))
-#                 for p_i in range(p_len):
-#                     cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
-#                 # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
-#
-#                 if target_params and len(target_params) >= np.max([i, j]):
-#                     cur_ax.plot(target_params[0][i], target_params[0][j], 'x', color='gray', markersize=0.8 * dot_msize)
-#             except:
-#                 print('WARN: Failed to plot trajectory for params: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
-#
-#     fig.suptitle('GD trajectories between neurons for parameters ${} x {}$'.format(xlabel, ylabel))
-#
-#     if not path:
-#         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
-#     # plt.show()
-#     fig.savefig(path)
-#     plt.close()
 # TODO: fix spaghetti-implementation
 def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     params_by_exp = np.array(param_2D).T
@@ -577,41 +508,6 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
 
 
 # TODO: fix spaghetti-implementation
-def param_pair_trajectory_plot(p1_means, p2_means, target_params, path, xlabel='Parameter 1', ylabel='Parameter 2',
-                               custom_title=False, logger=False):
-    try:
-        # Z, Xgrid, x_min, x_max, y_min, y_max = calculate_kde(p1_means, p2_means, logger)
-        plt.figure()
-
-        p_len = len(p1_means)
-        colors = cm.rainbow(np.linspace(0, 1, p_len))
-        for p_i in range(p_len):
-            plt.scatter(p1_means[p_i], p2_means[p_i], color=colors[p_i], marker='x', alpha=0.5)
-        plt.plot(p1_means, p2_means, color='gray')
-
-        # if target_params:
-        # plt.plot(p1_means, p2_means, 'S', markersize=4.)
-
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        # if custom_title:
-        #     plt.title(custom_title)
-        # else:
-        #     plt.title('GD trajectory for parameters')
-
-        # plt.imsave(fname, image)
-        plt.savefig(fname=path)
-        # plt.show()
-        plt.close()
-    except:
-        if not logger:
-            print('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means))
-        else:
-            logger.log('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means),
-                       ['plot.plot_parameter_pair_with_variance'])
-
-
-# TODO: fix spaghetti-implementation
 def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
@@ -628,7 +524,7 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
     for i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
         # for plot_j in range(plot_i + 1, number_of_parameters):
         current_targets = False
-        if target_params and target_params.__contains__(i):
+        if target_params is not None and len(target_params) > i:
             current_targets = target_params[i]
 
         cur_p = np.array(param_means[i])

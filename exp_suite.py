@@ -30,8 +30,8 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
         # ------------- trajectories weights ------------------
         if model.state_dict().__contains__('w'):
             tar_weights_params = None
-            if target_parameters:
-                tar_weights_params = { 0: np.mean(target_parameters[0], axis=1) }
+            if target_parameters is not None:
+                tar_weights_params = [np.mean(target_parameters[0].numpy(), axis=1)]
 
             # TODO: Fix for model_fixed_weights
             weights = model_parameters[0]
@@ -46,8 +46,8 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                      uuid=constants.UUID,
                                                      exp_type=exp_type_str,
                                                      param_names=parameter_names,
-                                                     custom_title='Inferred weights across training iterations',
-                                                     fname='inferred_weights_param_trajectories_{}_exp_num_{}_train_iters_{}'
+                                                     custom_title='Avg inferred weights across training iterations',
+                                                     fname='avg_inferred_weights_param_trajectories_{}_exp_num_{}_train_iters_{}'
                                                      .format(model.__class__.__name__, exp_num, train_i),
                                                      logger=logger)
         # ------------------------------------------------------
@@ -202,10 +202,13 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
 
 
 def run_exp_loop(logger, constants, model_class, target_model=None, error_logger=Log.Logger('DEFAULT_ERR_LOG')):
-    target_parameters = {}
-    if target_model is not None:
-        for param_i, key in enumerate(target_model.state_dict()):
-            target_parameters[param_i] = target_model.state_dict()[key].clone().detach().numpy()
+    if hasattr(target_model, 'get_parameters'):
+        target_parameters = target_model.get_parameters()
+    else:
+        target_parameters = []
+        if target_model is not None:
+            for param_i, key in enumerate(target_model.state_dict()):
+                target_parameters[param_i] = target_model.state_dict()[key].clone().detach().numpy()
 
     recovered_param_per_exp = {}; poisson_rate_per_exp = []
     for exp_i in range(constants.start_seed, constants.start_seed+constants.N_exp):
