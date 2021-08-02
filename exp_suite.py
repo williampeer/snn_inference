@@ -248,6 +248,17 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
             error_logger.log('Exception occurred: {}'.format(e))
             print(e)
 
+            # TODO: Consider fixing
+            # stats_training_iterations(model_parameters=parameters, model=model, poisson_rate=poisson_input_rate,
+            #                           train_losses=train_losses, test_losses=test_losses,
+            #                           constants=constants, logger=logger, exp_type_str=constants.EXP_TYPE.name,
+            #                           target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
+            # final_model_parameters = {}
+            # for p_i, key in enumerate(model.state_dict()):
+            #     final_model_parameters[p_i] = [model.state_dict()[key].numpy()]
+            # model = None
+            # return final_model_parameters, test_losses, train_losses, train_i, poisson_rates
+
     # if poisson_rate_per_exp is not None and len(poisson_rate_per_exp) > 0:
     #     recovered_param_per_exp['p_rate'] = poisson_rate_per_exp
     # logger.log('poisson_rate_per_exp', poisson_rate_per_exp)

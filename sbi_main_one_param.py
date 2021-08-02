@@ -22,16 +22,19 @@ torch.autograd.set_detect_anomaly(True)
 # node_indices, spike_times, spike_indices = data_util.load_sparse_data(full_path=data_path)
 # next_step, targets = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=t_interval,
 #                                                       spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
+NUM_WORKERS = 6
 
 
 def main(argv):
-    t_interval = 16000
+    t_interval = 6000
     N = 3
     param_number = -1
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
-    method = None
-    model_type = None
+    # method = None
+    method = 'SNRE'
+    # model_type = None
+    model_type = 'LIF_R'
     budget = 10000
 
     class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad }
@@ -42,7 +45,7 @@ def main(argv):
     args = [arg for arg in argv if not arg.startswith("-")]
     for i, opt in enumerate(opts):
         if opt == '-h':
-            print('main.py -m <method> -N <num-neurons> -t <t-interval> -pn <param-number>')
+            print('main.py -m <method> -N <num-neurons> -t <t-interval> -pn <param-number> -b <budget> -nw <num-workers>')
             sys.exit()
         elif opt in ("-m", "--method"):
             method = str(args[i])
@@ -56,8 +59,10 @@ def main(argv):
             param_number = int(args[i])
         elif opt in ("-b", "--budget"):
             budget = int(args[i])
+        elif opt in ("-nw", "--num-workers"):
+            NUM_WORKERS = int(args[i])
 
-    assert param_number >= 0, "please specify a parameter to fit. (-pn || --param-number)"
+    # assert param_number >= 0, "please specify a parameter to fit. (-pn || --param-number)"
     assert model_type is not None, "please specify a model type (-mt || --model-type)"
     model_class = class_lookup[model_type]
     assert param_number < len(model_class.parameter_names), \
@@ -65,7 +70,13 @@ def main(argv):
             .format(param_number, len(model_class.parameter_names), model_class)
 
     if method is not None:
-        return sbi(method, t_interval, N, model_class, param_number, budget)
+        if param_number == -1:
+            results = []
+            for p_i in range(len(model_class.parameter_names)):
+                results.append(sbi(method, t_interval, N, model_class, p_i, budget))
+            return results
+        else:
+            return [sbi(method, t_interval, N, model_class, param_number, budget)]
 
 
 def sbi(method, t_interval, N, model_class, param_number, budget):
@@ -141,7 +152,7 @@ def sbi(method, t_interval, N, model_class, param_number, budget):
 
     res = {}
 
-    posterior = infer(simulator, prior, method=method, num_simulations=budget)
+    posterior = infer(simulator, prior, method=method, num_simulations=budget, num_workers=NUM_WORKERS)
     # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
     res[method] = posterior
     posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
@@ -166,6 +177,10 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
     samples = posterior.sample((budget,), x=observation)
     # samples = posterior.sample((10,), x=observation)
     # log_probability = posterior.log_prob(samples, x=observation)
+
+    # checking docs for convergence criterion
+    # plot 100d
+
     try:
         fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=figsize)
         if method is None:
