@@ -22,10 +22,11 @@ torch.autograd.set_detect_anomaly(True)
 # node_indices, spike_times, spike_indices = data_util.load_sparse_data(full_path=data_path)
 # next_step, targets = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=t_interval,
 #                                                       spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
-NUM_WORKERS = 6
 
 
 def main(argv):
+    NUM_WORKERS = 6
+
     t_interval = 6000
     N = 3
     param_number = -1
@@ -66,20 +67,20 @@ def main(argv):
     assert model_type is not None, "please specify a model type (-mt || --model-type)"
     model_class = class_lookup[model_type]
     assert param_number < len(model_class.parameter_names), \
-        "param_number: {} cannot be greater than number of parameters: {} in model_class: {}"\
+        "param_number: {} cannot be greater than number of parameters: {} in model_class: {}" \
             .format(param_number, len(model_class.parameter_names), model_class)
 
     if method is not None:
         if param_number == -1:
             results = []
             for p_i in range(len(model_class.parameter_names)):
-                results.append(sbi(method, t_interval, N, model_class, p_i, budget))
+                results.append(sbi(method, t_interval, N, model_class, p_i, budget, NUM_WORKERS))
             return results
         else:
-            return [sbi(method, t_interval, N, model_class, param_number, budget)]
+            return [sbi(method, t_interval, N, model_class, param_number, budget, NUM_WORKERS)]
 
 
-def sbi(method, t_interval, N, model_class, param_number, budget):
+def sbi(method, t_interval, N, model_class, param_number, budget, NUM_WORKERS=1):
     tar_model_fn_lookup = { 'LIF_no_grad': lif_continuous_ensembles_model_dales_compliant,
                             'LIF_R_no_grad': lif_r_continuous_ensembles_model_dales_compliant,
                             'LIF_R_ASC_no_grad': lif_r_asc_continuous_ensembles_model_dales_compliant,
