@@ -151,7 +151,8 @@ def main(argv):
     models = [GLIF, LIF_R_ASC, LIF_R]
 
     if loss_fn is None:
-        loss_functions = [LossFn.FIRING_RATE_DIST.name,
+        loss_functions = [
+                          # LossFn.FIRING_RATE_DIST.name,
                           LossFn.VAN_ROSSUM_DIST.name,
                           # LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
