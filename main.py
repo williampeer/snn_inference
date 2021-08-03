@@ -34,8 +34,8 @@ def main(argv):
     exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.001; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
-    max_train_iters = 30
+    learn_rate = 0.001; N_exp = 4; tau_van_rossum = 20.0; plot_flag = True
+    max_train_iters = 40
     interval_size = 6000
     batch_size = interval_size; rows_per_train_iter = interval_size
     # batch_size = 2000; rows_per_train_iter = 8000
@@ -172,7 +172,7 @@ def main(argv):
     for m_class in models:
         for loss_fn in loss_functions:
             if exp_type_str in [C.ExperimentType.Synthetic.name, C.ExperimentType.SanityCheck.name]:
-                for f_i in range(3, 6):
+                for f_i in range(3, 7):
                     if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_fixed_weights.__name__, LIF_soft_weights_only.__name__, LIF_soft.__name__]:
                         target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
