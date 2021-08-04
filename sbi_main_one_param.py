@@ -36,7 +36,8 @@ def main(argv):
     method = 'SNRE'
     # model_type = None
     model_type = 'LIF_R'
-    budget = 10000
+    # budget = 10000
+    budget = 100
 
     class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad }
 
@@ -118,7 +119,8 @@ def sbi(method, t_interval, N, model_class, param_number, budget, NUM_WORKERS=1)
         outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
 
         model.reset()
-        return outputs
+        mean_output_rates = outputs.sum(dim=0) * 1000. / outputs.shape[0]  # Hz
+        return mean_output_rates
 
     if param_number == 0:
         num_dim = 1 + N**2
@@ -128,7 +130,15 @@ def sbi(method, t_interval, N, model_class, param_number, budget, NUM_WORKERS=1)
     # tar_in_rate = 10.
     # tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
-    targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
+    rates = None
+    for i in range(10):
+        cur_targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
+        cur_rate = cur_targets.sum(dim=0) * 1000. / cur_targets.shape[0]  # Hz
+        if rates is None:
+            rates = cur_rate
+        else:
+            rates = torch.vstack((rates, cur_rate))
+    targets = torch.mean(rates, dim=0)
 
     if param_number == 0:
         parsed_weights = torch.zeros((N ** 2 - N,))
