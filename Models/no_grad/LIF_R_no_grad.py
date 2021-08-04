@@ -12,7 +12,7 @@ class LIF_R_no_grad(nn.Module):
                                 'f_v': [0.25, 0.35], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35],
                                 'delta_V': [8., 14.], 'tau_s': [5., 6.] }
     param_lin_constraints = [[-80., -35.], [1.5, 8.], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
-                             [1., 35.], [1., 12.]]
+                             [1., 35.], [1.5, 12.]]
 
     def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF_R_no_grad, self).__init__()
