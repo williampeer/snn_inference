@@ -45,8 +45,6 @@ class GLIF_no_grad(nn.Module):
                     a_v = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'theta_inf':
                     theta_inf = FT(torch.ones((N,)) * parameters[key])
-                elif key == 'R_factor':
-                    R_factor = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'w_mean':
                     w_mean = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'w_var':
