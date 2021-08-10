@@ -32,7 +32,7 @@ def load_and_export_sim_data(model_path, fname=False, t = 60 * 1000):
 
 
 def simulate_and_save_model_spike_train(model, poisson_rate, t, exp_num, model_name, fname=False):
-    interval_size = 4000
+    interval_size = 6000
     interval_range = int(t / interval_size)
     assert interval_range > 0, "t must be greater than the interval size, {}. t={}".format(interval_size, t)
 

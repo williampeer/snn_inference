@@ -164,39 +164,43 @@ def sbi(method, t_interval, N, model_class, param_number, budget, NUM_WORKERS=1)
     res = {}
 
     posterior = infer(simulator, prior, method=method, num_simulations=budget, num_workers=NUM_WORKERS)
-    # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
     res[method] = posterior
-    posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
-                    limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
-                    m_name=tar_model.name())
+    # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
 
     try:
         dt_descr = IO.dt_descriptor()
         IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descr),
                      fname='res_{}_dt_{}'.format(method, dt_descr))
+
+        posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
+                        limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
+                        m_name=tar_model.name(), dt_descriptor=dt_descr)
     except Exception as e:
         print("except: {}".format(e))
 
     return res
 
 
-def posterior_stats(posterior, method, observation, points, limits, figsize, budget, m_name):
-    print('====== def posterior_stats(posterior, method=None): =====')
+def posterior_stats(posterior, method, observation, points, limits, figsize, budget, m_name, dt_descriptor):
+    print('====== def posterior_stats(posterior, method={}): ====='.format(method))
     print(posterior)
 
     # observation = torch.reshape(targets, (1, -1))
     samples = posterior.sample((budget,), x=observation)
     # samples = posterior.sample((10,), x=observation)
     # log_probability = posterior.log_prob(samples, x=observation)
+    IO.save_data(samples, 'sbi_samples', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
+                 fname='samples_method_{}_m_name_{}_dt_{}'.format(method, m_name, dt_descriptor))
 
     # checking docs for convergence criterion
     # plot 100d
 
     try:
-        fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=figsize)
-        if method is None:
-            method = IO.dt_descriptor()
-        fig.savefig('./figures/analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, IO.dt_descriptor()))
+        if samples[0].shape[0] <= 10:
+            fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=figsize)
+            if method is None:
+                method = IO.dt_descriptor()
+            fig.savefig('./figures/analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, IO.dt_descriptor()))
     except Exception as e:
         print("except: {}".format(e))
 
