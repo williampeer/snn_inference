@@ -72,5 +72,9 @@ def save_data(data, uuid, description='default', fname=False):
     }, PATH+JUST_DATA_PATH+uuid+'/'+fname+fname_ext)
 
 
+def import_data(uuid, fname):
+    return torch.load(PATH+JUST_DATA_PATH+uuid+'/'+fname+fname_ext)
+
+
 def dt_descriptor():
     return datetime.utcnow().strftime('%m-%d_%H-%M-%S-%f')[:-3]
