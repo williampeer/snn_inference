@@ -189,8 +189,8 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
     data_arr['m_name'] = m_name
 
     # samples = posterior.sample((10,), x=observation)
-    log_probability = posterior.log_prob(samples, x=observation)
-    print('log_probability: {}'.format(log_probability))
+    # log_probability = posterior.log_prob(samples, x=observation)
+    # print('log_probability: {}'.format(log_probability))
     IO.save_data(data_arr, 'sbi_samples', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
                  fname='samples_method_{}_m_name_{}_dt_{}'.format(method, m_name, dt_descriptor))
 
@@ -198,7 +198,7 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
     # plot 100d
 
     try:
-        if samples[0].shape[0] <= 3:
+        if samples[0].shape[0] <= 10:
             fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=figsize)
             if method is None:
                 method = IO.dt_descriptor()

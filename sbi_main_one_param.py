@@ -35,9 +35,9 @@ def main(argv):
     # method = None
     method = 'SNRE'
     # model_type = None
-    model_type = 'LIF_R'
-    # budget = 10000
-    budget = 100
+    model_type = 'GLIF'
+    budget = 10000
+    # budget = 100
 
     class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad }
 
@@ -166,15 +166,21 @@ def sbi(method, t_interval, N, model_class, param_number, budget, NUM_WORKERS=1)
     posterior = infer(simulator, prior, method=method, num_simulations=budget, num_workers=NUM_WORKERS)
     res[method] = posterior
     # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
+    dt_descriptor = IO.dt_descriptor()
+    res[method] = posterior
+    res['model_class'] = model_class
+    res['N'] = N
+    res['dt_descriptor'] = dt_descriptor
+    # num_dim = N**2-N+N*(len(model_class.parameter_names)-1)
+    num_dim = limits_high.shape[0]
 
     try:
-        dt_descr = IO.dt_descriptor()
-        IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descr),
-                     fname='res_{}_dt_{}'.format(method, dt_descr))
+        IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
+                     fname='res_{}_dt_{}'.format(method, dt_descriptor))
 
         posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
                         limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
-                        m_name=tar_model.name(), dt_descriptor=dt_descr)
+                        m_name=tar_model.name(), dt_descriptor=dt_descriptor)
     except Exception as e:
         print("except: {}".format(e))
 
@@ -186,10 +192,17 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
     print(posterior)
 
     # observation = torch.reshape(targets, (1, -1))
+    data_arr = {}
     samples = posterior.sample((budget,), x=observation)
+    data_arr['samples'] = samples
+    data_arr['observation'] = observation
+    data_arr['tar_parameters'] = points
+    data_arr['m_name'] = m_name
+
     # samples = posterior.sample((10,), x=observation)
     # log_probability = posterior.log_prob(samples, x=observation)
-    IO.save_data(samples, 'sbi_samples', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
+    IO.save_data(data_arr, 'sbi_samples',
+                 description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
                  fname='samples_method_{}_m_name_{}_dt_{}'.format(method, m_name, dt_descriptor))
 
     # checking docs for convergence criterion
