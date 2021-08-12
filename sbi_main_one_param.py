@@ -171,23 +171,24 @@ def sbi(method, t_interval, N, model_class, param_number, budget, NUM_WORKERS=1)
     res['model_class'] = model_class
     res['N'] = N
     res['dt_descriptor'] = dt_descriptor
+    res['param_num'] = param_number
     # num_dim = N**2-N+N*(len(model_class.parameter_names)-1)
     num_dim = limits_high.shape[0]
 
     try:
         IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
-                     fname='res_{}_dt_{}'.format(method, dt_descriptor))
+                     fname='res_{}_mt_{}_param_num_{}_dt_{}'.format(method, model_class.__name__, param_number, dt_descriptor))
 
         posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
                         limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
-                        m_name=tar_model.name(), dt_descriptor=dt_descriptor)
+                        m_name=tar_model.name(), dt_descriptor=dt_descriptor, param_num=param_number)
     except Exception as e:
         print("except: {}".format(e))
 
     return res
 
 
-def posterior_stats(posterior, method, observation, points, limits, figsize, budget, m_name, dt_descriptor):
+def posterior_stats(posterior, method, observation, points, limits, figsize, budget, m_name, dt_descriptor, param_num):
     print('====== def posterior_stats(posterior, method={}): ====='.format(method))
     print(posterior)
 
@@ -203,7 +204,7 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
     # log_probability = posterior.log_prob(samples, x=observation)
     IO.save_data(data_arr, 'sbi_samples',
                  description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
-                 fname='samples_method_{}_m_name_{}_dt_{}'.format(method, m_name, dt_descriptor))
+                 fname='samples_method_{}_m_name_{}_param_num_{}_dt_{}'.format(method, m_name, param_num, dt_descriptor))
 
     # checking docs for convergence criterion
     # plot 100d
