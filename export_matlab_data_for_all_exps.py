@@ -13,7 +13,11 @@ def main(argv):
     offset = 42
 
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/'  # TODO
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # TODO
     # experiments_path = '/media/william/p6/archive/saved/'
     archive_name = 'data/'
     plot_data_path = experiments_path + 'plot_data/'
@@ -60,7 +64,7 @@ def main(argv):
                     cur_fname = 'spikes_{}_{}_{}_{}_{}_{}_exp_num_{}_60s'.format(exp_type, model_type, optimiser, lfn, lr, id, exp_num).replace('=', '_')
                     save_file_name = prefix + path + archive_name + cur_fname + '.mat'
 
-                    if optimiser == 'SGD' and not (model_type == 'LIF' or model_type == 'LIF_no_grad'):
+                    if lfn == 'FIRING_RATE_DIST':
                         print('checking: {}'.format(save_file_name))
                         if not os.path.exists(prefix + path + archive_name) or not os.path.exists(save_file_name):
                             makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
@@ -68,7 +72,7 @@ def main(argv):
                         else:
                             print('file exists. skipping..')
                     else:
-                        print('Adam.. 💩')
+                        print('.. 💩 {}, {}, {}, {}, {}'.format(lfn, model_type, optimiser, lr, custom_title))
                         # load_and_export_sim_data(f, optim='Adam_frdvrda_001')
 
 

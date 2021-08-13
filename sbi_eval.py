@@ -9,7 +9,7 @@ from sbi import analysis as analysis
 
 t_interval = 6000
 
-experiments_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/data/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive_multi_sbi_1308/archive/saved/data/'
 
 custom_uuid = 'data'
 files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
