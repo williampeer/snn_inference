@@ -27,6 +27,7 @@ torch.autograd.set_detect_anomaly(True)
 def main(argv):
     NUM_WORKERS = 6
 
+    # t_interval = 2000
     t_interval = 6000
     N = 3
     param_number = -1
@@ -36,8 +37,8 @@ def main(argv):
     method = 'SNRE'
     # model_type = None
     model_type = 'GLIF'
+    # budget = 40
     budget = 10000
-    # budget = 100
 
     class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad }
 
@@ -74,7 +75,7 @@ def main(argv):
     if method is not None:
         if param_number == -1:
             results = []
-            for p_i in range(len(model_class.parameter_names)):
+            for p_i in range(len(model_class.param_lin_constraints)):
                 results.append(sbi(method, t_interval, N, model_class, p_i, budget, NUM_WORKERS))
             return results
         else:
