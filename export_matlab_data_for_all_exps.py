@@ -16,7 +16,7 @@ def main(argv):
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/'  # TODO
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/'  # RUNNING
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # TODO
     # experiments_path = '/media/william/p6/archive/saved/'
     archive_name = 'data/'

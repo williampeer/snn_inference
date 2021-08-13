@@ -201,8 +201,8 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
         if samples[0].shape[0] <= 10:
             fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=figsize)
             if method is None:
-                method = IO.dt_descriptor()
-            fig.savefig('./figures/analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, IO.dt_descriptor()))
+                method = dt_descriptor
+            fig.savefig('./figures/analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, dt_descriptor))
     except Exception as e:
         print("except: {}".format(e))
 
