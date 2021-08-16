@@ -60,6 +60,9 @@ for sbi_res_file in files_sbi_res:
                                             limits=torch.stack((limits_low, limits_high), dim=1),
                                             figsize=(num_dim, num_dim))
                 fig.savefig('./figures/export/analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, sut_description))
+            else:
+                ## TODO: High-dimensional plotting: (1) subset, and (2) means
+                pass
         except Exception as e:
             print("plotting failed. exception: {}".format(e))
     except Exception as e:

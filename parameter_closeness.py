@@ -53,9 +53,11 @@ def euclid_dist(p1, p2):
 
 # all_exps_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
 # all_exps_path = '/home/william/repos/archives_snn_inference/archive (5)/saved/plot_data/'
-all_exps_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
+# all_exps_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
+all_exps_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/plot_data/'
 folders = os.listdir(all_exps_path)
 experiment_averages = {}
+optim_to_include = 'RMSprop'
 # res_per_exp = {}
 for exp_folder in folders:
     full_folder_path = all_exps_path + exp_folder + '/'
@@ -83,7 +85,7 @@ for exp_folder in folders:
     # assert len(param_files) == 1, "should only be one plot_all_param_pairs_with_variance-file per folder. len: {}".format(len(param_files))
     # if model_type == 'LIF' and len(param_files) == 1:
     # if model_type == 'GLIF' and optimiser == 'SGD' and len(param_files) == 1:
-    if optimiser == 'SGD' and model_type in ['LIF_R', 'LIF_R_ASC', 'GLIF'] and spf == 'None' and len(param_files) == 1:
+    if optimiser == optim_to_include and model_type in ['LIF_R', 'LIF_R_ASC', 'GLIF'] and spf == 'None' and len(param_files) == 1:
         print('Succes! Processing exp: {}'.format(exp_folder + '/' + param_files[0]))
         exp_data = torch.load(full_folder_path + param_files[0])
         # param_names = exp_data['plot_data']['param_names']
@@ -136,7 +138,7 @@ keys_list = list(experiment_averages.keys())
 keys_list.sort()
 labels = []
 for k_i, k_v in enumerate(keys_list):
-    model_type = k_v.split('_SGD_')[0]
+    model_type = k_v.split('_{}'.format(optim_to_include))[0]
     param_names = class_lookup[model_type].parameter_names
     label_param_names = map(lambda x: '${}$'.format(x.replace('delta_theta_', '\delta\\theta_').replace('delta_V', '\delta_V').replace('tau', '\\tau')), param_names)
     # if not (k_v.__contains__('vrdfrda') or k_v.__contains__('pnll')):
@@ -148,11 +150,17 @@ for k_i, k_v in enumerate(keys_list):
                       .replace('LIF_R_SGD_', 'R\n')
                       .replace('LIF_ASC_SGD_', 'A\n')
                       .replace('LIF_R_ASC_SGD_', 'R_A\n')
-                      .replace('GLIF_', 'GLIF\n')
+                      .replace('GLIF_SGD_', 'GLIF\n')
+                      .replace('LIF_RMSprop_', 'LIF\n')
+                      .replace('LIF_R_RMSprop_', 'R\n')
+                      .replace('LIF_ASC_RMSprop_', 'A\n')
+                      .replace('LIF_R_ASC_RMSprop_', 'R_A\n')
+                      .replace('GLIF_RMSprop_', 'GLIF\n')
                       # .replace('_', '\n')
                       # .replace('LIF_Adam_', '').replace('LIF_SGD_', '').replace('_', '\n')
                       # .replace('frdvrda', '$d_A$').replace('frdvrd', '$d_C$')
                       .replace('FIRING_RATE_DIST', '$d_F$')
+                      .replace('RATE_PCC_HYBRID', '$d_P$')
                       .replace('VAN_ROSSUM_DIST', '$d_V$')
                       .replace('MSE', '$mse$'))
         print('processing exp results for config: {}'.format(k_v))
@@ -198,7 +206,7 @@ for k_i, k_v in enumerate(keys_list):
 bar_plot_pair_custom_labels(np.array(exp_avg_init_ds), np.array(exp_avg_ds),
                             np.array(exp_avg_init_stds), np.array(exp_avg_stds),
                             labels, 'export', 'test',
-                            'exp_export_all_euclid_dist_params_across_exp.png',
+                            'exp_export_all_euclid_dist_params_across_exp_{}.png'.format(optim_to_include),
                             'Avg Euclid dist for all parameters across experiments',
                             legend=['Initial model', 'Fitted model'], baseline=1.0)
 

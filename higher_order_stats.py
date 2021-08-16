@@ -24,38 +24,39 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
             avg_statistics_per_exp[m_k][o_k].pop('pnll', None)
             corr_avgs = []; corr_avgs_stds = []
             for lfn_i, lfn_k in enumerate(sorted(list(avg_statistics_per_exp[m_k][o_k].keys()))):
-                # for lr_i, lr_k in enumerate(avg_statistics_per_exp[m_k][o_k][lfn_k]):
-                avg_stats_exps = avg_statistics_per_exp[m_k][o_k][lfn_k]
+                for lr_i, lr_k in enumerate(sorted(list(avg_statistics_per_exp[m_k][o_k][lfn_k].keys()))):
+                    # for lr_i, lr_k in enumerate(avg_statistics_per_exp[m_k][o_k][lfn_k]):
+                    avg_stats_exps = avg_statistics_per_exp[m_k][o_k][lfn_k][lr_k]
 
-                # res_std_m.append(np.mean(avg_stats_exps['std_model']))
-                # res_std_t.append(np.mean(avg_stats_exps['std_target']))
-                # res_std_m_std.append(np.std(avg_stats_exps['std_model']))
-                # res_std_t_std.append(np.std(avg_stats_exps['std_target']))
-                res_mu_m.append(np.mean(avg_stats_exps['mu_model']))
-                res_mu_t.append(np.mean(avg_stats_exps['mu_target']))
-                res_mu_m_std.append(np.std(avg_stats_exps['mu_model']))
-                res_mu_t_std.append(np.std(avg_stats_exps['mu_target']))
-                res_CV_m.append(np.mean(avg_stats_exps['CV_model']))
-                res_CV_t.append(np.mean(avg_stats_exps['CV_target']))
-                res_CV_m_std.append(np.std(avg_stats_exps['CV_model']))
-                res_CV_t_std.append(np.std(avg_stats_exps['CV_target']))
+                    # res_std_m.append(np.mean(avg_stats_exps['std_model']))
+                    # res_std_t.append(np.mean(avg_stats_exps['std_target']))
+                    # res_std_m_std.append(np.std(avg_stats_exps['std_model']))
+                    # res_std_t_std.append(np.std(avg_stats_exps['std_target']))
+                    res_mu_m.append(np.mean(avg_stats_exps['mu_model']))
+                    res_mu_t.append(np.mean(avg_stats_exps['mu_target']))
+                    res_mu_m_std.append(np.std(avg_stats_exps['mu_model']))
+                    res_mu_t_std.append(np.std(avg_stats_exps['mu_target']))
+                    res_CV_m.append(np.mean(avg_stats_exps['CV_model']))
+                    res_CV_t.append(np.mean(avg_stats_exps['CV_target']))
+                    res_CV_m_std.append(np.std(avg_stats_exps['CV_model']))
+                    res_CV_t_std.append(np.std(avg_stats_exps['CV_target']))
 
-                # for c_i in range(len(avg_stats_exps['all_corrcoeff'])):
-                avg_corrcoeff = np.mean(avg_stats_exps['all_corrcoeff'])
-                avg_corrcoeff_std = np.std(avg_stats_exps['all_corrcoeff'])
-                # avg_diag_corr = (np.eye(12) * avg_corrcoeff).sum() / 12.
-                # avg_diag_corr_std = (np.eye(12) * avg_corrcoeff_std).sum() / 12.
-                # print('avg_diag_corr: {} for config ({}, {}, {})'.format(avg_diag_corr, m_k, o_k, lfn_k))
-                print('avg_diag_corr: {} for config ({}, {}, {})'.format(avg_corrcoeff, m_k, o_k, lfn_k))
-                # corr_avgs.append(avg_diag_corr)
+                    # for c_i in range(len(avg_stats_exps['all_corrcoeff'])):
+                    avg_corrcoeff = np.mean(avg_stats_exps['all_corrcoeff'])
+                    avg_corrcoeff_std = np.std(avg_stats_exps['all_corrcoeff'])
+                    # avg_diag_corr = (np.eye(12) * avg_corrcoeff).sum() / 12.
+                    # avg_diag_corr_std = (np.eye(12) * avg_corrcoeff_std).sum() / 12.
+                    # print('avg_diag_corr: {} for config ({}, {}, {})'.format(avg_diag_corr, m_k, o_k, lfn_k))
+                    print('avg_diag_corr: {} for config ({}, {}, {})'.format(avg_corrcoeff, m_k, o_k, lfn_k))
+                    # corr_avgs.append(avg_diag_corr)
 
-                # corr_avgs.append(avg_diag_corr)
-                # avg_diag_corrs.append(avg_diag_corr)
-                # avg_diag_corrs_std.append(avg_diag_corr_std)
-                avg_diag_corrs.append(avg_corrcoeff)
-                avg_diag_corrs_std.append(avg_corrcoeff_std)
+                    # corr_avgs.append(avg_diag_corr)
+                    # avg_diag_corrs.append(avg_diag_corr)
+                    # avg_diag_corrs_std.append(avg_diag_corr_std)
+                    avg_diag_corrs.append(avg_corrcoeff)
+                    avg_diag_corrs_std.append(avg_corrcoeff_std)
 
-                labels.append(lfn_k.replace('frdvrda', '$d_A$').replace('frdvrd', '$d_C$').replace('frd', '$d_r$').replace('vrd', '$d_v$'))
+                    labels.append(lfn_k.replace('frdvrda', '$d_A$').replace('frdvrd', '$d_C$').replace('frd', '$d_r$').replace('vrd', '$d_v$'))
 
         # i_mum, i_stdm, i_CVm, i_mut, i_stdt, i_CVt, i_mean_avg_corrcoeff = get_LIF_init_models_stats()
         # res_std_m.append(np.mean(i_stdm))
@@ -131,7 +132,8 @@ def plot_stats_across_experiments(avg_statistics_per_exp):
 # experiments_path = '/media/william/p6/archive (8)/saved/'
 # experiments_path = '/media/william/p6/archives_pre_0907/archive (5)/saved/plot_data/'
 # experiments_path = '/media/william/p6/archive_0907/archive/saved/plot_data/'
-experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/plot_data/'
+# experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/plot_data/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/plot_data/'
 
 custom_uuid = 'data'
 folders = os.listdir(experiments_path)
@@ -156,7 +158,7 @@ for folder_path in folders:
             custom_title = f_data['plot_data']['custom_title']
             optimiser = custom_title.split(', ')[1].strip(' ')
             model_type = custom_title.split(',')[0].split('(')[-1]
-            # lr = custom_title.split(', ')[-1].strip(' =lr').strip(')')
+            lr = custom_title.split(', ')[-1].strip(' =lr').strip(')')
             lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
             # break
             plot_losses_files.append(f)
@@ -179,27 +181,27 @@ for folder_path in folders:
 
         if not experiment_averages.__contains__(model_type):
             experiment_averages[model_type] = {
-                optimiser: {lfn: {'all_corrcoeff': [], 'mu_model': [], 'std_model': [],
+                optimiser: {lfn: {lr: {'all_corrcoeff': [], 'mu_model': [], 'std_model': [],
                                        'mu_target': [], 'std_target': [],
-                                       'CV_model': [], 'CV_target': []}}}
+                                       'CV_model': [], 'CV_target': []}}}}
         if not experiment_averages[model_type].__contains__(optimiser):
             experiment_averages[model_type][optimiser] = {}
         if not experiment_averages[model_type][optimiser].__contains__(lfn):
             # experiment_averages[model_type][optimiser][lfn] = {}
-            experiment_averages[model_type][optimiser][lfn] = {'all_corrcoeff': [], 'mu_model': [],
+            experiment_averages[model_type][optimiser][lfn] = {lr: {'all_corrcoeff': [], 'mu_model': [],
+                                                                      'std_model': [],
+                                                                      'mu_target': [], 'std_target': [],
+                                                                      'CV_model': [], 'CV_target': []}}
+        if not experiment_averages[model_type][optimiser][lfn].__contains__(lr):
+            experiment_averages[model_type][optimiser][lfn][lr] = {'corrcoeff': [], 'mu_model': [],
                                                                       'std_model': [],
                                                                       'mu_target': [], 'std_target': [],
                                                                       'CV_model': [], 'CV_target': []}
-        # if not experiment_averages[model_type][optimiser][lfn].__contains__(lr):
-        #     experiment_averages[model_type][optimiser][lfn][lr] = {'corrcoeff': [], 'mu_model': [],
-        #                                                               'std_model': [],
-        #                                                               'mu_target': [], 'std_target': [],
-        #                                                               'CV_model': [], 'CV_target': []}
 
         # avg_rates_model = []; avg_rates_target = []
         # corrcoeff_sum = None; mum = []; mut = []; stdm = []; stdt = []; CVm = []; CVt = []
         # for exp_i in range(int(len(plot_spiketrains_files) / 21)):  # gen data for [0 + 11 * i]
-        N_exp = 3
+        N_exp = 4
         for exp_i in range(N_exp):  # gen data for [0 + 11 * i]
             modulus_op = int(len(plot_spiketrains_files) / N_exp)
             print('exp_i: {}'.format(exp_i))
@@ -221,7 +223,7 @@ for folder_path in folders:
             if not np.isnan(corrcoeff[N:, :N]).any():
                 avg_diag_corr = (np.eye(N) * corrcoeff[N:, :N]).sum() / float(N)
                 # avg_diag_corr_std = (np.eye(12) * corrcoeff).sum() / 12.
-                experiment_averages[model_type][optimiser][lfn]['all_corrcoeff'].append(np.copy(avg_diag_corr))
+                experiment_averages[model_type][optimiser][lfn][lr]['all_corrcoeff'].append(np.copy(avg_diag_corr))
             else:
                 print('corrcoeff NaN for {}, {}, {}'.format(model_type, optimiser, lfn))
 
@@ -249,15 +251,15 @@ for folder_path in folders:
             # CVm.append(CV1)
             # CVt.append(CV2)
             if not np.isnan(mu1).any():
-                experiment_averages[model_type][optimiser][lfn]['mu_model'].append(np.mean(mu1))
+                experiment_averages[model_type][optimiser][lfn][lr]['mu_model'].append(np.mean(mu1))
             # experiment_averages[model_type][optimiser][lfn]['std_model'].append(np.std(mum))
             if not np.isnan(mu2).any():
-                experiment_averages[model_type][optimiser][lfn]['mu_target'].append(mu2)
+                experiment_averages[model_type][optimiser][lfn][lr]['mu_target'].append(mu2)
             # experiment_averages[model_type][optimiser][lfn]['std_target'].append(np.std(mut))
             if not np.isnan(CV1).any():
-                experiment_averages[model_type][optimiser][lfn]['CV_model'].append(CV1)
+                experiment_averages[model_type][optimiser][lfn][lr]['CV_model'].append(CV1)
             if not np.isnan(CV2).any():
-                experiment_averages[model_type][optimiser][lfn]['CV_target'].append(CV2)
+                experiment_averages[model_type][optimiser][lfn][lr]['CV_target'].append(CV2)
 
         # if corrcoeff_sum is not None:
         #     if exp_i > 2:

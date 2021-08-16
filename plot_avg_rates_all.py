@@ -83,7 +83,9 @@ load_paths = []
 # experiments_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
 # experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/plot_data/'
 # experiments_path = '/media/william/p6/archive_0907/archive/saved/plot_data/'
-experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/plot_data/'
+# experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/plot_data/'
+# experiments_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/plot_data/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/plot_data/'
 
 folders = os.listdir(experiments_path)
 experiment_averages = {}

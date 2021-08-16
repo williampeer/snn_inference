@@ -112,14 +112,8 @@ def sbi(method, t_interval, N, model_class, budget, NUM_WORKERS=1):
         mean_output_rates = outputs.sum(dim=0) * 1000. / outputs.shape[0]  # Hz
         return mean_output_rates
 
-    # if param_number == 0:
-    #     num_dim = 1 + N**2
-    # else:
-    #     num_dim = 1 + N
-
-    # tar_in_rate = 10.
-    # tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
+
     rates = None
     for i in range(10):
         cur_targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
@@ -129,16 +123,6 @@ def sbi(method, t_interval, N, model_class, budget, NUM_WORKERS=1):
         else:
             rates = torch.vstack((rates, cur_rate))
     targets = torch.mean(rates, dim=0)
-
-    # if param_number == 0:
-    parsed_weights = torch.zeros((N ** 2 - N,))
-    ctr = 0
-    for n_i in range(N):
-        for n_j in range(N):
-            if (n_i != n_j):
-                parsed_weights[ctr] = tar_model.w[n_i, n_j]
-                ctr += 1
-    tar_parameters = torch.hstack([parsed_weights])
 
     limits_low = torch.zeros((N**2-N,))
     limits_high = torch.ones((N**2-N,))
