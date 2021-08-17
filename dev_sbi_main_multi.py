@@ -127,7 +127,7 @@ def sbi(method, t_interval, N, model_class, budget, NUM_WORKERS=1):
     limits_low = torch.zeros((N**2-N,))
     limits_high = torch.ones((N**2-N,))
 
-    for i in range(len(model_class.parameter_names)-1):
+    for i in range(1, len(model_class.parameter_names)):
         limits_low = torch.hstack((limits_low, torch.ones((N,)) * model_class.param_lin_constraints[i][0]))
         limits_high = torch.hstack((limits_high, torch.ones((N,)) * model_class.param_lin_constraints[i][1]))
 
