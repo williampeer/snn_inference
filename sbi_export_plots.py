@@ -26,12 +26,12 @@ def export_plots(samples, points, lim_low, lim_high, N, method, m_name, descript
         # fig_subset_mean.savefig('./figures/export_sut_mean_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
 
         # TODO: Marginals only between same parameter(-set)? :) I.e. as for single param inference!
-        weights_offset = N ** 2 - N
-        for p_i in range(1, samples.shape[1]):
+        weights_offset = N ** 2 - N`
+        for p_i in range(1, len(points)):
             fig_subset_mean, ax_mean = analysis.pairplot(samples[:, weights_offset+(p_i-1)*N:weights_offset+p_i*N],
                                                          points=points[p_i],
-                                                         limits=torch.stack((lim_low[:, weights_offset+(p_i-1)*N:weights_offset+p_i*N],
-                                                                             lim_high[:, weights_offset+(p_i-1)*N:weights_offset+p_i*N])),
+                                                         limits=torch.reshape(torch.stack((lim_low[weights_offset+(p_i-1)*N:weights_offset+p_i*N],
+                                                                             lim_high[weights_offset+(p_i-1)*N:weights_offset+p_i*N])), (N,2)),
                                                          figsize=(N, N))
             fig_subset_mean.savefig('./figures/export_sut_subset_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
         # pass
