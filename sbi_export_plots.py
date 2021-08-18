@@ -1,4 +1,5 @@
 import os
+import matplotlib.pyplot as plt
 
 from sbi import analysis as analysis
 
@@ -11,46 +12,81 @@ from sbi_import_export_spikes import convert_posterior_to_model_params_dict
 def export_plots(samples, points, lim_low, lim_high, N, method, m_name, description):
     num_dim = lim_high.shape[0]
     if num_dim < 12:  # full marginal plot
+        plt.figure()
         fig, ax = analysis.pairplot(samples, points=points, limits=torch.stack((lim_low, lim_high)), figsize=(num_dim, num_dim))
         fig.savefig('./figures/export_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
+        plt.close()
     else:
-        # # TODO: for each parameter, calc mean:
-        # sut_means_samples = torch.mean(samples, dim=0)
-        # sut_means_pts = torch.mean(points, dim=0)
-        # sut_means_lim_low = torch.mean(lim_low, dim=0)
-        # sut_means_lim_high = torch.mean(lim_high, dim=0)
-        # num_dim = sut_means_lim_low.shape[0]
-        # fig_subset_mean, ax_mean = analysis.pairplot(sut_means_samples, points=sut_means_pts,
-        #                                    limits=torch.stack((sut_means_lim_low, sut_means_lim_high)),
-        #                                    figsize=(num_dim, num_dim))
-        # fig_subset_mean.savefig('./figures/export_sut_mean_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
+        plt.figure()
+        weights_offset = N ** 2 - N
+        sample_means = [torch.mean(samples[:, :weights_offset])]
+        lim_low_means = [torch.mean(lim_low[:weights_offset])]
+        lim_high_means = [torch.mean(lim_high[:weights_offset])]
+        pt_means = [torch.mean(points[0])]
+        for p_j in range(1, len(points)):
+            sample_means.append(torch.mean(samples[:, weights_offset+(p_j-1)*N:weights_offset+p_j*N]))
+            lim_low_means.append(torch.mean(lim_low[weights_offset+(p_j-1)*N:weights_offset+p_j*N]))
+            lim_high_means.append(torch.mean(lim_high[weights_offset+(p_j-1)*N:weights_offset+p_j*N]))
+            pt_means.append(torch.mean(points[p_j]))
+        fig_subset_mean, ax_mean = analysis.pairplot(torch.tensor([sample_means]).T, points=torch.tensor([pt_means]).T,
+                                                     limits=torch.stack((torch.tensor([lim_low_means]).T, torch.tensor([lim_high_means]).T)),
+                                                     figsize=(num_dim, num_dim))
+        fig_subset_mean.savefig('./figures/export_sut_means_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
+        plt.close()
 
-        # TODO: Marginals only between same parameter(-set)? :) I.e. as for single param inference!
-        weights_offset = N ** 2 - N`
+        # Marginals only for p_i, p_i
         for p_i in range(1, len(points)):
+            plt.figure()
             fig_subset_mean, ax_mean = analysis.pairplot(samples[:, weights_offset+(p_i-1)*N:weights_offset+p_i*N],
                                                          points=points[p_i],
                                                          limits=torch.reshape(torch.stack((lim_low[weights_offset+(p_i-1)*N:weights_offset+p_i*N],
-                                                                             lim_high[weights_offset+(p_i-1)*N:weights_offset+p_i*N])), (N,2)),
+                                                                                           lim_high[weights_offset+(p_i-1)*N:weights_offset+p_i*N])), (N, 2)),
                                                          figsize=(N, N))
-            fig_subset_mean.savefig('./figures/export_sut_subset_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
+            fig_subset_mean.savefig('./figures/export_sut_subset_analysis_pairplot_{}_{}_one_param_{}_{}.png'.format(method, m_name, p_i, description))
+            plt.close()
         # pass
 
 
 def export_stats_model_target(model, observation, descriptor):
-    spike_rates = torch.mean(generate_synthetic_data(model, poisson_rate=10., t=6000.), dim=0)
+    spike_train, _ = generate_synthetic_data(model, poisson_rate=10., t=6000)
+    spike_rates = 1000. * spike_train.sum(dim=0) / spike_train.shape[0]
     for spike_iters in range(10-1):
-        spike_rates = torch.cat([spike_rates, torch.mean(generate_synthetic_data(model, poisson_rate=10., t=6000.), dim=0)])
+        spike_train, _ = generate_synthetic_data(model, poisson_rate=10., t=6000)
+        spike_rates = torch.cat([spike_rates, 1000. * spike_train.sum(dim=0) / spike_train.shape[0]])
+
+    spike_rates = torch.reshape(spike_rates, (-1, 3))
     mean_spike_rates = torch.mean(spike_rates, dim=0)
-    custom_uuid = 'data'
-    plot.bar_plot_pair_custom_labels_two_grps(y1=mean_spike_rates, y2=torch.mean(observation, dim=0),
-                                              y1_std=torch.std(spike_rates, dim=0), y2_std=torch.std(observation, dim=0),
-                                              labels=['Neuron', 'Firing rate ($Hz$)'],
-                                              exp_type='export', uuid='ho_stats' + '/' + custom_uuid,
-                                              fname='export_bar_plot_avg_rate_sbi_{}.eps'.format(descriptor),
-                                              title='Avg. rates for SBI parameters ({})'.format(descriptor),
-                                              ylabel='Firing rate ($Hz$)',
-                                              legend=['Fitted', 'Target'])
+    rate_stds = torch.std(spike_rates, dim=0)
+    custom_uuid = 'sbi'
+    plt.figure()
+    plot.bar_plot_pair_custom_labels(y1=mean_spike_rates, y2=observation[0],
+                                     y1_std=rate_stds, y2_std=torch.zeros_like(rate_stds),
+                                     labels=range(spike_train.shape[1]),
+                                     exp_type='export', uuid='ho_stats' + '/' + custom_uuid,
+                                     fname='export_bar_plot_avg_rate_sbi_{}.eps'.format(descriptor),
+                                     title='Avg. rates for SBI parameters ({})'.format(descriptor),
+                                     ylabel='Firing rate ($Hz$)', xlabel='Neuron',
+                                     legend=['Fitted', 'Target'])
+    plt.close()
+
+    # TODO: CV
+
+    # TODO: correlation
+
+    return mean_spike_rates
+
+
+def export_stats_top_samples(mean_model_rates, std_model_rates, targets, descriptor):
+    plt.figure()
+    plot.bar_plot_pair_custom_labels(y1=mean_model_rates, y2=targets,
+                                     y1_std=std_model_rates, y2_std=torch.zeros_like(std_model_rates),
+                                     labels=range(len(mean_model_rates)),
+                                     exp_type='export', uuid='ho_stats' + '/' + 'sbi',
+                                     fname='export_bar_plot_avg_rate_sbi_{}.eps'.format(descriptor),
+                                     title='Avg. rates {} most likely samples ({})'.format(len(mean_model_rates), descriptor),
+                                     ylabel='Firing rate ($Hz$)', xlabel='Neuron',
+                                     legend=['Fitted', 'Target'])
+    plt.close()
 
 
 def limits_for_class(model_class, N):
@@ -66,7 +102,8 @@ def limits_for_class(model_class, N):
 
 
 def main():
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1808_multi_N_3/archive/saved/data/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
     custom_uuid = 'data'
@@ -79,7 +116,6 @@ def main():
         print('Loading: {}'.format(sbi_res_path))
         res_load = torch.load(sbi_res_path)
         sbi_res = res_load['data']
-        sut_description = sbi_res['dt_descriptor']
         method = 'SNRE'
         posterior = sbi_res[method]
         model_class = sbi_res['model_class']
@@ -111,16 +147,24 @@ def main():
             export_plots(samples, points, lim_low, lim_high, N, method, m_name, dt_descriptor)
 
             print('drawing most likely sample..')
-            posterior_params = posterior.sample((1,), x=observation)
+            N_samples = 20
+            posterior_params = posterior.sample((N_samples,), x=observation)
             print('\nposterior_params: {}'.format(posterior_params))
 
-            model_params = convert_posterior_to_model_params_dict(model_class, posterior_params, N)
-            programmatic_neuron_types = torch.ones((N,))
-            for n_i in range(int(2 * N / 3), N):
-                programmatic_neuron_types[n_i] = -1
-            model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
-            export_stats_model_target(model, observation=observation, descriptor='{}_parallel_sbi'.format(model.name()))
-
+            mean_model_rates = torch.tensor([])
+            # std_model_rates = torch.tensor([])
+            for s_i in range(N_samples):
+                model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], N)
+                programmatic_neuron_types = torch.ones((N,))
+                for n_i in range(int(2 * N / 3), N):
+                    programmatic_neuron_types[n_i] = -1
+                model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
+                cur_mean_model_rates = export_stats_model_target(model, observation=observation, descriptor='{}_parallel_sbi_sample_N_{}'.format(model.name(), s_i))
+                mean_model_rates = torch.cat((mean_model_rates, cur_mean_model_rates))
+                # TODO: param. dist
+                # std_model_rates.append(cur_std_model_rate)
+            mean_model_rates = torch.reshape(mean_model_rates, (N_samples, -1))
+            export_stats_top_samples(torch.mean(mean_model_rates, dim=0), torch.std(mean_model_rates, dim=0), observation[0], dt_descriptor)
 
 if __name__ == "__main__":
     main()

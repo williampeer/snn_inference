@@ -24,7 +24,8 @@ def main():
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_sbi_runs_1608/archive/saved/data/'  # Single
 
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'  # Done (export)
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_sbi_runs_1608/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_sbi_runs_1608/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1808_multi_N_3/archive/saved/data/'
 
     files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
 
@@ -55,7 +56,7 @@ def main():
                 data_arr = torch.load(experiments_path + 'sbi_samples/' + corresponding_samples_fname)['data']
                 print('sbi_samples load successful.')
 
-                save_fname = 'export_{}'.format(corresponding_samples_fname.strip('.pt')+'')
+                save_fname = 'export_{}_sample_N_0'.format(corresponding_samples_fname.strip('.pt')+'')
                 if not os.path.exists(data_util.prefix + data_util.path + save_fname + '.mat'):
                     # samples = data_arr['samples']
                     observation = data_arr['observation']
@@ -66,18 +67,20 @@ def main():
                     # print('log_probability: {}'.format(log_probability))
 
                     print('drawing most likely sample..')
-                    posterior_params = posterior.sample((1,), x=observation)
+                    N_samples = 20
+                    posterior_params = posterior.sample((N_samples,), x=observation)
                     print('\nposterior_params: {}'.format(posterior_params))
 
-                    model_params = convert_posterior_to_model_params_dict(model_class, posterior_params, N)
-                    programmatic_neuron_types = torch.ones((N,))
-                    for n_i in range(int(2 * N / 3), N):
-                        programmatic_neuron_types[n_i] = -1
-                    model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
+                    for s_i in range(N_samples):
+                        model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], N)
+                        programmatic_neuron_types = torch.ones((N,))
+                        for n_i in range(int(2 * N / 3), N):
+                            programmatic_neuron_types[n_i] = -1
+                        model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
 
-                    # makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
-                    # load_and_export_sim_data(full_folder_path + f, fname=archive_name + cur_fname)
-                    simulate_and_save_model_spike_train(model, 10., 60*1000, None, m_name, fname=save_fname)
+                        # makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
+                        # load_and_export_sim_data(full_folder_path + f, fname=archive_name + cur_fname)
+                        simulate_and_save_model_spike_train(model, 10., 60*1000, None, m_name, fname=save_fname+'_sample_N_{}'.format(s_i))
                 else:
                     print('file exists. skipping..')
 

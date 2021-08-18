@@ -641,6 +641,7 @@ def bar_plot_pair_custom_labels_two_grps(y1, y2, y1_std, y2_std, labels, exp_typ
     skip = width*2
     xs = np.linspace(1, half, half)
     xs2 = np.linspace(1+half+skip, half+skip+rest, rest)
+    plt.figure()
     plt.bar(xs-width/2, y1[:half], yerr=y1_std[:half], width=width)
     plt.bar(xs+width/2, y2[:half], yerr=y2_std[:half], width=width)
     plt.bar(xs2-width/2, y1[half:], yerr=y1_std[half:], width=width)
