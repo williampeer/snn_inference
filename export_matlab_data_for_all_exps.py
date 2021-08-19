@@ -17,8 +17,9 @@ def main(argv):
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/'  # Done
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # Done
-    # experiments_path = '/media/william/p6/archive/saved/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # Done
+    experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
+
     archive_name = 'data/'
     plot_data_path = experiments_path + 'plot_data/'
     folders = os.listdir(experiments_path)

@@ -572,6 +572,49 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     plt.close()
 
 
+def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, baseline=False):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'y': y, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot')
+
+    xs = np.linspace(1, len(y), len(y))
+
+    if hasattr(y_std, 'shape') or hasattr(y_std, 'append'):
+        plt.bar(xs-0.15, y, yerr=y_std, width=0.3)
+    else:
+        plt.bar(xs-0.15, y, width=0.3)
+
+    if baseline:
+        plt.plot(xs, np.ones_like(y) * baseline, 'g--')
+
+    r_max = np.max(y)
+    rstd_max = np.max(y_std)
+    summed_max = r_max + rstd_max
+    if not np.isnan(summed_max) and not np.isinf(summed_max):
+        plt.ylim(0, summed_max + rstd_max*0.05)
+    # plt.ylim(0, 15)
+    if labels:
+        plt.xticks(xs, labels)
+    else:
+        plt.xticks(xs)
+    if xlabel:
+        plt.xlabel(xlabel)
+    if ylabel:
+        plt.ylabel(ylabel)
+    else:
+        plt.ylabel('Distance')
+    # if title:
+    #     plt.title(title)
+    # else:
+    #     plt.title('Variance and CV for each setup')
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+
+
 def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, legend=False, baseline=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')

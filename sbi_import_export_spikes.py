@@ -25,7 +25,7 @@ def main():
 
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'  # Done (export)
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_sbi_runs_1608/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1808_multi_N_3/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
 
     files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
 

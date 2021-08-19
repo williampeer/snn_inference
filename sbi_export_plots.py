@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 from sbi import analysis as analysis
 
+import parameter_distance
 import plot
 from TargetModels.TargetModels import *
 from experiments import generate_synthetic_data
@@ -54,7 +55,7 @@ def export_stats_model_target(model, observation, descriptor):
         spike_train, _ = generate_synthetic_data(model, poisson_rate=10., t=6000)
         spike_rates = torch.cat([spike_rates, 1000. * spike_train.sum(dim=0) / spike_train.shape[0]])
 
-    spike_rates = torch.reshape(spike_rates, (-1, 3))
+    spike_rates = torch.reshape(spike_rates, (-1, model.N))
     mean_spike_rates = torch.mean(spike_rates, dim=0)
     rate_stds = torch.std(spike_rates, dim=0)
     custom_uuid = 'sbi'
@@ -69,9 +70,8 @@ def export_stats_model_target(model, observation, descriptor):
                                      legend=['Fitted', 'Target'])
     plt.close()
 
-    # TODO: CV
-
-    # TODO: correlation
+    # correlation:
+    # Not too informative, unless the same input is used. However, correlation between neurons within model may be informative about that model, but so is NMF.
 
     return mean_spike_rates
 
@@ -101,9 +101,14 @@ def limits_for_class(model_class, N):
     return limits_low, limits_high
 
 
+def plot_param_dist(parameter_distance, title, fname):
+    plot.bar_plot(np.mean(np.array(parameter_distance)), np.std(np.array(parameter_distance)), False, 'export',
+                  'sbi_param_dist', 'export_sbi_param_dist_{}.png'.format(fname), title)
+
+
 def main():
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1808_multi_N_3/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
     custom_uuid = 'data'
@@ -153,18 +158,36 @@ def main():
 
             mean_model_rates = torch.tensor([])
             # std_model_rates = torch.tensor([])
+
+            avg_param_dist_across_samples = []
             for s_i in range(N_samples):
                 model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], N)
+                tar_params = convert_posterior_to_model_params_dict(model_class, points, N)
                 programmatic_neuron_types = torch.ones((N,))
                 for n_i in range(int(2 * N / 3), N):
                     programmatic_neuron_types[n_i] = -1
                 model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
-                cur_mean_model_rates = export_stats_model_target(model, observation=observation, descriptor='{}_parallel_sbi_sample_N_{}'.format(model.name(), s_i))
+                cur_mean_model_rates = export_stats_model_target(model, observation=observation,
+                                                                 descriptor='{}_parallel_sbi_{}_sample_N_{}'.
+                                                                    format(m_name, dt_descriptor, s_i))
                 mean_model_rates = torch.cat((mean_model_rates, cur_mean_model_rates))
+
                 # TODO: param. dist
+                current_avg_dist_per_p = []
+                model_parameter_list = model.get_parameters(); target_parameter_list = list(tar_params)
+                for p_i in range(len(model_parameter_list)):
+                    dist_p_i = parameter_distance.euclid_dist(model_parameter_list[p_i], target_parameter_list[p_i])
+                    current_avg_dist_per_p.append(dist_p_i)
+                plot_param_dist(current_avg_dist_per_p, 'Parameter distance for sample: {}'.format(s_i),
+                                '{}_parallel_sbi_{}_sample_N_{}'.format(m_name, dt_descriptor, s_i))
+                avg_param_dist_across_samples.append(current_avg_dist_per_p)
+            plot_param_dist(avg_param_dist_across_samples, 'Parameter distance across samples',
+                            'sbi_samples_avg_param_dist_{}_{}'.format(m_name, dt_descriptor))
+
                 # std_model_rates.append(cur_std_model_rate)
             mean_model_rates = torch.reshape(mean_model_rates, (N_samples, -1))
-            export_stats_top_samples(torch.mean(mean_model_rates, dim=0), torch.std(mean_model_rates, dim=0), observation[0], dt_descriptor)
+            export_stats_top_samples(torch.mean(mean_model_rates, dim=0), torch.std(mean_model_rates, dim=0),
+                                     observation[0], '{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor))
 
 if __name__ == "__main__":
     main()
