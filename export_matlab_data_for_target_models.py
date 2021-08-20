@@ -13,9 +13,8 @@ from spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
 def main(argv):
-    num_neurons = 10
-    duration = 15 * 60 * 1000
-    glif_only_flag = False
+    num_neurons = 3
+    duration = 2 * 60 * 1000
 
     print('Argument List:', str(argv))
 
@@ -29,8 +28,6 @@ def main(argv):
             duration = int(args[i])
         elif opt in ("-N", "--num-neurons"):
             num_neurons = int(args[i])
-        elif opt in ("-GF", "--glif-only-flag"):
-            glif_only_flag = bool(args[i])
 
     for m_fn in [
                 # lif_continuous_ensembles_model_dales_compliant,
@@ -39,19 +36,16 @@ def main(argv):
                  lif_r_asc_continuous_ensembles_model_dales_compliant,
                  glif_continuous_ensembles_model_dales_compliant]:
 
-        for f_i in range(3, 7):
+        # for f_i in range(3, 7):
+        for f_i in range(42, 43):
             torch.manual_seed(f_i)
             np.random.seed(f_i)
 
             # init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-            if not glif_only_flag:
-                random_seed = f_i
-                snn = m_fn(random_seed=random_seed, N=num_neurons)
-            else:
-                random_seed = 4
-                snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
+            snn = m_fn(random_seed=f_i, N=num_neurons)
 
-            cur_fname = 'target_model_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.name(), num_neurons, random_seed, duration)
+            cur_fname = 'target_model_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.name(), num_neurons, f_i, duration)
+            # cur_fname = 'target_model_sbi_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.name(), num_neurons, random_seed, duration)
             save_file_name = prefix + path + cur_fname + '.mat'
             if not os.path.exists(save_file_name):
                 simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=duration, exp_num=f_i,

@@ -162,7 +162,6 @@ def main():
             avg_param_dist_across_samples = []
             for s_i in range(N_samples):
                 model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], N)
-                tar_params = convert_posterior_to_model_params_dict(model_class, points, N)
                 programmatic_neuron_types = torch.ones((N,))
                 for n_i in range(int(2 * N / 3), N):
                     programmatic_neuron_types[n_i] = -1
@@ -174,9 +173,9 @@ def main():
 
                 # TODO: param. dist
                 current_avg_dist_per_p = []
-                model_parameter_list = model.get_parameters(); target_parameter_list = list(tar_params)
+                model_parameter_list = model.get_parameters()
                 for p_i in range(len(model_parameter_list)):
-                    dist_p_i = parameter_distance.euclid_dist(model_parameter_list[p_i], target_parameter_list[p_i])
+                    dist_p_i = parameter_distance.euclid_dist(model_parameter_list[p_i], points[p_i])
                     current_avg_dist_per_p.append(dist_p_i)
                 plot_param_dist(current_avg_dist_per_p, 'Parameter distance for sample: {}'.format(s_i),
                                 '{}_parallel_sbi_{}_sample_N_{}'.format(m_name, dt_descriptor, s_i))
