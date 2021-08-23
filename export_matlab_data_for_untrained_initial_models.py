@@ -20,16 +20,17 @@ def main(argv):
 
     for model_class in [LIF_R, LIF_R_ASC, GLIF]:
     # for model_class in [LIF_R_no_grad]:
-        N = 3
+        N = 10
+        N_exp = 4
 
         # for exp_i in range(4):
-        for exp_i in range(1):
+        for exp_i in range(N_exp):
             start_seed = 42
-            non_overlapping_offset = start_seed + 3 + 1
-            # torch.manual_seed(non_overlapping_offset + exp_i)
-            torch.manual_seed(start_seed)
-            # np.random.seed(non_overlapping_offset + exp_i)
-            np.random.seed(start_seed)
+            non_overlapping_offset = start_seed + N_exp + 1
+            torch.manual_seed(non_overlapping_offset + exp_i)
+            # torch.manual_seed(non_overlapping_offset)
+            np.random.seed(non_overlapping_offset + exp_i)
+            # np.random.seed(non_overlapping_offset)
 
             init_params_model = draw_from_uniform(model_class.parameter_init_intervals, N)
             programmatic_neuron_types = torch.ones((N,))
@@ -40,9 +41,9 @@ def main(argv):
             model_name = snn.name()
 
             # cur_fname = 'initial_model_spikes_{}_exp_num_{}_seed_{}_60s'.format(model_name, exp_i, non_overlapping_offset+exp_i)
-            cur_fname = 'initial_model_spikes_{}_exp_num_{}_seed_{}_60s'.format(model_name, exp_i, start_seed)
+            cur_fname = 'initial_model_spikes_{}_N_{}_seed_{}_60s'.format(model_name, N, start_seed)
             save_file_name = prefix + path + cur_fname + '.mat'
-            if not os.path.exists(save_file_name):
+            if not os.path.exists(save_file_name) or True:
                 simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=60*1000, exp_num=exp_i,
                                                     model_name=model_name, fname=cur_fname)
             else:

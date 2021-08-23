@@ -658,10 +658,8 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
         plt.ylabel(ylabel)
     else:
         plt.ylabel('Distance')
-    # if title:
-    #     plt.title(title)
-    # else:
-    #     plt.title('Variance and CV for each setup')
+    if title:
+        plt.title(title)
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()

@@ -1,6 +1,7 @@
 import os
 import sys
 
+import numpy as np
 import torch
 
 from IO import makedir_if_not_exists
@@ -17,8 +18,8 @@ def main(argv):
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/'  # Done
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # Done
-    experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # Done
+    # experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
 
     archive_name = 'data/'
     plot_data_path = experiments_path + 'plot_data/'
@@ -51,6 +52,10 @@ def main(argv):
                     if pdata_f.__contains__('plot_losses'):
                         pdata_loss_files.append(pdata_f)
 
+                rand_seed = int(exp_num) + len(pdata_loss_files) + 1
+                torch.manual_seed(rand_seed)
+                np.random.seed(rand_seed)
+
                 pdata_loss_files.sort()
                 if len(pdata_loss_files) > exp_num-offset:
                     cur_exp_pdata_loss_file = pdata_loss_files[exp_num-offset]
@@ -67,7 +72,7 @@ def main(argv):
 
                     if lfn == 'FIRING_RATE_DIST':
                         print('checking: {}'.format(save_file_name))
-                        if not os.path.exists(prefix + path + archive_name) or not os.path.exists(save_file_name):
+                        if not os.path.exists(prefix + path + archive_name) or not os.path.exists(save_file_name) or True:
                             makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
                             load_and_export_sim_data(full_folder_path + f, fname=archive_name + cur_fname)
                         else:

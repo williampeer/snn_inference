@@ -56,7 +56,7 @@ def main():
                 data_arr = torch.load(experiments_path + 'sbi_samples/' + corresponding_samples_fname)['data']
                 print('sbi_samples load successful.')
 
-                save_fname = 'export_{}_sample_N_0'.format(corresponding_samples_fname.strip('.pt')+'')
+                save_fname = 'export_{}_sample_N_{}'.format(corresponding_samples_fname.strip('.pt')+'', N)
                 if not os.path.exists(data_util.prefix + data_util.path + save_fname + '.mat'):
                     # samples = data_arr['samples']
                     observation = data_arr['observation']

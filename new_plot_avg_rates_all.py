@@ -1,0 +1,132 @@
+import os
+
+import numpy as np
+import torch
+
+import plot
+import stats
+
+
+def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
+    for m_i, m_k in enumerate(avg_statistics_per_exp):
+        # flat arrays per model type
+        avg_model_rates = []
+        avg_target_rates = []
+        avg_model_rates_std = []
+        avg_target_rates_std = []
+
+        labels = []
+        for o_i, o_k in enumerate(avg_statistics_per_exp[m_k]):
+            avg_statistics_per_exp[m_k][o_k].pop('vrdfrda', None)
+            for lfn_i, lfn_k in enumerate(avg_statistics_per_exp[m_k][o_k]):
+                for lr_i, lr_k in enumerate(avg_statistics_per_exp[m_k][o_k][lfn_k]):
+                    avg_stats_exps = avg_statistics_per_exp[m_k][o_k][lfn_k][lr_k]
+                    print('processing: {}'.format(avg_stats_exps))
+
+                    avg_model_rates.append(np.mean(avg_stats_exps['avg_model_rate']))
+                    avg_model_rates_std.append(np.std(avg_stats_exps['avg_model_rate']))
+                    avg_target_rates.append(np.mean(avg_stats_exps['avg_target_rate']))
+                    avg_target_rates_std.append(np.std(avg_stats_exps['avg_target_rate']))
+
+                    labels.append(lr_k)
+        labels.append('{}\ninit\nmodels'.format(m_k))
+
+        print('plotting for {}'.format(m_k))
+        plot.bar_plot_pair_custom_labels(y1=avg_model_rates, y2=avg_target_rates, y1_std=avg_model_rates_std, y2_std=avg_target_rates_std,
+                                         labels=labels,
+                                         exp_type='export', uuid=m_k, fname='rate_bar_plot_avg_rate_across_exp_{}_{}'.format(m_k, archive_name),
+                                         title='Model rates across GBO experiments ({})'.format(m_k),
+                                         ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
+
+load_paths = []
+load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
+
+experiment_averages = {}
+for experiments_path in load_paths:
+    archive_name = experiments_path.split('archives_snn_inference/')[-1].split('/')[0]
+    folders = os.listdir(experiments_path)
+    for folder_path in folders:
+        print('folder: {}'.format(folder_path))
+
+        path_models = experiments_path + folder_path + '/'
+        path_plot_data = experiments_path + folder_path + '/' + 'plot_data/'
+        if not path_plot_data.__contains__('.DS_Store'):
+            files = os.listdir(path_plot_data)
+            id = folder_path.split('-')[-1]
+        else:
+            files = []
+            id = 'None'
+        plot_spiketrains_files = []
+        model_type = None
+        for f in files:
+            print(f)
+            if f.__contains__('plot_spiketrains_side_by_side'):
+                plot_spiketrains_files.append(f)
+                print('appended {}'.format(f))
+            elif f.__contains__('plot_losses'):
+                f_data = torch.load(path_plot_data + f)
+                custom_title = f_data['plot_data']['custom_title']
+                optimiser = custom_title.split(', ')[1].strip(' ')
+                model_type = custom_title.split(',')[0].split('(')[-1]
+                lr = custom_title.split(', ')[-2].strip(' =lr').strip(')')
+                lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
+                # break
+
+        if model_type is None:
+            print('exp did not converge.')
+            pass
+        # if len(plot_spiketrains_files) != 21 * 3 or model_type in ['LIF', 'LIF_no_grad']:  # file mask
+        elif len(plot_spiketrains_files) == 0 or model_type in ['LIF', 'LIF_no_grad'] or lfn != 'FIRING_RATE_DIST' or optimiser == 'SGD':  # file mask
+            print('Skipping: {}, {}, {}. #spike_train_files {}'.format(model_type, lfn, optimiser, len(plot_spiketrains_files)))
+            # print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
+            pass
+        else:
+            print('Success! Processing exp: {}'.format(folder_path))
+
+            if not path_models.__contains__('.DS_Store'):
+                files = os.listdir(path_plot_data)
+                id = folder_path.split('-')[-1]
+            else:
+                files = []
+                id = 'None'
+
+            if not experiment_averages.__contains__(model_type):
+                experiment_averages[model_type] = {
+                    optimiser: {lfn: {lr: {'avg_model_rate': [], 'stds_model_rates' : [],
+                                           'avg_target_rate': [], 'stds_target_rates' : []}}}}
+            if not experiment_averages[model_type].__contains__(optimiser):
+                experiment_averages[model_type][optimiser] = {}
+            if not experiment_averages[model_type][optimiser].__contains__(lfn):
+                experiment_averages[model_type][optimiser][lfn] = {}
+            if not experiment_averages[model_type][optimiser][lfn].__contains__(lr):
+                experiment_averages[model_type][optimiser][lfn][lr] = {'avg_model_rate': [], 'stds_model_rates' : [],
+                                                                       'avg_target_rate': [], 'stds_target_rates' : []}
+
+            for f in files:
+                # import, simulate, plot
+                exp_res = torch.load(path_models + f)
+                model = exp_res['model']
+                poisson_rate = exp_res['rate']
+                print('Loaded model data.')
+
+                
+
+                cur_std_target, cur_rate_target = stats.binned_avg_firing_rate_per_neuron(
+                    plot_data['target_spikes'].detach().numpy(), bin_size=400)
+                avg_target_rate = np.mean(np.asarray(cur_rate_target), axis=0) * 1000.
+                avg_rates_target.append(avg_target_rate)
+
+            experiment_averages[model_type][optimiser][lfn][lr]['avg_model_rate'].append(np.mean(avg_rates_model))
+            experiment_averages[model_type][optimiser][lfn][lr]['stds_model_rates'].append(np.mean(stds_model_rates))
+            experiment_averages[model_type][optimiser][lfn][lr]['avg_target_rate'].append(np.mean(avg_rates_target))
+            experiment_averages[model_type][optimiser][lfn][lr]['stds_target_rates'].append(np.mean(stds_target_rates))
+
+    # plot_stats_across_experiments(avg_statistics_per_exp=experiment_averages, archive_name=archive_name)
+
+plot_stats_across_experiments(avg_statistics_per_exp=experiment_averages, archive_name='all')
+
+    # if __name__ == "__main__":
+    #     main(sys.argv[1:])
