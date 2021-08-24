@@ -102,7 +102,7 @@ def limits_for_class(model_class, N):
 
 
 def plot_param_dist(parameter_distance, title, fname):
-    plot.bar_plot(np.mean(np.array(parameter_distance)), np.std(np.array(parameter_distance)), False, 'export',
+    plot.bar_plot(parameter_distance, parameter_distance, False, 'export',
                   'sbi_param_dist', 'export_sbi_param_dist_{}.png'.format(fname), title)
 
 
@@ -171,16 +171,15 @@ def main():
                                                                     format(m_name, dt_descriptor, s_i))
                 mean_model_rates = torch.cat((mean_model_rates, cur_mean_model_rates))
 
-                # TODO: param. dist
                 current_avg_dist_per_p = []
                 model_parameter_list = model.get_parameters()
                 for p_i in range(len(model_parameter_list)):
                     dist_p_i = parameter_distance.euclid_dist(model_parameter_list[p_i], points[p_i])
                     current_avg_dist_per_p.append(dist_p_i)
-                plot_param_dist(current_avg_dist_per_p, 'Parameter distance for sample: {}'.format(s_i),
+                plot_param_dist(np.array(current_avg_dist_per_p), 'Parameter distance for sample: {}'.format(s_i),
                                 '{}_parallel_sbi_{}_sample_N_{}'.format(m_name, dt_descriptor, s_i))
                 avg_param_dist_across_samples.append(current_avg_dist_per_p)
-            plot_param_dist(avg_param_dist_across_samples, 'Parameter distance across samples',
+            plot_param_dist(np.mean(avg_param_dist_across_samples, axis=0), 'Parameter distance across samples',
                             'sbi_samples_avg_param_dist_{}_{}'.format(m_name, dt_descriptor))
 
                 # std_model_rates.append(cur_std_model_rate)

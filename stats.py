@@ -43,6 +43,11 @@ def binned_firing_rates(vec, bin_size):
 
     return avgs
 
+
+def rate_Hz(spike_train):
+    rate_Hz = spike_train.sum(dim=0) * 1000. / spike_train.shape[0]
+    return rate_Hz
+
 # ----------------------------------------
 
 def sub_sums(s, bin_size):

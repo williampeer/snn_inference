@@ -22,9 +22,9 @@ target_fn_lookup = {'LIF': lif_continuous_ensembles_model_dales_compliant,
                     'GLIF': glif_continuous_ensembles_model_dales_compliant}
 
 
-def get_init_params(model_class, exp_num, N=12):
-    torch.manual_seed(exp_num)
-    np.random.seed(exp_num)
+def get_init_params(model_class, rand_seed, N=12):
+    torch.manual_seed(rand_seed)
+    np.random.seed(rand_seed)
 
     w_mean = 0.3;
     w_var = 0.2;

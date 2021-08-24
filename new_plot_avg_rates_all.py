@@ -5,38 +5,80 @@ import torch
 
 import plot
 import stats
+from TargetModels import TargetModels
+from experiments import poisson_input
+from model_util import generate_model_data
 
 
 def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
     for m_i, m_k in enumerate(avg_statistics_per_exp):
         # flat arrays per model type
+        labels = []
         avg_model_rates = []
         avg_target_rates = []
         avg_model_rates_std = []
         avg_target_rates_std = []
+        for lr_i, lr_k in enumerate(avg_statistics_per_exp[m_k]):
+            avg_stats_exps = avg_statistics_per_exp[m_k][lr_k]
+            print('processing: {}'.format(avg_stats_exps))
 
-        labels = []
-        for o_i, o_k in enumerate(avg_statistics_per_exp[m_k]):
-            avg_statistics_per_exp[m_k][o_k].pop('vrdfrda', None)
-            for lfn_i, lfn_k in enumerate(avg_statistics_per_exp[m_k][o_k]):
-                for lr_i, lr_k in enumerate(avg_statistics_per_exp[m_k][o_k][lfn_k]):
-                    avg_stats_exps = avg_statistics_per_exp[m_k][o_k][lfn_k][lr_k]
-                    print('processing: {}'.format(avg_stats_exps))
+            labels.append(lr_k)
+            # labels.append('{}\ninit\nmodels'.format(m_k))
 
-                    avg_model_rates.append(np.mean(avg_stats_exps['avg_model_rate']))
-                    avg_model_rates_std.append(np.std(avg_stats_exps['avg_model_rate']))
-                    avg_target_rates.append(np.mean(avg_stats_exps['avg_target_rate']))
-                    avg_target_rates_std.append(np.std(avg_stats_exps['avg_target_rate']))
+            cur_model_mean = np.mean(avg_stats_exps['avg_model_rate'])
+            cur_model_std = np.std(avg_stats_exps['avg_model_rate'])
+            cur_target_mean = np.mean(avg_stats_exps['avg_target_rate'])
+            cur_target_std = np.std(avg_stats_exps['avg_target_rate'])
 
-                    labels.append(lr_k)
-        labels.append('{}\ninit\nmodels'.format(m_k))
+            avg_model_rates.append(cur_model_mean)
+            avg_target_rates.append(cur_target_mean)
+            avg_model_rates_std.append(cur_model_std)
+            avg_target_rates_std.append(cur_target_std)
 
-        print('plotting for {}'.format(m_k))
-        plot.bar_plot_pair_custom_labels(y1=avg_model_rates, y2=avg_target_rates, y1_std=avg_model_rates_std, y2_std=avg_target_rates_std,
+            print('plotting for {}'.format(m_k))
+            plot.bar_plot(y=cur_model_mean, y_std=cur_model_std,
+                          labels=labels, exp_type='export',
+                          uuid=m_k, fname='rate_bar_plot_model_avg_rate_within_exp_{}_{}'.format(m_k, archive_name),
+                          title='Model rates across GBO experiments ({})'.format(m_k),
+                          ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
+            plot.bar_plot_pair_custom_labels(y1=cur_model_mean, y2=cur_target_mean,
+                                             y1_std=cur_model_std, y2_std=cur_target_std,
+                                             labels=labels,
+                                             exp_type='export', uuid=m_k, fname='rate_bar_plot_pair_avg_rate_within_exp_{}_{}'.format(m_k, archive_name),
+                                             title='Model rates across GBO experiments ({})'.format(m_k),
+                                             ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
+
+            plot.bar_plot_pair_custom_labels(y1=cur_model_std/cur_model_mean,
+                                             y2=cur_target_std/cur_target_mean,
+                                             y1_std=np.zeros_like(cur_model_std),
+                                             y2_std=np.zeros_like(cur_target_std),
+                                             labels=labels,
+                                             exp_type='export', uuid=m_k, fname='rate_bar_plot_pair_avg_rate_CV_within_exp_{}.png'.format(m_k),
+                                             title='Avg. CV for rates across GBO experiments ({})'.format(m_k),
+                                             ylabel='Rate CV')
+
+        plot.bar_plot(y=avg_model_rates, y_std=avg_model_rates_std,
+                      labels=labels, exp_type='export',
+                      uuid=m_k, fname='rate_bar_plot_model_avg_rate_across_exp_{}_{}'.format(m_k, archive_name),
+                      title='Model rates across GBO experiments ({})'.format(m_k),
+                      ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
+        plot.bar_plot_pair_custom_labels(y1=avg_model_rates, y2=avg_target_rates,
+                                         y1_std=avg_model_rates_std, y2_std=avg_target_rates_std,
                                          labels=labels,
-                                         exp_type='export', uuid=m_k, fname='rate_bar_plot_avg_rate_across_exp_{}_{}'.format(m_k, archive_name),
+                                         exp_type='export', uuid=m_k,
+                                         fname='rate_bar_plot_pair_avg_rate_across_exp_{}_{}'.format(m_k, archive_name),
                                          title='Model rates across GBO experiments ({})'.format(m_k),
                                          ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
+
+        plot.bar_plot_pair_custom_labels(y1=np.array(avg_model_rates_std) / np.array(avg_model_rates),
+                                         y2=np.array(avg_target_rates_std) / np.array(avg_target_rates),
+                                         y1_std=np.zeros_like(cur_model_std),
+                                         y2_std=np.zeros_like(cur_target_std),
+                                         labels=labels,
+                                         exp_type='export', uuid=m_k,
+                                         fname='rate_bar_plot_pair_avg_rate_CV_across_exp_{}.png'.format(m_k),
+                                         title='Avg. CV for rates across GBO experiments ({})'.format(m_k),
+                                         ylabel='Rate CV')
 
 load_paths = []
 load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')
@@ -45,6 +87,17 @@ load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_
 load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
 
 experiment_averages = {}
+
+
+def get_target_model_for(model, cur_tar_seed):
+    tar_model_fn_lookup = {'LIF': TargetModels.lif_continuous_ensembles_model_dales_compliant,
+                           'LIF_R': TargetModels.lif_r_continuous_ensembles_model_dales_compliant,
+                           'LIF_R_ASC': TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant,
+                           'GLIF': TargetModels.glif_continuous_ensembles_model_dales_compliant}
+    tar_model = tar_model_fn_lookup[model.name()](cur_tar_seed, model.N)
+    return tar_model
+
+
 for experiments_path in load_paths:
     archive_name = experiments_path.split('archives_snn_inference/')[-1].split('/')[0]
     folders = os.listdir(experiments_path)
@@ -52,27 +105,27 @@ for experiments_path in load_paths:
         print('folder: {}'.format(folder_path))
 
         path_models = experiments_path + folder_path + '/'
-        path_plot_data = experiments_path + folder_path + '/' + 'plot_data/'
-        if not path_plot_data.__contains__('.DS_Store'):
-            files = os.listdir(path_plot_data)
+        path_plot_data = experiments_path + 'plot_data/' + folder_path + '/'
+        if not path_plot_data.__contains__('.DS_Store') and not folder_path.__contains__('data'):
+            plot_files = os.listdir(path_plot_data)
             id = folder_path.split('-')[-1]
         else:
-            files = []
+            plot_files = []
             id = 'None'
         plot_spiketrains_files = []
         model_type = None
-        for f in files:
+        for f in plot_files:
             print(f)
             if f.__contains__('plot_spiketrains_side_by_side'):
                 plot_spiketrains_files.append(f)
                 print('appended {}'.format(f))
             elif f.__contains__('plot_losses'):
-                f_data = torch.load(path_plot_data + f)
-                custom_title = f_data['plot_data']['custom_title']
+                exp_plot_data = torch.load(path_plot_data + f)
+                custom_title = exp_plot_data['plot_data']['custom_title']
                 optimiser = custom_title.split(', ')[1].strip(' ')
                 model_type = custom_title.split(',')[0].split('(')[-1]
                 lr = custom_title.split(', ')[-2].strip(' =lr').strip(')')
-                lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
+                lfn = exp_plot_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
                 # break
 
         if model_type is None:
@@ -87,24 +140,22 @@ for experiments_path in load_paths:
             print('Success! Processing exp: {}'.format(folder_path))
 
             if not path_models.__contains__('.DS_Store'):
-                files = os.listdir(path_plot_data)
+                files = os.listdir(path_models)
                 id = folder_path.split('-')[-1]
             else:
                 files = []
                 id = 'None'
 
             if not experiment_averages.__contains__(model_type):
-                experiment_averages[model_type] = {
-                    optimiser: {lfn: {lr: {'avg_model_rate': [], 'stds_model_rates' : [],
-                                           'avg_target_rate': [], 'stds_target_rates' : []}}}}
-            if not experiment_averages[model_type].__contains__(optimiser):
-                experiment_averages[model_type][optimiser] = {}
-            if not experiment_averages[model_type][optimiser].__contains__(lfn):
-                experiment_averages[model_type][optimiser][lfn] = {}
-            if not experiment_averages[model_type][optimiser][lfn].__contains__(lr):
+                experiment_averages[model_type] = { lr: { 'avg_model_rate': [], 'stds_model_rates' : [],
+                                                          'avg_target_rate': [], 'stds_target_rates' : [] } }
+            if not experiment_averages[model_type].__contains__(lr):
                 experiment_averages[model_type][optimiser][lfn][lr] = {'avg_model_rate': [], 'stds_model_rates' : [],
                                                                        'avg_target_rate': [], 'stds_target_rates' : []}
 
+            f_ctr = 0
+            mean_model_rates = []
+            mean_tar_rates = []
             for f in files:
                 # import, simulate, plot
                 exp_res = torch.load(path_models + f)
@@ -112,17 +163,24 @@ for experiments_path in load_paths:
                 poisson_rate = exp_res['rate']
                 print('Loaded model data.')
 
-                
+                inputs = poisson_input(rate=10., t=10000, N=model.N)
+                model_spike_train = generate_model_data(model, inputs).clone().detach()
+                cur_neuronal_rates = stats.rate_Hz(model_spike_train)
+                mean_model_rates.append(np.mean(cur_neuronal_rates.numpy()))
 
-                cur_std_target, cur_rate_target = stats.binned_avg_firing_rate_per_neuron(
-                    plot_data['target_spikes'].detach().numpy(), bin_size=400)
-                avg_target_rate = np.mean(np.asarray(cur_rate_target), axis=0) * 1000.
-                avg_rates_target.append(avg_target_rate)
+                cur_tar_seed = 3 + f_ctr % 4
+                tar_model = get_target_model_for(model, cur_tar_seed)
+                tar_inputs = poisson_input(rate=10., t=10000, N=model.N)
+                tar_spike_train = generate_model_data(model, tar_inputs).clone().detach()
+                cur_tar_rates = stats.rate_Hz(tar_spike_train)
+                mean_tar_rates.append(np.mean(cur_tar_rates.numpy()))
 
-            experiment_averages[model_type][optimiser][lfn][lr]['avg_model_rate'].append(np.mean(avg_rates_model))
-            experiment_averages[model_type][optimiser][lfn][lr]['stds_model_rates'].append(np.mean(stds_model_rates))
-            experiment_averages[model_type][optimiser][lfn][lr]['avg_target_rate'].append(np.mean(avg_rates_target))
-            experiment_averages[model_type][optimiser][lfn][lr]['stds_target_rates'].append(np.mean(stds_target_rates))
+                f_ctr += 1
+
+            experiment_averages[model_type][lr]['avg_model_rate'].append(np.mean(mean_model_rates))
+            experiment_averages[model_type][lr]['stds_model_rates'].append(np.std(mean_model_rates))
+            experiment_averages[model_type][lr]['avg_target_rate'].append(np.mean(mean_tar_rates))
+            experiment_averages[model_type][lr]['stds_target_rates'].append(np.std(mean_tar_rates))
 
     # plot_stats_across_experiments(avg_statistics_per_exp=experiment_averages, archive_name=archive_name)
 
