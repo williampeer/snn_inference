@@ -150,8 +150,8 @@ for experiments_path in load_paths:
                 experiment_averages[model_type] = { lr: { 'avg_model_rate': [], 'stds_model_rates' : [],
                                                           'avg_target_rate': [], 'stds_target_rates' : [] } }
             if not experiment_averages[model_type].__contains__(lr):
-                experiment_averages[model_type][optimiser][lfn][lr] = {'avg_model_rate': [], 'stds_model_rates' : [],
-                                                                       'avg_target_rate': [], 'stds_target_rates' : []}
+                experiment_averages[model_type][lr] = {'avg_model_rate': [], 'stds_model_rates' : [],
+                                                       'avg_target_rate': [], 'stds_target_rates' : []}
 
             f_ctr = 0
             mean_model_rates = []
