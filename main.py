@@ -28,7 +28,7 @@ def main(argv):
     # print('Using {} device'.format(device))
 
     # Default values
-    start_seed = 42
+    start_seed = 64
     # exp_type_str = C.ExperimentType.SanityCheck.name
     # exp_type_str = C.ExperimentType.Synthetic.name
     exp_type_str = C.ExperimentType.DataDriven.name
