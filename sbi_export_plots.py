@@ -107,8 +107,8 @@ def plot_param_dist(parameter_distance, title, fname):
 
 
 def main():
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
     custom_uuid = 'data'
@@ -177,10 +177,10 @@ def main():
                     dist_p_i = parameter_distance.euclid_dist(model_parameter_list[p_i], points[p_i])
                     current_avg_dist_per_p.append(dist_p_i)
                 plot_param_dist(np.array(current_avg_dist_per_p), 'Parameter distance for sample: {}'.format(s_i),
-                                '{}_parallel_sbi_{}_sample_N_{}'.format(m_name, dt_descriptor, s_i))
+                                '{}_N_{}_parallel_sbi_{}_sample_num_{}'.format(m_name, N, dt_descriptor, s_i))
                 avg_param_dist_across_samples.append(current_avg_dist_per_p)
             plot_param_dist(np.mean(avg_param_dist_across_samples, axis=0), 'Parameter distance across samples',
-                            'sbi_samples_avg_param_dist_{}_{}'.format(m_name, dt_descriptor))
+                            'sbi_samples_avg_param_dist_{}_N_{}_{}'.format(m_name, N, dt_descriptor))
 
                 # std_model_rates.append(cur_std_model_rate)
             mean_model_rates = torch.reshape(mean_model_rates, (N_samples, -1))
