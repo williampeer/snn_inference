@@ -37,6 +37,7 @@ def main(argv):
     model_type = 'GLIF'
     budget = 10000
     # budget = 100
+    tar_seed = 42
 
     class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad }
 
@@ -62,6 +63,8 @@ def main(argv):
             budget = int(args[i])
         elif opt in ("-nw", "--num-workers"):
             NUM_WORKERS = int(args[i])
+        elif opt in ("-ts", "--tar-seed"):
+            tar_seed = int(args[i])
 
     # assert param_number >= 0, "please specify a parameter to fit. (-pn || --param-number)"
     assert model_type is not None, "please specify a model type (-mt || --model-type)"
@@ -71,17 +74,17 @@ def main(argv):
     #         .format(param_number, len(model_class.parameter_names), model_class)
 
     if method is not None:
-        sbi(method, t_interval, N, model_class, budget, NUM_WORKERS)
+        sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS)
 
 
-def sbi(method, t_interval, N, model_class, budget, NUM_WORKERS=1):
+def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=1):
     tar_model_fn_lookup = { 'LIF_no_grad': lif_continuous_ensembles_model_dales_compliant,
                             'LIF_R_no_grad': lif_r_continuous_ensembles_model_dales_compliant,
                             'LIF_R_ASC_no_grad': lif_r_asc_continuous_ensembles_model_dales_compliant,
                             'GLIF_no_grad': glif_continuous_ensembles_model_dales_compliant }
     tar_in_rate = 10.
     tar_model_fn = tar_model_fn_lookup[model_class.__name__]
-    tar_model = tar_model_fn(random_seed=42, N=N)
+    tar_model = tar_model_fn(random_seed=tar_seed, N=N)
 
     def simulator(parameter_set):
         programmatic_params_dict = {}
@@ -144,23 +147,24 @@ def sbi(method, t_interval, N, model_class, budget, NUM_WORKERS=1):
     res['model_class'] = model_class
     res['N'] = N
     res['dt_descriptor'] = dt_descriptor
+    res['tar_seed'] = tar_seed
     # num_dim = N**2-N+N*(len(model_class.parameter_names)-1)
     num_dim = limits_high.shape[0]
 
     try:
         IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
-                     fname='res_{}_dt_{}'.format(method, dt_descriptor))
+                     fname='res_{}_dt_{}_tar_seed_{}'.format(method, dt_descriptor, tar_seed))
 
         posterior_stats(posterior, method=method, observation=torch.reshape(targets, (1, -1)), points=tar_parameters,
                         limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
-                        m_name=tar_model.name(), dt_descriptor=dt_descriptor)
+                        m_name=tar_model.name(), dt_descriptor=dt_descriptor, tar_seed=tar_seed)
     except Exception as e:
         print("except: {}".format(e))
 
     return res
 
 
-def posterior_stats(posterior, method, observation, points, limits, figsize, budget, m_name, dt_descriptor):
+def posterior_stats(posterior, method, observation, points, limits, figsize, budget, m_name, dt_descriptor, tar_seed):
     print('====== def posterior_stats(posterior, method=None): =====')
     print(posterior)
 
@@ -176,7 +180,7 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
     # log_probability = posterior.log_prob(samples, x=observation)
     # print('log_probability: {}'.format(log_probability))
     IO.save_data(data_arr, 'sbi_samples', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
-                 fname='samples_method_{}_m_name_{}_dt_{}'.format(method, m_name, dt_descriptor))
+                 fname='samples_method_{}_m_name_{}_dt_{}_tar_seed_{}'.format(method, m_name, dt_descriptor, tar_seed))
 
     # checking docs for convergence criterion
     # plot 100d
