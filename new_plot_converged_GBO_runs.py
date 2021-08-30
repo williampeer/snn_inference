@@ -2,13 +2,15 @@ import os
 
 import numpy as np
 import torch
+from matplotlib import pyplot as plt
 
 import parameter_distance
 import plot
 import stats
 from TargetModels import TargetModels
-from experiments import poisson_input, draw_from_uniform
+from experiments import poisson_input, draw_from_uniform, generate_synthetic_data
 from model_util import generate_model_data
+from spike_metrics import euclid_dist
 
 load_paths = []
 load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')
@@ -26,6 +28,27 @@ def get_target_model_for(model, cur_tar_seed):
                            'GLIF': TargetModels.glif_continuous_ensembles_model_dales_compliant}
     tar_model = tar_model_fn_lookup[model.name()](cur_tar_seed, model.N)
     return tar_model
+
+
+def export_rates_models(model, tar_model, descriptor, legend=['Fitted', 'Target']):
+    modelpike_train, _ = generate_synthetic_data(model, poisson_rate=10., t=10000)
+    model_spike_rate = 1000. * modelpike_train.sum(dim=0) / modelpike_train.shape[0]
+
+    tar_spike_train, _ = generate_synthetic_data(tar_model, poisson_rate=10., t=10000)
+    tar_spike_rate = 1000. * tar_spike_train.sum(dim=0) / tar_spike_train.shape[0]
+
+    custom_uuid = 'GBO'
+    plt.figure()
+    plot.bar_plot_pair_custom_labels(y1=model_spike_rate.numpy(), y2=tar_spike_rate.numpy(),
+                                     y1_std=np.zeros_like(model_spike_rate), y2_std=np.zeros_like(tar_spike_rate),
+                                     labels=range(modelpike_train.shape[1]),
+                                     exp_type='export', uuid='ho_stats' + '/' + custom_uuid,
+                                     fname='export_bar_plot_avg_rate_GBO_{}_{}.eps'.format(model.name(), descriptor),
+                                     title='Avg. rates for GBO parameters ({})'.format(model.name()),
+                                     ylabel='Firing rate ($Hz$)', xlabel='Neuron',
+                                     legend=legend)
+    plt.close()
+    return model_spike_rate, tar_spike_rate
 
 
 def plot_param_dist_combined(model, init_model, tar_model, fname, lr):
@@ -127,14 +150,15 @@ for experiments_path in load_paths:
                 id = 'None'
 
             f_ctr = 0
-            mean_model_rates = []
-            mean_tar_rates = []
+            model_rates = []
+            init_model_rates = []
+            tar_rates = []
             param_dist_per_param_fitted = []
             param_dist_per_param_init = []
             for f in files:
                 exp_num = f_ctr % 4  # shouldn't be needed?
-                if(f_ctr >= exp_num):
-                    print('WARNING: f_ctr >= exp_num: {} >= {}'.format(f_ctr, exp_num))
+                if(f_ctr > exp_num):
+                    print('WARNING: f_ctr > exp_num: {} > {}'.format(f_ctr, exp_num))
 
                 exp_res = torch.load(path_models + f)
                 model = exp_res['model']
@@ -156,15 +180,44 @@ for experiments_path in load_paths:
                 cur_tar_seed = 3 + f_ctr % 4
                 tar_model = get_target_model_for(model, cur_tar_seed)
 
-                fname_combined = 'export_param_dist_combined_{}_exp_{}.png'.format(folder_path, exp_num)
-                dist_per_param_fitted, dist_per_param_init = plot_param_dist_combined(model, init_model, tar_model, fname=fname_combined, lr=lr)
-                param_dist_per_param_fitted.append(dist_per_param_fitted)
-                param_dist_per_param_init.append(dist_per_param_init)
+                descriptor = folder_path + 'exp_num_{}'.format(exp_num)
+                init_model_rate, tar_model_rate = export_rates_models(init_model, tar_model, descriptor, legend=['Initial', 'Target'])
+                model_rate, _ = export_rates_models(model, tar_model, descriptor, legend=['Fitted', 'Target'])
+                converged = euclid_dist(init_model_rate, tar_model_rate) > euclid_dist(model_rate, tar_model_rate)
+
+                if converged:
+                    fname_combined = 'export_param_dist_converged_combined_{}_exp_{}.png'.format(folder_path, exp_num)
+                    dist_per_param_fitted, dist_per_param_init = plot_param_dist_combined(model, init_model, tar_model, fname=fname_combined, lr=lr)
+                    param_dist_per_param_fitted.append(dist_per_param_fitted)
+                    param_dist_per_param_init.append(dist_per_param_init)
+                    init_model_rates.append(init_model_rate.numpy())
+                    model_rates.append(model_rate.numpy())
+                    tar_rates.append(tar_model_rate.numpy())
 
                 f_ctr += 1
 
-            fname_exp = 'export_param_dist_exp_avg_all_exp_{}.png'.format(folder_path)
+            fname_exp = 'export_param_dist_converged_exp_avg_all_exp_{}.png'.format(folder_path)
             plot_param_dist_across_exp_combined(param_dist_per_param_fitted, param_dist_per_param_init, fname_exp, lr=lr)
+
+            descriptor = folder_path + '_converged'
+            plot.bar_plot_pair_custom_labels(y1=np.mean(model_rates, axis=0), y2=np.mean(tar_rates, axis=0),
+                                             y1_std=np.std(model_rates, axis=0), y2_std=np.std(tar_rates, axis=0),
+                                             labels=range(len(model_rates[0])),
+                                             exp_type='export', uuid='ho_stats' + '/' + 'GBO',
+                                             fname='export_bar_plot_converged_avg_rate_GBO_{}_{}.eps'.format(model_type, descriptor),
+                                             title='Avg. rates over ({}) converged runs ({})'.format(
+                                                 len(model_rates), model_type),
+                                             ylabel='Firing rate ($Hz$)', xlabel='Neuron',
+                                             legend=['Fitted', 'Target'])
+            plot.bar_plot_pair_custom_labels(y1=np.mean(init_model_rates, axis=0), y2=np.mean(tar_rates, axis=0),
+                                             y1_std=np.std(init_model_rates, axis=0), y2_std=np.std(tar_rates, axis=0),
+                                             labels=range(len(init_model_rates[0])),
+                                             exp_type='export', uuid='ho_stats' + '/' + 'GBO',
+                                             fname='export_bar_plot_converged_init_avg_rate_GBO_{}_{}.eps'.format(model_type, descriptor),
+                                             title='Avg. rates initial models over ({}) converged runs ({})'.format(
+                                                 len(model_rates), model_type),
+                                             ylabel='Firing rate ($Hz$)', xlabel='Neuron',
+                                             legend=['Initial', 'Target'])
 
             config_key = '{}_{}'.format(model_type, lr)  # optim, lfn const.
             if results_dict.keys().__contains__(config_key):
@@ -177,7 +230,7 @@ for experiments_path in load_paths:
 
 
 for k_i, k_v in enumerate(results_dict):
-    fname_k_v = 'export_param_dist_exp_avg_all_config_{}.png'.format(k_v)
+    fname_k_v = 'export_param_dist_converged_exp_avg_all_config_{}.png'.format(k_v)
     plot_param_dist_across_exp_combined(results_dict[k_v]['fitted'], results_dict[k_v]['init'], fname=fname_k_v, lr=lr)
 
 # plot_stats_across_experiments(avg_statistics_per_exp=experiment_averages, archive_name='all')

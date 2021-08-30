@@ -580,7 +580,12 @@ def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabe
     data = {'y': y, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot')
 
-    xs = np.linspace(1, len(y), len(y))
+    if hasattr(y, 'len'):
+        xs = np.linspace(1, len(y), len(y))
+    else:
+        xs = [1]
+        y = [y]
+        y_std = [y_std]
 
     if hasattr(y_std, 'shape') or hasattr(y_std, 'append'):
         plt.bar(xs-0.15, y, yerr=y_std, width=0.3)
@@ -623,7 +628,10 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
     data = {'y1': y1, 'y2': y2, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_pair_custom_labels')
 
-    xs = np.linspace(1, len(y1), len(y1))
+    if hasattr(y1, 'len'):
+        xs = np.linspace(1, len(y1), len(y1))
+    else:
+        xs = np.array([1.])
 
     if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
         plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)

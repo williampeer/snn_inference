@@ -36,8 +36,8 @@ def main(argv):
                  lif_r_asc_continuous_ensembles_model_dales_compliant,
                  glif_continuous_ensembles_model_dales_compliant]:
 
-        # for f_i in range(3, 7):
-        for f_i in range(42, 43):
+        for f_i in range(3, 7):
+        # for f_i in range(42, 43):
             torch.manual_seed(f_i)
             np.random.seed(f_i)
 

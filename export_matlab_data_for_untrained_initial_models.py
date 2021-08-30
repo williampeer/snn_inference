@@ -18,8 +18,8 @@ from spike_train_matlab_export import simulate_and_save_model_spike_train
 def main(argv):
     print('Argument List:', str(argv))
 
-    for model_class in [LIF_R, LIF_R_ASC, GLIF]:
-    # for model_class in [LIF_R_no_grad]:
+    # for model_class in [LIF_R, LIF_R_ASC, GLIF]:
+    for model_class in [GLIF]:
         N = 10
         N_exp = 4
 
@@ -43,7 +43,7 @@ def main(argv):
             # cur_fname = 'initial_model_spikes_{}_exp_num_{}_seed_{}_60s'.format(model_name, exp_i, non_overlapping_offset+exp_i)
             cur_fname = 'initial_model_spikes_{}_N_{}_seed_{}_60s'.format(model_name, N, non_overlapping_offset+exp_i)
             save_file_name = prefix + path + cur_fname + '.mat'
-            if not os.path.exists(save_file_name) or True:
+            if not os.path.exists(save_file_name):
                 simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=60*1000, exp_num=exp_i,
                                                     model_name=model_name, fname=cur_fname)
             else:

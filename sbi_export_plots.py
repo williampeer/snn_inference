@@ -76,14 +76,14 @@ def export_stats_model_target(model, observation, descriptor):
     return mean_spike_rates
 
 
-def export_stats_top_samples(mean_model_rates, std_model_rates, targets, descriptor):
+def export_stats_top_samples(mean_model_rates, std_model_rates, targets, descriptor, N_samples=20):
     plt.figure()
     plot.bar_plot_pair_custom_labels(y1=mean_model_rates, y2=targets,
                                      y1_std=std_model_rates, y2_std=torch.zeros_like(std_model_rates),
                                      labels=range(len(mean_model_rates)),
                                      exp_type='export', uuid='ho_stats' + '/' + 'sbi',
                                      fname='export_bar_plot_avg_rate_sbi_{}.eps'.format(descriptor),
-                                     title='Avg. rates {} most likely samples ({})'.format(len(mean_model_rates), descriptor),
+                                     title='Avg. rates {} most likely samples ({})'.format(N_samples, descriptor),
                                      ylabel='Firing rate ($Hz$)', xlabel='Neuron',
                                      legend=['Fitted', 'Target'])
     plt.close()
@@ -107,7 +107,8 @@ def plot_param_dist(parameter_distance, title, fname):
 
 
 def main():
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
+    experiments_path = '/media/william/p6/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
@@ -151,15 +152,17 @@ def main():
 
             export_plots(samples, points, lim_low, lim_high, N, method, m_name, dt_descriptor)
 
-            print('drawing most likely sample..')
             N_samples = 20
+            print('Drawing the {} most likely samples..'.format(N_samples))
             posterior_params = posterior.sample((N_samples,), x=observation)
             print('\nposterior_params: {}'.format(posterior_params))
 
             mean_model_rates = torch.tensor([])
+            converged_mean_model_rates = torch.tensor([])
             # std_model_rates = torch.tensor([])
 
             avg_param_dist_across_samples = []
+            converged_avg_param_dist_across_samples = []
             for s_i in range(N_samples):
                 model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], N)
                 programmatic_neuron_types = torch.ones((N,))
@@ -171,6 +174,10 @@ def main():
                                                                     format(m_name, dt_descriptor, s_i))
                 mean_model_rates = torch.cat((mean_model_rates, cur_mean_model_rates))
 
+                model_considered_silent_and_diverged = (cur_mean_model_rates < 0.1).sum() < 0.75 * len(cur_mean_model_rates)
+                if not model_considered_silent_and_diverged:
+                    converged_mean_model_rates = torch.cat((converged_mean_model_rates, cur_mean_model_rates))
+
                 current_avg_dist_per_p = []
                 model_parameter_list = model.get_parameters()
                 for p_i in range(len(model_parameter_list)):
@@ -179,13 +186,27 @@ def main():
                 plot_param_dist(np.array(current_avg_dist_per_p), 'Parameter distance for sample: {}'.format(s_i),
                                 '{}_N_{}_parallel_sbi_{}_sample_num_{}'.format(m_name, N, dt_descriptor, s_i))
                 avg_param_dist_across_samples.append(current_avg_dist_per_p)
+                if not model_considered_silent_and_diverged:
+                    converged_avg_param_dist_across_samples.append(current_avg_dist_per_p)
+
             plot_param_dist(np.mean(avg_param_dist_across_samples, axis=0), 'Parameter distance across samples',
                             'sbi_samples_avg_param_dist_{}_N_{}_{}'.format(m_name, N, dt_descriptor))
+            converged_mean_p_dist = np.mean(converged_avg_param_dist_across_samples, axis=0)
+            # if not hasattr(converged_mean_p_dist, 'len'):
+            #     converged_mean_p_dist = np.array([converged_mean_p_dist])
+            plot_param_dist(converged_mean_p_dist, 'Parameter distance across samples forming non-silent models',
+                            'sbi_samples_converged_non_silent_avg_param_dist_{}_N_{}_{}'.format(m_name, N, dt_descriptor))
 
                 # std_model_rates.append(cur_std_model_rate)
             mean_model_rates = torch.reshape(mean_model_rates, (N_samples, -1))
+            converged_mean_model_rates = torch.reshape(converged_mean_model_rates, (len(converged_avg_param_dist_across_samples), -1))
             export_stats_top_samples(torch.mean(mean_model_rates, dim=0), torch.std(mean_model_rates, dim=0),
-                                     observation[0], '{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor))
+                                     observation[0], '{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor), N_samples=len(mean_model_rates))
+            converged_mean_model_rates = torch.mean(converged_mean_model_rates, dim=0)
+            # if not hasattr(converged_mean_model_rates, 'len'):
+            #     converged_mean_model_rates = np.array([converged_mean_model_rates])
+            export_stats_top_samples(converged_mean_model_rates, torch.std(converged_mean_model_rates, dim=0),
+                                     observation[0], 'converged_non_silent_{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor), N_samples=len(converged_mean_model_rates))
 
 if __name__ == "__main__":
     main()

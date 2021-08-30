@@ -30,6 +30,7 @@ for exp_folder in folders:
         id = 'None'
 
     param_files = []; optimiser = None; model_type = ''; lfn = 'Unknown'; spf = None
+    test_losses = []
     for f in files:
         if f.__contains__('plot_all_param_pairs_with_variance'):
             param_files.append(f)
@@ -41,6 +42,7 @@ for exp_folder in folders:
             model_type = custom_title.split(',')[0].split('(')[-1]
             lr = custom_title.split(', ')[-1].strip(' =lr').strip(')')
             lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
+            test_losses.append([f_data['plot_data']['test_loss']])
 
     if optimiser == optim_to_include and model_type in ['LIF_R', 'LIF_R_ASC', 'GLIF'] and spf == 'None' and len(param_files) == 1:
         print('Succes! Processing exp: {}'.format(exp_folder + '/' + param_files[0]))
@@ -52,12 +54,13 @@ for exp_folder in folders:
 
             config = '{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr)
             if not experiment_averages.__contains__(config):
-                experiment_averages[config] = { 'dist' : {}, 'std': {}, 'init_dist': {}, 'init_std': {}}
+                experiment_averages[config] = { 'dist' : {}, 'std': {}, 'init_dist': {}, 'init_std': {}, 'converged': {} }
                 for k in range(len(m_p_by_exp)):
                     experiment_averages[config]['dist'][param_names[k]] = []
                     experiment_averages[config]['std'][param_names[k]] = []
                     experiment_averages[config]['init_dist'][param_names[k]] = []
                     experiment_averages[config]['init_std'][param_names[k]] = []
+                    experiment_averages[config]['converged'][param_names[k]] = []
 
             for p_i in range(len(m_p_by_exp)):
                 per_exp = []
@@ -80,9 +83,13 @@ for exp_folder in folders:
                 experiment_averages[config]['dist'][param_names[p_i]].append(np.mean(per_exp))
                 experiment_averages[config]['std'][param_names[p_i]].append(np.std(per_exp))
 
+                converged = (test_losses[p_i][-1] + test_losses[p_i][-2]) < 0.8 * (test_losses[p_i][0]+test_losses[p_i][1])
+                experiment_averages[config]['converged'][param_names[p_i]].append(converged)
+
 
 # unpack
 exp_avg_ds = []; exp_avg_stds = []; exp_avg_init_ds = []; exp_avg_init_stds = []
+exp_converged_avg_ds = []; exp_converged_avg_stds = []; exp_converged_avg_init_ds = []; exp_converged_avg_init_stds = []
 keys_list = list(experiment_averages.keys())
 keys_list.sort()
 labels = []
@@ -114,6 +121,15 @@ for k_i, k_v in enumerate(keys_list):
         for s_i, s in enumerate(experiment_averages[k_v]['init_std'].values()):
             flat_stds_init.append(s[0])
 
+        flat_ds_converged = []; flat_stds_converged = []
+        flat_ds_init_converged = []; flat_stds_init_converged = []
+        for c_i, converged in enumerate(experiment_averages[k_v]['converged'].values()):
+            if converged:
+                flat_ds_converged.append(list(experiment_averages[k_v]['dist'].values())[c_i])
+                flat_stds_converged.append(list(experiment_averages[k_v]['std'].values())[c_i])
+                flat_ds_init_converged.append(list(experiment_averages[k_v]['init_dist'].values())[c_i])
+                flat_stds_init_converged.append(list(experiment_averages[k_v]['init_std'].values())[c_i])
+
         norm_kern = np.ones_like(flat_ds_init)
         norm_kern[np.isnan(norm_kern)] = 1.0
 
@@ -123,16 +139,34 @@ for k_i, k_v in enumerate(keys_list):
                                     'exp_export_all_euclid_dist_params_{}.png'.format(k_v),
                                     'Avg Euclid dist per param for configuration {}'.format(k_v.replace('0_0', '0.0')).replace('_', ', '),
                                     legend=['Initial model', 'Fitted model'])
-
         exp_avg_ds.append(np.mean(np.array(flat_ds)/norm_kern))
         exp_avg_stds.append(np.std(np.array(flat_ds)/norm_kern))
         exp_avg_init_ds.append(np.mean(np.array(flat_ds_init)/norm_kern))
         exp_avg_init_stds.append(np.std(np.array(flat_ds_init)/norm_kern))
 
-bar_plot_pair_custom_labels(np.array(exp_avg_init_ds), np.array(exp_avg_ds),
-                            np.array(exp_avg_init_stds), np.array(exp_avg_stds),
+        bar_plot_pair_custom_labels(np.array(flat_ds_converged) / norm_kern, np.array(flat_ds_init_converged) / norm_kern,
+                                    np.array(flat_stds_converged) / norm_kern, np.array(flat_stds_init_converged) / norm_kern,
+                                    label_param_names, 'export', 'test',
+                                    'exp_export_converged_euclid_dist_params_{}.png'.format(k_v),
+                                    'Avg Euclid dist per param for configuration {}'.format(
+                                        k_v.replace('0_0', '0.0')).replace('_', ', '),
+                                    legend=['Fitted model', 'Initial model'])
+        exp_converged_avg_ds.append(np.mean(np.array(flat_ds_converged)/norm_kern))
+        exp_converged_avg_stds.append(np.std(np.array(flat_ds_converged)/norm_kern))
+        exp_converged_avg_init_ds.append(np.mean(np.array(flat_ds_init_converged)/norm_kern))
+        exp_converged_avg_init_stds.append(np.std(np.array(flat_ds_init_converged)/norm_kern))
+
+bar_plot_pair_custom_labels(np.array(exp_avg_ds), np.array(exp_avg_init_ds),
+                            np.array(exp_avg_stds), np.array(exp_avg_init_stds),
                             labels, 'export', 'test',
                             'exp_export_all_euclid_dist_params_across_exp_{}.png'.format(optim_to_include),
                             'Avg Euclid dist for all parameters across experiments',
-                            legend=['Initial model', 'Fitted model'], baseline=1.0)
+                            legend=['Fitted model', 'Initial model'], baseline=1.0)
+
+bar_plot_pair_custom_labels(np.array(exp_converged_avg_ds), np.array(exp_converged_avg_init_ds),
+                            np.array(exp_converged_avg_stds), np.array(exp_converged_avg_init_stds),
+                            labels, 'export', 'test',
+                            'exp_export_all_euclid_dist_params_across_exp_converged_loss_{}.png'.format(optim_to_include),
+                            'Avg Euclid dist for all parameters across experiments',
+                            legend=['Fitted model', 'Initial model'], baseline=1.0)
 
