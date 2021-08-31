@@ -76,7 +76,7 @@ def main(argv):
 
                     if lfn == 'FIRING_RATE_DIST':
                         print('checking: {}'.format(save_file_name))
-                        if not os.path.exists(prefix + path + archive_name) or not os.path.exists(save_file_name) or True:
+                        if not os.path.exists(prefix + path + archive_name) or not os.path.exists(save_file_name):
                             makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
                             load_and_export_sim_data(full_folder_path + f, fname=archive_name + cur_fname)
                         else:

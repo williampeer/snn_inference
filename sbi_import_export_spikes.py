@@ -67,12 +67,12 @@ def main():
                 data_arr = torch.load(experiments_path + 'sbi_samples/' + corresponding_samples_fname)['data']
                 print('sbi_samples load successful.')
 
-                save_fname = 'export_{}_tar_seed_{}_sample_N_{}'.format(corresponding_samples_fname.strip('.pt')+'', tar_seed, N)
+                save_fname = 'export_{}_tar_seed_{}'.format(corresponding_samples_fname.strip('.pt')+'', tar_seed)
 
                 torch.manual_seed(tar_seed)
                 np.random.seed(tar_seed)
 
-                if not os.path.exists(data_util.prefix + data_util.path + save_fname + '.mat'):
+                if not os.path.exists(data_util.prefix + data_util.path + save_fname + '_sample_N_1.mat'):
                     # samples = data_arr['samples']
                     observation = data_arr['observation']
                     # points = data_arr['tar_parameters']
