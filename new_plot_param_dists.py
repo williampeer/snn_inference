@@ -11,10 +11,11 @@ from experiments import poisson_input, draw_from_uniform
 from model_util import generate_model_data
 
 load_paths = []
-load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/')
 
 experiment_averages = {}
 
@@ -133,7 +134,7 @@ for experiments_path in load_paths:
             param_dist_per_param_init = []
             for f in files:
                 exp_num = f_ctr % 4  # shouldn't be needed?
-                if(f_ctr >= exp_num):
+                if(f_ctr > exp_num):
                     print('WARNING: f_ctr >= exp_num: {} >= {}'.format(f_ctr, exp_num))
 
                 exp_res = torch.load(path_models + f)
@@ -141,7 +142,7 @@ for experiments_path in load_paths:
                 poisson_rate = exp_res['rate']
                 print('Loaded model data.')
 
-                start_seed = 42; N_exp = 4
+                start_seed = 64; N_exp = 4
                 non_overlapping_offset = start_seed + N_exp + 1
                 torch.manual_seed(non_overlapping_offset + exp_num)
                 # torch.manual_seed(non_overlapping_offset)

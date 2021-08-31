@@ -25,7 +25,8 @@ def main():
 
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'  # Done (export)
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_sbi_runs_1608/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
 
     files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
 
@@ -43,20 +44,34 @@ def main():
         m_name = model_class.__name__.strip('_no_grad')
         N = sbi_res['N']
         dt_descriptor = sbi_res['dt_descriptor']
+        tar_seed = False
+        if sbi_res_file.__contains__('tar_seed'):
+            tar_seed = int(sbi_res_file.split('tar_seed_')[-1].split('.pt')[0])
+
         if 'param_num' in sbi_res:
             param_num = sbi_res['param_num']
-            corresponding_samples_fname = 'samples_method_{}_m_name_{}_param_num_{}_dt_{}.pt'.format(method, m_name, param_num, dt_descriptor)
+            if tar_seed:
+                corresponding_samples_fname = 'samples_method_{}_m_name_{}_param_num_{}_dt_{}_tar_seed_{}.pt'.format(method, m_name, param_num, dt_descriptor, tar_seed)
+            else:
+                corresponding_samples_fname = 'samples_method_{}_m_name_{}_param_num_{}_dt_{}.pt'.format(method, m_name, param_num, dt_descriptor)
 
             print('single param. passing for now..')
         else:
-            corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}.pt'.format(method, m_name, dt_descriptor)
+            if tar_seed:
+                corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}_tar_seed_{}.pt'.format(method, m_name, dt_descriptor, tar_seed)
+            else:
+                corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}.pt'.format(method, m_name, dt_descriptor)
 
             try:
                 print('sbi_res load successful.')
                 data_arr = torch.load(experiments_path + 'sbi_samples/' + corresponding_samples_fname)['data']
                 print('sbi_samples load successful.')
 
-                save_fname = 'export_{}_sample_N_{}'.format(corresponding_samples_fname.strip('.pt')+'', N)
+                save_fname = 'export_{}_tar_seed_{}_sample_N_{}'.format(corresponding_samples_fname.strip('.pt')+'', tar_seed, N)
+
+                torch.manual_seed(tar_seed)
+                np.random.seed(tar_seed)
+
                 if not os.path.exists(data_util.prefix + data_util.path + save_fname + '.mat'):
                     # samples = data_arr['samples']
                     observation = data_arr['observation']

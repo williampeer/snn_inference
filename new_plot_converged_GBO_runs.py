@@ -13,10 +13,11 @@ from model_util import generate_model_data
 from spike_metrics import euclid_dist
 
 load_paths = []
-load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/')
 
 experiment_averages = {}
 
@@ -118,6 +119,7 @@ for experiments_path in load_paths:
         model_type = None
         test_losses = []
         run_converged = []
+        exp_nums = []
         for f in plot_files:
             print(f)
             if f.__contains__('plot_spiketrains_side_by_side'):
@@ -132,6 +134,10 @@ for experiments_path in load_paths:
                 lfn = exp_plot_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
                 cur_test_losses = exp_plot_data['plot_data']['test_loss']
                 test_losses.append(cur_test_losses)
+            if f.__contains__('exp_num'):
+                exp_num = int(f.split('_exp_num_')[1].split('_')[0])
+                print('exp_num: {}'.format(exp_num))
+                exp_nums.append(exp_num)
 
         if model_type is None:
             print('exp did not converge.')
@@ -149,6 +155,10 @@ for experiments_path in load_paths:
                 files = []
                 id = 'None'
 
+            # start_seed = 64; N_exp = 4
+            start_seed = exp_nums[0]; N_exp = len(exp_nums)
+            print('start_seed: {}, N_exp: {}'.format(start_seed, N_exp))
+
             f_ctr = 0
             model_rates = []
             init_model_rates = []
@@ -156,20 +166,19 @@ for experiments_path in load_paths:
             param_dist_per_param_fitted = []
             param_dist_per_param_init = []
             for f in files:
-                exp_num = f_ctr % 4  # shouldn't be needed?
-                if(f_ctr > exp_num):
-                    print('WARNING: f_ctr > exp_num: {} > {}'.format(f_ctr, exp_num))
+                cur_exp_num = f_ctr % 4  # shouldn't be needed?
+                if(f_ctr > cur_exp_num):
+                    print('WARNING: f_ctr > exp_num: {} > {}'.format(f_ctr, cur_exp_num))
 
                 exp_res = torch.load(path_models + f)
                 model = exp_res['model']
                 poisson_rate = exp_res['rate']
                 print('Loaded model data.')
 
-                start_seed = 42; N_exp = 4
                 non_overlapping_offset = start_seed + N_exp + 1
-                torch.manual_seed(non_overlapping_offset + exp_num)
+                torch.manual_seed(non_overlapping_offset + cur_exp_num)
                 # torch.manual_seed(non_overlapping_offset)
-                np.random.seed(non_overlapping_offset + exp_num)
+                np.random.seed(non_overlapping_offset + cur_exp_num)
                 init_params_model = draw_from_uniform(model.__class__.parameter_init_intervals, model.N)
                 programmatic_neuron_types = torch.ones((model.N,))
                 for n_i in range(int(2 * model.N / 3), model.N):
@@ -180,13 +189,13 @@ for experiments_path in load_paths:
                 cur_tar_seed = 3 + f_ctr % 4
                 tar_model = get_target_model_for(model, cur_tar_seed)
 
-                descriptor = folder_path + 'exp_num_{}'.format(exp_num)
+                descriptor = folder_path + 'exp_num_{}'.format(cur_exp_num)
                 init_model_rate, tar_model_rate = export_rates_models(init_model, tar_model, descriptor, legend=['Initial', 'Target'])
                 model_rate, _ = export_rates_models(model, tar_model, descriptor, legend=['Fitted', 'Target'])
                 converged = euclid_dist(init_model_rate, tar_model_rate) > euclid_dist(model_rate, tar_model_rate)
 
                 if converged:
-                    fname_combined = 'export_param_dist_converged_combined_{}_exp_{}.png'.format(folder_path, exp_num)
+                    fname_combined = 'export_param_dist_converged_combined_{}_exp_{}.png'.format(folder_path, cur_exp_num)
                     dist_per_param_fitted, dist_per_param_init = plot_param_dist_combined(model, init_model, tar_model, fname=fname_combined, lr=lr)
                     param_dist_per_param_fitted.append(dist_per_param_fitted)
                     param_dist_per_param_init.append(dist_per_param_init)

@@ -81,10 +81,11 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                                          ylabel='Rate CV')
 
 load_paths = []
-load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/')
 
 experiment_averages = {}
 

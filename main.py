@@ -34,7 +34,7 @@ def main(argv):
     exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.001; N_exp = 10; tau_van_rossum = 20.0; plot_flag = True
+    learn_rate = 0.01; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
     max_train_iters = 40
     interval_size = 6000
     batch_size = interval_size; rows_per_train_iter = interval_size
@@ -46,9 +46,9 @@ def main(argv):
     # loss_fn = 'CV'
     # loss_fn = 'PCC'
     # loss_fn = 'rfh'
-    # loss_fn = 'rph'
+    loss_fn = 'rph'
     # loss_fn = 'kl_div'
-    loss_fn = None
+    # loss_fn = None
     # silent_penalty_factor = 10.0
     silent_penalty_factor = None
 
@@ -65,8 +65,8 @@ def main(argv):
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 
     # optimiser = 'Adam'
-    optimiser = 'SGD'
-    # optimiser = 'RMSprop'
+    # optimiser = 'SGD'
+    optimiser = 'RMSprop'
     initial_poisson_rate = 10.  # Hz
     network_size = 10
 
@@ -80,8 +80,8 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_12_seed_4_duration_900000.mat'
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_LIF_R_N_3_seed_4_duration_900000.mat'  # !!!!!
 
-    model_type = None
-    # model_type = 'LIF_R_ASC'
+    # model_type = None
+    model_type = 'LIF_R_ASC'
     # model_type = 'GLIF'
     # model_type = 'LIF'
     # model_type = 'LIF_weights_only'

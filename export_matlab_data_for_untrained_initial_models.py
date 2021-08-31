@@ -25,7 +25,7 @@ def main(argv):
 
         # for exp_i in range(4):
         for exp_i in range(N_exp):
-            start_seed = 42
+            start_seed = 64
             non_overlapping_offset = start_seed + N_exp + 1
             torch.manual_seed(non_overlapping_offset + exp_i)
             # torch.manual_seed(non_overlapping_offset)

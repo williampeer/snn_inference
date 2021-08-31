@@ -11,14 +11,15 @@ from spike_train_matlab_export import load_and_export_sim_data
 
 def main(argv):
     print('Argument List:', str(argv))
-    offset = 42
+    offset = 64
 
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/'  # Done
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # Done
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # Done
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/'  # Done
     # experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
 
     archive_name = 'data/'
@@ -45,6 +46,7 @@ def main(argv):
                 #     pass
                 # else:
                 exp_num = int(f.split('_exp_num_')[1].split('_')[0])
+                print('exp_num: {}'.format(exp_num))
 
                 pdata_files = os.listdir(plot_data_path + folder_path)
                 pdata_loss_files = []
@@ -55,6 +57,8 @@ def main(argv):
                 rand_seed = int(exp_num) + len(pdata_loss_files) + 1
                 torch.manual_seed(rand_seed)
                 np.random.seed(rand_seed)
+
+                print('exp_num: {}, rand_seed: {}'.format(exp_num, rand_seed))
 
                 pdata_loss_files.sort()
                 if len(pdata_loss_files) > exp_num-offset:
