@@ -173,6 +173,7 @@ class GLIF(nn.Module):
         self.I_additive = self.I_additive - self.f_I * self.I_additive + spiked * self.f_I
 
         # differentiable soft threshold
+        #   TODO: Look into vanishing gradient instability wrt Div0 backward
         soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s + self.theta_v))
         return soft_spiked  # return sigmoidal spiked
 

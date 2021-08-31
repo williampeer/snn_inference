@@ -170,7 +170,7 @@ def correlation_metric_distance(out, tar, bins=NUM_BINS):
     # pcorrcoeff = audtorch.metrics.functional.pearsonr(tar_counts, out_counts)
     pcorrcoeff = calc_pearsonr(tar_counts, out_counts)
     neg_dist = torch.ones_like(pcorrcoeff) - pcorrcoeff  # max 0.
-    return torch.sqrt(torch.pow(neg_dist, 2) + 1e-12).sum() / out.shape[0]
+    return torch.sqrt(torch.pow(neg_dist, 2) + 1e-18).sum() / out.shape[0]
 
 
 def CV_dist(out, tar, bins=NUM_BINS):
