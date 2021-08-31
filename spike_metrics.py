@@ -69,7 +69,7 @@ def greedy_shortest_dist_vr(spikes, target_spikes, tau):
 
 def euclid_dist(vec1, vec2):
     # sqrt((s1 - s2) ** 2)
-    return torch.sqrt(torch.pow(torch.sub(vec2, vec1), 2).sum() + 1e-10)
+    return torch.sqrt(torch.pow(torch.sub(vec2, vec1), 2).sum() + 1e-18)
 
 
 def mse(s1, s2):
