@@ -77,6 +77,13 @@ def main(argv):
         sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS)
 
 
+def get_binned_spike_counts(out, bins=10):
+    bin_len = int(out.shape[0] / bins)
+    out_counts = torch.zeros((bins, out.shape[1]))
+    for b_i in range(bins):
+        out_counts[b_i] = (out[b_i * bin_len:(b_i + 1) * bin_len].sum(dim=0))
+    return out_counts
+
 def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=1):
     tar_model_fn_lookup = { 'LIF_no_grad': lif_continuous_ensembles_model_dales_compliant,
                             'LIF_R_no_grad': lif_r_continuous_ensembles_model_dales_compliant,
@@ -111,21 +118,27 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=1):
         inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
         outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
 
-        model.reset()
-        mean_output_rates = outputs.sum(dim=0) * 1000. / outputs.shape[0]  # Hz
-        return mean_output_rates
+        # model.reset()
+        # mean_output_rates = outputs.sum(dim=0) * 1000. / outputs.shape[0]  # Hz
+        # return mean_output_rates
+
+        return get_binned_spike_counts(outputs.clone().detach())
+
+        # return outputs.clone().detach()
 
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
 
-    rates = None
-    for i in range(10):
+    # rates = None
+    spike_counts_per_sample = None
+    for i in range(8):
         cur_targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
-        cur_rate = cur_targets.sum(dim=0) * 1000. / cur_targets.shape[0]  # Hz
-        if rates is None:
-            rates = cur_rate
+        # cur_rate = cur_targets.sum(dim=0) * 1000. / cur_targets.shape[0]  # Hz
+        cur_cur_spike_count = get_binned_spike_counts(cur_targets.clone().detach())
+        if spike_counts_per_sample is None:
+            spike_counts_per_sample = cur_cur_spike_count
         else:
-            rates = torch.vstack((rates, cur_rate))
-    targets = torch.mean(rates, dim=0)
+            spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
+    targets = torch.mean(spike_counts_per_sample, dim=0)  # TODO: Verify correct dim.
 
     limits_low = torch.zeros((N**2-N,))
     limits_high = torch.ones((N**2-N,))
