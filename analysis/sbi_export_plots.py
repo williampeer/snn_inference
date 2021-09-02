@@ -1,11 +1,11 @@
 import os
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 from sbi import analysis as analysis
 
-import parameter_distance
 import plot
 from TargetModels.TargetModels import *
+from analysis import parameter_distance
 from analysis.sbi_import_export_spikes import convert_posterior_to_model_params_dict
 from experiments import generate_synthetic_data
 
@@ -110,7 +110,8 @@ def main():
     # experiments_path = '/media/william/p6/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_SBI_plus_partial_SanityCheck_0209/archive/saved/data/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
     custom_uuid = 'data'

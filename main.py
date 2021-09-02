@@ -35,9 +35,9 @@ def main(argv):
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 0.01; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
-    max_train_iters = 10
+    max_train_iters = 100
     num_targets = 1
-    interval_size = 6000
+    interval_size = 8000
     batch_size = interval_size; rows_per_train_iter = interval_size
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
@@ -157,7 +157,7 @@ def main(argv):
     if loss_fn is None:
         loss_functions = [
                           LossFn.FIRING_RATE_DIST.name,
-                          LossFn.VAN_ROSSUM_DIST.name,
+                          # LossFn.VAN_ROSSUM_DIST.name,
                           # LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
                           # LossFn.RATE_FANO_HYBRID.name,

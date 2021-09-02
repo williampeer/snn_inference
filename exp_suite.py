@@ -180,7 +180,15 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
             logger.log('======== Exception in fit ===========\n{}'.format(e))
             if error_logger is not None:
                 error_logger.log('Exception occurred: {}'.format(e))
-            converged = True  # stop if vanishing gradients
+            # converged = True  # stop if vanishing gradients
+
+        current_model_parameters = model.get_parameters()
+        param_grads_converged = []
+        for p_i in range(len(current_model_parameters)):
+            cur_p_mean_grad = np.mean(current_model_parameters[p_i].grad.numpy())
+            cur_converged = cur_p_mean_grad < 1e-03 * np.mean(current_model_parameters[p_i].numpy())
+            param_grads_converged.append(cur_converged)
+        converged = np.array(param_grads_converged).sum() == len(param_grads_converged)
 
         train_loss = evaluate_loss(model, inputs=train_input, p_rate=poisson_input_rate.clone().detach(),
                                    target_spiketrain=train_targets, label='train i: {}'.format(train_i),

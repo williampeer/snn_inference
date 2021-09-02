@@ -27,7 +27,7 @@ torch.autograd.set_detect_anomaly(True)
 def main(argv):
     NUM_WORKERS = 6
 
-    t_interval = 6000
+    t_interval = 10000
     N = 3
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']

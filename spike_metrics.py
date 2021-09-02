@@ -1,6 +1,6 @@
 import torch
 
-NUM_BINS = 6
+NUM_BINS = 10
 
 
 # an approximation using torch.where
@@ -69,7 +69,7 @@ def greedy_shortest_dist_vr(spikes, target_spikes, tau):
 
 def euclid_dist(vec1, vec2):
     # sqrt((s1 - s2) ** 2)
-    return torch.sqrt(torch.pow(torch.sub(vec2, vec1), 2).sum() + 1e-18)
+    return torch.sqrt(torch.pow(torch.sub(vec2, vec1), 2).sum() + 1e-12)
 
 
 def mse(s1, s2):
@@ -170,7 +170,7 @@ def correlation_metric_distance(out, tar, bins=NUM_BINS):
     # pcorrcoeff = audtorch.metrics.functional.pearsonr(tar_counts, out_counts)
     pcorrcoeff = calc_pearsonr(tar_counts, out_counts)
     neg_dist = torch.ones_like(pcorrcoeff) - pcorrcoeff  # max 0.
-    return torch.sqrt(torch.pow(neg_dist, 2) + 1e-18).sum() / out.shape[0]
+    return torch.sqrt(torch.pow(neg_dist, 2) + 1e-12).sum() / out.shape[0]
 
 
 def CV_dist(out, tar, bins=NUM_BINS):
