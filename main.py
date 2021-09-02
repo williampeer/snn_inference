@@ -29,13 +29,14 @@ def main(argv):
 
     # Default values
     start_seed = 42
-    # exp_type_str = C.ExperimentType.SanityCheck.name
+    exp_type_str = C.ExperimentType.SanityCheck.name
     # exp_type_str = C.ExperimentType.Synthetic.name
-    exp_type_str = C.ExperimentType.DataDriven.name
+    # exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 0.01; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
-    max_train_iters = 40
+    max_train_iters = 10
+    num_targets = 1
     interval_size = 6000
     batch_size = interval_size; rows_per_train_iter = interval_size
     # batch_size = 2000; rows_per_train_iter = 8000
@@ -46,9 +47,9 @@ def main(argv):
     # loss_fn = 'CV'
     # loss_fn = 'PCC'
     # loss_fn = 'rfh'
-    loss_fn = 'rph'
+    # loss_fn = 'rph'
     # loss_fn = 'kl_div'
-    # loss_fn = None
+    loss_fn = None
     # silent_penalty_factor = 10.0
     silent_penalty_factor = None
 
@@ -65,8 +66,8 @@ def main(argv):
     # max_train_iters = 40; batch_size = 200; rows_per_train_iter = 1600; loss_fn = 'mse'
 
     # optimiser = 'Adam'
-    # optimiser = 'SGD'
-    optimiser = 'RMSprop'
+    optimiser = 'SGD'
+    # optimiser = 'RMSprop'
     initial_poisson_rate = 10.  # Hz
     network_size = 10
 
@@ -80,8 +81,8 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_12_seed_4_duration_900000.mat'
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_LIF_R_N_3_seed_4_duration_900000.mat'  # !!!!!
 
-    # model_type = None
-    model_type = 'LIF_R_ASC'
+    model_type = None
+    # model_type = 'LIF_R_ASC'
     # model_type = 'GLIF'
     # model_type = 'LIF'
     # model_type = 'LIF_weights_only'
@@ -137,6 +138,9 @@ def main(argv):
             data_path = str(args[i])
         elif opt in ("-ns", "--network-size"):
             network_size = int(args[i])
+        elif opt in ("-nt", "--num-targets"):
+            num_targets = int(args[i])
+            assert num_targets > 0, "num targets must be >= 1. currently: {}".format(num_targets)
 
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17,
                   LIF_soft, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft,
@@ -148,12 +152,12 @@ def main(argv):
     # models = [LIF, LIF_soft, LIF_weights_only, LIF_soft_weights_only]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF, LIF_fixed_weights, LIF_weights_only]
-    models = [GLIF, LIF_R_ASC, LIF_R]
+    models = [GLIF, LIF_R_ASC, LIF_R, LIF_weights_only, LIF_fixed_weights]
 
     if loss_fn is None:
         loss_functions = [
                           LossFn.FIRING_RATE_DIST.name,
-                          # LossFn.VAN_ROSSUM_DIST.name,
+                          LossFn.VAN_ROSSUM_DIST.name,
                           # LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
                           # LossFn.RATE_FANO_HYBRID.name,
@@ -205,7 +209,7 @@ def main(argv):
                     exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
             elif exp_type_str == C.ExperimentType.DataDriven.name:
-                for f_i in range(3, 7):
+                for f_i in range(3, 3+num_targets):
                     # only for target_parameters
                     if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_fixed_weights.__name__,
                                             LIF_soft_weights_only.__name__, LIF_soft.__name__]:
