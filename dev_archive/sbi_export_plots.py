@@ -6,8 +6,8 @@ from sbi import analysis as analysis
 import parameter_distance
 import plot
 from TargetModels.TargetModels import *
+from analysis.sbi_import_export_spikes import convert_posterior_to_model_params_dict
 from experiments import generate_synthetic_data
-from sbi_import_export_spikes import convert_posterior_to_model_params_dict
 
 
 def export_plots(samples, points, lim_low, lim_high, N, method, m_name, description):
@@ -107,9 +107,10 @@ def plot_param_dist(parameter_distance, title, fname):
 
 
 def main():
-    experiments_path = '/media/william/p6/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
+    # experiments_path = '/media/william/p6/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
     custom_uuid = 'data'
@@ -120,6 +121,10 @@ def main():
 
         sbi_res_path = experiments_path + 'sbi_res/' + sbi_res_file
         print('Loading: {}'.format(sbi_res_path))
+
+        tar_seed = int(sbi_res_file.split('tar_seed_')[-1].strip('.pt'))
+        print('tar seed: {}'.format(tar_seed))
+
         res_load = torch.load(sbi_res_path)
         sbi_res = res_load['data']
         method = 'SNRE'
@@ -130,11 +135,11 @@ def main():
         dt_descriptor = sbi_res['dt_descriptor']
         if 'param_num' in sbi_res:
             param_num = sbi_res['param_num']
-            corresponding_samples_fname = 'samples_method_{}_m_name_{}_param_num_{}_dt_{}.pt'.format(method, m_name, param_num, dt_descriptor)
+            corresponding_samples_fname = 'samples_method_{}_m_name_{}_param_num_{}_dt_{}_tar_seed_{}.pt'.format(method, m_name, param_num, dt_descriptor, tar_seed)
 
             print('single param. passing for now..')
         else:
-            corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}.pt'.format(method, m_name, dt_descriptor)
+            corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}_tar_seed_{}.pt'.format(method, m_name, dt_descriptor, tar_seed)
             print('sbi_res load successful.')
 
             # try:
@@ -189,9 +194,10 @@ def main():
                 if not model_considered_silent_and_diverged:
                     converged_avg_param_dist_across_samples.append(current_avg_dist_per_p)
 
-            plot_param_dist(np.mean(avg_param_dist_across_samples, axis=0), 'Parameter distance across samples',
+            mean_across_exps = np.mean(avg_param_dist_across_samples, axis=1)
+            plot_param_dist(mean_across_exps, 'Parameter distance across samples',
                             'sbi_samples_avg_param_dist_{}_N_{}_{}'.format(m_name, N, dt_descriptor))
-            converged_mean_p_dist = np.mean(converged_avg_param_dist_across_samples, axis=0)
+            converged_mean_p_dist = np.mean(converged_avg_param_dist_across_samples, axis=1)
             # if not hasattr(converged_mean_p_dist, 'len'):
             #     converged_mean_p_dist = np.array([converged_mean_p_dist])
             plot_param_dist(converged_mean_p_dist, 'Parameter distance across samples forming non-silent models',

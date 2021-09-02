@@ -4,12 +4,9 @@ import numpy as np
 import torch
 from matplotlib import pyplot as plt
 
-import parameter_distance
 import plot
-import stats
 from TargetModels import TargetModels
-from experiments import poisson_input, draw_from_uniform, generate_synthetic_data
-from model_util import generate_model_data
+from experiments import draw_from_uniform, generate_synthetic_data
 from spike_metrics import euclid_dist
 
 load_paths = []

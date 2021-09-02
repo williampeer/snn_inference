@@ -388,13 +388,15 @@ def decompose_param_plot(param_2D, target_params, name, path, custom_title=False
                                   origin='lower', aspect='auto',
                                   extent=[x_min, x_max, y_min, y_max],
                                   cmap='Blues')
-                if target_params and len(target_params[0]) > np.max([i, j]):
+                if target_params is not None and hasattr(target_params, 'shape') and len(target_params[0]) > np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'or', markersize=2.8)
-            except ArithmeticError:
+            except ArithmeticError as ae:
+                print('arithmetic error:\n{}'.format(ae))
                 cur_ax.plot(params_by_exp[i], params_by_exp[j], 'xb', markersize=3.5)
-                if target_params and len(target_params) > np.max([i, j]):
+                if target_params is not None and hasattr(target_params, 'shape') and len(target_params) > np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'or', markersize=2.8)
-            except:
+            except Exception as e:
+                print('exception:\n{}'.format(e))
                 print('WARN: Failed to calculate KDE for param.s: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
 
     # if custom_title:
@@ -580,12 +582,12 @@ def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabe
     data = {'y': y, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot')
 
-    if hasattr(y, 'len'):
-        xs = np.linspace(1, len(y), len(y))
+    if hasattr(y, 'shape'):
+        xs = np.linspace(1, y.shape[0], y.shape[0])
     else:
-        xs = [1]
-        y = [y]
-        y_std = [y_std]
+        xs = np.array([1])
+        y = np.array([y])
+        y_std = np.array([y_std])
 
     if hasattr(y_std, 'shape') or hasattr(y_std, 'append'):
         plt.bar(xs-0.15, y, yerr=y_std, width=0.3)

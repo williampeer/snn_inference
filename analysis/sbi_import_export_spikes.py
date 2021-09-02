@@ -1,7 +1,6 @@
 from IO import *
 from TargetModels.TargetModels import *
-
-from spike_train_matlab_export import simulate_and_save_model_spike_train
+from analysis.spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
 def convert_posterior_to_model_params_dict(model_class, posterior_params, N):

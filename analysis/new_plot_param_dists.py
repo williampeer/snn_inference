@@ -3,12 +3,9 @@ import os
 import numpy as np
 import torch
 
-import parameter_distance
 import plot
-import stats
 from TargetModels import TargetModels
-from experiments import poisson_input, draw_from_uniform
-from model_util import generate_model_data
+from experiments import draw_from_uniform
 
 load_paths = []
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')

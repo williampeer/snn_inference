@@ -20,7 +20,8 @@ def main(argv):
     # experiments_path = '/Users/william/repos/archives_snn_inference/archive 14/saved/plot_data/'
     # load_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/01-22_11-04-09-239/plot_parameter_inference_trajectories_2d01-23_07-27-33-240.pt'
     # experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/03-16_10-33-15-060/'
-    experiments_path = '/home/william/repos/snn_inference/saved/plot_data/05-20_11-21-27-889/'
+    # experiments_path = '/home/william/repos/snn_inference/saved/plot_data/05-20_11-21-27-889/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/plot_data/08-28_01-13-47-801/'
 
     # for i, opt in enumerate(opts):
     #     if opt == '-h':
@@ -109,10 +110,12 @@ def main(argv):
                 assert len(s) == 3, "for reshaping length should be 3"
                 fixed_exp_params[i-1] = np.reshape(np.array(cur_p), (s[0], s[2]))
 
-            for key in plot_data['target_params']:
-                plot_data['target_params'][key] = [plot_data['target_params'][key]]
+            tar_params = []
+            for tar_param in plot_data['target_params']:
+                # plot_data['target_params'][key] = [plot_data['target_params'][key]]
+                tar_params.append([tar_param])
 
-            plot.plot_all_param_pairs_with_variance(param_means=fixed_exp_params, target_params=plot_data['target_params'],
+            plot.plot_all_param_pairs_with_variance(param_means=fixed_exp_params, target_params=tar_params, #plot_data['target_params'],
                                                     param_names=LIF.parameter_names[1:],
                                                     # exp_type=plot_data['exp_type'],
                                                     exp_type=ExperimentType.DataDriven.name,

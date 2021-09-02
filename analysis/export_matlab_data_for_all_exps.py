@@ -5,13 +5,13 @@ import numpy as np
 import torch
 
 from IO import makedir_if_not_exists
+from analysis.spike_train_matlab_export import load_and_export_sim_data
 from data_util import prefix, path
-from spike_train_matlab_export import load_and_export_sim_data
 
 
 def main(argv):
     print('Argument List:', str(argv))
-    offset = 64
+    offset = 42
 
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/'
@@ -19,7 +19,8 @@ def main(argv):
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/'  # Done
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # Done
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/'  # Done
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/'  # Done
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_partial_0109/archive/saved/'  # Done
     # experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
 
     archive_name = 'data/'

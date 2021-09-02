@@ -85,7 +85,8 @@ load_paths = []
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_partial_0109/archive/saved/')
 
 experiment_averages = {}
 
@@ -116,10 +117,10 @@ for experiments_path in load_paths:
         plot_spiketrains_files = []
         model_type = None
         for f in plot_files:
-            print(f)
+            # print(f)
             if f.__contains__('plot_spiketrains_side_by_side'):
                 plot_spiketrains_files.append(f)
-                print('appended {}'.format(f))
+                # print('appended {}'.format(f))
             elif f.__contains__('plot_losses'):
                 exp_plot_data = torch.load(path_plot_data + f)
                 custom_title = exp_plot_data['plot_data']['custom_title']
@@ -128,12 +129,13 @@ for experiments_path in load_paths:
                 lr = custom_title.split(', ')[-2].strip(' =lr').strip(')')
                 lfn = exp_plot_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
                 # break
+                print('plot_losses')
 
         if model_type is None:
             print('exp did not converge.')
             pass
         # if len(plot_spiketrains_files) != 21 * 3 or model_type in ['LIF', 'LIF_no_grad']:  # file mask
-        elif len(plot_spiketrains_files) == 0 or model_type in ['LIF', 'LIF_no_grad'] or lfn != 'FIRING_RATE_DIST' or optimiser == 'SGD':  # file mask
+        elif len(plot_spiketrains_files) == 0 or model_type in ['LIF', 'LIF_no_grad']:  # or optimiser == 'SGD':  # file mask
             print('Skipping: {}, {}, {}. #spike_train_files {}'.format(model_type, lfn, optimiser, len(plot_spiketrains_files)))
             # print("Incomplete exp. len should be 5 exp * 11 plots. was: {}".format(len(plot_spiketrains_files)))
             pass
