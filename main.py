@@ -106,7 +106,7 @@ def main(argv):
             learn_rate = float(args[i])
         elif opt in ("-ti", "--training-iterations"):
             max_train_iters = int(args[i])
-        elif opt in ("-N", "--numbers-of-experiments"):
+        elif opt in ("-noe", "--numbers-of-experiments"):
             N_exp = int(args[i])
         elif opt in ("-bs", "--batch-size"):
             batch_size = int(args[i])
@@ -136,7 +136,7 @@ def main(argv):
             norm_grad_flag = bool(args[i])
         elif opt in ("-dp", "--data-path"):
             data_path = str(args[i])
-        elif opt in ("-ns", "--network-size"):
+        elif opt in ("-N", "--network-size"):
             network_size = int(args[i])
         elif opt in ("-nt", "--num-targets"):
             num_targets = int(args[i])
@@ -157,7 +157,7 @@ def main(argv):
     if loss_fn is None:
         loss_functions = [
                           LossFn.FIRING_RATE_DIST.name,
-                          # LossFn.VAN_ROSSUM_DIST.name,
+                          LossFn.VAN_ROSSUM_DIST.name,
                           # LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
                           # LossFn.RATE_FANO_HYBRID.name,
@@ -177,7 +177,7 @@ def main(argv):
     for m_class in models:
         for loss_fn in loss_functions:
             if exp_type_str in [C.ExperimentType.Synthetic.name, C.ExperimentType.SanityCheck.name]:
-                for f_i in range(3, 7):
+                for f_i in range(3, 3+num_targets):
                     if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_fixed_weights.__name__, LIF_soft_weights_only.__name__, LIF_soft.__name__]:
                         target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
