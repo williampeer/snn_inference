@@ -45,7 +45,9 @@ def van_rossum_dist_one_to_K(spikes, target_spikes, tau):
     c1 = torch_van_rossum_convolution(spikes=spikes.reshape((-1, 1)), tau=tau)
     c1 = torch.ones((1, target_spikes.shape[1])) * c1.reshape((-1, 1))  # broadcast
     c2 = torch_van_rossum_convolution(spikes=target_spikes, tau=tau)
-    euclid_per_node = torch.sqrt(torch.pow(torch.sub(c1, c2), 2) + 1e-12).sum(dim=0)
+    pow_res = torch.pow(torch.sub(c1, c2), 2)
+    # pow_res[torch.isnan(pow_res)] = 1e-06
+    euclid_per_node = torch.sqrt(pow_res + 1e-12).sum(dim=0)
     return euclid_per_node
 
 
@@ -69,7 +71,9 @@ def greedy_shortest_dist_vr(spikes, target_spikes, tau):
 
 def euclid_dist(vec1, vec2):
     # sqrt((s1 - s2) ** 2)
-    return torch.sqrt(torch.pow(torch.sub(vec2, vec1), 2).sum() + 1e-12)
+    pow_res = torch.pow(torch.sub(vec2, vec1), 2)
+    # pow_res[torch.isnan(pow_res)] = 1e-06
+    return torch.sqrt(pow_res.sum() + 1e-12)
 
 
 def mse(s1, s2):
@@ -154,7 +158,21 @@ def calc_pearsonr(counts_out, counts_tar):
     mu_tar = torch.mean(counts_tar, dim=0)
     std_tar = torch.std(counts_tar, dim=0)  # * counts_out.shape[0]  # Bessel correction correction
 
+    # std_out[torch.isnan(std_out)] = 1.
+    # std_tar[torch.isnan(std_tar)] = 1.
+    std_out[std_out == 0] = 1.
+    std_tar[std_tar == 0] = 1.
+
     pcorrcoeff = (counts_out - torch.ones_like(counts_out) * mu_out) * (counts_tar - torch.ones_like(counts_tar) * mu_tar) / (std_out * std_tar)
+
+    # print('..............-------------------................')
+    # print('counts_out: {}'.format(counts_out))
+    # print('counts_tar: {}'.format(counts_tar))
+    # print('pcorrcoeff: {}'.format(pcorrcoeff))
+    # print('..............-------------------................')
+
+    assert torch.isnan(pcorrcoeff).sum() == 0, "found nan-values in pcorrcoeff: {}".format(pcorrcoeff)
+
     return pcorrcoeff
 
 
@@ -170,7 +188,15 @@ def correlation_metric_distance(out, tar, bins=NUM_BINS):
     # pcorrcoeff = audtorch.metrics.functional.pearsonr(tar_counts, out_counts)
     pcorrcoeff = calc_pearsonr(tar_counts, out_counts)
     neg_dist = torch.ones_like(pcorrcoeff) - pcorrcoeff  # max 0.
-    return torch.sqrt(torch.pow(neg_dist, 2) + 1e-12).sum() / out.shape[0]
+    squared_dist = torch.pow(neg_dist, 2)
+    # squared_dist[torch.isnan(squared_dist)] = 1e-06
+    dist = torch.sqrt(squared_dist + 1e-12).sum() / out.shape[0]
+    # print('-----------************------------***********------------')
+    # print('neg_dist: {}'.format(neg_dist))
+    # print('squared_dist: {}'.format(squared_dist))
+    # print('dist: {}'.format(dist))
+    # print('-----------************------------***********------------')
+    return dist
 
 
 def CV_dist(out, tar, bins=NUM_BINS):
@@ -199,7 +225,8 @@ def shortest_dist_rates(spikes, target_spikes):
     target_rates = target_spikes.sum(axis=0) * 1000. / target_spikes.shape[0]
     target_rates, _ = torch.sort(target_rates)
 
-    return torch.sqrt(torch.pow(torch.sub(spike_rates, target_rates), 2).sum() + 1e-12)
+    # return torch.sqrt(torch.pow(torch.sub(spike_rates, target_rates), 2).sum() + 1e-12)
+    return euclid_dist(spike_rates, target_rates)
 
 
 def shortest_dist_rates_w_silent_penalty(spikes, target_spikes):
@@ -210,6 +237,10 @@ def shortest_dist_rates_w_silent_penalty(spikes, target_spikes):
     target_rates = target_spikes.sum(dim=0) * 1000. / target_spikes.shape[0]
     target_rates, _ = torch.sort(target_rates)
 
-    silent_penalty = torch.sqrt(torch.pow(torch.exp(-spike_rates) - torch.exp(target_rates), 2).sum() + 1e-12)
-    return torch.sqrt(torch.pow(torch.sub(spike_rates, target_rates), 2).sum() + 1e-12) + silent_penalty
+    pow_res = torch.pow(torch.exp(-spike_rates) - torch.exp(target_rates), 2)
+    # pow_res[torch.isnan(pow_res)] = 1e-06
+
+    silent_penalty = torch.sqrt(pow_res.sum() + 1e-12)
+    # return torch.sqrt(torch.pow(torch.sub(spike_rates, target_rates), 2).sum() + 1e-12) + silent_penalty
+    return euclid_dist(spike_rates, target_rates) + silent_penalty
 

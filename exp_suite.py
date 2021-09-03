@@ -157,38 +157,32 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
             if constants.EXP_TYPE == ExperimentType.SanityCheck:
                 train_input = gen_train_input
 
-        try:
-            avg_unseen_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=train_input, target_spiketrain=train_targets,
-                                                                     poisson_input_rate=poisson_input_rate, optimiser=optim,
-                                                                     constants=constants, train_i=train_i, logger=logger)
+        # try:
+            avg_unseen_loss, abs_grads_mean, last_loss, converged = fit_batches(model, gen_inputs=train_input, target_spiketrain=train_targets,
+                                                                                poisson_input_rate=poisson_input_rate, optimiser=optim,
+                                                                                constants=constants, train_i=train_i, logger=logger)
+
+            cur_params = model.state_dict()
+            logger.log('current parameters {}'.format(cur_params))
+
+            for p_i, key in enumerate(cur_params):
+                parameters[p_i].append(cur_params[key].clone().detach().numpy())
+
             # if constants.EXP_TYPE is not ExperimentType.DataDriven:
             release_computational_graph(target_model, constants.initial_poisson_rate)
 
             logger.log(parameters=[avg_unseen_loss, abs_grads_mean])
             test_losses = np.concatenate((test_losses, np.asarray([avg_unseen_loss])))
-
-            cur_params = model.state_dict()
-            logger.log('current parameters {}'.format(cur_params))
-            for p_i, key in enumerate(cur_params):
-                parameters[p_i].append(cur_params[key].clone().detach().numpy())
         # parameters[p_i + 1].append(poisson_input_rate.clone().detach().numpy())
         # poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
         # max_grads_mean = np.max((max_grads_mean, abs_grads_mean))
         # converged = abs(abs_grads_mean) <= 0.1 * abs(max_grads_mean)  # and validation_loss < np.max(validation_losses)
-        except Exception as e:
-            logger.log('======== Exception in fit ===========\n{}'.format(e))
-            if error_logger is not None:
-                error_logger.log('Exception occurred: {}'.format(e))
-            # converged = True  # stop if vanishing gradients
-
-        current_model_parameters = model.get_parameters()
-        param_grads_converged = []
-        for p_i in range(len(current_model_parameters)):
-            cur_p_mean_grad = np.mean(current_model_parameters[p_i].grad.numpy())
-            cur_converged = cur_p_mean_grad < 1e-03 * np.mean(current_model_parameters[p_i].numpy())
-            param_grads_converged.append(cur_converged)
-        converged = np.array(param_grads_converged).sum() == len(param_grads_converged)
+        # except Exception as e:
+        #     logger.log('======== Exception in fit ===========\n{}'.format(e))
+        #     if error_logger is not None:
+        #         error_logger.log('Exception occurred: {}'.format(e))
+        #     # converged = True  # stop if vanishing gradients
 
         train_loss = evaluate_loss(model, inputs=train_input, p_rate=poisson_input_rate.clone().detach(),
                                    target_spiketrain=train_targets, label='train i: {}'.format(train_i),
@@ -241,29 +235,29 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
 
         init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
 
-        try:
-            recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
-                fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
-                          target_parameters=target_parameters, num_neurons=num_neurons,
-                          error_logger=error_logger)
+        # try:
+        recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
+            fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
+                      target_parameters=target_parameters, num_neurons=num_neurons,
+                      error_logger=error_logger)
 
-            # logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
+        # logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
 
-            if train_i >= constants.train_iters:
-                print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
-                      .format(exp_i, train_i, train_losses, test_losses))
+        if train_i >= constants.train_iters:
+            print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
+                  .format(exp_i, train_i, train_losses, test_losses))
 
-            for p_i, key in enumerate(recovered_parameters):
-                if exp_i == constants.start_seed:
-                    recovered_param_per_exp[key] = [recovered_parameters[key]]
-                else:
-                    recovered_param_per_exp[key].append(recovered_parameters[key])
+        for p_i, key in enumerate(recovered_parameters):
+            if exp_i == constants.start_seed:
+                recovered_param_per_exp[key] = [recovered_parameters[key]]
+            else:
+                recovered_param_per_exp[key].append(recovered_parameters[key])
             # if poisson_rates is not None and len(poisson_rates) > 0:
             #     poisson_rate_per_exp.append(poisson_rates[-1])
-        except Exception as e:
-            logger.log('======== ERROR ===========\nException occurred: {}'.format(e))
-            error_logger.log('Exception occurred: {}'.format(e))
-            print(e)
+        # except Exception as e:
+        #     logger.log('======== ERROR ===========\nException occurred: {}'.format(e))
+        #     error_logger.log('Exception occurred: {}'.format(e))
+        #     print(e)
 
             # TODO: Consider fixing
             # stats_training_iterations(model_parameters=parameters, model=model, poisson_rate=poisson_input_rate,

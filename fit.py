@@ -23,6 +23,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         avg_abs_grads.append([])
 
     optimiser.zero_grad()
+    converged_batches = []
     # poisson_input_rate.grad = torch.tensor(0.)
     for batch_i in range(batch_N):
         print('batch #{}'.format(batch_i))
@@ -49,6 +50,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         # loss.backward()
 
         # poisson_input_rate.grad = torch.mean(current_inputs.grad)  # TODO: test w. "final" learn rate
+        param_grads_converged = []
         for p_i, param in enumerate(list(model.parameters())):
             logger.log('grad for param #{}: {}'.format(p_i, param.grad))
             if constants.norm_grad_flag is True:
@@ -56,10 +58,14 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
                 if max_grad > 0:
                     param.grad = param.grad/torch.max(param.grad)  # normalise
 
-        # print('list(model.parameters())', list(model.parameters()))
-        for p_i, param in enumerate(list(model.parameters())):
-            # print('p_i, param.grad', p_i, param.grad)
             avg_abs_grads[p_i].append(np.mean(np.abs(param.grad.clone().detach().numpy())))
+
+            cur_p_mean_grad = np.mean(param.grad.clone().detach().numpy())
+            cur_converged = cur_p_mean_grad < 1e-02 * np.mean(param.clone().detach().numpy())
+            param_grads_converged.append(cur_converged)
+
+        converged = np.array(param_grads_converged).sum() == len(param_grads_converged)
+        converged_batches.append(converged)
 
         if constants.EXP_TYPE is not ExperimentType.SanityCheck:
             avg_abs_grads[p_i + 1].append(np.abs(poisson_input_rate.grad.clone().detach().numpy()))
@@ -82,4 +88,6 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
     logger.log('train_i #: {},\navg_abs_grads: {}'.format(train_i, avg_abs_grads))
     gen_inputs = None
 
-    return avg_batch_loss, np.mean(np.asarray(avg_abs_grads, dtype=np.float)), batch_losses[-1]
+    converged = np.array(converged_batches).sum() == len(converged_batches)
+
+    return avg_batch_loss, np.mean(np.asarray(avg_abs_grads, dtype=np.float)), batch_losses[-1], converged

@@ -56,6 +56,16 @@ class LIF_fixed_weights(nn.Module):
         self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_s))
         self.spike_threshold.register_hook(lambda grad: static_clamp_for(grad, 0., 50., self.spike_threshold))
 
+    def get_parameters(self):
+        params_list = []
+        params_list.append(self.w.data)
+        params_list.append(self.E_L.data)
+        params_list.append(self.tau_m.data)
+        params_list.append(self.tau_s.data)
+        params_list.append(self.spike_threshold.data)
+
+        return params_list
+
     def reset(self):
         for p in self.parameters():
             p.grad = None

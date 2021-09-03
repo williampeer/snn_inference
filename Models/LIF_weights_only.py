@@ -71,6 +71,16 @@ class LIF_weights_only(nn.Module):
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
+    def get_parameters(self):
+        params_list = []
+        params_list.append(self.w.data)
+        params_list.append(self.E_L.data)
+        params_list.append(self.tau_m.data)
+        params_list.append(self.tau_s.data)
+        params_list.append(self.spike_threshold.data)
+
+        return params_list
+
     def reset(self):
         for p in self.parameters():
             p.grad = None
