@@ -130,15 +130,17 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=1):
 
     # rates = None
     spike_counts_per_sample = None
-    for i in range(8):
+    n_samples = 8
+    for i in range(n_samples):
         cur_targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
         # cur_rate = cur_targets.sum(dim=0) * 1000. / cur_targets.shape[0]  # Hz
         cur_cur_spike_count = get_binned_spike_counts(cur_targets.clone().detach())
         if spike_counts_per_sample is None:
             spike_counts_per_sample = cur_cur_spike_count
         else:
-            spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
-    targets = torch.mean(spike_counts_per_sample, dim=1)
+            # spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
+            spike_counts_per_sample = spike_counts_per_sample + cur_cur_spike_count
+    targets = spike_counts_per_sample / n_samples
 
     limits_low = torch.zeros((N**2-N,))
     limits_high = torch.ones((N**2-N,))
