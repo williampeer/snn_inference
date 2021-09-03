@@ -138,7 +138,7 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=1):
             spike_counts_per_sample = cur_cur_spike_count
         else:
             spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
-    targets = torch.mean(spike_counts_per_sample, dim=0)  # TODO: Verify correct dim.
+    targets = torch.mean(spike_counts_per_sample, dim=1)
 
     limits_low = torch.zeros((N**2-N,))
     limits_high = torch.ones((N**2-N,))
