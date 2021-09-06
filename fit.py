@@ -89,5 +89,6 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
     gen_inputs = None
 
     converged = np.array(converged_batches).sum() == len(converged_batches)
+    print('converged last batch: {}\nconverged_batches: {}\nconverged: {}'.format(param_grads_converged, converged_batches, converged))
 
     return avg_batch_loss, np.mean(np.asarray(avg_abs_grads, dtype=np.float)), batch_losses[-1], converged
