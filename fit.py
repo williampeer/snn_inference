@@ -13,6 +13,8 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
             "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
         gen_inputs = gen_inputs.clone().detach()
 
+    learn_rate = constants.learn_rate
+
     tau_vr = torch.tensor(constants.tau_van_rossum)
     batch_size = constants.batch_size
     batch_N = int(target_spiketrain.shape[0]/batch_size)
@@ -61,7 +63,12 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
             avg_abs_grads[p_i].append(np.mean(np.abs(param.grad.clone().detach().numpy())))
 
             cur_p_mean_grad = np.mean(param.grad.clone().detach().numpy())
-            cur_converged = cur_p_mean_grad < 1e-02 * np.mean(param.clone().detach().numpy())
+            if p_i > 0:
+                cur_p_max = model.__class__.parameter_init_intervals[model.__class__.parameter_names[p_i]][1]
+            else:  # 'w'
+                cur_p_max = 1.
+
+            cur_converged = cur_p_mean_grad < 0.01 * cur_p_max
             param_grads_converged.append(cur_converged)
 
         converged = np.array(param_grads_converged).sum() == len(param_grads_converged)

@@ -34,7 +34,7 @@ def main(argv):
     # exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.01; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
+    learn_rate = 0.02; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
     max_train_iters = 100
     num_targets = 1
     interval_size = 8000
@@ -90,6 +90,10 @@ def main(argv):
     # model_type = 'LIF_soft'
     # model_type = 'LIF_soft_weights_only'
     # model_type = 'LIF_ASC'
+    # model_type = 'LIF_weights_only'
+    # model_type = 'LIF_R_soft'
+    # model_type = 'LIF_R_ASC_soft'
+    # model_type = 'GLIF_soft'
     norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -152,7 +156,8 @@ def main(argv):
     # models = [LIF, LIF_soft, LIF_weights_only, LIF_soft_weights_only]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF, LIF_fixed_weights, LIF_weights_only]
-    models = [GLIF, LIF_R_ASC, LIF_R, LIF_weights_only, LIF_fixed_weights]
+    models = [LIF_weights_only, LIF_fixed_weights, LIF_R, LIF_R_ASC, GLIF]
+    # models = [LIF_weights_only, LIF_fixed_weights, LIF_R]
 
     if loss_fn is None:
         loss_functions = [

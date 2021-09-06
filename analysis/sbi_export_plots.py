@@ -7,6 +7,7 @@ import plot
 from TargetModels.TargetModels import *
 from analysis import parameter_distance
 from analysis.sbi_import_export_spikes import convert_posterior_to_model_params_dict
+from dev_sbi_main_multi import get_binned_spike_counts
 from experiments import generate_synthetic_data
 
 
@@ -49,20 +50,32 @@ def export_plots(samples, points, lim_low, lim_high, N, method, m_name, descript
 
 
 def export_stats_model_target(model, observation, descriptor):
-    spike_train, _ = generate_synthetic_data(model, poisson_rate=10., t=6000)
-    spike_rates = 1000. * spike_train.sum(dim=0) / spike_train.shape[0]
-    for spike_iters in range(10-1):
+    # spike_rates = 1000. * spike_train.sum(dim=0) / spike_train.shape[0]
+    # for spike_iters in range(10-1):
+    #     spike_train, _ = generate_synthetic_data(model, poisson_rate=10., t=6000)
+    #     spike_rates = torch.cat([spike_rates, 1000. * spike_train.sum(dim=0) / spike_train.shape[0]])
+    n_samples = 10
+    spike_counts_per_sample = None
+    for spike_iters in range(n_samples-1):
         spike_train, _ = generate_synthetic_data(model, poisson_rate=10., t=6000)
-        spike_rates = torch.cat([spike_rates, 1000. * spike_train.sum(dim=0) / spike_train.shape[0]])
+        cur_cur_spike_count = get_binned_spike_counts(spike_train.clone().detach())
+        if spike_counts_per_sample is None:
+            spike_counts_per_sample = cur_cur_spike_count
+        else:
+            # spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
+            spike_counts_per_sample = spike_counts_per_sample + cur_cur_spike_count
+    mean_model_spike_counts = spike_counts_per_sample / n_samples
 
-    spike_rates = torch.reshape(spike_rates, (-1, model.N))
-    mean_spike_rates = torch.mean(spike_rates, dim=0)
-    rate_stds = torch.std(spike_rates, dim=0)
+    # spike_rates = torch.reshape(spike_rates, (-1, model.N))
+    # mean_spike_rates = torch.mean(spike_rates, dim=0)
+    # rate_stds = torch.std(spike_rates, dim=0)
+
     custom_uuid = 'sbi'
     plt.figure()
-    plot.bar_plot_pair_custom_labels(y1=mean_spike_rates, y2=observation[0],
-                                     y1_std=rate_stds, y2_std=torch.zeros_like(rate_stds),
-                                     labels=range(spike_train.shape[1]),
+    reshaped_tar = torch.reshape(observation, (10,model.N))
+    plot.bar_plot_pair_custom_labels(y1=torch.mean(mean_model_spike_counts, dim=1), y2=torch.mean(reshaped_tar, dim=1),
+                                     y1_std=torch.std(mean_model_spike_counts, dim=1), y2_std=torch.std(reshaped_tar, dim=1),
+                                     labels=range(mean_model_spike_counts.shape[1]),
                                      exp_type='export', uuid='ho_stats' + '/' + custom_uuid,
                                      fname='export_bar_plot_avg_rate_sbi_{}.eps'.format(descriptor),
                                      title='Avg. rates for SBI parameters ({})'.format(descriptor),
@@ -73,7 +86,7 @@ def export_stats_model_target(model, observation, descriptor):
     # correlation:
     # Not too informative, unless the same input is used. However, correlation between neurons within model may be informative about that model, but so is NMF.
 
-    return mean_spike_rates
+    return mean_model_spike_counts
 
 
 def export_stats_top_samples(mean_model_rates, std_model_rates, targets, descriptor, N_samples=20):
@@ -111,7 +124,8 @@ def main():
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_SBI_plus_partial_SanityCheck_0209/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_SBI_plus_partial_SanityCheck_0209/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_0609/archive/saved/data/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
     custom_uuid = 'data'
