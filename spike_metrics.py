@@ -160,10 +160,10 @@ def calc_pearsonr(counts_out, counts_tar):
 
     # std_out[torch.isnan(std_out)] = 1.
     # std_tar[torch.isnan(std_tar)] = 1.
-    std_out[std_out == 0] = 1.
-    std_tar[std_tar == 0] = 1.
+    # std_out[std_out == 0] = 1.
+    # std_tar[std_tar == 0] = 1.
 
-    pcorrcoeff = (counts_out - torch.ones_like(counts_out) * mu_out) * (counts_tar - torch.ones_like(counts_tar) * mu_tar) / (std_out * std_tar)
+    pcorrcoeff = (counts_out - torch.ones_like(counts_out) * mu_out) * (counts_tar - torch.ones_like(counts_tar) * mu_tar) / (std_out * std_tar + 1)
 
     # print('..............-------------------................')
     # print('counts_out: {}'.format(counts_out))
