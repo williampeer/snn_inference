@@ -14,11 +14,11 @@ from Models.LIF_weights_only import LIF_weights_only
 from Models.ReLu.GLIF_ReLu import GLIF_ReLu
 from Models.ReLu.LIF_R_ASC_ReLu import LIF_R_ASC_ReLu
 from Models.ReLu.LIF_R_ReLu import LIF_R_ReLu
-from Models.ReLu.LIF_ReLu_weights_only import LIF_ReLu_weights_only
+from Models.ReLu.LIF_R_ReLu_weights_only import LIF_R_ReLu_weights_only
 from Models.Sigmoidal.GLIF_soft import GLIF_soft
 from Models.Sigmoidal.LIF_R_ASC_soft import LIF_R_ASC_soft
 from Models.Sigmoidal.LIF_R_soft import LIF_R_soft
-from Models.Sigmoidal.LIF_soft_weights_only import LIF_soft_weights_only
+from Models.Sigmoidal.LIF_R_soft_weights_only import LIF_R_soft_weights_only
 from TargetModels import TargetModels
 from eval import LossFn
 
@@ -150,8 +150,8 @@ def main(argv):
 
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17,
                   LIF_R_soft, LIF_R_ASC_soft, GLIF_soft,
-                  LIF_weights_only, LIF_fixed_weights, LIF_soft_weights_only,
-                  LIF_R_ReLu, LIF_R_ASC_ReLu, GLIF_ReLu, LIF_ReLu_weights_only]
+                  LIF_weights_only, LIF_fixed_weights, LIF_R_soft_weights_only,
+                  LIF_R_ReLu, LIF_R_ASC_ReLu, GLIF_ReLu, LIF_R_ReLu_weights_only]
     # models = [LIF_HS_17]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF_soft_weights_only, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
@@ -159,9 +159,9 @@ def main(argv):
     # models = [LIF, LIF_soft, LIF_weights_only, LIF_soft_weights_only]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF, LIF_fixed_weights, LIF_weights_only]
-    # models = [LIF_weights_only,LIF_R, LIF_R_ASC, GLIF, LIF_fixed_weights]
-    # models = [LIF_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft]
-    models = [LIF_ReLu_weights_only, LIF_R_ReLu, LIF_R_ASC_ReLu, GLIF_ReLu]
+    # models = [LIF_R_weights_only,L IF_R, LIF_R_ASC, GLIF, LIF_fixed_weights]
+    # models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft]
+    models = [LIF_R_ReLu_weights_only, LIF_R_ReLu, LIF_R_ASC_ReLu, GLIF_ReLu]
     # models = [LIF_weights_only, LIF_fixed_weights, LIF_R]
 
     if loss_fn is None:
@@ -188,10 +188,10 @@ def main(argv):
         for loss_fn in loss_functions:
             if exp_type_str in [C.ExperimentType.Synthetic.name, C.ExperimentType.SanityCheck.name]:
                 for f_i in range(3, 3+num_targets):
-                    if m_class.__name__ in [LIF.__name__, LIF_soft_weights_only.__name__, LIF_ReLu_weights_only.__name__]:
+                    if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_weights_only.__name__]:
                         target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__, LIF_R_ReLu.__name__]:
+                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__, LIF_R_ReLu.__name__, LIF_R_soft_weights_only.__name__, LIF_R_ReLu_weights_only.__name__]:
                         target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__, LIF_R_ASC_ReLu.__name__]:
