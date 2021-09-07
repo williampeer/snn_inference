@@ -68,7 +68,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
             else:  # 'w'
                 cur_p_max = 1.
 
-            cur_converged = cur_p_mean_grad < 1e-03 * cur_p_max
+            cur_converged = cur_p_mean_grad < 1e-02 * cur_p_max
             param_grads_converged.append(cur_converged)
 
         converged = np.array(param_grads_converged).sum() == len(param_grads_converged)
