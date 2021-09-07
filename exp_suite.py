@@ -100,10 +100,15 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     if model_class.__name__.__contains__('fixed_weights'):
         params_model['preset_weights'] = target_model.w.clone().detach()
     elif model_class.__name__.__contains__('weights_only'):
-        params_model['E_L'] = target_model.E_L.clone().detach()
-        params_model['tau_m'] = target_model.tau_m.clone().detach()
-        params_model['tau_s'] = target_model.tau_s.clone().detach()
-        params_model['spike_threshold'] = target_model.spike_threshold.clone().detach()
+        # params_model['E_L'] = target_model.E_L.clone().detach()
+        # params_model['tau_m'] = target_model.tau_m.clone().detach()
+        # params_model['tau_s'] = target_model.tau_s.clone().detach()
+        # params_model['spike_threshold'] = target_model.spike_threshold.clone().detach()
+        tar_p_names = target_model.__class__.parameter_names
+        tar_params = target_model.get_parameters()
+        for p_i in range(1, len(tar_p_names)):
+            params_model[tar_p_names[p_i]] = tar_params[p_i].clone().detach()
+
     model = model_class(N=num_neurons, parameters=params_model, neuron_types=neuron_types)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)

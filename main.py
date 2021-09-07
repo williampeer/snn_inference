@@ -191,7 +191,8 @@ def main(argv):
                     if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_weights_only.__name__]:
                         target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__, LIF_R_ReLu.__name__, LIF_R_soft_weights_only.__name__, LIF_R_ReLu_weights_only.__name__]:
+                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__, LIF_R_ReLu.__name__,
+                                              LIF_R_soft_weights_only.__name__, LIF_R_ReLu_weights_only.__name__]:
                         target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__, LIF_R_ASC_ReLu.__name__]:
@@ -215,9 +216,10 @@ def main(argv):
             elif exp_type_str == C.ExperimentType.DataDriven.name:
                 for f_i in range(3, 3+num_targets):
                     # only for target_parameters
-                    if m_class.__name__ in [LIF.__name__, LIF_soft_weights_only.__name__, LIF_ReLu_weights_only.__name__]:
+                    if m_class.__name__ in [LIF.__name__]:
                         target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__, LIF_R_ReLu.__name__]:
+                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__, LIF_R_ReLu.__name__,
+                                              LIF_R_soft_weights_only.__name__, LIF_R_ReLu_weights_only.__name__]:
                         target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__, LIF_R_ASC_ReLu.__name__]:
                         target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
