@@ -91,7 +91,7 @@ def main(argv):
     # model_type = 'LIF_ASC'
     # model_type = 'LIF_weights_only'
     # model_type = 'LIF_R_soft'
-    model_type = 'LIF_R_ASC_soft'
+    # model_type = 'LIF_R_ASC_soft'
     # model_type = 'GLIF_soft'
     norm_grad_flag = False
 
