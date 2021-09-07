@@ -24,6 +24,23 @@ torch.autograd.set_detect_anomaly(True)
 #                                                       spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
 
 
+def transform_model_to_sbi_params(model):
+    m_params = torch.zeros((model.N**2-model.N,))
+    ctr = 0
+    for i in range(model.w.shape[0]):
+        for j in range(model.w.shape[1]):
+            if i!=j:
+                m_params[ctr] = model.w[i,j].clone().detach()
+                ctr += 1
+
+    model_params_list = model.get_parameters()
+    for p_i in range(1, len(model.__class__.parameter_names)):
+        m_params = torch.hstack((m_params, model_params_list[p_i]))
+        # model_params_list[(N ** 2 - N) + N * (i - 1):(N ** 2 - N) + N * i] = [model_class.parameter_names[i]]
+
+    return m_params
+
+
 def main(argv):
     NUM_WORKERS = 6
 
@@ -34,7 +51,7 @@ def main(argv):
     # method = None
     method = 'SNRE'
     # model_type = None
-    model_type = 'GLIF'
+    model_type = 'LIF_R'
     budget = 10000
     # budget = 100
     tar_seed = 42
@@ -84,6 +101,7 @@ def get_binned_spike_counts(out, bins=10):
         out_counts[b_i] = (out[b_i * bin_len:(b_i + 1) * bin_len].sum(dim=0))
     return out_counts
 
+
 def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
     tar_model_fn_lookup = { 'LIF_no_grad': lif_continuous_ensembles_model_dales_compliant,
                             'LIF_R_no_grad': lif_r_continuous_ensembles_model_dales_compliant,
@@ -128,20 +146,6 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
 
     inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
 
-    # rates = None
-    spike_counts_per_sample = None
-    n_samples = 8
-    for i in range(n_samples):
-        cur_targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
-        # cur_rate = cur_targets.sum(dim=0) * 1000. / cur_targets.shape[0]  # Hz
-        cur_cur_spike_count = get_binned_spike_counts(cur_targets.clone().detach())
-        if spike_counts_per_sample is None:
-            spike_counts_per_sample = cur_cur_spike_count
-        else:
-            # spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
-            spike_counts_per_sample = spike_counts_per_sample + cur_cur_spike_count
-    targets = spike_counts_per_sample / n_samples
-
     limits_low = torch.zeros((N**2-N,))
     limits_high = torch.ones((N**2-N,))
 
@@ -149,15 +153,26 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
         limits_low = torch.hstack((limits_low, torch.ones((N,)) * model_class.param_lin_constraints[i][0]))
         limits_high = torch.hstack((limits_high, torch.ones((N,)) * model_class.param_lin_constraints[i][1]))
 
-    tar_parameters = tar_model.get_parameters()
-
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
-    res = {}
+    tar_sbi_params = transform_model_to_sbi_params(tar_model)
+    spike_counts_per_sample = None
+    n_samples = 8
+    for i in range(n_samples):
+        cur_targets = simulator(tar_sbi_params)
+        # cur_rate = cur_targets.sum(dim=0) * 1000. / cur_targets.shape[0]  # Hz
+        cur_cur_spike_count = get_binned_spike_counts(cur_targets.clone().detach())
+        if spike_counts_per_sample is None:
+            spike_counts_per_sample = cur_cur_spike_count
+        else:
+            # spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
+            spike_counts_per_sample = spike_counts_per_sample + cur_cur_spike_count
+    avg_tar_model_simulations = spike_counts_per_sample / n_samples
 
     posterior = infer(simulator, prior, method=method, num_simulations=budget, num_workers=NUM_WORKERS)
     # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
     dt_descriptor = IO.dt_descriptor()
+    res = {}
     res[method] = posterior
     res['model_class'] = model_class
     res['N'] = N
@@ -170,7 +185,8 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
         IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
                      fname='res_{}_dt_{}_tar_seed_{}'.format(method, dt_descriptor, tar_seed))
 
-        posterior_stats(posterior, method=method, observation=torch.reshape(targets, (-1,1)), points=tar_parameters,
+        posterior_stats(posterior, method=method,
+                        observation=torch.reshape(avg_tar_model_simulations, (-1, 1)), points=tar_sbi_params,
                         limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
                         m_name=tar_model.name(), dt_descriptor=dt_descriptor, tar_seed=tar_seed)
     except Exception as e:
