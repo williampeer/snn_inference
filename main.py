@@ -11,7 +11,10 @@ from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 from Models.LIF_fixed_weights import LIF_fixed_weights
 from Models.LIF_weights_only import LIF_weights_only
-from Models.ReLu import GLIF_ReLu, LIF_R_ASC_ReLu, LIF_R_ReLu, LIF_ReLu_weights_only
+from Models.ReLu.GLIF_ReLu import GLIF_ReLu
+from Models.ReLu.LIF_R_ASC_ReLu import LIF_R_ASC_ReLu
+from Models.ReLu.LIF_R_ReLu import LIF_R_ReLu
+from Models.ReLu.LIF_ReLu_weights_only import LIF_ReLu_weights_only
 from Models.Sigmoidal.GLIF_soft import GLIF_soft
 from Models.Sigmoidal.LIF_R_ASC_soft import LIF_R_ASC_soft
 from Models.Sigmoidal.LIF_R_soft import LIF_R_soft
@@ -157,8 +160,8 @@ def main(argv):
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF, LIF_fixed_weights, LIF_weights_only]
     # models = [LIF_weights_only,LIF_R, LIF_R_ASC, GLIF, LIF_fixed_weights]
-    models = [LIF_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft]
-    # models = [LIF_ReLu_weights_only, LIF_R_ReLu, LIF_R_ASC_ReLu, GLIF_ReLu]
+    # models = [LIF_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft]
+    models = [LIF_ReLu_weights_only, LIF_R_ReLu, LIF_R_ASC_ReLu, GLIF_ReLu]
     # models = [LIF_weights_only, LIF_fixed_weights, LIF_R]
 
     if loss_fn is None:

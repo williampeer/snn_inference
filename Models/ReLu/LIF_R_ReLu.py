@@ -7,14 +7,14 @@ from Models.LIF_R import LIF_R
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
-class LIF_R_soft(nn.Module):
+class LIF_R_ReLu(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V', 'tau_g']
     parameter_init_intervals = {'E_L': [-64., -52.], 'tau_m': [3., 4.], 'G': [0.7, 0.8],
                                 'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
                                 'delta_V': [8., 14.], 'tau_g': [4., 5.]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
-        super(LIF_R_soft, self).__init__()
+        super(LIF_R_ReLu, self).__init__()
         # self.device = device
 
         if parameters:

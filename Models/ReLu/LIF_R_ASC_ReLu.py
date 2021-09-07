@@ -6,14 +6,14 @@ from Models.LIF_R_ASC import LIF_R_ASC
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
-class LIF_R_ASC_soft(nn.Module):
+class LIF_R_ASC_ReLu(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'delta_V', 'tau_g']  # 0,2,3,6,9
     parameter_init_intervals = {'E_L': [-68., -45.], 'tau_m': [4., 4.5], 'G': [0.7, 0.8], 'f_v': [0.2, 0.4], 'f_I': [0.3, 0.4],
                                 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4], 'delta_V': [8., 14.], 'tau_g': [4.7, 5.7]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
                  neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
-        super(LIF_R_ASC_soft, self).__init__()
+        super(LIF_R_ASC_ReLu, self).__init__()
 
         if parameters is not None:
             for key in parameters.keys():
