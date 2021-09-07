@@ -58,9 +58,10 @@ class LIF_R(nn.Module):
         nt = T(neuron_types).float()
         self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
+        self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
 
-        self.E_L = nn.Parameter(FT(E_L).clamp(-75., -40.), requires_grad=True)
-        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.95), requires_grad=True)
+        self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
+        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.99), requires_grad=True)
         self.G = nn.Parameter(FT(G), requires_grad=True)
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
         self.tau_s = nn.Parameter(FT(tau_s).clamp(1., 12,), requires_grad=True)

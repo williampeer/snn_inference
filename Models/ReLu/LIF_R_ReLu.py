@@ -112,7 +112,7 @@ class LIF_R_soft(nn.Module):
         v_next = self.v + dv
 
         # differentiability
-        self.spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
+        self.spiked = torch.relu(torch.sub(v_next, self.theta_s))
         # non-differentiable, hard threshold
         spiked = (v_next >= self.theta_s).float()
         not_spiked = (spiked - 1.) / -1.
