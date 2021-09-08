@@ -33,12 +33,12 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
             if target_parameters is not None:
                 tar_weights_params = [np.mean(target_parameters[0].numpy(), axis=1)]
 
-            # TODO: Fix for model_fixed_weights
+            # TODO: Fix for model_fixed_weights (CHECK?)
             weights = model_parameters[0]
             assert len(weights[0].shape) == 2, "weights should be 2D"
             weights_params = {}; w_names = []
             weights_params[0] = [np.mean(weights[0], axis=1)]
-            for n_i in range(1, train_i):
+            for n_i in range(1, len(weights)):
                 weights_params[0].append(np.mean(weights[n_i], axis=1))
                 w_names.append('w_{}'.format(n_i))
 

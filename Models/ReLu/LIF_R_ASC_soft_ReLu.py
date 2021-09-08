@@ -90,8 +90,7 @@ class LIF_R_ASC_soft_ReLu(nn.Module):
         self.g = self.g.clone().detach()
         self.spiked = self.spiked.clone().detach()
 
-        self.theta_m = self.theta_m.clone().detach()
-        self.theta_g = self.theta_g.clone().detach()
+        self.theta_s = self.theta_s.clone().detach()
         self.I_additive = self.I_additive.clone().detach()
 
     def register_backward_clamp_hooks(self):
