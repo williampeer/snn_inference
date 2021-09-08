@@ -240,40 +240,29 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
 
         init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
 
-        # try:
-        recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
-            fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
-                      target_parameters=target_parameters, num_neurons=num_neurons,
-                      error_logger=error_logger)
+        try:
+            recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
+                fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
+                          target_parameters=target_parameters, num_neurons=num_neurons,
+                          error_logger=error_logger)
 
-        # logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
+            # logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
 
-        if train_i >= constants.train_iters:
-            print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
-                  .format(exp_i, train_i, train_losses, test_losses))
+            if train_i >= constants.train_iters:
+                print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
+                      .format(exp_i, train_i, train_losses, test_losses))
 
-        for p_i, key in enumerate(recovered_parameters):
-            if exp_i == constants.start_seed:
-                recovered_param_per_exp[key] = [recovered_parameters[key]]
-            else:
-                recovered_param_per_exp[key].append(recovered_parameters[key])
-            # if poisson_rates is not None and len(poisson_rates) > 0:
-            #     poisson_rate_per_exp.append(poisson_rates[-1])
-        # except Exception as e:
-        #     logger.log('======== ERROR ===========\nException occurred: {}'.format(e))
-        #     error_logger.log('Exception occurred: {}'.format(e))
-        #     print(e)
-
-            # TODO: Consider fixing
-            # stats_training_iterations(model_parameters=parameters, model=model, poisson_rate=poisson_input_rate,
-            #                           train_losses=train_losses, test_losses=test_losses,
-            #                           constants=constants, logger=logger, exp_type_str=constants.EXP_TYPE.name,
-            #                           target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
-            # final_model_parameters = {}
-            # for p_i, key in enumerate(model.state_dict()):
-            #     final_model_parameters[p_i] = [model.state_dict()[key].numpy()]
-            # model = None
-            # return final_model_parameters, test_losses, train_losses, train_i, poisson_rates
+            for p_i, key in enumerate(recovered_parameters):
+                if exp_i == constants.start_seed:
+                    recovered_param_per_exp[key] = [recovered_parameters[key]]
+                else:
+                    recovered_param_per_exp[key].append(recovered_parameters[key])
+                # if poisson_rates is not None and len(poisson_rates) > 0:
+                #     poisson_rate_per_exp.append(poisson_rates[-1])
+        except Exception as e:
+            logger.log('======== ERROR ===========\nException occurred: {}'.format(e))
+            error_logger.log('Exception occurred: {}'.format(e))
+            print(e)
 
     # if poisson_rate_per_exp is not None and len(poisson_rate_per_exp) > 0:
     #     recovered_param_per_exp['p_rate'] = poisson_rate_per_exp
