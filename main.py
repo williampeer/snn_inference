@@ -160,11 +160,11 @@ def main(argv):
     # models = [LIF, LIF_soft, LIF_weights_only, LIF_soft_weights_only]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF, LIF_fixed_weights, LIF_weights_only]
-    # models = [LIF_R_weights_only, LIF_R, LIF_R_ASC, GLIF]
     # models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft]
     # models = [LIF_R_ReLu_weights_only, LIF_R_ReLu, LIF_R_ASC_ReLu, GLIF_ReLu]
-    models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft,
-              LIF_R_soft_ReLu_weights_only, LIF_R_soft_ReLu, LIF_R_ASC_soft_ReLu, GLIF_soft_ReLu]
+    models = [LIF_R_weights_only, LIF_R, LIF_R_ASC, GLIF]
+    # models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft,
+    #           LIF_R_soft_ReLu_weights_only, LIF_R_soft_ReLu, LIF_R_ASC_soft_ReLu, GLIF_soft_ReLu]
     # models = [LIF_weights_only, LIF_fixed_weights, LIF_R]
 
     if loss_fn is None:
