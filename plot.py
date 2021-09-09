@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import torch
@@ -477,16 +478,40 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     params_by_exp = np.array(param_2D).T
     num_of_parameters = params_by_exp.shape[0]
 
-    fig, axs = plt.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1)
-    plt.xlabel(name)
-    plt.ylabel(name)
+    plt.rcParams.update({'font.size': 8})
+    plt.locator_params(axis='x', nbins=2)
+
+    fig = plt.figure()
+    big_ax = fig.add_subplot(111)
+    big_ax.set_axis_on()
+    big_ax.grid(False)
+    name = name.replace('tau', '\\tau').replace('spike_threshold', '\\theta')
+    big_ax.set_title('Parameter trajectory for ${} \\times {}$'.format(name, name))
+    big_ax.set_xlabel(name, labelpad=20)
+    big_ax.set_ylabel(name, labelpad=34)
+    big_ax.set_xticks([])
+    big_ax.set_yticks([])
+    # big_ax.set_axis_off()
+    axs = fig.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1, sharex=True, sharey=True)
+    # fig.set_title('Parameter trajectory for ${}$'.format(name))
+    # plt.xlabel(name)
+    # plt.ylabel(name)
     [axi.set_axis_off() for axi in axs.ravel()]
     dot_msize = 5.0
 
     for i in range(num_of_parameters):
-        for j in range(i + 1, num_of_parameters):
+        # for j in range(i+1, num_of_parameters):
+        for j in range(i+1, num_of_parameters):
             # 2D plot between p_i and p_j
-            cur_ax = axs[i, j - 1]
+            # cur_ax = axs[i, j - 1]
+            cur_ax = axs[j - 1, i]
+            # cur_ax = axs[num_of_parameters-i-2, j - 1]
+            # cur_ax = axs[j - 1, num_of_parameters-i-2]
+            cur_ax.set_axis_on()
+            cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+            # cur_ax.set_xticks([np.min(np.concatenate([params_by_exp[i], [current_targets[i]]])), np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))])
+
+
             # try:
             p_len = len(params_by_exp[i])
             colors = cm.rainbow(np.linspace(0, 1, p_len))
