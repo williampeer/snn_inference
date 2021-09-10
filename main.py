@@ -37,7 +37,7 @@ def main(argv):
     # exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.02; N_exp = 3; tau_van_rossum = 8.0; plot_flag = True
+    learn_rate = 0.02; N_exp = 3; tau_van_rossum = 20.0; plot_flag = True
     max_train_iters = 100
     num_targets = 3
     interval_size = 4000
