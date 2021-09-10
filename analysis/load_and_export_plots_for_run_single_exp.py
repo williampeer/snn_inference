@@ -22,8 +22,8 @@ def main(argv):
     # experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/03-16_10-33-15-060/'
     # experiments_path = '/home/william/repos/snn_inference/saved/plot_data/05-20_11-21-27-889/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/plot_data/08-28_01-13-47-801/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_0909/archive/saved/plot_data/09-09_00-33-03-791/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_0909/archive/saved/plot_data/09-08_17-26-32-607/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_0909/archive/saved/plot_data/09-09_00-33-03-791/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_0909/archive/saved/plot_data/09-08_17-26-32-607/'
 
     # for i, opt in enumerate(opts):
     #     if opt == '-h':

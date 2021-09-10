@@ -45,14 +45,14 @@ def main(argv):
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     # loss_fn = 'frd'
-    # loss_fn = 'vrd'
+    loss_fn = 'vrd'
     # loss_fn = 'FF'
     # loss_fn = 'CV'
     # loss_fn = 'PCC'
     # loss_fn = 'rfh'
     # loss_fn = 'rph'
     # loss_fn = 'kl_div'
-    loss_fn = None
+    # loss_fn = None
     # silent_penalty_factor = 10.0
     silent_penalty_factor = None
 

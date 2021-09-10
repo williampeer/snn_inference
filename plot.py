@@ -508,9 +508,11 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
             # cur_ax = axs[num_of_parameters-i-2, j - 1]
             # cur_ax = axs[j - 1, num_of_parameters-i-2]
             cur_ax.set_axis_on()
-            cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-            # cur_ax.set_xticks([np.min(np.concatenate([params_by_exp[i], [current_targets[i]]])), np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))])
-
+            cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+            # cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+            x_min = float('{:.1f}'.format(np.min(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+            x_max = float('{:.1f}'.format(np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+            cur_ax.set_xticks([x_min, x_max])
 
             # try:
             p_len = len(params_by_exp[i])

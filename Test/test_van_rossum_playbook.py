@@ -10,9 +10,10 @@ s2 = poisson_input(10., 4000, 12)
 t2 = float(s2.sum())
 
 s2_silent_neuron = s2.clone().detach()
-s2_silent_neuron[:, -1] = torch.zeros((s2.shape[0],))
+s2_silent_neuron[:, 0] = torch.zeros((s2.shape[0],))
+# s2_silent_neuron[:, 1] = torch.zeros((s2.shape[0],))
 
-tau_start = 100.0
+tau_start = 25.0
 
 for i in range(5):
     vrd = van_rossum_dist(s1, s2, tau=torch.tensor(tau_start + 0.1 * tau_start * i))
