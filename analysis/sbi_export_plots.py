@@ -11,7 +11,7 @@ from dev_sbi_main_multi import get_binned_spike_counts
 from experiments import generate_synthetic_data
 
 
-def export_plots(samples, points, lim_low, lim_high, N, method, m_name, description):
+def export_plots(samples, points, lim_low, lim_high, N, method, m_name, description, model_class):
     num_dim = lim_high.shape[0]
     if num_dim < 12:  # full marginal plot
         plt.figure()
@@ -37,13 +37,13 @@ def export_plots(samples, points, lim_low, lim_high, N, method, m_name, descript
         plt.close()
 
         # Marginals only for p_i, p_i
-        for p_i in range(1, len(points)):
+        for p_i in range(1, len(model_class.parameter_names)):
             plt.figure()
-            fig_subset_mean, ax_mean = analysis.pairplot(samples[:, weights_offset+(p_i-1)*N:weights_offset+p_i*N],
-                                                         points=points[p_i],
-                                                         limits=torch.reshape(torch.stack((lim_low[weights_offset+(p_i-1)*N:weights_offset+p_i*N],
-                                                                                           lim_high[weights_offset+(p_i-1)*N:weights_offset+p_i*N])), (N, 2)),
-                                                         figsize=(N, N))
+            cur_limits = torch.reshape(torch.stack((lim_low[weights_offset+(p_i-1)*N:weights_offset+p_i*N],
+                                                lim_high[weights_offset+(p_i-1)*N:weights_offset+p_i*N])), (N, 2))
+            cur_pt = points[weights_offset+(p_i-1)*N:weights_offset+p_i*N]
+            cur_samples = samples[:, weights_offset+(p_i-1)*N:weights_offset+p_i*N]
+            fig_subset_mean, ax_mean = analysis.pairplot(cur_samples, points=cur_pt, limits=cur_limits, figsize=(N, N))
             fig_subset_mean.savefig('./figures/export_sut_subset_analysis_pairplot_{}_{}_one_param_{}_{}.png'.format(method, m_name, p_i, description))
             plt.close()
         # pass
@@ -72,7 +72,7 @@ def export_stats_model_target(model, observation, descriptor):
 
     custom_uuid = 'sbi'
     plt.figure()
-    reshaped_tar = torch.reshape(observation, (10,model.N))
+    reshaped_tar = torch.reshape(observation, (-1, model.N))
     plot.bar_plot_pair_custom_labels(y1=torch.mean(mean_model_spike_counts, dim=1), y2=torch.mean(reshaped_tar, dim=1),
                                      y1_std=torch.std(mean_model_spike_counts, dim=1), y2_std=torch.std(reshaped_tar, dim=1),
                                      labels=range(mean_model_spike_counts.shape[1]),
@@ -125,7 +125,8 @@ def main():
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_SBI_plus_partial_SanityCheck_0209/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_0609/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_0609/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1009/archive/saved/data/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
     custom_uuid = 'data'
@@ -170,7 +171,7 @@ def main():
             # log_probability = posterior.log_prob(samples, x=observation)
             # print('log_probability: {}'.format(log_probability))
 
-            export_plots(samples, points, lim_low, lim_high, N, method, m_name, dt_descriptor)
+            export_plots(samples, points, lim_low, lim_high, N, method, m_name, dt_descriptor, model_class)
 
             N_samples = 20
             print('Drawing the {} most likely samples..'.format(N_samples))

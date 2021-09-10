@@ -91,8 +91,10 @@ def calculate_loss(output, target, loss_fn, tau_vr=None, silent_penalty_factor=N
 
 
 def sanity_checks(spiketrain):
-    neuron_spikes = spiketrain.sum(0)
+    neuron_spikes_continuous = spiketrain.sum(0)
+    neuron_spikes = torch.round(spiketrain).sum(0)
     silent_neurons = (neuron_spikes == 0).sum()
 
     print('# silent neurons: ', silent_neurons)
     print('spikes per neuron:', neuron_spikes)
+    print('spike signals sum per neuron:', neuron_spikes_continuous)

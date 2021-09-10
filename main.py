@@ -37,10 +37,10 @@ def main(argv):
     # exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.02; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
-    max_train_iters = 40
-    num_targets = 1
-    interval_size = 8000
+    learn_rate = 0.02; N_exp = 3; tau_van_rossum = 8.0; plot_flag = True
+    max_train_iters = 100
+    num_targets = 3
+    interval_size = 4000
     batch_size = interval_size; rows_per_train_iter = interval_size
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
@@ -96,6 +96,7 @@ def main(argv):
     # model_type = 'LIF_weights_only'
     # model_type = 'LIF_R_soft'
     # model_type = 'LIF_R_ASC_soft'
+    # model_type = 'LIF_R_ASC_soft_ReLu'
     # model_type = 'GLIF_soft'
     norm_grad_flag = False
 
