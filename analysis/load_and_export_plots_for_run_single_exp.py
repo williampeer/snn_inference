@@ -62,36 +62,36 @@ def main(argv):
         #     # print(len(plot_spiketrains_files))
         #     pass
         # else:
-        if len(plot_spike_trains_files) == 55:
-            for f_i in range(5):
-                f = plot_spike_trains_files[f_i * 11]
-                data = torch.load(experiments_path + f)
-                print('Loaded saved plot data.')
-
-                plot_data = data['plot_data']
-                plot_fn = data['plot_fn']
-
-                fname = f.split('/')[-1]
-                fname = fname.split('.pt')[0].replace('.', '_')
-                save_fname = 'export_{}.eps'.format(fname)
-                plot.plot_spike_trains_side_by_side(plot_data['model_spikes'], plot_data['target_spikes'], 'export',
-                                                    plot_data['exp_type'], 'Spike trains (Poisson input)',
-                                                    save_fname, export=True)
-
-                # dev
-                s1 = plot_data['model_spikes'].detach().numpy()
-                s2 = plot_data['target_spikes'].detach().numpy()
-                bin_size = 500
-                corrs = stats.spike_train_corr_new(s1=s1, s2=s2, bin_size=bin_size)
-                plot.heatmap_spike_train_correlations(corrs[12:, :12], axes=['Fitted model', 'Target model'],
-                                                      exp_type=plot_data['exp_type'], uuid='export',
-                                                      fname='heatmap_bin_{}_{}'.format(bin_size, save_fname),
-                                                      bin_size=bin_size)
-                # std1, r1 = stats.binned_avg_firing_rate_per_neuron(s1, bin_size=bin_size)
-                # std2, r2 = stats.binned_avg_firing_rate_per_neuron(s2, bin_size=bin_size)
-                # plot.bar_plot_neuron_rates(r1, r2, std1, std2, bin_size=bin_size, exp_type=plot_data['exp_type'],
-                #                            uuid='export',
-                #                            fname='rate_plot_bin_{}_{}'.format(bin_size, save_fname))
+        # if len(plot_spike_trains_files) == 55:
+        #     for f_i in range(5):
+        #         f = plot_spike_trains_files[f_i * 11]
+        #         data = torch.load(experiments_path + f)
+        #         print('Loaded saved plot data.')
+        #
+        #         plot_data = data['plot_data']
+        #         plot_fn = data['plot_fn']
+        #
+        #         fname = f.split('/')[-1]
+        #         fname = fname.split('.pt')[0].replace('.', '_')
+        #         save_fname = 'export_{}.eps'.format(fname)
+        #         plot.plot_spike_trains_side_by_side(plot_data['model_spikes'], plot_data['target_spikes'], 'export',
+        #                                             plot_data['exp_type'], 'Spike trains (Poisson input)',
+        #                                             save_fname, export=True)
+        #
+        #         # dev
+        #         s1 = plot_data['model_spikes'].detach().numpy()
+        #         s2 = plot_data['target_spikes'].detach().numpy()
+        #         bin_size = 500
+        #         corrs = stats.spike_train_corr_new(s1=s1, s2=s2, bin_size=bin_size)
+        #         plot.heatmap_spike_train_correlations(corrs[12:, :12], axes=['Fitted model', 'Target model'],
+        #                                               exp_type=plot_data['exp_type'], uuid='export',
+        #                                               fname='heatmap_bin_{}_{}'.format(bin_size, save_fname),
+        #                                               bin_size=bin_size)
+        #         # std1, r1 = stats.binned_avg_firing_rate_per_neuron(s1, bin_size=bin_size)
+        #         # std2, r2 = stats.binned_avg_firing_rate_per_neuron(s2, bin_size=bin_size)
+        #         # plot.bar_plot_neuron_rates(r1, r2, std1, std2, bin_size=bin_size, exp_type=plot_data['exp_type'],
+        #         #                            uuid='export',
+        #         #                            fname='rate_plot_bin_{}_{}'.format(bin_size, save_fname))
 
         for f in plot_all_param_pairs_with_variance_files:
             data = torch.load(experiments_path + f)
@@ -120,7 +120,7 @@ def main(argv):
             plot.plot_all_param_pairs_with_variance(param_means=fixed_exp_params, target_params=tar_params, #plot_data['target_params'],
                                                     param_names=LIF.parameter_names[1:],
                                                     # exp_type=plot_data['exp_type'],
-                                                    exp_type=ExperimentType.DataDriven.name,
+                                                    exp_type=ExperimentType.SanityCheck.name,
                                                     uuid=plot_data['uuid'],
                                                     fname='export_{}.eps'.format(save_fname),
                                                     custom_title='',

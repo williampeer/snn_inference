@@ -12,7 +12,8 @@ load_paths = []
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/')
+load_paths.append('/media/william/p6/archive_1009/archive/saved/')
 
 experiment_averages = {}
 
@@ -20,6 +21,7 @@ experiment_averages = {}
 def get_target_model_for(model, cur_tar_seed):
     tar_model_fn_lookup = {'LIF': TargetModels.lif_continuous_ensembles_model_dales_compliant,
                            'LIF_R': TargetModels.lif_r_continuous_ensembles_model_dales_compliant,
+                           'LIF_R_weights_only': TargetModels.lif_r_continuous_ensembles_model_dales_compliant,
                            'LIF_R_ASC': TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant,
                            'GLIF': TargetModels.glif_continuous_ensembles_model_dales_compliant}
     tar_model = tar_model_fn_lookup[model.name()](cur_tar_seed, model.N)
