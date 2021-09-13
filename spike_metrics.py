@@ -164,7 +164,7 @@ def calc_pearsonr(counts_out, counts_tar):
     # std_out[std_out == 0] = 1.
     # std_tar[std_tar == 0] = 1.
 
-    pcorrcoeff = (counts_out - torch.ones_like(counts_out) * mu_out) * (counts_tar - torch.ones_like(counts_tar) * mu_tar) / (std_out * std_tar + 1)
+    pcorrcoeff = (counts_out - torch.ones_like(counts_out) * mu_out) * (counts_tar - torch.ones_like(counts_tar) * mu_tar) / (std_out * std_tar + 1e-12)
 
     # print('..............-------------------................')
     # print('counts_out: {}'.format(counts_out))
@@ -191,7 +191,8 @@ def correlation_metric_distance(out, tar, bins=NUM_BINS):
     neg_dist = torch.ones_like(pcorrcoeff) - pcorrcoeff  # max 0.
     squared_dist = torch.pow(neg_dist, 2)
     # squared_dist[torch.isnan(squared_dist)] = 1e-06
-    dist = torch.sqrt(squared_dist + 1e-12).sum() / out.shape[0]
+    # dist = torch.sqrt(squared_dist + 1e-12).sum() / out.shape[0]
+    dist = torch.sqrt(squared_dist + 1e-12).sum()
     # print('-----------************------------***********------------')
     # print('neg_dist: {}'.format(neg_dist))
     # print('squared_dist: {}'.format(squared_dist))
