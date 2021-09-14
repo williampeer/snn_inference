@@ -91,6 +91,21 @@ class LIF_R_soft_weights_only(nn.Module):
     def name(self):
         return LIF_R.__name__
 
+    def get_parameters(self):
+        params_list = []
+        # parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V']
+        params_list.append(self.w.data)
+        params_list.append(self.E_L.data)
+        params_list.append(self.tau_m.data)
+        params_list.append(self.G.data)
+        params_list.append(self.f_v.data)
+        params_list.append(self.delta_theta_s.data)
+        params_list.append(self.b_s.data)
+        params_list.append(self.delta_V.data)
+        params_list.append(self.tau_g.data)
+
+        return params_list
+
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types
         I_tot = (self.g).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in

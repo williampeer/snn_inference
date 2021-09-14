@@ -158,5 +158,6 @@ class LIF_R_ASC(nn.Module):
         # return self.spiked
 
         # differentiable soft threshold
-        soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
-        return soft_spiked  # return sigmoidal spiked
+        # soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
+        # return soft_spiked  # return sigmoidal spiked
+        return gating

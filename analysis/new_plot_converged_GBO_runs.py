@@ -15,7 +15,8 @@ load_paths = []
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/')
-load_paths.append('/media/william/p6/archive_1009/archive/saved/')
+# load_paths.append('/media/william/p6/archive_1009/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/')
 
 experiment_averages = {}
 
@@ -42,8 +43,8 @@ def export_rates_models(model, tar_model, descriptor, legend=['Fitted', 'Target'
                                      y1_std=np.zeros_like(model_spike_rate), y2_std=np.zeros_like(tar_spike_rate),
                                      labels=range(model_spike_train.shape[1]),
                                      exp_type='export', uuid='ho_stats' + '/' + custom_uuid,
-                                     fname='export_bar_plot_avg_rate_GBO_{}_{}.eps'.format(model.name(), descriptor),
-                                     title='Avg. rates for GBO parameters ({})'.format(model.name()),
+                                     fname='export_bar_plot_avg_rate_GBO_{}_{}.eps'.format(model.__class__.__name__, descriptor),
+                                     title='Avg. rates for GBO parameters ({})'.format(model.__class__.__name__),
                                      ylabel='Firing rate ($Hz$)', xlabel='Neuron',
                                      legend=legend)
     plt.close()
@@ -67,7 +68,7 @@ def plot_param_dist_combined(model, init_model, tar_model, fname, lr):
                                      np.zeros_like(dist_per_param_fitted), np.zeros_like(dist_per_param_init),
                                      model.__class__.parameter_names,
                                      'export', 'param_dist_per_exp', fname=fname, legend=['Fitted', 'Initial'],
-                                     title='Parameter distance GBO, {}, $\\alpha={}$'.format(model.name(), lr),
+                                     title='Parameter distance GBO, {}, $\\alpha={}$'.format(model.__class__.__name__, lr),
                                      ylabel='Distance', xlabel='Parameter $p$')
 
     return dist_per_param_fitted, dist_per_param_init
@@ -94,7 +95,7 @@ def plot_param_dist(model, tar_model, fname, lr):
     plot.bar_plot(dist_per_param, np.zeros_like(dist_per_param), model.__class__.parameter_names,
                   'export', 'param_dist_per_exp',
                   fname=fname,
-                  title='Parameter distance, GBO {}, $\\alpha={}$'.format(model.name(), lr))
+                  title='Parameter distance, GBO {}, $\\alpha={}$'.format(model.__class__.__name__, lr))
 
     return dist_per_param
 
@@ -154,7 +155,7 @@ for experiments_path in load_paths:
                 files = []
                 id = 'None'
 
-            start_seed = 64; N_exp = 4
+            start_seed = 42; N_exp = 3
             # start_seed = exp_nums[0]; N_exp = len(exp_nums)
             print('start_seed: {}, N_exp: {}'.format(start_seed, N_exp))
             model_class = None
@@ -166,7 +167,7 @@ for experiments_path in load_paths:
             param_dist_per_param_fitted = []
             param_dist_per_param_init = []
             for f in files:
-                cur_exp_num = f_ctr % 4  # shouldn't be needed?
+                cur_exp_num = f_ctr % N_exp  # shouldn't be needed?
                 if(f_ctr > cur_exp_num):
                     print('WARNING: f_ctr > exp_num: {} > {}'.format(f_ctr, cur_exp_num))
 
@@ -187,7 +188,7 @@ for experiments_path in load_paths:
                 neuron_types = programmatic_neuron_types
                 init_model = model.__class__(N=model.N, parameters=init_params_model, neuron_types=neuron_types)
 
-                cur_tar_seed = 3 + f_ctr % 4
+                cur_tar_seed = 3 + f_ctr % N_exp
                 tar_model = get_target_model_for(model, cur_tar_seed)
 
                 descriptor = folder_path + 'exp_num_{}'.format(cur_exp_num)

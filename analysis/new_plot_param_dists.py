@@ -13,7 +13,8 @@ load_paths = []
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/')
-load_paths.append('/media/william/p6/archive_1009/archive/saved/')
+# load_paths.append('/media/william/p6/archive_1009/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/')
 
 experiment_averages = {}
 
@@ -44,15 +45,15 @@ def plot_param_dist_combined(model, init_model, tar_model, fname, lr):
                                      np.zeros_like(dist_per_param_fitted), np.zeros_like(dist_per_param_init),
                                      model.__class__.parameter_names,
                                      'export', 'param_dist_per_exp', fname=fname, legend=['Fitted', 'Initial'],
-                                     title='Parameter distance GBO, {}, $\\alpha={}$'.format(model.name(), lr),
+                                     title='Parameter distance GBO, {}, N={}, $\\alpha={}$'.format(model.__class__.__name__, model.N, lr),
                                      ylabel='Distance', xlabel='Parameter $p$')
 
     return dist_per_param_fitted, dist_per_param_init
 
 
-def plot_param_dist_across_exp_combined(fitted_param_dists, init_param_dists, fname, lr, title=False):
+def plot_param_dist_across_exp_combined(fitted_param_dists, init_param_dists, fname, config_key, title=False):
     if not title:
-        title = 'Parameter distance exp avg GBO, {}, $\\alpha={}$'.format(model.name(), lr)
+        title = 'Parameter distance exp avg GBO, {}'.format(config_key)
     plot.bar_plot_pair_custom_labels(np.mean(fitted_param_dists, axis=0), np.mean(init_param_dists, axis=0),
                                      np.std(fitted_param_dists, axis=0), np.std(init_param_dists, axis=0),
                                      model.__class__.parameter_names,
@@ -71,7 +72,7 @@ def plot_param_dist(model, tar_model, fname, lr):
     plot.bar_plot(dist_per_param, np.zeros_like(dist_per_param), model.__class__.parameter_names,
                   'export', 'param_dist_per_exp',
                   fname=fname,
-                  title='Parameter distance, GBO {}, $\\alpha={}$'.format(model.name(), lr))
+                  title='Parameter distance, GBO {}, $\\alpha={}$'.format(model.__class__.__name__, lr))
 
     return dist_per_param
 
@@ -113,7 +114,7 @@ for experiments_path in load_paths:
         if model_type is None:
             print('exp did not converge.')
             pass
-        elif len(plot_spiketrains_files) == 0 or model_type in ['LIF', 'LIF_no_grad'] or lfn != 'FIRING_RATE_DIST':
+        elif len(plot_spiketrains_files) == 0 or model_type in ['LIF', 'LIF_no_grad']:  # or lfn != 'FIRING_RATE_DIST':
             print('Skipping: {}, {}, {}. #spike_train_files {}'.format(model_type, lfn, optimiser, len(plot_spiketrains_files)))
             pass
         else:
@@ -141,7 +142,7 @@ for experiments_path in load_paths:
                 poisson_rate = exp_res['rate']
                 print('Loaded model data.')
 
-                start_seed = 64; N_exp = 4
+                start_seed = 42; N_exp = 3
                 non_overlapping_offset = start_seed + N_exp + 1
                 torch.manual_seed(non_overlapping_offset + exp_num)
                 # torch.manual_seed(non_overlapping_offset)
@@ -153,7 +154,7 @@ for experiments_path in load_paths:
                 neuron_types = programmatic_neuron_types
                 init_model = model.__class__(N=model.N, parameters=init_params_model, neuron_types=neuron_types)
 
-                cur_tar_seed = 3 + f_ctr % 4
+                cur_tar_seed = 3 + f_ctr % N_exp
                 tar_model = get_target_model_for(model, cur_tar_seed)
 
                 fname_combined = 'export_param_dist_combined_{}_exp_{}.png'.format(folder_path, exp_num)
@@ -164,9 +165,9 @@ for experiments_path in load_paths:
                 f_ctr += 1
 
             fname_exp = 'export_param_dist_exp_avg_all_exp_{}.png'.format(folder_path)
-            plot_param_dist_across_exp_combined(param_dist_per_param_fitted, param_dist_per_param_init, fname_exp, lr=lr)
+            config_key = '{}_{}'.format(model.__class__.__name__, lr)  # optim, lfn const.
+            plot_param_dist_across_exp_combined(param_dist_per_param_fitted, param_dist_per_param_init, fname_exp, config_key=config_key)
 
-            config_key = '{}_{}'.format(model_type, lr)  # optim, lfn const.
             if results_dict.keys().__contains__(config_key):
                 for p_i in range(len(param_dist_per_param_fitted)):
                     results_dict[config_key]['fitted'].append(param_dist_per_param_fitted[p_i])
@@ -178,7 +179,7 @@ for experiments_path in load_paths:
 
 for k_i, k_v in enumerate(results_dict):
     fname_k_v = 'export_param_dist_exp_avg_all_config_{}.png'.format(k_v)
-    plot_param_dist_across_exp_combined(results_dict[k_v]['fitted'], results_dict[k_v]['init'], fname=fname_k_v, lr=lr)
+    plot_param_dist_across_exp_combined(results_dict[k_v]['fitted'], results_dict[k_v]['init'], fname=fname_k_v, config_key=k_v)
 
 # plot_stats_across_experiments(avg_statistics_per_exp=experiment_averages, archive_name='all')
 

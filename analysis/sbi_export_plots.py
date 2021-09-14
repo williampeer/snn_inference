@@ -72,14 +72,14 @@ def export_stats_model_target(model, observation, descriptor):
 
     custom_uuid = 'sbi'
     plt.figure()
-    reshaped_tar = torch.reshape(observation, (-1, model.N))
-    plot.bar_plot_pair_custom_labels(y1=torch.mean(mean_model_spike_counts, dim=1), y2=torch.mean(reshaped_tar, dim=1),
-                                     y1_std=torch.std(mean_model_spike_counts, dim=1), y2_std=torch.std(reshaped_tar, dim=1),
+    # reshaped_tar = torch.reshape(observation, (-1, model.N))
+    plot.bar_plot_pair_custom_labels(y1=torch.mean(mean_model_spike_counts, dim=1), y2=observation,
+                                     y1_std=torch.std(mean_model_spike_counts, dim=1), y2_std=observation,
                                      labels=range(mean_model_spike_counts.shape[1]),
                                      exp_type='export', uuid='ho_stats' + '/' + custom_uuid,
-                                     fname='export_bar_plot_avg_rate_sbi_{}.eps'.format(descriptor),
-                                     title='Avg. rates for SBI parameters ({})'.format(descriptor),
-                                     ylabel='Firing rate ($Hz$)', xlabel='Neuron',
+                                     fname='export_bar_plot_spike_count_sbi_{}.eps'.format(descriptor),
+                                     title='Binned spike counts for SBI parameters ({})'.format(descriptor),
+                                     ylabel='Binned spike count', xlabel='Neuron',
                                      legend=['Fitted', 'Target'])
     plt.close()
 
@@ -89,11 +89,11 @@ def export_stats_model_target(model, observation, descriptor):
     return mean_model_spike_counts
 
 
-def export_stats_top_samples(mean_model_rates, std_model_rates, targets, descriptor, N_samples=20):
+def export_stats_top_samples(mean_model_spike_counts, std_model_spike_counts, targets, descriptor, N_samples=20):
     plt.figure()
-    plot.bar_plot_pair_custom_labels(y1=mean_model_rates, y2=targets,
-                                     y1_std=std_model_rates, y2_std=torch.zeros_like(std_model_rates),
-                                     labels=range(len(mean_model_rates)),
+    plot.bar_plot_pair_custom_labels(y1=mean_model_spike_counts, y2=targets,
+                                     y1_std=std_model_spike_counts, y2_std=torch.zeros_like(std_model_spike_counts),
+                                     labels=range(len(mean_model_spike_counts)),
                                      exp_type='export', uuid='ho_stats' + '/' + 'sbi',
                                      fname='export_bar_plot_avg_rate_sbi_{}.eps'.format(descriptor),
                                      title='Avg. rates {} most likely samples ({})'.format(N_samples, descriptor),
@@ -126,8 +126,12 @@ def main():
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_SBI_plus_partial_SanityCheck_0209/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0609/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1009/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1009/archive/saved/data/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
+    # experiments_path = '/media/william/p6/archive_0909/archive/saved/data/'
+    # experiments_path = '/media/william/p6/archive_1009/archive/saved/data/'
+    # experiments_path = '/media/william/p6/archive_1109/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/data/'
 
     custom_uuid = 'data'
     files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
@@ -162,7 +166,7 @@ def main():
             data_arr = torch.load(experiments_path + 'sbi_samples/' + corresponding_samples_fname)['data']
             print('sbi_samples load successful.')
             samples = data_arr['samples']
-            observation = data_arr['observation']
+            observation = data_arr['observation'][:,0]
             points = data_arr['tar_parameters']
             m_name = data_arr['m_name']
 
@@ -178,8 +182,8 @@ def main():
             posterior_params = posterior.sample((N_samples,), x=observation)
             print('\nposterior_params: {}'.format(posterior_params))
 
-            mean_model_rates = torch.tensor([])
-            converged_mean_model_rates = torch.tensor([])
+            mean_model_spike_counts = torch.tensor([])
+            converged_mean_model_spike_counts = torch.tensor([])
             # std_model_rates = torch.tensor([])
 
             avg_param_dist_across_samples = []
@@ -190,14 +194,14 @@ def main():
                 for n_i in range(int(2 * N / 3), N):
                     programmatic_neuron_types[n_i] = -1
                 model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
-                cur_mean_model_rates = export_stats_model_target(model, observation=observation,
+                cur_mean_spike_counts = export_stats_model_target(model, observation=observation,
                                                                  descriptor='{}_parallel_sbi_{}_sample_N_{}'.
                                                                     format(m_name, dt_descriptor, s_i))
-                mean_model_rates = torch.cat((mean_model_rates, cur_mean_model_rates))
+                mean_model_spike_counts = torch.cat((mean_model_spike_counts, cur_mean_spike_counts))
 
-                model_considered_silent_and_diverged = (cur_mean_model_rates < 0.1).sum() < 0.75 * len(cur_mean_model_rates)
+                model_considered_silent_and_diverged = (cur_mean_spike_counts < 1.).sum() < 0.25 * len(cur_mean_spike_counts)
                 if not model_considered_silent_and_diverged:
-                    converged_mean_model_rates = torch.cat((converged_mean_model_rates, cur_mean_model_rates))
+                    converged_mean_model_spike_counts = torch.cat((converged_mean_model_spike_counts, cur_mean_spike_counts))
 
                 current_avg_dist_per_p = []
                 model_parameter_list = model.get_parameters()
@@ -220,15 +224,15 @@ def main():
                             'sbi_samples_converged_non_silent_avg_param_dist_{}_N_{}_{}'.format(m_name, N, dt_descriptor))
 
                 # std_model_rates.append(cur_std_model_rate)
-            mean_model_rates = torch.reshape(mean_model_rates, (N_samples, -1))
-            converged_mean_model_rates = torch.reshape(converged_mean_model_rates, (len(converged_avg_param_dist_across_samples), -1))
-            export_stats_top_samples(torch.mean(mean_model_rates, dim=0), torch.std(mean_model_rates, dim=0),
-                                     observation[0], '{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor), N_samples=len(mean_model_rates))
-            converged_mean_model_rates = torch.mean(converged_mean_model_rates, dim=0)
+            mean_model_spike_counts = torch.reshape(mean_model_spike_counts, (N_samples, -1))
+            converged_mean_model_spike_counts = torch.reshape(converged_mean_model_spike_counts, (-1, len(observation)))
+            export_stats_top_samples(torch.mean(mean_model_spike_counts, dim=0), torch.std(mean_model_spike_counts, dim=0),
+                                     observation, '{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor), N_samples=len(mean_model_spike_counts))
+            converged_mean_model_spike_counts = torch.mean(converged_mean_model_spike_counts, dim=0)
             # if not hasattr(converged_mean_model_rates, 'len'):
             #     converged_mean_model_rates = np.array([converged_mean_model_rates])
-            export_stats_top_samples(converged_mean_model_rates, torch.std(converged_mean_model_rates, dim=0),
-                                     observation[0], 'converged_non_silent_{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor), N_samples=len(converged_mean_model_rates))
+            export_stats_top_samples(converged_mean_model_spike_counts, torch.std(converged_mean_model_spike_counts, dim=0),
+                                     observation, 'converged_non_silent_{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor), N_samples=len(converged_mean_model_spike_counts))
 
 if __name__ == "__main__":
     main()

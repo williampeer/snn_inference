@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch import FloatTensor as FT
 
+from Models.GLIF import GLIF
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
@@ -105,6 +106,9 @@ class GLIF_soft(nn.Module):
         params_list.append(self.tau_g.data)
 
         return params_list
+
+    def name(self):
+        return GLIF.__name__
 
     def reset(self):
         for p in self.parameters():

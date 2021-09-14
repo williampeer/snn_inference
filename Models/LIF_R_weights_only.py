@@ -103,7 +103,7 @@ class LIF_R_weights_only(nn.Module):
         self.theta_s = self.theta_s.clone().detach()
 
     def name(self):
-        return self.__class__.__name__
+        return self.LIF_R.__name__
 
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types
