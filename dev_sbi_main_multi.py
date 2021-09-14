@@ -42,7 +42,7 @@ def transform_model_to_sbi_params(model):
 
 
 def main(argv):
-    NUM_WORKERS = 6
+    NUM_WORKERS = 24
 
     t_interval = 10000
     N = 3
