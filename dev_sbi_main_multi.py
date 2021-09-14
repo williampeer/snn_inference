@@ -156,18 +156,16 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
     tar_sbi_params = transform_model_to_sbi_params(tar_model)
-    spike_counts_per_sample = None
+    targets_per_sample = None
     n_samples = 8
     for i in range(n_samples):
         cur_targets = simulator(tar_sbi_params)
-        # cur_rate = cur_targets.sum(dim=0) * 1000. / cur_targets.shape[0]  # Hz
-        cur_cur_spike_count = get_binned_spike_counts(cur_targets.clone().detach())
-        if spike_counts_per_sample is None:
-            spike_counts_per_sample = cur_cur_spike_count
+        if targets_per_sample is None:
+            targets_per_sample = cur_targets
         else:
             # spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
-            spike_counts_per_sample = spike_counts_per_sample + cur_cur_spike_count
-    avg_tar_model_simulations = spike_counts_per_sample / n_samples
+            targets_per_sample = targets_per_sample + cur_targets
+    avg_tar_model_simulations = targets_per_sample / n_samples
 
     posterior = infer(simulator, prior, method=method, num_simulations=budget, num_workers=NUM_WORKERS)
     # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
