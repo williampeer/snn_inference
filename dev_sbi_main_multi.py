@@ -140,11 +140,11 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
         # mean_output_rates = outputs.sum(dim=0) * 1000. / outputs.shape[0]  # Hz
         # return mean_output_rates
 
-        return torch.reshape(get_binned_spike_counts(outputs.clone().detach()), (-1, 1))
+        return torch.reshape(get_binned_spike_counts(outputs.clone().detach()), (-1,))
 
         # return outputs.clone().detach()
 
-    inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
+    # inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
 
     limits_low = torch.zeros((N**2-N,))
     limits_high = torch.ones((N**2-N,))
@@ -184,7 +184,8 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
                      fname='res_{}_dt_{}_tar_seed_{}'.format(method, dt_descriptor, tar_seed))
 
         posterior_stats(posterior, method=method,
-                        observation=torch.reshape(avg_tar_model_simulations, (-1, 1)), points=tar_sbi_params,
+                        # observation=torch.reshape(avg_tar_model_simulations, (-1, 1)), points=tar_sbi_params,
+                        observation=avg_tar_model_simulations, points=tar_sbi_params,
                         limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
                         m_name=tar_model.name(), dt_descriptor=dt_descriptor, tar_seed=tar_seed)
     except Exception as e:
