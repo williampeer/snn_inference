@@ -1,6 +1,7 @@
 import os
 
 import matplotlib.pyplot as plt
+import numpy as np
 from sbi import analysis as analysis
 
 import plot
@@ -56,6 +57,7 @@ def export_stats_model_target(model, observation, descriptor):
     #     spike_rates = torch.cat([spike_rates, 1000. * spike_train.sum(dim=0) / spike_train.shape[0]])
     n_samples = 10
     spike_counts_per_sample = None
+    spike_count_list = []
     for spike_iters in range(n_samples-1):
         spike_train, _ = generate_synthetic_data(model, poisson_rate=10., t=6000)
         cur_cur_spike_count = get_binned_spike_counts(spike_train.clone().detach())
@@ -64,7 +66,12 @@ def export_stats_model_target(model, observation, descriptor):
         else:
             # spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
             spike_counts_per_sample = spike_counts_per_sample + cur_cur_spike_count
+        spike_count_list.append(cur_cur_spike_count)
     mean_model_spike_counts = spike_counts_per_sample / n_samples
+    std_model_spike_counts = torch.zeros_like(mean_model_spike_counts)
+    for s_i in range(len(spike_count_list)):
+        std_model_spike_counts = std_model_spike_counts + torch.pow((spike_count_list[s_i] - mean_model_spike_counts), 2)
+    std_model_spike_counts = torch.sqrt(std_model_spike_counts / (len(spike_count_list)-1))
 
     # spike_rates = torch.reshape(spike_rates, (-1, model.N))
     # mean_spike_rates = torch.mean(spike_rates, dim=0)
@@ -73,8 +80,11 @@ def export_stats_model_target(model, observation, descriptor):
     custom_uuid = 'sbi'
     plt.figure()
     # reshaped_tar = torch.reshape(observation, (-1, model.N))
-    plot.bar_plot_pair_custom_labels(y1=torch.mean(mean_model_spike_counts, dim=1), y2=observation,
-                                     y1_std=torch.std(mean_model_spike_counts, dim=1), y2_std=observation,
+    assert len(mean_model_spike_counts) == len(observation), \
+        "mean_model_spike_counts ({}) should be same len as observation ({})".\
+            format(len(mean_model_spike_counts), len(observation))
+    plot.bar_plot_pair_custom_labels(y1=mean_model_spike_counts, y2=observation,
+                                     y1_std=std_model_spike_counts, y2_std=np.zeros_like(observation),
                                      labels=range(mean_model_spike_counts.shape[1]),
                                      exp_type='export', uuid='ho_stats' + '/' + custom_uuid,
                                      fname='export_bar_plot_spike_count_sbi_{}.eps'.format(descriptor),
@@ -131,7 +141,8 @@ def main():
     # experiments_path = '/media/william/p6/archive_0909/archive/saved/data/'
     # experiments_path = '/media/william/p6/archive_1009/archive/saved/data/'
     # experiments_path = '/media/william/p6/archive_1109/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/data/'
 
     custom_uuid = 'data'
     files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
@@ -166,7 +177,8 @@ def main():
             data_arr = torch.load(experiments_path + 'sbi_samples/' + corresponding_samples_fname)['data']
             print('sbi_samples load successful.')
             samples = data_arr['samples']
-            observation = data_arr['observation'][:,0]
+            # observation = data_arr['observation'][:,0]
+            observation = data_arr['observation']
             points = data_arr['tar_parameters']
             m_name = data_arr['m_name']
 

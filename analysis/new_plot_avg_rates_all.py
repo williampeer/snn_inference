@@ -20,7 +20,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
         avg_target_rates_std = []
         for lfn_i, lfn_k in enumerate(avg_statistics_per_exp[m_k]):
             for lr_i, lr_k in enumerate(avg_statistics_per_exp[m_k][lfn_k]):
-                avg_stats_exps = avg_statistics_per_exp[m_k][lr_k]
+                avg_stats_exps = avg_statistics_per_exp[m_k][lfn][lr_k]
                 print('processing: {}'.format(avg_stats_exps))
 
                 labels.append(lr_k)
@@ -91,7 +91,8 @@ load_paths = []
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_partial_0109/archive/saved/')
 # load_paths.append('/media/william/p6/archive_1009/archive/saved/')
 # load_paths.append('/media/william/p6/archive_1109/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/')
 
 experiment_averages = {}
 
@@ -131,7 +132,7 @@ for experiments_path in load_paths:
                 custom_title = exp_plot_data['plot_data']['custom_title']
                 optimiser = custom_title.split(', ')[1].strip(' ')
                 model_type = custom_title.split(',')[0].split('(')[-1]
-                lr = custom_title.split(', ')[-2].strip(' =lr').strip(')')
+                lr = custom_title.split(', ')[-2].strip(' =lr').strip(')').replace('.', '_')
                 lfn = exp_plot_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
                 # break
                 print('plot_losses')
