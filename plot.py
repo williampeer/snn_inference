@@ -609,7 +609,7 @@ def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabe
     data = {'y': y, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot')
 
-    if hasattr(y, 'shape') and len(y.shape) > 0:
+    if hasattr(y, 'shape') and len(y.shape) > 0 or len(y) > 0:
         print('y.shape: {}'.format(y.shape))
         xs = np.linspace(1, y.shape[0], y.shape[0])
     else:
@@ -617,7 +617,7 @@ def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabe
         y = np.reshape(np.array([y]), (1,))
         y_std = np.reshape(np.array([y_std]), (1,))
 
-    if hasattr(y_std, 'shape') or hasattr(y_std, 'append'):
+    if hasattr(y_std, 'shape') and len(y_std.shape) > 0 or len(y_std) > 0 or hasattr(y_std, 'append'):
         plt.bar(xs-0.15, y, yerr=y_std, width=0.3)
     else:
         plt.bar(xs-0.15, y, width=0.3)
@@ -663,11 +663,11 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
     else:
         xs = np.array([1.])
 
-    if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
+    if hasattr(y1_std, 'shape') and len(y1_std.shape) > 0 or hasattr(y1_std, 'append'):
         plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)
     else:
         plt.bar(xs-0.15, y1, width=0.3)
-    if hasattr(y2_std, 'shape') or hasattr(y2_std, 'append'):
+    if hasattr(y2_std, 'shape') and len(y2_std.shape) > 0 or hasattr(y2_std, 'append'):
         plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3)
     else:
         plt.bar(xs+0.15, y2, width=0.3)

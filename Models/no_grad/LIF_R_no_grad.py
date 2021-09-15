@@ -8,9 +8,9 @@ from Models.LIF_R import LIF_R
 
 class LIF_R_no_grad(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V', 'tau_s']
-    parameter_init_intervals = { 'E_L': [-64., -55.], 'tau_m': [3.5, 4.0], 'G': [0.7, 0.8],
+    parameter_init_intervals = {'E_L': [-64., -55.], 'tau_m': [3.5, 4.0], 'G': [0.7, 0.8],
                                 'f_v': [0.25, 0.35], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35],
-                                'delta_V': [8., 14.], 'tau_s': [5., 6.] }
+                                'delta_V': [8., 14.], 'tau_s': [5., 6.]}
     param_lin_constraints = [[0., 1.], [-80., -35.], [1.5, 8.], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
                              [1., 35.], [1.5, 12.]]
 
@@ -61,11 +61,11 @@ class LIF_R_no_grad(nn.Module):
         self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         self.w = FT(rand_ws)
 
-        self.E_L = FT(E_L).clamp(-75., -40.)
-        self.b_s = FT(b_s).clamp(0.01, 0.95)
+        self.E_L = FT(E_L).clamp(-80., -35.)
+        self.b_s = FT(b_s).clamp(0.01, 0.99)
         self.G = FT(G)
         self.tau_m = FT(tau_m).clamp(1.5, 8.)
-        self.tau_s = FT(tau_s).clamp(1., 12,)
+        self.tau_s = FT(tau_s).clamp(1., 12.)
         self.delta_theta_s = FT(delta_theta_s).clamp(6., 30.)
         self.f_v = FT(f_v).clamp(0.01, 0.99)
         self.delta_V = FT(delta_V).clamp(1., 35.)
