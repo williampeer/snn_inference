@@ -96,8 +96,8 @@ def export_stats_top_samples(mean_model_spike_counts, std_model_spike_counts, ta
                                      labels=range(len(mean_model_spike_counts)),
                                      exp_type='export', uuid='ho_stats' + '/' + 'sbi',
                                      fname='export_bar_plot_avg_rate_sbi_{}.eps'.format(descriptor),
-                                     title='Avg. rates {} most likely samples ({})'.format(N_samples, descriptor),
-                                     ylabel='Firing rate ($Hz$)', xlabel='Neuron',
+                                     title='Avg. spike counts {} most likely samples ({})'.format(N_samples, descriptor),
+                                     ylabel='Binned spike count', xlabel='Neuron',
                                      legend=['Fitted', 'Target'])
     plt.close()
 
@@ -199,8 +199,9 @@ def main():
                                                                     format(m_name, dt_descriptor, s_i))
                 mean_model_spike_counts = torch.cat((mean_model_spike_counts, cur_mean_spike_counts))
 
-                model_considered_silent_and_diverged = (cur_mean_spike_counts < 1.).sum() < 0.25 * len(cur_mean_spike_counts)
-                if not model_considered_silent_and_diverged:
+
+                more_than_one_third_fairly_silent = (cur_mean_spike_counts < 1.).sum() > 0.333 * len(cur_mean_spike_counts)
+                if not more_than_one_third_fairly_silent:
                     converged_mean_model_spike_counts = torch.cat((converged_mean_model_spike_counts, cur_mean_spike_counts))
 
                 current_avg_dist_per_p = []
@@ -211,7 +212,7 @@ def main():
                 plot_param_dist(np.array(current_avg_dist_per_p), 'Parameter distance for sample: {}'.format(s_i),
                                 '{}_N_{}_parallel_sbi_{}_sample_num_{}'.format(m_name, N, dt_descriptor, s_i))
                 avg_param_dist_across_samples.append(current_avg_dist_per_p)
-                if not model_considered_silent_and_diverged:
+                if not more_than_one_third_fairly_silent:
                     converged_avg_param_dist_across_samples.append(current_avg_dist_per_p)
 
             mean_across_exps = np.mean(avg_param_dist_across_samples, axis=1)
