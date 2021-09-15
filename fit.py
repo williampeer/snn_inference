@@ -62,7 +62,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
 
             avg_abs_grads[p_i].append(np.mean(np.abs(param.grad.clone().detach().numpy())))
 
-            cur_p_mean_grad = np.mean(param.grad.clone().detach().numpy())
+            cur_p_mean_grad = np.mean(np.abs(param.grad.clone().detach().numpy()))
             if p_i > 0:
                 cur_p_max = model.__class__.parameter_init_intervals[model.__class__.parameter_names[p_i]][1]
             else:  # 'w'
