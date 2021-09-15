@@ -152,8 +152,8 @@ def main(argv):
 
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17,
                   LIF_R_soft, LIF_R_ASC_soft, GLIF_soft,
-                  LIF_weights_only, LIF_fixed_weights, LIF_R_soft_weights_only,
-                  LIF_R_soft_ReLu, LIF_R_ASC_soft_ReLu, GLIF_soft_ReLu, LIF_R_soft_ReLu_weights_only]
+                  LIF_R_weights_only, LIF_R_soft_weights_only, LIF_R_soft_ReLu_weights_only,
+                  LIF_R_soft_ReLu, LIF_R_ASC_soft_ReLu, GLIF_soft_ReLu]
     # models = [LIF_HS_17]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF_soft_weights_only, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
@@ -171,12 +171,12 @@ def main(argv):
 
     if loss_fn is None:
         loss_functions = [
-                          LossFn.FIRING_RATE_DIST.name,
                           LossFn.VAN_ROSSUM_DIST.name,
                           # LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
                           # LossFn.RATE_FANO_HYBRID.name,
-                          LossFn.RATE_PCC_HYBRID.name]  #,
+                          LossFn.RATE_PCC_HYBRID.name,
+                          LossFn.FIRING_RATE_DIST.name]  #,
                           # LossFn.CV_DIST.name]
                           # LossFn.KL_DIV.name]
                           # LossFn.MSE.name]
