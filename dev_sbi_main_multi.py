@@ -1,6 +1,7 @@
 import sys
 
 import torch
+from matplotlib import pyplot as plt
 from sbi import analysis as analysis
 from sbi import utils as utils
 from sbi.inference.base import infer
@@ -42,18 +43,18 @@ def transform_model_to_sbi_params(model):
 
 
 def main(argv):
-    NUM_WORKERS = 24
+    NUM_WORKERS = 6
 
-    t_interval = 10000
+    t_interval = 16000
     N = 3
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
     # method = None
     method = 'SNRE'
     # model_type = None
-    model_type = 'LIF_R'
+    model_type = 'LIF_R_ASC'
+    # budget = 10000
     budget = 10000
-    # budget = 100
     tar_seed = 42
 
     class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad }
@@ -156,16 +157,16 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
     tar_sbi_params = transform_model_to_sbi_params(tar_model)
-    targets_per_sample = None
-    n_samples = 8
-    for i in range(n_samples):
-        cur_targets = simulator(tar_sbi_params)
-        if targets_per_sample is None:
-            targets_per_sample = cur_targets
-        else:
-            # spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
-            targets_per_sample = targets_per_sample + cur_targets
-    avg_tar_model_simulations = targets_per_sample / n_samples
+    # targets_per_sample = None
+    # n_samples = 8
+    # for i in range(n_samples):
+    #     cur_targets = simulator(tar_sbi_params)
+    #     if targets_per_sample is None:
+    #         targets_per_sample = cur_targets
+    #     else:
+    #         spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
+            # targets_per_sample = targets_per_sample + cur_targets
+    # avg_tar_model_simulations = targets_per_sample / n_samples
 
     posterior = infer(simulator, prior, method=method, num_simulations=budget, num_workers=NUM_WORKERS)
     # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
@@ -183,9 +184,10 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
         IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
                      fname='res_{}_dt_{}_tar_seed_{}'.format(method, dt_descriptor, tar_seed))
 
+        targets = simulator(tar_sbi_params)
         posterior_stats(posterior, method=method,
                         # observation=torch.reshape(avg_tar_model_simulations, (-1, 1)), points=tar_sbi_params,
-                        observation=avg_tar_model_simulations, points=tar_sbi_params,
+                        observation=targets, points=tar_sbi_params,
                         limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
                         m_name=tar_model.name(), dt_descriptor=dt_descriptor, tar_seed=tar_seed)
     except Exception as e:
@@ -214,6 +216,11 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
 
     # checking docs for convergence criterion
     # plot 100d
+    try:
+        # def export_plots(samples, points, lim_low, lim_high, N, method, m_name, description, model_class):
+        export_plots(samples, points, limits[0], limits[1], len(points[1]), 'SNRE', m_name, 'sbi_export_{}'.format(dt_descriptor), m_name)
+    except Exception as e:
+        print('exception in new plot code: {}'.format(e))
 
     try:
         if samples[0].shape[0] <= 10:
@@ -223,6 +230,58 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
             fig.savefig('./figures/analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, dt_descriptor))
     except Exception as e:
         print("except: {}".format(e))
+
+
+def export_plots(samples, points, lim_low, lim_high, N, method, m_name, description, model_class):
+    num_dim = lim_high.shape[0]
+    if num_dim < 12:  # full marginal plot
+        plt.figure()
+        fig, ax = analysis.pairplot(samples, points=points, limits=torch.stack((lim_low, lim_high)).T, figsize=(num_dim, num_dim))
+        fig.savefig('./figures/export_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
+        plt.close()
+    else:
+        # plt.figure()
+        weights_offset = N ** 2 - N
+        # sample_means = [torch.mean(samples[:, :weights_offset])]
+        # lim_low_means = [torch.mean(lim_low[:weights_offset])]
+        # lim_high_means = [torch.mean(lim_high[:weights_offset])]
+        # # pt_means = [torch.mean(points[0])]
+        # for p_j in range(1, len(points)):
+        #     sample_means.append(torch.mean(samples[:, weights_offset+(p_j-1)*N:weights_offset+p_j*N]))
+        #     lim_low_means.append(torch.mean(lim_low[weights_offset+(p_j-1)*N:weights_offset+p_j*N]))
+        #     lim_high_means.append(torch.mean(lim_high[weights_offset+(p_j-1)*N:weights_offset+p_j*N]))
+        #     # pt_means.append(torch.mean(points[p_j]))
+        # # fig_subset_mean, ax_mean = analysis.pairplot(torch.tensor([sample_means]).T, points=torch.tensor([pt_means]).T,
+        # fig_subset_mean, ax_mean = analysis.pairplot(torch.tensor([sample_means]), points=points,
+        #                                              limits=torch.stack((torch.tensor([lim_low_means]), torch.tensor([lim_high_means]))),
+        #                                              figsize=(num_dim, num_dim))
+        # fig_subset_mean.savefig('./figures/sbi/export_sut_means_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
+        # plt.close()
+
+        # Marginals only for p_i, p_i
+        for p_i in range(1, len(model_class.parameter_names)):
+            plt.figure()
+            cur_limits = torch.stack((lim_low[weights_offset+(p_i-1)*N:weights_offset+p_i*N], lim_high[weights_offset+(p_i-1)*N:weights_offset+p_i*N]))
+            cur_pt = points[weights_offset+(p_i-1)*N:weights_offset+p_i*N]
+            cur_samples = samples[:, weights_offset+(p_i-1)*N:weights_offset+p_i*N]
+            fig_subset_mean, ax_mean = analysis.pairplot(cur_samples, points=cur_pt, limits=cur_limits.T, figsize=(N, N))
+            path = './figures/sbi/{}/{}/'.format(m_name, description)
+            IO.makedir_if_not_exists(path)
+            fname = 'export_sut_subset_analysis_pairplot_{}_{}_one_param_{}_{}.png'.format(method, m_name, p_i, description)
+            fig_subset_mean.savefig(path + fname)
+            plt.close()
+
+        # pass
+        plt.figure()
+        w_limits = torch.stack((lim_low[:weights_offset], lim_high[:weights_offset]))
+        w_pt = points[:weights_offset]
+        w_samples = samples[:, :weights_offset]
+        fig_subset_mean, ax_mean = analysis.pairplot(w_samples, points=w_pt, limits=w_limits.T, figsize=(weights_offset, weights_offset))
+        path = './figures/sbi/{}/{}/'.format(m_name, description)
+        IO.makedir_if_not_exists(path)
+        fname = 'export_sut_subset_analysis_pairplot_{}_{}_w_param_{}.png'.format(method, m_name, description)
+        fig_subset_mean.savefig(path + fname)
+        plt.close()
 
 
 if __name__ == "__main__":
