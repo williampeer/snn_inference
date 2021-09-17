@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch import FloatTensor as FT
 from torch import tensor as T
 
+from Models.LIF_R import LIF_R
 from Models.TORCH_CUSTOM import static_clamp_for_matrix
 
 
@@ -103,7 +104,7 @@ class LIF_R_weights_only(nn.Module):
         self.theta_s = self.theta_s.clone().detach()
 
     def name(self):
-        return self.LIF_R.__name__
+        return LIF_R.__name__
 
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types

@@ -40,14 +40,16 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                 plot.bar_plot(y=cur_model_mean, y_std=cur_model_std,
                               labels=labels, exp_type='export',
                               uuid=m_k, fname='rate_bar_plot_model_avg_rate_within_exp_{}_{}_{}_{}'.format(m_k, lfn_k, lr_k.replace('.', '_'), archive_name),
-                              title='Model rates across GBO experiments ({}, {}, {})'.format(m_k, lfn_k, lr_k),
+                              # title='Model rates across GBO experiments ({}, {}, {})'.format(m_k, lfn_k, lr_k),
+                              title='',
                               ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
                 plot.bar_plot_pair_custom_labels(y1=cur_model_mean, y2=cur_target_mean,
                                                  y1_std=cur_model_std, y2_std=cur_target_std,
                                                  labels=labels,
                                                  exp_type='export', uuid=m_k, fname='rate_bar_plot_pair_avg_rate_within_exp_{}_{}_{}_{}'
                                                  .format(m_k, lfn_k, lr_k.replace('.', '_'), archive_name),
-                                                 title='Model rates across GBO experiments ({}, {}, {})'.format(m_k, lfn_k, lr_k),
+                                                 # title='Model rates across GBO experiments ({}, {}, {})'.format(m_k, lfn_k, lr_k),
+                                                 title='',
                                                  ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
 
                 plot.bar_plot_pair_custom_labels(y1=cur_model_std/cur_model_mean,
@@ -56,20 +58,23 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                                                  y2_std=np.zeros_like(cur_target_std),
                                                  labels=labels,
                                                  exp_type='export', uuid=m_k, fname='rate_bar_plot_pair_avg_rate_CV_within_exp_{}_{}_{}.png'.format(m_k, lfn_k, lr_k.replace('.', '_')),
-                                                 title='Avg. CV for rates across GBO experiments ({}, {}, {})'.format(m_k, lfn_k, lr_k),
+                                                 # title='Avg. CV for rates across GBO experiments ({}, {}, {})'.format(m_k, lfn_k, lr_k),
+                                                 title='',
                                                  ylabel='Rate CV')
 
         plot.bar_plot(y=avg_model_rates, y_std=avg_model_rates_std,
                       labels=labels, exp_type='export',
                       uuid=m_k, fname='rate_bar_plot_model_avg_rate_across_exp_{}_{}'.format(m_k, archive_name),
-                      title='Model rates across GBO experiments ({})'.format(m_k),
+                      # title='Model rates across GBO experiments ({})'.format(m_k),
+                      title='',
                       ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
         plot.bar_plot_pair_custom_labels(y1=avg_model_rates, y2=avg_target_rates,
                                          y1_std=avg_model_rates_std, y2_std=avg_target_rates_std,
                                          labels=labels,
                                          exp_type='export', uuid=m_k,
                                          fname='rate_bar_plot_pair_avg_rate_across_exp_{}_{}'.format(m_k, archive_name),
-                                         title='Model rates across GBO experiments ({})'.format(m_k),
+                                         # title='Model rates across GBO experiments ({})'.format(m_k),
+                                         title='',
                                          ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
 
         plot.bar_plot_pair_custom_labels(y1=np.array(avg_model_rates_std) / np.array(avg_model_rates),
@@ -79,7 +84,8 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                                          labels=labels,
                                          exp_type='export', uuid=m_k,
                                          fname='rate_bar_plot_pair_avg_rate_CV_across_exp_{}.png'.format(m_k),
-                                         title='Avg. CV for rates across GBO experiments ({})'.format(m_k),
+                                         # title='Avg. CV for rates across GBO experiments ({})'.format(m_k),
+                                         title='',
                                          ylabel='Rate CV')
 
 load_paths = []
@@ -92,7 +98,8 @@ load_paths = []
 # load_paths.append('/media/william/p6/archive_1009/archive/saved/')
 # load_paths.append('/media/william/p6/archive_1109/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_1609/archive/saved/')
 
 experiment_averages = {}
 

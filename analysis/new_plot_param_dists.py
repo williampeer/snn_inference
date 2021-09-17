@@ -15,7 +15,8 @@ load_paths = []
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/')
 # load_paths.append('/media/william/p6/archive_1009/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_1609/archive/saved/')
 
 experiment_averages = {}
 
@@ -46,7 +47,8 @@ def plot_param_dist_combined(model, init_model, tar_model, fname, lr):
                                      np.zeros_like(dist_per_param_fitted), np.zeros_like(dist_per_param_init),
                                      model.__class__.parameter_names,
                                      'export', 'param_dist_per_exp', fname=fname, legend=['Fitted', 'Initial'],
-                                     title='Parameter distance GBO, {}, N={}, $\\alpha={}$'.format(model.__class__.__name__, model.N, lr),
+                                     # title='Parameter distance GBO, {}, N={}, $\\alpha={}$'.format(model.__class__.__name__, model.N, lr),
+                                     title='',
                                      ylabel='Distance', xlabel='Parameter $p$')
 
     return dist_per_param_fitted, dist_per_param_init
@@ -59,7 +61,8 @@ def plot_param_dist_across_exp_combined(fitted_param_dists, init_param_dists, fn
                                      np.std(fitted_param_dists, axis=0), np.std(init_param_dists, axis=0),
                                      model.__class__.parameter_names,
                                      'export', 'param_dist_per_exp', fname=fname, legend=['Fitted', 'Initial'],
-                                     title=title, ylabel='Distance', xlabel='Parameter $p$')
+                                     title='',  # title,
+                                     ylabel='Distance', xlabel='Parameter $p$')
 
 
 def plot_param_dist(model, tar_model, fname, lr):
@@ -73,7 +76,8 @@ def plot_param_dist(model, tar_model, fname, lr):
     plot.bar_plot(dist_per_param, np.zeros_like(dist_per_param), model.__class__.parameter_names,
                   'export', 'param_dist_per_exp',
                   fname=fname,
-                  title='Parameter distance, GBO {}, $\\alpha={}$'.format(model.__class__.__name__, lr))
+                  # title='Parameter distance, GBO {}, $\\alpha={}$'.format(model.__class__.__name__, lr))
+                  title='')
 
     return dist_per_param
 
@@ -158,14 +162,14 @@ for experiments_path in load_paths:
                 cur_tar_seed = 3 + f_ctr % N_exp
                 tar_model = get_target_model_for(model, cur_tar_seed)
 
-                fname_combined = 'export_param_dist_combined_{}_exp_{}.png'.format(folder_path, exp_num)
+                fname_combined = 'export_param_dist_combined_{}_{}_exp_{}.png'.format(model_type, folder_path, exp_num)
                 dist_per_param_fitted, dist_per_param_init = plot_param_dist_combined(model, init_model, tar_model, fname=fname_combined, lr=lr)
                 param_dist_per_param_fitted.append(dist_per_param_fitted)
                 param_dist_per_param_init.append(dist_per_param_init)
 
                 f_ctr += 1
 
-            fname_exp = 'export_param_dist_exp_avg_all_exp_{}.png'.format(folder_path)
+            fname_exp = 'export_param_dist_exp_avg_all_exp_{}_{}.png'.format(model_type, folder_path)
             config_key = '{}_{}'.format(model.__class__.__name__, lr)  # optim, lfn const.
             plot_param_dist_across_exp_combined(param_dist_per_param_fitted, param_dist_per_param_init, fname_exp, config_key=config_key)
 
