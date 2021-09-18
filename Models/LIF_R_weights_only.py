@@ -131,6 +131,7 @@ class LIF_R_weights_only(nn.Module):
         # return self.s * (self.tau_s + 1) / 2.  # return readout of synaptic current as spike signal
 
         # differentiable soft threshold
-        soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
-        return soft_spiked  # return sigmoidal spiked
+        # soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
+        # return soft_spiked  # return sigmoidal spiked
+        return gating
 
