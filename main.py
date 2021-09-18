@@ -10,7 +10,6 @@ from Models.LIF_HS_17 import LIF_HS_17
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 from Models.LIF_R_weights_only import LIF_R_weights_only
-from Models.LIF_fixed_weights import LIF_fixed_weights
 from Models.LIF_weights_only import LIF_weights_only
 from Models.ReLu.GLIF_soft_ReLu import GLIF_soft_ReLu
 from Models.ReLu.LIF_R_ASC_soft_ReLu import LIF_R_ASC_soft_ReLu
@@ -20,7 +19,7 @@ from Models.Sigmoidal.GLIF_soft import GLIF_soft
 from Models.Sigmoidal.LIF_R_ASC_soft import LIF_R_ASC_soft
 from Models.Sigmoidal.LIF_R_soft import LIF_R_soft
 from Models.Sigmoidal.LIF_R_soft_weights_only import LIF_R_soft_weights_only
-from TargetModels import TargetModels
+from TargetModels import TargetModels, TargetModelsSoft
 from eval import LossFn
 
 
@@ -38,8 +37,8 @@ def main(argv):
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 0.02; N_exp = 3; tau_van_rossum = 20.0; plot_flag = True
-    max_train_iters = 100
-    num_targets = 3
+    max_train_iters = 200
+    num_targets = 2
     interval_size = 4000
     batch_size = interval_size; rows_per_train_iter = interval_size
     # batch_size = 2000; rows_per_train_iter = 8000
@@ -84,7 +83,7 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_12_seed_4_duration_900000.mat'
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_LIF_R_N_3_seed_4_duration_900000.mat'  # !!!!!
 
-    model_type = None
+    # model_type = None
     # model_type = 'GLIF'
     # model_type = 'LIF'
     # model_type = 'LIF_weights_only'
@@ -94,6 +93,7 @@ def main(argv):
     # model_type = 'LIF_ASC'
     # model_type = 'LIF_weights_only'
     # model_type = 'LIF_R_soft'
+    model_type = 'LIF_R_soft_weights_only'
     # model_type = 'LIF_R_ASC'
     # model_type = 'LIF_R_ASC_soft'
     # model_type = 'LIF_R_ASC_soft_ReLu'
@@ -196,10 +196,13 @@ def main(argv):
                     if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_weights_only.__name__]:
                         target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__, LIF_R_soft_ReLu.__name__,
-                                              LIF_R_weights_only.__name__, LIF_R_soft_weights_only.__name__, LIF_R_soft_ReLu_weights_only.__name__]:
+                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_weights_only.__name__]:
                         target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    elif m_class.__name__ in [LIF_R_soft.__name__, LIF_R_soft_weights_only.__name__]:
+                        target_model_name = 'lif_r_soft_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                        target_model = TargetModelsSoft.lif_r_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+
                     elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__, LIF_R_ASC_soft_ReLu.__name__]:
                         target_model_name = 'lif_r_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)

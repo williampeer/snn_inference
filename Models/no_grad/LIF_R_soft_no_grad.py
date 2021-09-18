@@ -7,14 +7,14 @@ from Models.LIF_R import LIF_R
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
-class LIF_R_soft(nn.Module):
+class LIF_R_soft_no_grad(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V', 'tau_g']
     parameter_init_intervals = {'E_L': [-64., -52.], 'tau_m': [3., 4.], 'G': [0.7, 0.8],
                                 'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
                                 'delta_V': [8., 14.], 'tau_g': [4., 5.]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
-        super(LIF_R_soft, self).__init__()
+        super(LIF_R_soft_no_grad, self).__init__()
         # self.device = device
 
         if parameters:
@@ -42,7 +42,7 @@ class LIF_R_soft(nn.Module):
 
         __constants__ = ['N', 'norm_R_const']
         self.N = N
-        self.norm_R_const = (delta_theta_s - E_L) * 1.1
+        self.norm_R_const = (delta_theta_s - E_L) * 1.05
 
         self.v = torch.zeros((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
@@ -61,27 +61,18 @@ class LIF_R_soft(nn.Module):
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
 
-        self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
-        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.99), requires_grad=True)
-        self.G = nn.Parameter(FT(G), requires_grad=True)
-        self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
-        self.tau_g = nn.Parameter(FT(tau_g).clamp(1., 12.), requires_grad=True)
-        self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
-        self.f_v = nn.Parameter(FT(f_v).clamp(0.01, 0.99), requires_grad=True)  # Sample values: f_v = 0.15; delta_V = 12.
-        self.delta_V = nn.Parameter(FT(delta_V).clamp(1., 35.), requires_grad=True)  ##
+        self.E_L = FT(E_L).clamp(-80., -35.)
+        self.b_s = FT(b_s).clamp(0.01, 0.99)
+        self.G = FT(G)
+        self.tau_m = FT(tau_m).clamp(1.5, 12.)
+        self.tau_g = FT(tau_g).clamp(1., 12.)
+        self.delta_theta_s = FT(delta_theta_s).clamp(6., 30.)
+        self.f_v = FT(f_v).clamp(0.01, 0.99)
+        self.delta_V = FT(delta_V).clamp(1., 35.)
 
         self.register_backward_clamp_hooks()
 
     def register_backward_clamp_hooks(self):
-        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
-        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
-        self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_g))
-        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.99, self.G))
-        self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
-        self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
-        self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
-        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.b_s))
-
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
     def get_parameters(self):
@@ -119,7 +110,7 @@ class LIF_R_soft(nn.Module):
 
     def forward(self, x_in):
         W_syn = self.w * self.neuron_types
-        I_tot = (self.g).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
+        I_tot = (self.g).matmul(self.self_recurrence_mask * W_syn) + 1.35 * x_in
         # I_syn = (self.g).matmul(self.w)
         # I_tot = 2 * torch.sigmoid(I_syn + 6 * x_in) - 1  # in (-1, 1)
 
