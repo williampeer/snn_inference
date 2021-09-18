@@ -206,9 +206,13 @@ def main(argv):
                     elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__, LIF_R_ASC_soft_ReLu.__name__]:
                         target_model_name = 'lif_r_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [GLIF.__name__, GLIF_soft.__name__, GLIF_soft_ReLu.__name__]:
+                    elif m_class.__name__ in [GLIF.__name__]:
                         target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    elif m_class.__name__ in [GLIF_soft.__name__]:
+                        target_model_name = 'glif_soft_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                        target_model = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+
                     else:
                         raise NotImplementedError()
 

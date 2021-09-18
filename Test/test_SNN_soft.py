@@ -19,9 +19,9 @@ for random_seed in range(3, 7):
     # init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
     # snn = model_class(init_params_model)
     # snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
-    snn = TargetModelsSoft.lif_r_soft_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
+    # snn = TargetModelsSoft.lif_r_soft_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
     # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
-    # snn = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
+    snn = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
 
     # inputs = poisson_input(10., t=4000, N=snn.N)  # now assumes rate in Hz
     inputs = continuous_normalised_poisson_noise(10., t=12000, N=snn.N)  # now assumes rate in Hz
