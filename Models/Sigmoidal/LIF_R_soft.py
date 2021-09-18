@@ -9,7 +9,7 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 class LIF_R_soft(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V', 'tau_g']
-    parameter_init_intervals = {'E_L': [-64., -52.], 'tau_m': [3., 4.], 'G': [0.7, 0.8],
+    parameter_init_intervals = {'E_L': [-64., -52.], 'tau_m': [4., 5.], 'G': [0.8, 0.9],
                                 'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
                                 'delta_V': [8., 14.], 'tau_g': [4., 5.]}
 
