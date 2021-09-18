@@ -137,12 +137,10 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
         outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
 
         model.reset()
-        mean_output_rates = outputs.sum(dim=0) * 1000. / outputs.shape[0]  # Hz
+        mean_output_rates = outputs.clone().detach().sum(dim=0) * 1000. / outputs.shape[0]  # Hz
         return mean_output_rates
 
         # return torch.reshape(get_binned_spike_counts(outputs.clone().detach()), (-1,))
-
-        # return outputs.clone().detach()
 
     # inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
 
@@ -156,16 +154,17 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
     tar_sbi_params = transform_model_to_sbi_params(tar_model)
-    targets_per_sample = None
-    n_samples = 8
-    for i in range(n_samples):
-        cur_targets = simulator(tar_sbi_params)
-        if targets_per_sample is None:
-            targets_per_sample = cur_targets
-        else:
-            # spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
-            targets_per_sample = targets_per_sample + cur_targets
-    avg_tar_model_simulations = targets_per_sample / n_samples
+    # targets_per_sample = None
+    # n_samples = 8
+    # for i in range(n_samples):
+    #     cur_targets = simulator(tar_sbi_params)
+    #     if targets_per_sample is None:
+    #         targets_per_sample = cur_targets
+    #     else:
+    #         # spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
+    #         targets_per_sample = targets_per_sample + cur_targets
+    # avg_tar_model_simulations = targets_per_sample / n_samples
+    avg_tar_model_simulations = simulator(tar_sbi_params)
 
     posterior = infer(simulator, prior, method=method, num_simulations=budget, num_workers=NUM_WORKERS)
     # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
