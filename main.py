@@ -16,6 +16,7 @@ from Models.ReLu.LIF_R_ASC_soft_ReLu import LIF_R_ASC_soft_ReLu
 from Models.ReLu.LIF_R_soft_ReLu import LIF_R_soft_ReLu
 from Models.ReLu.LIF_R_soft_ReLu_weights_only import LIF_R_soft_ReLu_weights_only
 from Models.Sigmoidal.GLIF_soft import GLIF_soft
+from Models.Sigmoidal.GLIF_soft_positive_weights import GLIF_soft_positive_weights
 from Models.Sigmoidal.LIF_R_ASC_soft import LIF_R_ASC_soft
 from Models.Sigmoidal.LIF_R_soft import LIF_R_soft
 from Models.Sigmoidal.LIF_R_soft_weights_only import LIF_R_soft_weights_only
@@ -93,7 +94,8 @@ def main(argv):
     # model_type = 'LIF_ASC'
     # model_type = 'LIF_weights_only'
     # model_type = 'LIF_R_soft'
-    model_type = 'LIF_R_soft_weights_only'
+    # model_type = 'LIF_R_soft_weights_only'
+    model_type = 'GLIF_soft_positive_weights'
     # model_type = 'LIF_R_ASC'
     # model_type = 'LIF_R_ASC_soft'
     # model_type = 'LIF_R_ASC_soft_ReLu'
@@ -153,7 +155,7 @@ def main(argv):
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17,
                   LIF_R_soft, LIF_R_ASC_soft, GLIF_soft,
                   LIF_R_weights_only, LIF_R_soft_weights_only, LIF_R_soft_ReLu_weights_only,
-                  LIF_R_soft_ReLu, LIF_R_ASC_soft_ReLu, GLIF_soft_ReLu]
+                  LIF_R_soft_ReLu, LIF_R_ASC_soft_ReLu, GLIF_soft_ReLu, GLIF_soft_positive_weights]
     # models = [LIF_HS_17]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF_soft_weights_only, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
@@ -162,7 +164,7 @@ def main(argv):
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF, LIF_fixed_weights, LIF_weights_only]
     # models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft]
-    models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft, LIF_R_weights_only, LIF_R, LIF_R_ASC, GLIF]
+    models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft, LIF_R_weights_only, LIF_R, LIF_R_ASC, GLIF, GLIF_soft_positive_weights]
     # models = [LIF_R_ReLu_weights_only, LIF_R_ReLu, LIF_R_ASC_ReLu, GLIF_ReLu]
     # models = [LIF_R_weights_only, LIF_R, LIF_R_ASC, GLIF]
     # models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft,
@@ -212,6 +214,9 @@ def main(argv):
                     elif m_class.__name__ in [GLIF_soft.__name__]:
                         target_model_name = 'glif_soft_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    elif m_class.__name__ in [GLIF_soft_positive_weights.__name__]:
+                        target_model_name = 'glif_soft_positive_weights_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                        target_model = TargetModelsSoft.glif_soft_positive_weights_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
 
                     else:
                         raise NotImplementedError()
