@@ -12,6 +12,8 @@ class LIF_R_soft_no_grad(nn.Module):
     parameter_init_intervals = {'E_L': [-64., -52.], 'tau_m': [3., 4.], 'G': [0.7, 0.8],
                                 'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
                                 'delta_V': [8., 14.], 'tau_g': [4., 5.]}
+    param_lin_constraints = [[0., 1.], [-80., -35.], [1.5, 10.], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
+                             [1., 35.], [1.5, 12.]]
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF_R_soft_no_grad, self).__init__()

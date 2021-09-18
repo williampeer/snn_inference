@@ -6,13 +6,12 @@ from sbi import utils as utils
 from sbi.inference.base import infer
 
 import IO
-from Models.no_grad.GLIF_no_grad import GLIF_no_grad
+from Models.no_grad.GLIF_soft_no_grad import GLIF_soft_no_grad
 from Models.no_grad.LIF_R_ASC_no_grad import LIF_R_ASC_no_grad
-from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
-from Models.no_grad.LIF_no_grad import LIF_no_grad
-from TargetModels.TargetModels import lif_continuous_ensembles_model_dales_compliant, \
-    glif_continuous_ensembles_model_dales_compliant, lif_r_asc_continuous_ensembles_model_dales_compliant, \
-    lif_r_continuous_ensembles_model_dales_compliant
+from Models.no_grad.LIF_R_soft_no_grad import LIF_R_soft_no_grad
+from TargetModels.TargetModels import lif_r_asc_continuous_ensembles_model_dales_compliant
+from TargetModels.TargetModelsSoft import lif_r_soft_continuous_ensembles_model_dales_compliant, \
+    glif_soft_continuous_ensembles_model_dales_compliant
 from analysis.sbi_export_plots import export_plots
 from experiments import poisson_input
 from model_util import feed_inputs_sequentially_return_spike_train
@@ -43,21 +42,22 @@ def transform_model_to_sbi_params(model):
 
 
 def main(argv):
-    NUM_WORKERS = 24
+    NUM_WORKERS = 16
 
-    t_interval = 10000
+    t_interval = 16000
     N = 3
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
     # method = None
     method = 'SNRE'
     # model_type = None
-    model_type = 'LIF_R'
+    model_type = 'LIF_R_soft'
     budget = 10000
-    # budget = 100
+    # budget = 40
     tar_seed = 42
 
-    class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad }
+    # class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad }
+    class_lookup = { 'LIF_R_soft': LIF_R_soft_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF_soft': GLIF_soft_no_grad }
 
     print('Argument List:', str(argv))
 
@@ -104,10 +104,9 @@ def main(argv):
 
 
 def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
-    tar_model_fn_lookup = { 'LIF_no_grad': lif_continuous_ensembles_model_dales_compliant,
-                            'LIF_R_no_grad': lif_r_continuous_ensembles_model_dales_compliant,
+    tar_model_fn_lookup = { 'LIF_R_soft_no_grad': lif_r_soft_continuous_ensembles_model_dales_compliant,
                             'LIF_R_ASC_no_grad': lif_r_asc_continuous_ensembles_model_dales_compliant,
-                            'GLIF_no_grad': glif_continuous_ensembles_model_dales_compliant }
+                            'GLIF_soft_no_grad': glif_soft_continuous_ensembles_model_dales_compliant }
     tar_in_rate = 10.
     tar_model_fn = tar_model_fn_lookup[model_class.__name__]
     tar_model = tar_model_fn(random_seed=tar_seed, N=N)
