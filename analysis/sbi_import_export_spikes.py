@@ -25,7 +25,10 @@ def main():
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'  # Done (export)
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_sbi_runs_1608/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1809_q/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_2009_tmp/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_osx_2009/archive/saved/data/'
 
     files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
 
@@ -36,9 +39,14 @@ def main():
         print('Loading: {}'.format(sbi_res_path))
         res_load = torch.load(sbi_res_path)
         sbi_res = res_load['data']
-        sut_description = sbi_res['dt_descriptor']
-        method = 'SNRE'
+        if sbi_res.keys().__contains__('SNPE'):
+            method = 'SNPE'
+        elif sbi_res.keys().__contains__('SNLE'):
+            method = 'SNLE'
+        elif sbi_res.keys().__contains__('SNRE'):
+            method = 'SNRE'
         posterior = sbi_res[method]
+        sut_description = sbi_res['dt_descriptor']
         model_class = sbi_res['model_class']
         m_name = model_class.__name__.strip('_no_grad')
         N = sbi_res['N']
@@ -53,8 +61,8 @@ def main():
                 corresponding_samples_fname = 'samples_method_{}_m_name_{}_param_num_{}_dt_{}_tar_seed_{}.pt'.format(method, m_name, param_num, dt_descriptor, tar_seed)
             else:
                 corresponding_samples_fname = 'samples_method_{}_m_name_{}_param_num_{}_dt_{}.pt'.format(method, m_name, param_num, dt_descriptor)
-
             print('single param. passing for now..')
+            pass
         else:
             if tar_seed:
                 corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}_tar_seed_{}.pt'.format(method, m_name, dt_descriptor, tar_seed)

@@ -16,7 +16,10 @@ load_paths = []
 # load_paths.append('/media/william/p6/archive_1009/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1609/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1609/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1809_q/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_2009_tmp/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_osx_2009/archive/saved/')
 
 experiment_averages = {}
 

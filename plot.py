@@ -604,7 +604,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     plt.close()
 
 
-def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, baseline=False):
+def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, baseline=False, colours=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -612,18 +612,24 @@ def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabe
     data = {'y': y, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot')
 
-    if hasattr(y, 'shape') and len(y.shape) > 0 or hasattr(y, 'len') and len(y) > 0:
-        print('y.shape: {}'.format(y.shape))
-        xs = np.linspace(1, y.shape[0], y.shape[0])
+    if str(type(y)).__contains__('array') or str(type(y)).__contains__('list'):
+        print('len(y): {}'.format(len(y)))
+        xs = np.linspace(1, len(y), len(y))
     else:
         xs = np.array([1])
         y = np.reshape(np.array([y]), (1,))
         y_std = np.reshape(np.array([y_std]), (1,))
 
     if hasattr(y_std, 'shape') and len(y_std.shape) > 0 or hasattr(y_std, 'len') and len(y_std) > 0 or hasattr(y_std, 'append'):
-        plt.bar(xs-0.15, y, yerr=y_std, width=0.3)
+        if colours:
+            plt.bar(xs-0.15, y, yerr=y_std, width=0.3, color=colours)
+        else:
+            plt.bar(xs-0.15, y, yerr=y_std, width=0.3)
     else:
-        plt.bar(xs-0.15, y, width=0.3)
+        if colours:
+            plt.bar(xs-0.15, y, width=0.3, color=colours)
+        else:
+            plt.bar(xs-0.15, y, width=0.3)
 
     if baseline:
         plt.plot(xs, np.ones_like(y) * baseline, 'g--')
@@ -653,7 +659,7 @@ def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabe
     plt.close()
 
 
-def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, legend=False, baseline=False):
+def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, legend=False, baseline=False, colours=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -667,13 +673,25 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
         xs = np.array([1.])
 
     if hasattr(y1_std, 'shape') and len(y1_std.shape) > 0 or hasattr(y1_std, 'append'):
-        plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)
+        if colours:
+            plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3, color=colours[0])
+        else:
+            plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)
     else:
-        plt.bar(xs-0.15, y1, width=0.3)
+        if colours:
+            plt.bar(xs-0.15, y1, width=0.3, color=colours[1])
+        else:
+            plt.bar(xs-0.15, y1, width=0.3)
     if hasattr(y2_std, 'shape') and len(y2_std.shape) > 0 or hasattr(y2_std, 'append'):
-        plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3)
+        if colours:
+            plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3, color=colours[1])
+        else:
+            plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3)
     else:
-        plt.bar(xs+0.15, y2, width=0.3)
+        if colours:
+            plt.bar(xs+0.15, y2, width=0.3, color=colours[1])
+        else:
+            plt.bar(xs+0.15, y2, width=0.3)
 
     if not legend:
         plt.legend(['Fitted model', 'Target model'])

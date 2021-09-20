@@ -20,7 +20,9 @@ def main(argv):
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/'  # Done
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # Done
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/'  # Done
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_partial_0109/archive/saved/'  # Done
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1809_q/archive/saved/'  # Done
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_2009_tmp/archive/saved/'  # Done
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_osx_2009/archive/saved/'  # Done
     # experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
 
     archive_name = 'data/'
@@ -70,21 +72,22 @@ def main(argv):
                     # model_type = custom_title.split(',')[0].split('(')[-1]
                     lr = custom_title.split(', ')[-1].strip(' =lr').strip(')').replace('.', '')
                     lfn = loss_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
+                    exp_type = loss_data['plot_data']['exp_type']
 
-                    exp_type = 'DataDriven'
+                    # exp_type = 'DataDriven'
                     cur_fname = 'spikes_{}_{}_{}_{}_{}_{}_exp_num_{}_60s'.format(exp_type, model_type, optimiser, lfn, lr, id, exp_num).replace('=', '_')
                     save_file_name = prefix + path + archive_name + cur_fname + '.mat'
 
-                    if lfn == 'FIRING_RATE_DIST':
-                        print('checking: {}'.format(save_file_name))
-                        if not os.path.exists(prefix + path + archive_name) or not os.path.exists(save_file_name):
-                            makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
-                            load_and_export_sim_data(full_folder_path + f, fname=archive_name + cur_fname)
-                        else:
-                            print('file exists. skipping..')
+                    # if lfn == 'FIRING_RATE_DIST':
+                    print('checking: {}'.format(save_file_name))
+                    if not os.path.exists(prefix + path + archive_name) or not os.path.exists(save_file_name):
+                        makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
+                        load_and_export_sim_data(full_folder_path + f, fname=archive_name + cur_fname)
                     else:
-                        print('.. 💩 {}, {}, {}, {}, {}'.format(lfn, model_type, optimiser, lr, custom_title))
-                        # load_and_export_sim_data(f, optim='Adam_frdvrda_001')
+                        print('file exists. skipping..')
+                    # else:
+                    #     print('.. 💩 {}, {}, {}, {}, {}'.format(lfn, model_type, optimiser, lr, custom_title))
+                    #     load_and_export_sim_data(f, optim='Adam_frdvrda_001')
 
 
 if __name__ == "__main__":

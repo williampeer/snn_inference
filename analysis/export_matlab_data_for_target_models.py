@@ -47,11 +47,11 @@ def main(argv):
             cur_fname = 'target_model_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.name(), num_neurons, f_i, duration)
             # cur_fname = 'target_model_sbi_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.name(), num_neurons, random_seed, duration)
             save_file_name = prefix + path + cur_fname + '.mat'
-            if not os.path.exists(save_file_name):
-                simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=duration, exp_num=f_i,
+            # if not os.path.exists(save_file_name):
+            simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=duration, exp_num=f_i,
                                                     model_name=snn.name(), fname=cur_fname)
-            else:
-                print('file exists. skipping..')
+            # else:
+            #     print('file exists. skipping..')
 
 
 if __name__ == "__main__":

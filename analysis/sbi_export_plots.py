@@ -1,4 +1,5 @@
 import os
+import sys
 
 import matplotlib.pyplot as plt
 
@@ -106,7 +107,11 @@ def main():
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/data/'
     # experiments_path = '/media/william/p6/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1609/archive/saved/data/'
-    experiments_path = '/home/william/repos/snn_inference/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1809_q/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_2009_tmp/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_osx_2009/archive/saved/data/'
+    # experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
+    # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
     custom_uuid = 'data'
     files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
@@ -122,9 +127,16 @@ def main():
         print('tar seed: {}'.format(tar_seed))
 
         res_load = torch.load(sbi_res_path)
+        print('sbi_res load successful.')
         sbi_res = res_load['data']
-        method = 'SNRE'
+        if sbi_res.keys().__contains__('SNPE'):
+            method = 'SNPE'
+        elif sbi_res.keys().__contains__('SNLE'):
+            method = 'SNLE'
+        elif sbi_res.keys().__contains__('SNRE'):
+            method = 'SNRE'
         posterior = sbi_res[method]
+        # if sbi_res.keys()
         model_class = sbi_res['model_class']
         m_name = model_class.__name__.strip('_no_grad')
         N = sbi_res['N']
@@ -132,30 +144,34 @@ def main():
         if 'param_num' in sbi_res:
             param_num = sbi_res['param_num']
             corresponding_samples_fname = 'samples_method_{}_m_name_{}_param_num_{}_dt_{}_tar_seed_{}.pt'.format(method, m_name, param_num, dt_descriptor, tar_seed)
-
             print('single param. passing for now..')
+            pass
         else:
+            pre_path = experiments_path + 'sbi_samples/'
             corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}_tar_seed_{}.pt'.format(method, m_name, dt_descriptor, tar_seed)
-            print('sbi_res load successful.')
+            full_data_path = pre_path + corresponding_samples_fname
+            if os.path.exists(pre_path + corresponding_samples_fname):
+                # try:
+                data_arr = torch.load(full_data_path)['data']
+                print('sbi_samples load successful.')
+                samples = data_arr['samples']
+                # observation = data_arr['observation'][:,0]
+                observation = data_arr['observation']
+                points = data_arr['tar_parameters']
+                m_name = data_arr['m_name']
 
-            # try:
-            data_arr = torch.load(experiments_path + 'sbi_samples/' + corresponding_samples_fname)['data']
-            print('sbi_samples load successful.')
-            samples = data_arr['samples']
-            # observation = data_arr['observation'][:,0]
-            observation = data_arr['observation']
-            points = data_arr['tar_parameters']
-            m_name = data_arr['m_name']
+                lim_low, lim_high = limits_for_class(model_class, N=N)
 
-            lim_low, lim_high = limits_for_class(model_class, N=N)
+                # -------------------------------------------------------
+                # print('DEBUG VERBOSE EXTRA PLOTTING')
+                # log_probability = posterior.log_prob(samples, x=observation)
+                # print('log_probability: {}'.format(log_probability))
+                # samples = posterior.sample((10000,), x=observation)
+                # -------------------------------------------------------
+                export_plots(samples, points, lim_low, lim_high, N, method, m_name, dt_descriptor, model_class)
 
-            # -------------------------------------------------------
-            # print('DEBUG VERBOSE EXTRA PLOTTING')
-            # log_probability = posterior.log_prob(samples, x=observation)
-            # print('log_probability: {}'.format(log_probability))
-            # samples = posterior.sample((10000,), x=observation)
-            # -------------------------------------------------------
-            export_plots(samples, points, lim_low, lim_high, N, method, m_name, dt_descriptor, model_class)
+            else:
+                print('Error: Did not find corresponding .pt-file: {}'.format(corresponding_samples_fname))
 
             # N_samples = 20
             # print('Drawing the {} most likely samples..'.format(N_samples))
@@ -217,5 +233,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # sys.exit(0)
-
+    sys.exit(0)

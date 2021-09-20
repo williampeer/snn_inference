@@ -9,6 +9,8 @@ from TargetModels import TargetModels
 from experiments import poisson_input
 from model_util import generate_model_data
 
+colours = ['Green', 'Red']
+
 
 def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
     for m_i, m_k in enumerate(avg_statistics_per_exp):
@@ -20,10 +22,10 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
         avg_target_rates_std = []
         for lfn_i, lfn_k in enumerate(avg_statistics_per_exp[m_k]):
             for lr_i, lr_k in enumerate(avg_statistics_per_exp[m_k][lfn_k]):
-                avg_stats_exps = avg_statistics_per_exp[m_k][lfn][lr_k]
+                avg_stats_exps = avg_statistics_per_exp[m_k][lfn_k][lr_k]
                 print('processing: {}'.format(avg_stats_exps))
 
-                labels.append(lr_k)
+                labels.append(lfn_k)
                 # labels.append('{}\ninit\nmodels'.format(m_k))
 
                 cur_model_mean = np.mean(avg_stats_exps['avg_model_rate'])
@@ -42,7 +44,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                               uuid=m_k, fname='rate_bar_plot_model_avg_rate_within_exp_{}_{}_{}_{}'.format(m_k, lfn_k, lr_k.replace('.', '_'), archive_name),
                               # title='Model rates across GBO experiments ({}, {}, {})'.format(m_k, lfn_k, lr_k),
                               title='',
-                              ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
+                              ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$', colours=colours)
                 plot.bar_plot_pair_custom_labels(y1=cur_model_mean, y2=cur_target_mean,
                                                  y1_std=cur_model_std, y2_std=cur_target_std,
                                                  labels=labels,
@@ -50,7 +52,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                                                  .format(m_k, lfn_k, lr_k.replace('.', '_'), archive_name),
                                                  # title='Model rates across GBO experiments ({}, {}, {})'.format(m_k, lfn_k, lr_k),
                                                  title='',
-                                                 ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
+                                                 ylabel='Firing rate ($Hz$)', xlabel='$f_{dist}$', colours=colours)
 
                 plot.bar_plot_pair_custom_labels(y1=cur_model_std/cur_model_mean,
                                                  y2=cur_target_std/cur_target_mean,
@@ -60,14 +62,14 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                                                  exp_type='export', uuid=m_k, fname='rate_bar_plot_pair_avg_rate_CV_within_exp_{}_{}_{}.png'.format(m_k, lfn_k, lr_k.replace('.', '_')),
                                                  # title='Avg. CV for rates across GBO experiments ({}, {}, {})'.format(m_k, lfn_k, lr_k),
                                                  title='',
-                                                 ylabel='Rate CV')
+                                                 ylabel='Rate CV', colours=['Purple', 'Yellow'])
 
         plot.bar_plot(y=avg_model_rates, y_std=avg_model_rates_std,
                       labels=labels, exp_type='export',
                       uuid=m_k, fname='rate_bar_plot_model_avg_rate_across_exp_{}_{}'.format(m_k, archive_name),
                       # title='Model rates across GBO experiments ({})'.format(m_k),
                       title='',
-                      ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
+                      ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$', colours=colours)
         plot.bar_plot_pair_custom_labels(y1=avg_model_rates, y2=avg_target_rates,
                                          y1_std=avg_model_rates_std, y2_std=avg_target_rates_std,
                                          labels=labels,
@@ -75,7 +77,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                                          fname='rate_bar_plot_pair_avg_rate_across_exp_{}_{}'.format(m_k, archive_name),
                                          # title='Model rates across GBO experiments ({})'.format(m_k),
                                          title='',
-                                         ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$')
+                                         ylabel='Firing rate ($Hz$)', xlabel='$f_{dist}$', colours=colours)
 
         plot.bar_plot_pair_custom_labels(y1=np.array(avg_model_rates_std) / np.array(avg_model_rates),
                                          y2=np.array(avg_target_rates_std) / np.array(avg_target_rates),
@@ -86,7 +88,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                                          fname='rate_bar_plot_pair_avg_rate_CV_across_exp_{}.png'.format(m_k),
                                          # title='Avg. CV for rates across GBO experiments ({})'.format(m_k),
                                          title='',
-                                         ylabel='Rate CV')
+                                         ylabel='Rate CV', colours=['Purple', 'Yellow'])
 
 load_paths = []
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_0908/archive/saved/')
@@ -99,7 +101,10 @@ load_paths = []
 # load_paths.append('/media/william/p6/archive_1109/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/')
 # load_paths.append('/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/')
-load_paths.append('/home/william/repos/archives_snn_inference/archive_1609/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1609/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_1809_q/archive/saved/')
+# load_paths.append('/home/william/repos/archives_snn_inference/archive_2009_tmp/archive/saved/')
+load_paths.append('/home/william/repos/archives_snn_inference/archive_osx_2009/archive/saved/')
 
 experiment_averages = {}
 
