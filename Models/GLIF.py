@@ -170,9 +170,9 @@ class GLIF(nn.Module):
         self.I_additive = self.I_additive - self.f_I * self.I_additive + spiked * self.f_I
 
         # differentiable soft threshold
-        # soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s + self.theta_v))
-        # return soft_spiked  # return sigmoidal spiked
-        return gating
+        soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s + self.theta_v))
+        return soft_spiked  # return sigmoidal spiked
+        # return gating
 
         # return self.v, self.s * self.tau_s
         # return self.s * self.tau_s  # use synaptic current as spike signal
