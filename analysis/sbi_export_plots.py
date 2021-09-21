@@ -107,9 +107,10 @@ def main():
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/data/'
     # experiments_path = '/media/william/p6/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_1609/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1809_q/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_1809_q/archive/saved/data/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_2009_tmp/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_osx_2009/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_osx_2009/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_2109_unknown/archive/saved/data/'
     # experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
@@ -170,66 +171,66 @@ def main():
                 # -------------------------------------------------------
                 export_plots(samples, points, lim_low, lim_high, N, method, m_name, dt_descriptor, model_class)
 
+                N_samples = 20
+                print('Drawing the {} most likely samples..'.format(N_samples))
+                posterior_params = posterior.sample((N_samples,), x=observation)
+                print('\nposterior_params: {}'.format(posterior_params))
+
+                mean_model_spike_counts = torch.tensor([])
+                converged_mean_model_spike_counts = torch.tensor([])
+                # std_model_rates = torch.tensor([])
+
+                avg_param_dist_across_samples = []
+                converged_avg_param_dist_across_samples = []
+                for s_i in range(N_samples):
+                    model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], N)
+                    programmatic_neuron_types = torch.ones((N,))
+                    for n_i in range(int(2 * N / 3), N):
+                        programmatic_neuron_types[n_i] = -1
+                    model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
+                    cur_mean_spike_counts = export_stats_model_target(model, observation=observation,
+                                                                     descriptor='{}_parallel_sbi_{}_sample_N_{}'.
+                                                                        format(m_name, dt_descriptor, s_i))
+                    mean_model_spike_counts = torch.cat((mean_model_spike_counts, cur_mean_spike_counts))
+
+
+                    more_than_one_third_fairly_silent = (cur_mean_spike_counts < 1.).sum() > 0.333 * len(cur_mean_spike_counts)
+                    if not more_than_one_third_fairly_silent:
+                        converged_mean_model_spike_counts = torch.cat((converged_mean_model_spike_counts, cur_mean_spike_counts))
+
+                    current_avg_dist_per_p = []
+                    model_parameter_list = model.get_parameters()
+                    for p_i in range(len(model_parameter_list)):
+                        dist_p_i = parameter_distance.euclid_dist(model_parameter_list[p_i], points[p_i])
+                        current_avg_dist_per_p.append(dist_p_i)
+                    plot_param_dist(np.array(current_avg_dist_per_p), 'Parameter distance for sample: {}'.format(s_i),
+                                    '{}_N_{}_parallel_sbi_{}_sample_num_{}'.format(m_name, N, dt_descriptor, s_i))
+                    avg_param_dist_across_samples.append(current_avg_dist_per_p)
+                    if not more_than_one_third_fairly_silent:
+                        converged_avg_param_dist_across_samples.append(current_avg_dist_per_p)
+
+                mean_across_exps = np.mean(avg_param_dist_across_samples, axis=1)
+                plot_param_dist(mean_across_exps, 'Parameter distance across samples',
+                                'sbi_samples_avg_param_dist_{}_N_{}_{}'.format(m_name, N, dt_descriptor))
+                converged_mean_p_dist = np.mean(converged_avg_param_dist_across_samples, axis=1)
+                # if not hasattr(converged_mean_p_dist, 'len'):
+                #     converged_mean_p_dist = np.array([converged_mean_p_dist])
+                plot_param_dist(converged_mean_p_dist, 'Parameter distance across samples forming non-silent models',
+                                'sbi_samples_converged_non_silent_avg_param_dist_{}_N_{}_{}'.format(m_name, N, dt_descriptor))
+
+                    # std_model_rates.append(cur_std_model_rate)
+                mean_model_spike_counts = torch.reshape(mean_model_spike_counts, (N_samples, -1))
+                converged_mean_model_spike_counts = torch.reshape(converged_mean_model_spike_counts, (-1, len(observation)))
+                export_stats_top_samples(torch.mean(mean_model_spike_counts, dim=0), torch.std(mean_model_spike_counts, dim=0),
+                                         observation, '{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor), N_samples=len(mean_model_spike_counts))
+                converged_mean_model_spike_counts = torch.mean(converged_mean_model_spike_counts, dim=0)
+                # if not hasattr(converged_mean_model_rates, 'len'):
+                #     converged_mean_model_rates = np.array([converged_mean_model_rates])
+                export_stats_top_samples(converged_mean_model_spike_counts, torch.std(converged_mean_model_spike_counts, dim=0),
+                                         observation, 'converged_non_silent_{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor), N_samples=len(converged_mean_model_spike_counts))
+
             else:
                 print('Error: Did not find corresponding .pt-file: {}'.format(corresponding_samples_fname))
-
-            # N_samples = 20
-            # print('Drawing the {} most likely samples..'.format(N_samples))
-            # posterior_params = posterior.sample((N_samples,), x=observation)
-            # print('\nposterior_params: {}'.format(posterior_params))
-            #
-            # mean_model_spike_counts = torch.tensor([])
-            # converged_mean_model_spike_counts = torch.tensor([])
-            # # std_model_rates = torch.tensor([])
-            #
-            # avg_param_dist_across_samples = []
-            # converged_avg_param_dist_across_samples = []
-            # for s_i in range(N_samples):
-            #     model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], N)
-            #     programmatic_neuron_types = torch.ones((N,))
-            #     for n_i in range(int(2 * N / 3), N):
-            #         programmatic_neuron_types[n_i] = -1
-            #     model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
-            #     cur_mean_spike_counts = export_stats_model_target(model, observation=observation,
-            #                                                      descriptor='{}_parallel_sbi_{}_sample_N_{}'.
-            #                                                         format(m_name, dt_descriptor, s_i))
-            #     mean_model_spike_counts = torch.cat((mean_model_spike_counts, cur_mean_spike_counts))
-            #
-            #
-            #     more_than_one_third_fairly_silent = (cur_mean_spike_counts < 1.).sum() > 0.333 * len(cur_mean_spike_counts)
-            #     if not more_than_one_third_fairly_silent:
-            #         converged_mean_model_spike_counts = torch.cat((converged_mean_model_spike_counts, cur_mean_spike_counts))
-            #
-            #     current_avg_dist_per_p = []
-            #     model_parameter_list = model.get_parameters()
-            #     for p_i in range(len(model_parameter_list)):
-            #         dist_p_i = parameter_distance.euclid_dist(model_parameter_list[p_i], points[p_i])
-            #         current_avg_dist_per_p.append(dist_p_i)
-            #     plot_param_dist(np.array(current_avg_dist_per_p), 'Parameter distance for sample: {}'.format(s_i),
-            #                     '{}_N_{}_parallel_sbi_{}_sample_num_{}'.format(m_name, N, dt_descriptor, s_i))
-            #     avg_param_dist_across_samples.append(current_avg_dist_per_p)
-            #     if not more_than_one_third_fairly_silent:
-            #         converged_avg_param_dist_across_samples.append(current_avg_dist_per_p)
-            #
-            # mean_across_exps = np.mean(avg_param_dist_across_samples, axis=1)
-            # plot_param_dist(mean_across_exps, 'Parameter distance across samples',
-            #                 'sbi_samples_avg_param_dist_{}_N_{}_{}'.format(m_name, N, dt_descriptor))
-            # converged_mean_p_dist = np.mean(converged_avg_param_dist_across_samples, axis=1)
-            # # if not hasattr(converged_mean_p_dist, 'len'):
-            # #     converged_mean_p_dist = np.array([converged_mean_p_dist])
-            # plot_param_dist(converged_mean_p_dist, 'Parameter distance across samples forming non-silent models',
-            #                 'sbi_samples_converged_non_silent_avg_param_dist_{}_N_{}_{}'.format(m_name, N, dt_descriptor))
-            #
-            #     # std_model_rates.append(cur_std_model_rate)
-            # mean_model_spike_counts = torch.reshape(mean_model_spike_counts, (N_samples, -1))
-            # converged_mean_model_spike_counts = torch.reshape(converged_mean_model_spike_counts, (-1, len(observation)))
-            # export_stats_top_samples(torch.mean(mean_model_spike_counts, dim=0), torch.std(mean_model_spike_counts, dim=0),
-            #                          observation, '{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor), N_samples=len(mean_model_spike_counts))
-            # converged_mean_model_spike_counts = torch.mean(converged_mean_model_spike_counts, dim=0)
-            # # if not hasattr(converged_mean_model_rates, 'len'):
-            # #     converged_mean_model_rates = np.array([converged_mean_model_rates])
-            # export_stats_top_samples(converged_mean_model_spike_counts, torch.std(converged_mean_model_spike_counts, dim=0),
-            #                          observation, 'converged_non_silent_{}_{}_sbi_parallel_{}'.format(method, m_name, dt_descriptor), N_samples=len(converged_mean_model_spike_counts))
 
 if __name__ == "__main__":
     main()
