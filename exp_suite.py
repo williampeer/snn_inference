@@ -53,8 +53,8 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
         # ------------------------------------------------------
 
         plot_losses(training_loss=train_losses, test_loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
-                    custom_title='Loss ({}, {}, lr={}, spf={})'.format(model.__class__.__name__, constants.optimiser.__name__,
-                                                                       constants.learn_rate, constants.silent_penalty_factor),
+                    custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
+                                                                       constants.loss_fn, constants.learn_rate),
                     fname='training_and_test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn, str(constants.tau_van_rossum).replace('.', '_')))
 
     logger.log('train_losses: #{}'.format(train_losses))
