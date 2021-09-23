@@ -7,6 +7,8 @@ from sbi import utils as utils
 from sbi.inference.base import infer
 
 import IO
+from Models.LowerDim.GLIF_soft_lower_dim import GLIF_soft_lower_dim
+from Models.LowerDim.LIF_R_soft_lower_dim import LIF_R_soft_lower_dim
 from Models.no_grad.GLIF_no_grad import GLIF_no_grad
 from Models.no_grad.LIF_R_ASC_no_grad import LIF_R_ASC_no_grad
 from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
@@ -14,6 +16,8 @@ from Models.no_grad.LIF_no_grad import LIF_no_grad
 from TargetModels.TargetModels import lif_continuous_ensembles_model_dales_compliant, \
     glif_continuous_ensembles_model_dales_compliant, lif_r_asc_continuous_ensembles_model_dales_compliant, \
     lif_r_continuous_ensembles_model_dales_compliant
+from TargetModels.TargetModelsSoft import glif_soft_continuous_ensembles_model_dales_compliant, \
+    lif_r_soft_continuous_ensembles_model_dales_compliant
 from experiments import sine_modulated_white_noise_input
 from model_util import feed_inputs_sequentially_return_spike_train
 
@@ -52,12 +56,14 @@ def main(argv):
     # method = None
     method = 'SNRE'
     # model_type = None
-    model_type = 'LIF_R_ASC'
-    # budget = 10000
-    budget = 10000
+    model_type = 'GLIF_soft_lower_dim'
+    # model_type = 'LIF_R_soft_lower_dim'
+    budget = 5000
+    # budget = 10
     tar_seed = 42
 
-    class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad }
+    class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad,
+                     'GLIF_soft_lower_dim' : GLIF_soft_lower_dim, 'LIF_R_soft_lower_dim': LIF_R_soft_lower_dim }
 
     print('Argument List:', str(argv))
 
@@ -107,7 +113,9 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
     tar_model_fn_lookup = { 'LIF_no_grad': lif_continuous_ensembles_model_dales_compliant,
                             'LIF_R_no_grad': lif_r_continuous_ensembles_model_dales_compliant,
                             'LIF_R_ASC_no_grad': lif_r_asc_continuous_ensembles_model_dales_compliant,
-                            'GLIF_no_grad': glif_continuous_ensembles_model_dales_compliant }
+                            'GLIF_no_grad': glif_continuous_ensembles_model_dales_compliant,
+                            'LIF_R_soft_lower_dim': lif_r_soft_continuous_ensembles_model_dales_compliant,
+                            'GLIF_soft_lower_dim': glif_soft_continuous_ensembles_model_dales_compliant }
     tar_in_rate = 10.
     tar_model_fn = tar_model_fn_lookup[model_class.__name__]
     tar_model = tar_model_fn(random_seed=tar_seed, N=N)
@@ -125,6 +133,14 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
                     preset_weights[n_i, n_j] = parsed_preset_weights[ctr]
                     ctr += 1
         programmatic_params_dict[model_class.parameter_names[0]] = preset_weights
+
+        tar_model_p_names = tar_model.__class__.parameter_names
+        for t_i in range(1, len(tar_model_p_names)):
+            tar_params = tar_model.get_parameters()
+            for p_i in range(1, len(tar_model_p_names)):
+                cur_tar_p_name = tar_model_p_names[p_i]
+                if not model_class.parameter_names.__contains__(cur_tar_p_name):
+                    programmatic_params_dict[cur_tar_p_name] = tar_params[p_i].clone().detach()
 
         for i in range(1, len(model_class.parameter_names)):
             programmatic_params_dict[model_class.parameter_names[i]] = parameter_set[(N**2-N)+N*(i-1):(N**2-N)+N*i]  # assuming only N-dimensional params otherwise
