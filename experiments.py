@@ -55,11 +55,11 @@ def sine_modulated_white_noise_input(rate, t, N):
     # return torch.poisson((rate/1000.) * torch.ones((int(t), N))).clamp(0., 1.)  # t x N
 
 
-def sine_modulated_white_noise(t, N):
+def sine_modulated_white_noise(t, N, neurons_coeff=torch.tensor([0.25, 0.25, 0.1])):
     # noise = torch.poisson(p_lambda * torch.ones(t, N))
     # return noise / torch.max(noise)  # normalised
     # B sin(ωt) · (1 + qξ(t))
-    ret = 0.25 * torch.reshape(torch.sin(2. * torch.arange(0, t)), (t, 1)) * (torch.ones((t, N)) + 4. * torch.randn((t, N)))
+    ret = torch.tensor(neurons_coeff * torch.ones((1, N)) * torch.sin(2. * torch.reshape(torch.arange(0, t), (t, 1))) * (torch.ones((t, N)) + 4. * torch.randn((t, N))), requires_grad=True)
     assert ret.shape[0] == t, "ret.shape[0] should be t, {}, {}".format(ret.shape[0], t)
     assert ret.shape[1] == N, "ret.shape[1] should be N, {}, {}".format(ret.shape[1], N)
     return ret

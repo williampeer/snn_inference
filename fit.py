@@ -7,7 +7,7 @@ from eval import calculate_loss
 from experiments import release_computational_graph, sine_modulated_white_noise
 
 
-def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimiser, constants, train_i=None, logger=None):
+def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, train_i=None, logger=None):
     if gen_inputs is not None:
         assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
             "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
@@ -21,7 +21,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
     assert batch_N > 0, "batch_N was not above zero. batch_N: {}".format(batch_N)
     print('num. of batches of size {}: {}'.format(batch_size, batch_N))
     batch_losses = []; avg_abs_grads = []
-    for _ in range(len(list(model.parameters()))+1):
+    for _ in range(len(list(model.parameters()))):
         avg_abs_grads.append([])
 
     optimiser.zero_grad()
@@ -74,18 +74,20 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
         converged = np.array(param_grads_converged).sum() == len(param_grads_converged)
         converged_batches.append(converged)
 
-        if constants.EXP_TYPE is not ExperimentType.SanityCheck:
-            avg_abs_grads[p_i + 1].append(np.abs(poisson_input_rate.grad.clone().detach().numpy()))
-            # print('p_i+1, poisson_input_rate.grad', p_i + 1, poisson_input_rate.grad)
-        else:
-            avg_abs_grads[p_i + 1].append(0.)
+        # if constants.EXP_TYPE is not ExperimentType.SanityCheck:
+        #     avg_abs_grads[p_i + 1].append(np.abs(poisson_input_rate.grad.clone().detach().numpy()))
+        #     # print('p_i+1, poisson_input_rate.grad', p_i + 1, poisson_input_rate.grad)
+        # else:
+        #     avg_abs_grads[p_i + 1].append(0.)
 
         print('batch loss: {}'.format(loss))
         batch_losses.append(float(loss.clone().detach().data))
 
     # loss.backward()
     optimiser.step()
-    release_computational_graph(model, poisson_input_rate, current_inputs)
+    release_computational_graph(model,
+                                # poisson_input_rate,
+                                current_inputs)
     spikes = None; loss = None; current_inputs = None
 
     avg_batch_loss = np.mean(np.asarray(batch_losses, dtype=np.float))

@@ -92,7 +92,8 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num):
                                                                    spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
 
         avg_train_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=None, target_spiketrain=data_spike_train,
-                                                                poisson_input_rate=poisson_input_rate, optimiser=optim,
+                                                                # poisson_input_rate=poisson_input_rate,
+                                                                optimiser=optim,
                                                                 constants=constants, train_i=train_i, logger=logger)
         # release_computational_graph(target_model, constants.initial_poisson_rate, gen_input)
 

@@ -171,7 +171,8 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
 
         # try:
             avg_unseen_loss, abs_grads_mean, last_loss, converged = fit_batches(model, gen_inputs=train_input, target_spiketrain=train_targets,
-                                                                                poisson_input_rate=poisson_input_rate, optimiser=optim,
+                                                                                # poisson_input_rate=poisson_input_rate,
+                                                                                optimiser=optim,
                                                                                 constants=constants, train_i=train_i, logger=logger)
 
             cur_params = model.state_dict()

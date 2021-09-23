@@ -2,13 +2,6 @@ import torch
 import torch.nn as nn
 from torch import FloatTensor as FT
 
-from Models.GLIF import GLIF
-from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
-
-import torch
-import torch.nn as nn
-from torch import FloatTensor as FT
-
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
