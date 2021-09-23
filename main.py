@@ -11,6 +11,12 @@ from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 from Models.LIF_R_weights_only import LIF_R_weights_only
 from Models.LIF_weights_only import LIF_weights_only
+from Models.LowerDim.GLIF_lower_dim import GLIF_lower_dim
+from Models.LowerDim.GLIF_soft_lower_dim import GLIF_soft_lower_dim
+from Models.LowerDim.LIF_R_ASC_lower_dim import LIF_R_ASC_lower_dim
+from Models.LowerDim.LIF_R_ASC_soft_lower_dim import LIF_R_ASC_soft_lower_dim
+from Models.LowerDim.LIF_R_lower_dim import LIF_R_lower_dim
+from Models.LowerDim.LIF_R_soft_lower_dim import LIF_R_soft_lower_dim
 from Models.ReLu.GLIF_soft_ReLu import GLIF_soft_ReLu
 from Models.ReLu.LIF_R_ASC_soft_ReLu import LIF_R_ASC_soft_ReLu
 from Models.ReLu.LIF_R_soft_ReLu import LIF_R_soft_ReLu
@@ -84,7 +90,7 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_12_seed_4_duration_900000.mat'
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_LIF_R_N_3_seed_4_duration_900000.mat'  # !!!!!
 
-    # model_type = None
+    model_type = None
     # model_type = 'GLIF'
     # model_type = 'LIF'
     # model_type = 'LIF_weights_only'
@@ -95,7 +101,7 @@ def main(argv):
     # model_type = 'LIF_weights_only'
     # model_type = 'LIF_R_soft'
     # model_type = 'LIF_R_soft_weights_only'
-    model_type = 'GLIF_soft_positive_weights'
+    # model_type = 'GLIF_soft_positive_weights'
     # model_type = 'LIF_R_ASC'
     # model_type = 'LIF_R_ASC_soft'
     # model_type = 'LIF_R_ASC_soft_ReLu'
@@ -155,7 +161,9 @@ def main(argv):
     all_models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF, LIF_HS_17,
                   LIF_R_soft, LIF_R_ASC_soft, GLIF_soft,
                   LIF_R_weights_only, LIF_R_soft_weights_only, LIF_R_soft_ReLu_weights_only,
-                  LIF_R_soft_ReLu, LIF_R_ASC_soft_ReLu, GLIF_soft_ReLu, GLIF_soft_positive_weights]
+                  LIF_R_soft_ReLu, LIF_R_ASC_soft_ReLu, GLIF_soft_ReLu, GLIF_soft_positive_weights,
+                  GLIF_soft_lower_dim, LIF_R_ASC_soft_lower_dim, LIF_R_soft_lower_dim,
+                  GLIF_lower_dim, LIF_R_ASC_lower_dim, LIF_R_lower_dim]
     # models = [LIF_HS_17]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF_soft_weights_only, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
@@ -165,7 +173,9 @@ def main(argv):
     # models = [LIF, LIF_fixed_weights, LIF_weights_only]
     # models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft]
     # models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft, LIF_R_weights_only, LIF_R, LIF_R_ASC, GLIF, GLIF_soft_positive_weights]
-    models = [LIF_R, LIF_R_ASC, GLIF]
+    # models = [LIF_R, LIF_R_ASC, GLIF]
+    # models = [GLIF_soft_lower_dim, LIF_R_ASC_soft_lower_dim, LIF_R_soft_lower_dim, GLIF_lower_dim, LIF_R_ASC_lower_dim, LIF_R_lower_dim]
+    models = [GLIF_soft_lower_dim, LIF_R_soft_lower_dim, GLIF_lower_dim, LIF_R_ASC_lower_dim, LIF_R_lower_dim]
     # models = [LIF_R_ReLu_weights_only, LIF_R_ReLu, LIF_R_ASC_ReLu, GLIF_ReLu]
     # models = [LIF_R_weights_only, LIF_R, LIF_R_ASC, GLIF]
     # models = [LIF_R_soft_weights_only, LIF_R_soft, LIF_R_ASC_soft, GLIF_soft,
@@ -199,20 +209,20 @@ def main(argv):
                     if m_class.__name__ in [LIF.__name__, LIF_weights_only.__name__, LIF_weights_only.__name__]:
                         target_model_name = 'lif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_weights_only.__name__]:
+                    elif m_class.__name__ in [LIF_R.__name__, LIF_R_weights_only.__name__, LIF_R_lower_dim.__name__]:
                         target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [LIF_R_soft.__name__, LIF_R_soft_weights_only.__name__]:
+                    elif m_class.__name__ in [LIF_R_soft.__name__, LIF_R_soft_weights_only.__name__, LIF_R_soft_lower_dim.__name__]:
                         target_model_name = 'lif_r_soft_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModelsSoft.lif_r_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
 
-                    elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__, LIF_R_ASC_soft_ReLu.__name__]:
+                    elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__, LIF_R_ASC_soft_ReLu.__name__, LIF_R_ASC_soft_lower_dim.__name__, LIF_R_ASC_lower_dim.__name__]:
                         target_model_name = 'lif_r_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [GLIF.__name__]:
+                    elif m_class.__name__ in [GLIF.__name__, GLIF_lower_dim.__name__]:
                         target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [GLIF_soft.__name__]:
+                    elif m_class.__name__ in [GLIF_soft.__name__, GLIF_soft_lower_dim.__name__]:
                         target_model_name = 'glif_soft_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
                     elif m_class.__name__ in [GLIF_soft_positive_weights.__name__]:

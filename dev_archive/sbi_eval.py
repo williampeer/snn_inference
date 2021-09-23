@@ -1,6 +1,6 @@
 from IO import *
 from TargetModels.TargetModels import *
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import feed_inputs_sequentially_return_spike_train
 
 from sbi import analysis as analysis
@@ -23,7 +23,7 @@ def get_target_observation(model_class, N=3):
     tar_in_rate = 10.
     tar_model_fn = tar_model_fn_lookup[model_class.__name__]
     tar_model = tar_model_fn(random_seed=42, N=N)
-    inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
+    inputs = sine_modulated_white_noise_input(rate=tar_in_rate, t=t_interval, N=N)
     rates = None
     for i in range(10):
         cur_targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()

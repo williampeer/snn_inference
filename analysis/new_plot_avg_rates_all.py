@@ -6,7 +6,7 @@ import torch
 import plot
 import stats
 from TargetModels import TargetModels
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import generate_model_data
 
 colours = ['Green', 'Red']
@@ -189,14 +189,14 @@ for experiments_path in load_paths:
                 poisson_rate = exp_res['rate']
                 print('Loaded model data.')
 
-                inputs = poisson_input(rate=10., t=10000, N=model.N)
+                inputs = sine_modulated_white_noise_input(rate=10., t=10000, N=model.N)
                 model_spike_train = generate_model_data(model, inputs).clone().detach()
                 cur_neuronal_rates = stats.rate_Hz(model_spike_train)
                 mean_model_rates.append(np.mean(cur_neuronal_rates.numpy()))
 
                 cur_tar_seed = 3 + f_ctr % 3
                 tar_model = get_target_model_for(model, cur_tar_seed)
-                tar_inputs = poisson_input(rate=10., t=10000, N=model.N)
+                tar_inputs = sine_modulated_white_noise_input(rate=10., t=10000, N=model.N)
                 tar_spike_train = generate_model_data(model, tar_inputs).clone().detach()
                 cur_tar_rates = stats.rate_Hz(tar_spike_train)
                 mean_tar_rates.append(np.mean(cur_tar_rates.numpy()))

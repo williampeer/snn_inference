@@ -4,7 +4,7 @@ import torch
 import model_util
 from Constants import ExperimentType
 from eval import calculate_loss
-from experiments import poisson_input, release_computational_graph
+from experiments import release_computational_graph, sine_modulated_white_noise
 
 
 def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimiser, constants, train_i=None, logger=None):
@@ -34,7 +34,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, poisson_input_rate, optimi
             current_inputs = gen_inputs[batch_size * batch_i:batch_size * (batch_i + 1)].clone().detach().requires_grad_(True)
             current_inputs.retain_grad()
         else:
-            current_inputs = poisson_input(rate=poisson_input_rate, t=batch_size, N=model.N)
+            current_inputs = sine_modulated_white_noise(t=batch_size, N=model.N)
             current_inputs.retain_grad()
 
         spikes = model_util.feed_inputs_sequentially_return_spike_train(model, current_inputs)

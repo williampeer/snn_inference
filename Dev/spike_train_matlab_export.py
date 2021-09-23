@@ -8,7 +8,7 @@ from IO import save_model_params
 from Models.GLIF import GLIF
 from TargetModels import TargetEnsembleModels
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_to_sparse_vectors
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import generate_model_data
 
 
@@ -83,7 +83,7 @@ def main(argv):
     for t_i in range(interval_range):
         model.reset_hidden_state()
         # spiketrain = generate_synthetic_data(model, poisson_rate, t=interval_size)
-        gen_input = poisson_input(rate=poisson_rate, t=interval_size, N=model.N)
+        gen_input = sine_modulated_white_noise_input(rate=poisson_rate, t=interval_size, N=model.N)
         gen_spiketrain = generate_model_data(model=model, inputs=gen_input)
         # for gen spiketrain this may be thresholded to binary values:
         gen_spiketrain = torch.round(gen_spiketrain)

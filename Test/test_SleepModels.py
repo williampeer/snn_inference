@@ -3,14 +3,14 @@ from torch import tensor as T
 
 import model_util
 from TargetModels import SleepModelWrappers
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from plot import plot_neuron, plot_spike_train
 from stats import firing_rate_per_neuron
 
 
 def test_sleep_model(snn):
     rate = 0.5
-    inputs = poisson_input(rate=rate, t=4000, N=snn.N)
+    inputs = sine_modulated_white_noise_input(rate=rate, t=4000, N=snn.N)
     membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     mean_rates = firing_rate_per_neuron(spikes)
     print('mean_rates (Poisson): {}'.format(mean_rates))

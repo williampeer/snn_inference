@@ -5,7 +5,7 @@ from brian2modelfitting import *
 from brian2 import *
 
 from Log import Logger
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 
 from Dev.setup_data_for_brian import *
 
@@ -15,7 +15,7 @@ logger = Logger('brian2_fitting_playbook_poisson_input_' + output_fname.replace(
 for neuron_index in range(0, 12):
     # neuron_index = 0
     # current_first_inputs = np.reshape(first_inputs[:, neuron_index], (-1, 1))
-    current_inputs = poisson_input(0.6, t=time_interval, N=1).numpy()
+    current_inputs = sine_modulated_white_noise_input(0.6, t=time_interval, N=1).numpy()
     current_outputs = np.reshape(targets[:, neuron_index], (-1, 1))
 
     # E_L = -60.; b_s = 0.4; b_v = 0.5; a_v = 0.5; delta_theta_s = 25.; delta_V = 12.; theta_innf = -25.

@@ -8,7 +8,7 @@ import stats
 from IO import makedir_if_not_exists
 from TargetModels import TargetModels
 from data_util import prefix, path
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import generate_model_data
 
 
@@ -166,14 +166,14 @@ for folder_path in folders:
                     print('Loaded model.')
 
                     model.reset_hidden_state()
-                    m_input = poisson_input(rate=poisson_rate, t=t_interval, N=model.N)
+                    m_input = sine_modulated_white_noise_input(rate=poisson_rate, t=t_interval, N=model.N)
                     m_spiketrain = generate_model_data(model=model, inputs=m_input)
                     m_spiketrain = torch.round(m_spiketrain)
 
                     target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=exp_i + 3,
                                                                                                  N=model.N)
                     target_model.reset_hidden_state()
-                    t_input = poisson_input(rate=poisson_rate, t=t_interval, N=target_model.N)
+                    t_input = sine_modulated_white_noise_input(rate=poisson_rate, t=t_interval, N=target_model.N)
                     t_spiketrain = generate_model_data(model=target_model, inputs=t_input)
                     t_spiketrain = torch.round(t_spiketrain)
 

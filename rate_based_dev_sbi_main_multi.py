@@ -13,7 +13,7 @@ from TargetModels.TargetModels import lif_r_asc_continuous_ensembles_model_dales
 from TargetModels.TargetModelsSoft import lif_r_soft_continuous_ensembles_model_dales_compliant, \
     glif_soft_continuous_ensembles_model_dales_compliant
 from analysis.sbi_export_plots import export_plots
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import feed_inputs_sequentially_return_spike_train
 
 torch.autograd.set_detect_anomaly(True)
@@ -133,7 +133,7 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
             programmatic_neuron_types[n_i] = -1
 
         model = model_class(parameters=programmatic_params_dict, N=N, neuron_types=programmatic_neuron_types)
-        inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
+        inputs = sine_modulated_white_noise_input(rate=tar_in_rate, t=t_interval, N=N)
         outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
 
         model.reset()

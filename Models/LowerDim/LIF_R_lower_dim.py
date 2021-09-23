@@ -7,22 +7,24 @@ from Models.LIF_R import LIF_R
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
-class LIF_R_soft(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V', 'tau_g']
-    parameter_init_intervals = {'E_L': [-64., -52.], 'tau_m': [4., 5.], 'G': [0.8, 0.9],
-                                'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
-                                'delta_V': [8., 14.], 'tau_g': [4., 5.]}
+class LIF_R_lower_dim(nn.Module):
+    parameter_names = ['w', 'tau_m',
+                       # 'E_L', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V',
+                       'tau_s']
+    parameter_init_intervals = { 'tau_m': [4., 5.],
+                                 # 'E_L': [-64., -52.], 'G': [0.8, 0.9], 'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4], 'delta_V': [8., 14.],
+                                 'tau_s': [4., 5.]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
-        super(LIF_R_soft, self).__init__()
+        super(LIF_R_lower_dim, self).__init__()
         # self.device = device
 
         if parameters:
             for key in parameters.keys():
                 if key == 'tau_m':
                     tau_m = FT(torch.ones((N,)) * parameters[key])
-                elif key == 'tau_g':
-                    tau_g = FT(torch.ones((N,)) * parameters[key])
+                elif key == 'tau_s':
+                    tau_s = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'E_L':
                     E_L = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'G':
@@ -61,26 +63,26 @@ class LIF_R_soft(nn.Module):
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
 
-        self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
-        self.b_s = nn.Parameter(FT(b_s).clamp(0.01, 0.99), requires_grad=True)
-        self.G = nn.Parameter(FT(G).clamp(0.1, 0.99), requires_grad=True)
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
-        self.tau_g = nn.Parameter(FT(tau_g).clamp(1., 12.), requires_grad=True)
-        self.delta_theta_s = nn.Parameter(FT(delta_theta_s).clamp(6., 30.), requires_grad=True)
-        self.f_v = nn.Parameter(FT(f_v).clamp(0.01, 0.99), requires_grad=True)  # Sample values: f_v = 0.15; delta_V = 12.
-        self.delta_V = nn.Parameter(FT(delta_V).clamp(1., 35.), requires_grad=True)  ##
+        self.tau_s = nn.Parameter(FT(tau_s).clamp(1., 12.), requires_grad=True)
+        self.E_L = FT(E_L).clamp(-80., -35.)
+        self.b_s = FT(b_s).clamp(0.01, 0.99)
+        self.G = FT(G).clamp(0.1, 0.99)
+        self.delta_theta_s = FT(delta_theta_s)
+        self.f_v = FT(f_v).clamp(0.01, 0.99)
+        self.delta_V = FT(delta_V).clamp(1., 35.)
 
         self.register_backward_clamp_hooks()
 
     def register_backward_clamp_hooks(self):
-        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
-        self.tau_g.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_g))
-        self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.99, self.G))
-        self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
-        self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
-        self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
-        self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.b_s))
+        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_s))
+        # self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
+        # self.G.register_hook(lambda grad: static_clamp_for(grad, 0.1, 0.99, self.G))
+        # self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
+        # self.delta_theta_s.register_hook(lambda grad: static_clamp_for(grad, 6., 30., self.delta_theta_s))
+        # self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
+        # self.b_s.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.b_s))
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
@@ -88,14 +90,14 @@ class LIF_R_soft(nn.Module):
         params_list = []
         # parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V']
         params_list.append(self.w.data)
-        params_list.append(self.E_L.data)
         params_list.append(self.tau_m.data)
-        params_list.append(self.G.data)
-        params_list.append(self.f_v.data)
-        params_list.append(self.delta_theta_s.data)
-        params_list.append(self.b_s.data)
-        params_list.append(self.delta_V.data)
-        params_list.append(self.tau_g.data)
+        # params_list.append(self.E_L.data)
+        # params_list.append(self.G.data)
+        # params_list.append(self.f_v.data)
+        # params_list.append(self.delta_theta_s.data)
+        # params_list.append(self.b_s.data)
+        # params_list.append(self.delta_V.data)
+        params_list.append(self.tau_s.data)
 
         return params_list
 
@@ -117,26 +119,31 @@ class LIF_R_soft(nn.Module):
     def name(self):
         return LIF_R.__name__
 
-    def forward(self, x_in):
+    def forward(self, I_ext):
         W_syn = self.w * self.neuron_types
-        I_syn = (self.g).matmul(self.self_recurrence_mask * W_syn)
+        I_syn = (self.s).matmul(self.self_recurrence_mask * W_syn)
 
         dv = (self.G * (self.E_L - self.v) + (I_syn + I_ext) * self.norm_R_const) / self.tau_m
-        v_next = self.v + dv
+        v_next = torch.add(self.v, dv)
 
-        # differentiability
-        self.spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
-        # non-differentiable, hard threshold
+        gating = (v_next / self.theta_s).clamp(0., 1.)
+        dv_max = (self.theta_s - self.E_L)
+        ds = (-self.s + gating * (dv / dv_max).clamp(0., 1.)) / self.tau_s
+        self.s = self.s + ds
+
+        # non-differentiable, hard threshold for nonlinear reset dynamics
         spiked = (v_next >= self.theta_s).float()
         not_spiked = (spiked - 1.) / -1.
 
+        self.theta_s = torch.add((1-self.b_s) * self.theta_s, spiked * self.delta_theta_s)
         v_reset = self.E_L + self.f_v * (self.v - self.E_L) - self.delta_V
-        self.v = spiked * v_reset + not_spiked * v_next
+        self.v = torch.add(spiked * v_reset, not_spiked * v_next)
 
-        self.theta_s = (1-self.b_s) * self.theta_s + spiked * self.delta_theta_s
+        # return self.v, self.s * self.tau_s
+        # return self.s * self.tau_s  # use synaptic current as spike signal
+        # return self.s * (self.tau_s + 1) / 2.  # return readout of synaptic current as spike signal
 
-        dg = -torch.div(self.g, self.tau_g)  # -g/tau_g
-        self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
-
-        # return self.v, self.spiked
-        return self.spiked
+        # differentiable soft threshold
+        soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
+        return soft_spiked  # return sigmoidal spiked
+        # return gating

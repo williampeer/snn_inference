@@ -6,7 +6,7 @@ import torch
 from IO import save_model_params
 from TargetModels import TargetEnsembleModels
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_to_sparse_vectors
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import generate_model_data
 from plot import plot_spike_train, plot_neuron
 
@@ -22,7 +22,7 @@ print('Loaded model.')
 
 print('Simulating data..')
 model.reset_hidden_state()
-gen_input = poisson_input(rate=poisson_rate, t=t, N=model.N)
+gen_input = sine_modulated_white_noise_input(rate=poisson_rate, t=t, N=model.N)
 gen_spiketrain = generate_model_data(model=model, inputs=gen_input)  # soft thresholded
 
 inputs = gen_input.clone().detach()

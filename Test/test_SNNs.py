@@ -4,7 +4,7 @@ import numpy as np
 import model_util
 import spike_metrics
 from TargetModels import TargetEnsembleModels
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from plot import plot_spike_trains_side_by_side
 
 for random_seed in range(15):
@@ -31,7 +31,7 @@ for random_seed in range(15):
     # print(list(snn.parameters())[0])
 
     rate = 10.
-    inputs = poisson_input(rate, t=12000, N=snn.N)  # rate in Hz
+    inputs = sine_modulated_white_noise_input(rate, t=12000, N=snn.N)  # rate in Hz
     print('#inputs: {}'.format(inputs.sum()))
     # membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
     spikes = model_util.feed_inputs_sequentially_return_spike_train(snn, inputs)

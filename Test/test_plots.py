@@ -2,15 +2,15 @@ import torch
 import plot
 import spike_metrics
 from TargetModels.TargetModels import lif_r_asc_continuous_ensembles_model_dales_compliant
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import feed_inputs_sequentially_return_spike_train
 
 
 def test_plot_van_rossum_convolution():
     # sample_spiketrain = 1.0 * (torch.rand((200, 3)) < 0.25)
-    sample_inputs = poisson_input(rate=10., t=800, N=3)
+    sample_inputs = sine_modulated_white_noise_input(rate=10., t=800, N=3)
     # sample_spiketrain_2 = 1.0 * (torch.rand((200, 3)) < 0.25)
-    sample_inputs_2 = poisson_input(rate=10., t=800, N=3)
+    sample_inputs_2 = sine_modulated_white_noise_input(rate=10., t=800, N=3)
 
     plot.plot_neuron(sample_inputs, uuid='van_rossum', title='Sample input perturbation 1', fname='plot_input_1')
     plot.plot_neuron(sample_inputs_2, uuid='van_rossum', title='Sample input perturbation 2', fname='plot_input_2')

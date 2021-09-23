@@ -6,7 +6,7 @@ import stats
 from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
 from TargetModels import TargetModels
 from data_util import prefix, path
-from experiments import poisson_input, draw_from_uniform
+from experiments import sine_modulated_white_noise_input, draw_from_uniform
 from model_util import generate_model_data
 
 
@@ -103,12 +103,12 @@ for exp_i in range(4):
     print('Loaded model.')
 
     model.reset_hidden_state()
-    m_input = poisson_input(rate=poisson_rate, t=t_interval, N=model.N)
+    m_input = sine_modulated_white_noise_input(rate=poisson_rate, t=t_interval, N=model.N)
     m_spiketrain = generate_model_data(model=model, inputs=m_input)
     m_spiketrain = torch.round(m_spiketrain)
 
     target_model.reset_hidden_state()
-    t_input = poisson_input(rate=poisson_rate, t=t_interval, N=target_model.N)
+    t_input = sine_modulated_white_noise_input(rate=poisson_rate, t=t_interval, N=target_model.N)
     t_spiketrain = generate_model_data(model=target_model, inputs=t_input)
     t_spiketrain = torch.round(t_spiketrain)
 

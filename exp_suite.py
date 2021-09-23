@@ -108,6 +108,14 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         tar_params = target_model.get_parameters()
         for p_i in range(1, len(tar_p_names)):
             params_model[tar_p_names[p_i]] = tar_params[p_i].clone().detach()
+    elif model_class.__name__.__contains__('lower_dim'):
+        model_p_names = model_class.parameter_names
+        tar_p_names = target_model.__class__.parameter_names
+        tar_params = target_model.get_parameters()
+        for p_i in range(1, len(tar_p_names)):
+            cur_tar_p_name = tar_p_names[p_i]
+            if not model_p_names.__contains__(cur_tar_p_name):
+                params_model[cur_tar_p_name] = tar_params[p_i].clone().detach()
 
     model = model_class(N=num_neurons, parameters=params_model, neuron_types=neuron_types)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
@@ -135,8 +143,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         next_step, train_targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
                                                           spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
     else:
-        train_targets, gen_inputs = generate_synthetic_data(target_model, poisson_rate=constants.initial_poisson_rate,
-                                                            t=constants.rows_per_train_iter)
+        train_targets, gen_inputs = generate_synthetic_data(target_model, t=constants.rows_per_train_iter)
         if constants.EXP_TYPE == ExperimentType.SanityCheck:
             inputs = gen_inputs
 
@@ -158,7 +165,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
                                                               spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
             train_input = None
         else:
-            train_targets, gen_train_input = generate_synthetic_data(target_model, constants.initial_poisson_rate, t=constants.rows_per_train_iter)
+            train_targets, gen_train_input = generate_synthetic_data(gen_model=target_model, t=constants.rows_per_train_iter)
             if constants.EXP_TYPE == ExperimentType.SanityCheck:
                 train_input = gen_train_input
 
@@ -240,29 +247,29 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
 
         init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
 
-        try:
-            recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
-                fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
-                          target_parameters=target_parameters, num_neurons=num_neurons,
-                          error_logger=error_logger)
+        # try:
+        recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
+            fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
+                      target_parameters=target_parameters, num_neurons=num_neurons,
+                      error_logger=error_logger)
 
-            # logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
+        # logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
 
-            if train_i >= constants.train_iters:
-                print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
-                      .format(exp_i, train_i, train_losses, test_losses))
+        if train_i >= constants.train_iters:
+            print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'
+                  .format(exp_i, train_i, train_losses, test_losses))
 
-            for p_i, key in enumerate(recovered_parameters):
-                if exp_i == constants.start_seed:
-                    recovered_param_per_exp[key] = [recovered_parameters[key]]
-                else:
-                    recovered_param_per_exp[key].append(recovered_parameters[key])
-                # if poisson_rates is not None and len(poisson_rates) > 0:
-                #     poisson_rate_per_exp.append(poisson_rates[-1])
-        except Exception as e:
-            logger.log('======== ERROR ===========\nException occurred: {}'.format(e))
-            error_logger.log('Exception occurred: {}'.format(e))
-            print(e)
+        for p_i, key in enumerate(recovered_parameters):
+            if exp_i == constants.start_seed:
+                recovered_param_per_exp[key] = [recovered_parameters[key]]
+            else:
+                recovered_param_per_exp[key].append(recovered_parameters[key])
+            # if poisson_rates is not None and len(poisson_rates) > 0:
+            #     poisson_rate_per_exp.append(poisson_rates[-1])
+        # except Exception as e:
+        #     logger.log('======== ERROR ===========\nException occurred: {}'.format(e))
+        #     error_logger.log('Exception occurred: {}'.format(e))
+        #     print(e)
 
     # if poisson_rate_per_exp is not None and len(poisson_rate_per_exp) > 0:
     #     recovered_param_per_exp['p_rate'] = poisson_rate_per_exp

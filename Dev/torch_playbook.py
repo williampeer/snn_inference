@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch import tensor as T
 
 from eval import calculate_loss
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import feed_inputs_sequentially_return_spike_train
 
 
@@ -63,7 +63,7 @@ def train_model():
     model = test_LIF()
     input_variables = []
     model_inputs = custom_fn(input_variables)
-    poisson_inputs = poisson_input(rate, t=time_interval, N=4)
+    poisson_inputs = sine_modulated_white_noise_input(rate, t=time_interval, N=4)
     poisson_inputs.retain_grad()
     # perm_ins = p_ins.clone().detach()
     # perm_ins.requires_grad = True

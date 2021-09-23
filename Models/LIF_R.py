@@ -114,11 +114,11 @@ class LIF_R(nn.Module):
     def name(self):
         return self.__class__.__name__
 
-    def forward(self, x_in):
+    def forward(self, I_ext):
         W_syn = self.w * self.neuron_types
-        I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming input weights to be Eye(N,N)
+        I_syn = (self.s).matmul(self.self_recurrence_mask * W_syn)
 
-        dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
+        dv = (self.G * (self.E_L - self.v) + (I_syn + I_ext) * self.norm_R_const) / self.tau_m
         v_next = torch.add(self.v, dv)
 
         gating = (v_next / self.theta_s).clamp(0., 1.)

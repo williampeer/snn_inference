@@ -8,10 +8,10 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class LIF_R_soft_weights_only(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V', 'tau_g']
-    parameter_init_intervals = {'E_L': [-64., -52.], 'tau_m': [3., 4.], 'G': [0.7, 0.8],
-                                'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
-                                'delta_V': [8., 14.], 'tau_g': [4., 5.]}
+    parameter_names = ['w']#, 'E_L', 'tau_m', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V', 'tau_g']
+    # parameter_init_intervals = {'E_L': [-64., -52.], 'tau_m': [3., 4.], 'G': [0.7, 0.8],
+    #                             'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
+    #                             'delta_V': [8., 14.], 'tau_g': [4., 5.]}
 
     def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
         super(LIF_R_soft_weights_only, self).__init__()
@@ -95,22 +95,22 @@ class LIF_R_soft_weights_only(nn.Module):
         params_list = []
         # parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V']
         params_list.append(self.w.data)
-        params_list.append(self.E_L.data)
-        params_list.append(self.tau_m.data)
-        params_list.append(self.G.data)
-        params_list.append(self.f_v.data)
-        params_list.append(self.delta_theta_s.data)
-        params_list.append(self.b_s.data)
-        params_list.append(self.delta_V.data)
-        params_list.append(self.tau_g.data)
+        # params_list.append(self.E_L.data)
+        # params_list.append(self.tau_m.data)
+        # params_list.append(self.G.data)
+        # params_list.append(self.f_v.data)
+        # params_list.append(self.delta_theta_s.data)
+        # params_list.append(self.b_s.data)
+        # params_list.append(self.delta_V.data)
+        # params_list.append(self.tau_g.data)
 
         return params_list
 
-    def forward(self, x_in):
+    def forward(self, I_ext):
         W_syn = self.w * self.neuron_types
-        I_tot = (self.g).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
+        I_syn = (self.g).matmul(self.self_recurrence_mask * W_syn)
 
-        dv = (self.G * (self.E_L - self.v) + I_tot * self.norm_R_const) / self.tau_m
+        dv = (self.G * (self.E_L - self.v) + (I_syn + I_ext) * self.norm_R_const) / self.tau_m
         v_next = self.v + dv
 
         # differentiability

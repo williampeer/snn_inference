@@ -13,7 +13,7 @@ from Models.no_grad.LIF_no_grad import LIF_no_grad
 from TargetModels.TargetModels import lif_continuous_ensembles_model_dales_compliant, \
     lif_r_continuous_ensembles_model_dales_compliant, lif_r_asc_continuous_ensembles_model_dales_compliant, \
     glif_continuous_ensembles_model_dales_compliant
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import feed_inputs_sequentially_return_spike_train
 
 torch.autograd.set_detect_anomaly(True)
@@ -88,7 +88,7 @@ def sbi(method, t_interval, N, model_type = 'LIF'):
 
         model = m_class(parameters=params, N=N, neuron_types=programmatic_neuron_types)
 
-        inputs = poisson_input(rate=parameter_set[0], t=t_interval, N=N)
+        inputs = sine_modulated_white_noise_input(rate=parameter_set[0], t=t_interval, N=N)
         outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
         model.reset()
         return outputs
@@ -103,7 +103,7 @@ def sbi(method, t_interval, N, model_type = 'LIF'):
                       'GLIF': glif_continuous_ensembles_model_dales_compliant }
     tar_m_fn = lookup_tar_m_fn[model_type]
     tar_model = tar_m_fn(random_seed=42, N=N)
-    inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
+    inputs = sine_modulated_white_noise_input(rate=tar_in_rate, t=t_interval, N=N)
     parsed_weights = torch.zeros((N**2-N,))
     ctr = 0
     for n_i in range(N):

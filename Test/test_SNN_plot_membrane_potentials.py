@@ -10,7 +10,7 @@ from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 from TargetModels import TargetModels
-from experiments import continuous_normalised_poisson_noise, draw_from_uniform
+from experiments import sine_modulated_white_noise, draw_from_uniform
 from plot import plot_neuron, plot_spike_trains_side_by_side
 
 num_neurons = 4
@@ -29,7 +29,7 @@ for random_seed in range(1, 2):
     # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
     # snn = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed)
 
-    inputs = continuous_normalised_poisson_noise(10., t=200, N=snn.N)  # now assumes rate in Hz
+    inputs = sine_modulated_white_noise(10., t=200, N=snn.N)  # now assumes rate in Hz
 
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(inputs.sum()))

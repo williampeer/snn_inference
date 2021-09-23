@@ -4,7 +4,7 @@ from torch import tensor
 from Models.BaselineSNN import BaselineSNN
 from Models.Izhikevich import Izhikevich, IzhikevichWeightsOnly
 from Models.LIF import LIF
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import feed_inputs_sequentially_return_spike_train
 from plot import plot_all_param_pairs_with_variance
 from spike_metrics import van_rossum_dist, euclid_dist
@@ -43,7 +43,7 @@ print('=================== batch sim. ======================')
 for train_iter in range(1):
     optimiser.zero_grad()
     for batch_row in range(5):
-        inputs = 3.*poisson_input(0.5, 500, N)
+        inputs = 3. * sine_modulated_white_noise_input(0.5, 500, N)
         # targets = (torch.rand((10, N)) > 0.5).float()
         targets = feed_inputs_sequentially_return_spike_train(gen_model, inputs)
         spikes = feed_inputs_sequentially_return_spike_train(model, inputs)

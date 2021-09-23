@@ -1,11 +1,11 @@
 import torch
 
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from spike_metrics import van_rossum_dist
 
 
-s1 = poisson_input(10., 4000, 12)
-s2 = poisson_input(10., 4000, 12)
+s1 = sine_modulated_white_noise_input(10., 4000, 12)
+s2 = sine_modulated_white_noise_input(10., 4000, 12)
 
 t2 = float(s2.sum())
 

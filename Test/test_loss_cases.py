@@ -1,11 +1,11 @@
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from spike_metrics import van_rossum_dist
 
 import torch
 from torch import tensor
 
 tau_vr = tensor(20.0)
-sample_spikes = tensor(1.0) * (poisson_input(0.15, t=150, N=10) > 0)
+sample_spikes = tensor(1.0) * (sine_modulated_white_noise_input(0.15, t=150, N=10) > 0)
 print('sample spikes sum: {}'.format(sample_spikes.sum()))
 assert sample_spikes.sum() > 0.15 * 150, 'spiking should occur in more than 10 % of the bins across all neurons. sum: {}'.format(sample_spikes.sum())
 

@@ -3,7 +3,7 @@ import torch
 import model_util
 import spike_metrics
 from Models.Izhikevich import IzhikevichStable
-from experiments import poisson_input, zip_dicts
+from experiments import sine_modulated_white_noise_input, zip_dicts
 from plot import plot_neuron, plot_spike_trains_side_by_side
 
 static_init_parameters = {'N': 12, 'w_mean': 0.1, 'w_var': 0.2, 'a': 0.1, 'b': 0.25}
@@ -11,7 +11,7 @@ free_parameters = {'c': -62.5, 'd': 6., 'tau_g': 4.5}
 
 snn = IzhikevichStable(device='cpu', parameters=zip_dicts(static_init_parameters, free_parameters))
 
-inputs = poisson_input(0.4, t=500, N=static_init_parameters['N'])
+inputs = sine_modulated_white_noise_input(0.4, t=500, N=static_init_parameters['N'])
 membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
 plot_neuron(membrane_potentials.data, title='Neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_IzhikevichStable_poisson_input')
 

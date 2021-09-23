@@ -1,11 +1,11 @@
 import torch
 
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from spike_metrics import silent_penalty_term
 
 N = 12
-s1 = poisson_input(10., 4000, N)
-s2 = poisson_input(10., 4000, N)
+s1 = sine_modulated_white_noise_input(10., 4000, N)
+s2 = sine_modulated_white_noise_input(10., 4000, N)
 
 sut = silent_penalty_term(s1, s2)
 relatively_low = 1e-03

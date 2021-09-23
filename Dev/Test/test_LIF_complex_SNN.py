@@ -3,7 +3,7 @@ import torch
 import model_util
 import spike_metrics
 from Models.LIF import LIF_complex
-from experiments import poisson_input, zip_dicts
+from experiments import sine_modulated_white_noise_input, zip_dicts
 from plot import plot_neuron, plot_spike_trains_side_by_side
 
 static_parameters = {'N': 3}
@@ -11,7 +11,7 @@ free_parameters = {'w_mean': 0.2, 'w_var': 0.3, 'tau_m': 1.5, 'tau_g': 4.0, 'v_r
 
 snn = LIF_complex(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
 
-inputs = poisson_input(0.5, t=500, N=static_parameters['N'])
+inputs = sine_modulated_white_noise_input(0.5, t=500, N=static_parameters['N'])
 # inputs = torch.cat((torch.tensor([12*[4.]]), torch.zeros((100, static_parameters['N']))))
 # inputs = 4. * torch.ones((500, static_parameters['N']))
 membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)

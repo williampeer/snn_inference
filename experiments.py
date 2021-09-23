@@ -50,14 +50,23 @@ def zip_tensor_dicts(a, b):
 
 
 # Assumes rate in Hz
-def poisson_input(rate, t, N):
-    return continuous_normalised_poisson_noise(rate, t, N)
+def sine_modulated_white_noise_input(rate, t, N):
+    return sine_modulated_white_noise(t, N)
     # return torch.poisson((rate/1000.) * torch.ones((int(t), N))).clamp(0., 1.)  # t x N
 
 
-def continuous_normalised_poisson_noise(p_lambda, t, N):
-    noise = torch.poisson(p_lambda * torch.ones(t, N))
-    return noise / torch.max(noise)  # normalised
+def sine_modulated_white_noise(t, N):
+    # noise = torch.poisson(p_lambda * torch.ones(t, N))
+    # return noise / torch.max(noise)  # normalised
+    # B sin(ωt) · (1 + qξ(t))
+    ret = 0.25 * torch.reshape(torch.sin(2. * torch.arange(0, t)), (t, 1)) * (torch.ones((t, N)) + 4. * torch.randn((t, N)))
+    assert ret.shape[0] == t, "ret.shape[0] should be t, {}, {}".format(ret.shape[0], t)
+    assert ret.shape[1] == N, "ret.shape[1] should be N, {}, {}".format(ret.shape[1], N)
+    return ret
+
+# def continuous_normalised_poisson_noise(p_lambda, t, N):
+#     noise = torch.poisson(p_lambda * torch.ones(t, N))
+#     return noise / torch.max(noise)  # normalised
 
 
 def release_computational_graph(model, rate_parameter, inputs=None):
@@ -71,10 +80,10 @@ def release_computational_graph(model, rate_parameter, inputs=None):
         # print('debug in inputs is not None and hasattr(inputs, \'grad\')')
 
 
-def generate_synthetic_data(gen_model, poisson_rate, t):
+def generate_synthetic_data(gen_model, t):
     gen_model.reset()
     # gen_input = poisson_input(rate=poisson_rate, t=t, N=gen_model.N)
-    gen_input = continuous_normalised_poisson_noise(p_lambda=poisson_rate, t=t, N=gen_model.N)
+    gen_input = sine_modulated_white_noise(t=t, N=gen_model.N)
     gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)
     # for gen spiketrain this may be thresholded to binary values:
     gen_spiketrain = torch.round(gen_spiketrain)

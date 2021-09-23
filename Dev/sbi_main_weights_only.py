@@ -8,7 +8,7 @@ from sbi.inference.base import infer
 import IO
 from Models.no_grad.LIF_no_grad import LIF_no_grad
 from TargetModels.TargetModels import lif_continuous_ensembles_model_dales_compliant
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from model_util import feed_inputs_sequentially_return_spike_train
 
 torch.autograd.set_detect_anomaly(True)
@@ -67,7 +67,7 @@ def sbi(method, t_interval, N):
         for n_i in range(int(2 * N / 3), N):
             programmatic_neuron_types[n_i] = -1
         model = LIF_no_grad(parameters=params, N=N, neuron_types=programmatic_neuron_types)
-        inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
+        inputs = sine_modulated_white_noise_input(rate=tar_in_rate, t=t_interval, N=N)
         outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
         model.reset()
         return outputs
@@ -76,7 +76,7 @@ def sbi(method, t_interval, N):
 
     tar_in_rate = 10.
     tar_model = lif_continuous_ensembles_model_dales_compliant(random_seed=42, N=N)
-    inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
+    inputs = sine_modulated_white_noise_input(rate=tar_in_rate, t=t_interval, N=N)
     targets = feed_inputs_sequentially_return_spike_train(model=tar_model, inputs=inputs).clone().detach()
     parsed_weights = torch.zeros((N ** 2 - N,))
     ctr = 0
