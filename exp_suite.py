@@ -1,7 +1,5 @@
 import Log
 from Constants import ExperimentType
-from IO import save_poisson_rates
-from Models.LIF_fixed_weights import LIF_fixed_weights
 from Models.TORCH_CUSTOM import static_clamp_for_scalar
 from data_util import load_sparse_data, get_spike_train_matrix
 from eval import evaluate_loss

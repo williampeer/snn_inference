@@ -12,12 +12,10 @@ from Models.LowerDim.LIF_R_soft_lower_dim import LIF_R_soft_lower_dim
 from Models.no_grad.GLIF_no_grad import GLIF_no_grad
 from Models.no_grad.LIF_R_ASC_no_grad import LIF_R_ASC_no_grad
 from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
-from Models.no_grad.LIF_no_grad import LIF_no_grad
 from TargetModels.TargetModels import lif_continuous_ensembles_model_dales_compliant, \
     glif_continuous_ensembles_model_dales_compliant, lif_r_asc_continuous_ensembles_model_dales_compliant, \
     lif_r_continuous_ensembles_model_dales_compliant
-from TargetModels.TargetModelsSoft import glif_soft_continuous_ensembles_model_dales_compliant, \
-    lif_r_soft_continuous_ensembles_model_dales_compliant
+from TargetModels.TargetModelsSoft import glif_soft_continuous_ensembles_model_dales_compliant
 from experiments import sine_modulated_white_noise_input
 from model_util import feed_inputs_sequentially_return_spike_train
 
@@ -49,8 +47,8 @@ def transform_model_to_sbi_params(model):
 def main(argv):
     NUM_WORKERS = 6
 
-    t_interval = 16000
-    N = 3
+    t_interval = 1600
+    N = 4
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
     # method = None
@@ -58,11 +56,11 @@ def main(argv):
     # model_type = None
     model_type = 'GLIF_soft_lower_dim'
     # model_type = 'LIF_R_soft_lower_dim'
-    budget = 5000
-    # budget = 10
+    # budget = 5000
+    budget = 10
     tar_seed = 42
 
-    class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad,
+    class_lookup = { 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad,
                      'GLIF_soft_lower_dim' : GLIF_soft_lower_dim, 'LIF_R_soft_lower_dim': LIF_R_soft_lower_dim }
 
     print('Argument List:', str(argv))
@@ -114,11 +112,23 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
                             'LIF_R_no_grad': lif_r_continuous_ensembles_model_dales_compliant,
                             'LIF_R_ASC_no_grad': lif_r_asc_continuous_ensembles_model_dales_compliant,
                             'GLIF_no_grad': glif_continuous_ensembles_model_dales_compliant,
-                            'LIF_R_soft_lower_dim': lif_r_soft_continuous_ensembles_model_dales_compliant,
+                            # 'LIF_R_soft_lower_dim': lif_r_soft_continuous_ensembles_model_dales_compliant,
                             'GLIF_soft_lower_dim': glif_soft_continuous_ensembles_model_dales_compliant }
     tar_in_rate = 10.
     tar_model_fn = tar_model_fn_lookup[model_class.__name__]
-    tar_model = tar_model_fn(random_seed=tar_seed, N=N)
+    if N == 4:
+        N_pops = 2
+        pop_size = 2
+    elif N == 16:
+        N_pops = 4
+        pop_size = 2
+    elif N == 2:
+        N_pops = 2
+        pop_size = 1
+    else:
+        raise NotImplementedError('N has to be in [2, 4, 16]')
+
+    tar_model = tar_model_fn(random_seed=tar_seed, pop_size=pop_size, N_pops=N_pops)
 
     def simulator(parameter_set):
         programmatic_params_dict = {}
@@ -150,7 +160,7 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
             programmatic_neuron_types[n_i] = -1
 
         model = model_class(parameters=programmatic_params_dict, N=N, neuron_types=programmatic_neuron_types)
-        inputs = sine_modulated_white_noise_input(rate=tar_in_rate, t=t_interval, N=N)
+        inputs = sine_modulated_white_noise_input(t=t_interval, N=N)
         outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
 
         # model.reset()

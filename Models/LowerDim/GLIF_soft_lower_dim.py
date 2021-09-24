@@ -58,7 +58,7 @@ class GLIF_soft_lower_dim(nn.Module):
         self.Theta_max = (delta_theta_s / b_s - (a_v / b_v) * E_L + delta_V)
         # self.Theta_max = delta_theta_s/(1+b_s) + delta_V/(1+b_v)
         # self.norm_R_const = R_factor * self.Theta_max - E_L
-        self.norm_R_const = 1.1*self.Theta_max
+        self.norm_R_const = self.Theta_max
 
         self.v = E_L * torch.ones((self.N,))
         # self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step

@@ -36,8 +36,8 @@ def main(argv):
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 0.02; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
-    max_train_iters = 20
-    num_targets = 1
+    max_train_iters = 30
+    num_targets = 3
     interval_size = 8000
     batch_size = interval_size; rows_per_train_iter = interval_size
     # batch_size = 2000; rows_per_train_iter = 8000
@@ -101,6 +101,7 @@ def main(argv):
     # model_type = 'LIF_R_ASC_soft'
     # model_type = 'LIF_R_ASC_soft_ReLu'
     # model_type = 'GLIF_soft'
+    model_type = 'GLIF_soft_lower_dim'
     norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -197,29 +198,40 @@ def main(argv):
         if len(models) > 1:
             print('Did not find supplied model type. Iterating over all implemented models..')
 
+    N = network_size
+    if N == 4:
+        N_pops = 2
+        pop_size = 2
+    elif N == 16:
+        N_pops = 4
+        pop_size = 2
+    elif N == 2:
+        N_pops = 2
+        pop_size = 1
+    else:
+        raise NotImplementedError('N has to be in [2, 4, 16]')
+
     for m_class in models:
         for loss_fn in loss_functions:
             if exp_type_str in [C.ExperimentType.Synthetic.name, C.ExperimentType.SanityCheck.name]:
                 for f_i in range(3, 3+num_targets):
-                    if m_class.__name__ in [LIF_R.__name__, LIF_R_weights_only.__name__, LIF_R_lower_dim.__name__]:
-                        target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [LIF_R_soft.__name__, LIF_R_soft_weights_only.__name__, LIF_R_soft_lower_dim.__name__]:
-                        target_model_name = 'lif_r_soft_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModelsSoft.lif_r_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                    # if m_class.__name__ in [LIF_R.__name__, LIF_R_weights_only.__name__, LIF_R_lower_dim.__name__]:
+                    #     target_model_name = 'lif_r_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                    #     target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+                    # elif m_class.__name__ in [LIF_R_soft.__name__, LIF_R_soft_weights_only.__name__, LIF_R_soft_lower_dim.__name__]:
+                    #     target_model_name = 'lif_r_soft_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                    #     target_model = TargetModelsSoft.lif_r_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+                    #
+                    # elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__, LIF_R_ASC_soft_lower_dim.__name__, LIF_R_ASC_lower_dim.__name__]:
+                    #     target_model_name = 'lif_r_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                    #     target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+                    # elif m_class.__name__ in [GLIF.__name__, GLIF_lower_dim.__name__]:
+                    #     target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
+                    #     target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
 
-                    elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__, LIF_R_ASC_soft_lower_dim.__name__, LIF_R_ASC_lower_dim.__name__]:
-                        target_model_name = 'lif_r_asc_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [GLIF.__name__, GLIF_lower_dim.__name__]:
-                        target_model_name = 'glif_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [GLIF_soft.__name__, GLIF_soft_lower_dim.__name__]:
+                    if m_class.__name__ in [GLIF_soft.__name__, GLIF_soft_lower_dim.__name__]:
                         target_model_name = 'glif_soft_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [GLIF_soft_positive_weights.__name__]:
-                        target_model_name = 'glif_soft_positive_weights_ensembles_model_dales_compliant_seed_{}'.format(f_i)
-                        target_model = TargetModelsSoft.glif_soft_positive_weights_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
+                        target_model = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
 
                     else:
                         raise NotImplementedError()
@@ -233,30 +245,30 @@ def main(argv):
 
                     exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
-            elif exp_type_str == C.ExperimentType.DataDriven.name:
-                for f_i in range(3, 3+num_targets):
-                    # only for target_parameters
-                    if m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__, LIF_R_weights_only.__name__,
-                                            LIF_R_soft_weights_only.__name__]:
-                        target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__]:
-                        target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    elif m_class.__name__ in [GLIF.__name__, GLIF_soft.__name__]:
-                        target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i, N=network_size)
-                    else:
-                        raise NotImplementedError()
-
-                    data_path = data_util.prefix + data_util.path + 'target_model_spikes_{}_N_{}_seed_{}_duration_{}' \
-                        .format(target_model.name(), network_size, f_i, 15 * 60 * 1000)
-
-                    constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
-                                            tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
-                                            initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
-                                            plot_flag=plot_flag, start_seed=start_seed, exp_type_str=exp_type_str,
-                                            silent_penalty_factor=silent_penalty_factor, norm_grad_flag=norm_grad_flag,
-                                            data_path=data_path)
-
-                    exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
+            # elif exp_type_str == C.ExperimentType.DataDriven.name:
+            #     for f_i in range(3, 3+num_targets):
+            #         # only for target_parameters
+            #         if m_class.__name__ in [LIF_R.__name__, LIF_R_soft.__name__, LIF_R_weights_only.__name__,
+            #                                 LIF_R_soft_weights_only.__name__]:
+            #             target_model = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+            #         elif m_class.__name__ in [LIF_R_ASC.__name__, LIF_R_ASC_soft.__name__]:
+            #             target_model = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+            #         elif m_class.__name__ in [GLIF.__name__, GLIF_soft.__name__]:
+            #             target_model = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+            #         else:
+            #             raise NotImplementedError()
+            #
+            #         data_path = data_util.prefix + data_util.path + 'target_model_spikes_{}_N_{}_seed_{}_duration_{}' \
+            #             .format(target_model.name(), network_size, f_i, 15 * 60 * 1000)
+            #
+            #         constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
+            #                                 tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
+            #                                 initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
+            #                                 plot_flag=plot_flag, start_seed=start_seed, exp_type_str=exp_type_str,
+            #                                 silent_penalty_factor=silent_penalty_factor, norm_grad_flag=norm_grad_flag,
+            #                                 data_path=data_path)
+            #
+            #         exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 
 
 if __name__ == "__main__":

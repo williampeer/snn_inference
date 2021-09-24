@@ -2,11 +2,9 @@ import numpy as np
 import torch
 from torch import tensor as T
 
-from Models.LIF_ASC import LIF_ASC
 from Models.no_grad.GLIF_no_grad import GLIF_no_grad
 from Models.no_grad.LIF_R_ASC_no_grad import LIF_R_ASC_no_grad
 from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
-from Models.no_grad.LIF_no_grad import LIF_no_grad
 from experiments import randomise_parameters, zip_tensor_dicts
 
 

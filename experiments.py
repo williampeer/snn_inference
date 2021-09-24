@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import torch.tensor as T
 
 from model_util import generate_model_data
 
@@ -52,7 +53,7 @@ def zip_tensor_dicts(a, b):
 
 # Assumes rate in Hz
 def sine_modulated_white_noise_input(t, N):
-    return sine_modulated_white_noise(t, N)
+    return sine_modulated_white_noise(t, N, neurons_coeff=torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]))
     # return torch.poisson((rate/1000.) * torch.ones((int(t), N))).clamp(0., 1.)  # t x N
 
 
