@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import FloatTensor as FT
 
-from Models.LIF_R_ASC import LIF_R_ASC
+from Models.Sigmoidal.LIF_R_ASC_soft import LIF_R_ASC_soft
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
@@ -126,7 +126,7 @@ class LIF_R_ASC_soft_lower_dim(nn.Module):
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
     def name(self):
-        return LIF_R_ASC.__name__
+        return LIF_R_ASC_soft.__name__
 
     def forward(self, I_ext):
         # assuming input weights to be Eye(N,N)

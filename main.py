@@ -78,7 +78,10 @@ def main(argv):
     optimiser = 'SGD'
     # optimiser = 'RMSprop'
     initial_poisson_rate = 10.  # Hz
-    network_size = 3
+    network_size = 2
+    # network_size = 4
+    # network_size = 8
+    # network_size = 16
 
     evaluate_step = 1
     # evaluate_step = int(max(max_train_iters/10, 1))

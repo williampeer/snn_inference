@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch import FloatTensor as FT
 from torch import tensor as T
 
-from Models.LIF_R import LIF_R
+from Models.Sigmoidal.LIF_R_soft import LIF_R_soft
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
@@ -117,7 +117,7 @@ class LIF_R_soft_lower_dim(nn.Module):
         self.spiked = self.spiked.clone().detach()
 
     def name(self):
-        return LIF_R.__name__
+        return LIF_R_soft.__name__
 
     def forward(self, I_ext):
         W_syn = self.w * self.neuron_types

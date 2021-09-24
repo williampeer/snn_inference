@@ -92,25 +92,8 @@ def plot_param_dist(parameter_distance, title, fname):
 
 
 def main():
-    # experiments_path = '/media/william/p6/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_SBI_plus_partial_SanityCheck_0209/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_0609/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1009/archive/saved/data/'
-    # experiments_path = '/home/william/repos/snn_inference/saved/data/'
-    # experiments_path = '/media/william/p6/archive_0909/archive/saved/data/'
-    # experiments_path = '/media/william/p6/archive_1009/archive/saved/data/'
-    # experiments_path = '/media/william/p6/archive_1109/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1309_last_SBI/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1509_new_runs/archive/saved/data/'
     # experiments_path = '/media/william/p6/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1609/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1809_q/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_2009_tmp/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_osx_2009/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_2109_unknown/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_SINE_mod_input_2409/archive/saved/data/'
     # experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
@@ -139,7 +122,7 @@ def main():
         posterior = sbi_res[method]
         # if sbi_res.keys()
         model_class = sbi_res['model_class']
-        m_name = model_class.__name__.strip('_no_grad')
+        m_name = model_class.__name__
         N = sbi_res['N']
         dt_descriptor = sbi_res['dt_descriptor']
         if 'param_num' in sbi_res:
@@ -149,7 +132,8 @@ def main():
             pass
         else:
             pre_path = experiments_path + 'sbi_samples/'
-            corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}_tar_seed_{}.pt'.format(method, m_name, dt_descriptor, tar_seed)
+            corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}_tar_seed_{}.pt'\
+                .format(method, m_name.strip('_no_grad').strip('_lower_dim').strip('_soft'), dt_descriptor, tar_seed)
             full_data_path = pre_path + corresponding_samples_fname
             if os.path.exists(pre_path + corresponding_samples_fname):
                 # try:

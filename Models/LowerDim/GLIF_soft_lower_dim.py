@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch import FloatTensor as FT
 
+from Models.Sigmoidal.GLIF_soft import GLIF_soft
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
@@ -140,7 +141,7 @@ class GLIF_soft_lower_dim(nn.Module):
         return params_list
 
     def name(self):
-        return self.__class__.__name__
+        return GLIF_soft.__name__
 
     def forward(self, I_ext):
         # assuming input weights to be Eye(N,N)
