@@ -47,8 +47,8 @@ def transform_model_to_sbi_params(model):
 def main(argv):
     NUM_WORKERS = 6
 
-    t_interval = 1600
-    N = 4
+    t_interval = 16000
+    N = 2
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
     # method = None
@@ -56,8 +56,8 @@ def main(argv):
     # model_type = None
     model_type = 'GLIF_soft_lower_dim'
     # model_type = 'LIF_R_soft_lower_dim'
-    # budget = 5000
-    budget = 10
+    budget = 10000
+    # budget = 10
     tar_seed = 42
 
     class_lookup = { 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad,
