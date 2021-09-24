@@ -54,7 +54,7 @@ class GLIF_soft_no_grad(nn.Module):
         self.Theta_max = (delta_theta_s / b_s - (a_v / b_v) * E_L + delta_V)
         # self.Theta_max = delta_theta_s/(1+b_s) + delta_V/(1+b_v)
         # self.norm_R_const = R_factor * self.Theta_max - E_L
-        self.norm_R_const = 1.2*self.Theta_max
+        self.norm_R_const = self.Theta_max
 
         self.v = E_L * torch.ones((self.N,))
         self.g = torch.zeros_like(self.v)  # syn. conductance
@@ -159,3 +159,4 @@ class GLIF_soft_no_grad(nn.Module):
         self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 
         return self.spiked
+        # return self.v, self.spiked
