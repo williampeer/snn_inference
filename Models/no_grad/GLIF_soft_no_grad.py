@@ -11,10 +11,10 @@ class GLIF_soft_no_grad(nn.Module):
     parameter_init_intervals = {'E_L': [-64., -58.], 'tau_m': [2.7, 2.8], 'G': [0.7, 0.8],  'f_v': [0.25, 0.35], 'f_I': [0.35, 0.45],
                                 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35], 'a_v': [0.15, 0.2], 'b_v': [0.25, 0.35],
                                 'theta_inf': [-10., -8.], 'delta_V': [8., 14.], 'tau_g': [3., 4.]}
-    param_lin_constraints = [[0., 1.], [-80., -35.], [1.5, 8.], [0.01, 0.99], [0.01, 0.99], [0.01, 0.99], [6., 30.],
+    param_lin_constraints = [[0., 1.], [-80., -35.], [1.2, 8.], [0.01, 0.99], [0.01, 0.99], [0.01, 0.99], [6., 30.],
                              [0.01, 0.95], [0.01, 0.95], [0.01, 0.95], [-25., 0.], [1., 35.], [1.5, 12.]]
 
-    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=torch.tensor([1, -1])):
         super(GLIF_soft_no_grad, self).__init__()
 
         if parameters is not None:
@@ -92,7 +92,6 @@ class GLIF_soft_no_grad(nn.Module):
 
     def get_parameters(self):
         params_list = []
-        # parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'tau_s']
         params_list.append(self.w.data)
         params_list.append(self.E_L.data)
         params_list.append(self.tau_m.data)
@@ -132,15 +131,13 @@ class GLIF_soft_no_grad(nn.Module):
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
 
-    def forward(self, x_in):
+    def forward(self, I_ext):
         # assuming input weights to be Eye(N,N)
         W_syn = self.w * self.neuron_types
-        # I = (self.I_additive + self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
-        I_tot = ((self.I_additive + self.g) / 2).matmul(self.self_recurrence_mask * W_syn) + 1.3 * x_in
-        # I_syn = self.I_additive.matmul(self.w)
-        # I_tot = 2 * torch.sigmoid(I_syn + 6 * x_in) - 1  # in (-1, 1)
 
-        dv = (self.G * (self.E_L - self.v) + I_tot * self.norm_R_const) / self.tau_m
+        I_syn = ((self.I_additive + self.g) / 2).matmul(self.self_recurrence_mask * W_syn)
+        dv = (self.G * (self.E_L - self.v) + (I_syn + I_ext) * self.norm_R_const) / self.tau_m
+
         v_next = torch.add(self.v, dv)
 
         # differentiable

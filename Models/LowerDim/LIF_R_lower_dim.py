@@ -14,8 +14,9 @@ class LIF_R_lower_dim(nn.Module):
     parameter_init_intervals = { 'tau_m': [4., 5.],
                                  # 'E_L': [-64., -52.], 'G': [0.8, 0.9], 'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4], 'delta_V': [8., 14.],
                                  'tau_s': [4., 5.]}
+    param_lin_constraints = [[0., 1.], [1.2, 8.], [1., 12.]]
 
-    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, -1])):
         super(LIF_R_lower_dim, self).__init__()
         # self.device = device
 

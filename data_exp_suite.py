@@ -67,7 +67,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num):
 
     params_model['N'] = N
     model = model_class(N=N, parameters=params_model,
-                        neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])  # set to ground truth for this file only
+                        neuron_types=[1, -1])  # set to ground truth for this file only
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
     poisson_input_rate.clamp(1., 40.)

@@ -10,7 +10,7 @@ class LIF_R_ASC(nn.Module):
     parameter_init_intervals = {'E_L': [-68., -45.], 'tau_m': [4., 4.5], 'G': [0.7, 0.8], 'f_v': [0.2, 0.4], 'f_I': [0.3, 0.4],
                                 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4], 'delta_V': [8., 14.], 'tau_s': [4.7, 5.7]}
 
-    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=torch.tensor([1, -1])):
         super(LIF_R_ASC, self).__init__()
 
         if parameters is not None:
@@ -127,7 +127,6 @@ class LIF_R_ASC(nn.Module):
     def forward(self, I_ext):
         # assuming input weights to be Eye(N,N)
         W_syn = self.w * self.neuron_types
-        # I = (self.I_additive + self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
         I_syn = ((self.I_additive + self.s) / 2).matmul(self.self_recurrence_mask * W_syn)
 
         dv = (self.G * (self.E_L - self.v) + (I_syn + I_ext) * self.norm_R_const) / self.tau_m

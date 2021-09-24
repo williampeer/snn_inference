@@ -13,7 +13,7 @@ class LIF_R_weights_only(nn.Module):
     #                             'f_v': [0.25, 0.35], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35],
     #                             'delta_V': [8., 14.], 'tau_s': [5., 6.]}
 
-    def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25, neuron_types=T([1, -1])):
         super(LIF_R_weights_only, self).__init__()
         # self.device = device
 
@@ -106,11 +106,11 @@ class LIF_R_weights_only(nn.Module):
     def name(self):
         return LIF_R.__name__
 
-    def forward(self, x_in):
+    def forward(self, I_ext):
         W_syn = self.w * self.neuron_types
-        I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming input weights to be Eye(N,N)
+        I_syn = (self.s).matmul(self.self_recurrence_mask * W_syn)
 
-        dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
+        dv = (self.G * (self.E_L - self.v) + (I_syn + I_ext) * self.norm_R_const) / self.tau_m
         v_next = torch.add(self.v, dv)
 
         gating = (v_next / self.theta_s).clamp(0., 1.)
@@ -134,4 +134,3 @@ class LIF_R_weights_only(nn.Module):
         soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
         return soft_spiked  # return sigmoidal spiked
         # return gating
-

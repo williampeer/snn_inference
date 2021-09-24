@@ -15,7 +15,7 @@ class LIF_R_ASC_soft_lower_dim(nn.Module):
                                  'tau_g': [4.7, 5.7]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
-                 neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+                 neuron_types=torch.tensor([1, -1])):
         super(LIF_R_ASC_soft_lower_dim, self).__init__()
 
         if parameters is not None:

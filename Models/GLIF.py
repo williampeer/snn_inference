@@ -14,7 +14,7 @@ class GLIF(nn.Module):
                                 'tau_s': [3., 4.]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
-                 neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]):
+                 neuron_types=[1, -1]):
         super(GLIF, self).__init__()
 
         if parameters is not None:

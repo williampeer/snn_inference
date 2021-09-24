@@ -13,7 +13,7 @@ class GLIF_dynamic_R_I(nn.Module):
                                 'I_A': [1.2, 1.5]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
-                 neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+                 neuron_types=torch.tensor([1, -1])):
         # use_cuda = torch.cuda.is_available()
         # device = torch.device("cuda" if use_cuda else "cpu")
 

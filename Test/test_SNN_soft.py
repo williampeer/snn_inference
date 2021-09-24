@@ -9,7 +9,10 @@ from TargetModels import TargetModelsSoft
 from experiments import sine_modulated_white_noise
 from plot import plot_spike_trains_side_by_side, plot_spike_train_projection
 
-num_neurons = 10
+num_neurons = 2
+# num_neurons = 4
+# num_neurons = 8
+# num_neurons = 16
 
 for random_seed in range(3, 7):
     # snn = lif_ensembles_model_dales_compliant(random_seed=random_seed)
@@ -23,8 +26,7 @@ for random_seed in range(3, 7):
     # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
     snn = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
 
-    # inputs = poisson_input(10., t=4000, N=snn.N)  # now assumes rate in Hz
-    inputs = sine_modulated_white_noise(10., t=12000, N=snn.N)  # now assumes rate in Hz
+    inputs = sine_modulated_white_noise(t=12000, N=snn.N)
 
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(inputs.sum()))

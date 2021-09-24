@@ -13,7 +13,7 @@ class LIF_R_soft_weights_only(nn.Module):
     #                             'f_v': [0.2, 0.4], 'delta_theta_s': [10., 20.], 'b_s': [0.2, 0.4],
     #                             'delta_V': [8., 14.], 'tau_g': [4., 5.]}
 
-    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, -1])):
         super(LIF_R_soft_weights_only, self).__init__()
         # self.device = device
 

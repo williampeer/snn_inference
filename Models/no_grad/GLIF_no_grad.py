@@ -13,10 +13,10 @@ class GLIF_no_grad(nn.Module):
                                 'f_I': [0.35, 0.45], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35], 'a_v': [0.15, 0.2],
                                 'b_v': [0.25, 0.35], 'theta_inf': [-10., -8.], 'delta_V': [8., 14.],
                                 'tau_s': [3., 4.]}
-    param_lin_constraints = [[0., 1.], [-80., -35.], [1.5, 8.], [0.01, 0.99], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
+    param_lin_constraints = [[0., 1.], [-80., -35.], [1.2, 8.], [0.01, 0.99], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
                              [0.01, 0.95], [0.01, 0.95], [-25., 0.], [1., 35.], [1.5, 12.]]
 
-    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]):
+    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=[1, -1]):
         super(GLIF_no_grad, self).__init__()
 
         if parameters is not None:
@@ -131,14 +131,13 @@ class GLIF_no_grad(nn.Module):
                 7: self.b_s.data.numpy(), 8: self.a_v.data.numpy(), 9: self.b_v.data.numpy(),
                 10: self.theta_inf.data.numpy(), 11: self.delta_V.data.numpy(), 12: self.tau_s.data.numpy()}
 
-    def forward(self, x_in):
+    def forward(self, I_ext):
         # assuming input weights to be Eye(N,N)
         W_syn = self.w * self.neuron_types
         # I = (self.I_additive + self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
-        I = ((self.I_additive + self.s) / 2).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
-        # I = 1.75 * x_in
+        I_syn = ((self.I_additive + self.s) / 2).matmul(self.self_recurrence_mask * W_syn)
 
-        dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
+        dv = (self.G * (self.E_L - self.v) + (I_syn + I_ext) * self.norm_R_const) / self.tau_m
         v_next = self.v + dv
         # non-differentiable, hard threshold
         spiked = (v_next >= self.theta_s + self.theta_v).float()
@@ -164,6 +163,7 @@ class GLIF_no_grad(nn.Module):
         # differentiable soft threshold
         soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s + self.theta_v))
         return soft_spiked  # return sigmoidal spiked
+        # return gating
 
         # return self.v, self.s * self.tau_s
         # return self.s * self.tau_s  # use synaptic current as spike signal

@@ -2,11 +2,7 @@ import numpy as np
 import torch
 from torch import tensor as T
 
-from Models.GLIF import GLIF
 from Models.LIF_ASC import LIF_ASC
-from Models.LIF_HS_17 import LIF_HS_17
-from Models.LIF_R import LIF_R
-from Models.LIF_R_ASC import LIF_R_ASC
 from Models.no_grad.GLIF_no_grad import GLIF_no_grad
 from Models.no_grad.LIF_R_ASC_no_grad import LIF_R_ASC_no_grad
 from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad

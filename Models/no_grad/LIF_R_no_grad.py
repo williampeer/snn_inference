@@ -11,10 +11,10 @@ class LIF_R_no_grad(nn.Module):
     parameter_init_intervals = {'E_L': [-64., -55.], 'tau_m': [3.5, 4.0], 'G': [0.7, 0.8],
                                 'f_v': [0.25, 0.35], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35],
                                 'delta_V': [8., 14.], 'tau_s': [5., 6.]}
-    param_lin_constraints = [[0., 1.], [-80., -35.], [1.5, 8.], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
+    param_lin_constraints = [[0., 1.], [-80., -35.], [1.2, 8.], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
                              [1., 35.], [1.5, 12.]]
 
-    def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25, neuron_types=T([1, -1])):
         super(LIF_R_no_grad, self).__init__()
         # self.device = device
 
@@ -106,11 +106,11 @@ class LIF_R_no_grad(nn.Module):
                  4: self.G.data.numpy(), 5: self.f_v.data.numpy(), 6: self.delta_theta_s.data.numpy(),
                  7: self.b_s.data.numpy(), 8: self.delta_V.data.numpy() }
 
-    def forward(self, x_in):
+    def forward(self, I_ext):
         W_syn = self.w * self.neuron_types
-        I = (self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in  # assuming input weights to be Eye(N,N)
+        I_syn = (self.s).matmul(self.self_recurrence_mask * W_syn)
 
-        dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
+        dv = (self.G * (self.E_L - self.v) + (I_syn + I_ext) * self.norm_R_const) / self.tau_m
         v_next = torch.add(self.v, dv)
 
         gating = (v_next / self.theta_s).clamp(0., 1.)
@@ -122,7 +122,7 @@ class LIF_R_no_grad(nn.Module):
         spiked = (v_next >= self.theta_s).float()
         not_spiked = (spiked - 1.) / -1.
 
-        self.theta_s = torch.add((1-self.b_s) * self.theta_s, spiked * self.delta_theta_s)
+        self.theta_s = torch.add((1 - self.b_s) * self.theta_s, spiked * self.delta_theta_s)
         v_reset = self.E_L + self.f_v * (self.v - self.E_L) - self.delta_V
         self.v = torch.add(spiked * v_reset, not_spiked * v_next)
 
@@ -133,4 +133,4 @@ class LIF_R_no_grad(nn.Module):
         # differentiable soft threshold
         soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
         return soft_spiked  # return sigmoidal spiked
-
+        # return gating

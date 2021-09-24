@@ -15,7 +15,7 @@ class LIF_R_soft_no_grad(nn.Module):
     param_lin_constraints = [[0., 1.], [-80., -35.], [1.5, 10.], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
                              [1., 35.], [1.5, 12.]]
 
-    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, -1])):
         super(LIF_R_soft_no_grad, self).__init__()
         # self.device = device
 
@@ -79,7 +79,6 @@ class LIF_R_soft_no_grad(nn.Module):
 
     def get_parameters(self):
         params_list = []
-        # parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V']
         params_list.append(self.w.data)
         params_list.append(self.E_L.data)
         params_list.append(self.tau_m.data)
@@ -110,13 +109,11 @@ class LIF_R_soft_no_grad(nn.Module):
     def name(self):
         return LIF_R.__name__
 
-    def forward(self, x_in):
+    def forward(self, I_ext):
         W_syn = self.w * self.neuron_types
-        I_tot = (self.g).matmul(self.self_recurrence_mask * W_syn) + 1.35 * x_in
-        # I_syn = (self.g).matmul(self.w)
-        # I_tot = 2 * torch.sigmoid(I_syn + 6 * x_in) - 1  # in (-1, 1)
+        I_syn = (self.g).matmul(self.self_recurrence_mask * W_syn)
 
-        dv = (self.G * (self.E_L - self.v) + I_tot * self.norm_R_const) / self.tau_m
+        dv = (self.G * (self.E_L - self.v) + (I_syn + I_ext) * self.norm_R_const) / self.tau_m
         v_next = self.v + dv
 
         # differentiability
@@ -128,11 +125,8 @@ class LIF_R_soft_no_grad(nn.Module):
         v_reset = self.E_L + self.f_v * (self.v - self.E_L) - self.delta_V
         self.v = spiked * v_reset + not_spiked * v_next
 
-        # theta_s_next = (1-self.b_s) * self.theta_s
-        # self.theta_s = spiked * (self.theta_s + self.delta_theta_s) + not_spiked * theta_s_next
-        self.theta_s = (1-self.b_s) * self.theta_s + spiked * self.delta_theta_s
+        self.theta_s = (1 - self.b_s) * self.theta_s + spiked * self.delta_theta_s
 
-        # self.g = spiked + not_spiked * (self.g - self.g/self.tau_g)
         dg = -torch.div(self.g, self.tau_g)  # -g/tau_g
         self.g = torch.add(spiked * torch.ones_like(self.g), not_spiked * torch.add(self.g, dg))
 

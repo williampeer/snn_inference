@@ -313,4 +313,4 @@ def lif_r_asc_ensembles_model_dales_compliant(random_seed, N = 12):
 #     randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
 #
 #     return Izhikevich(parameters=randomised_params, N=N,
-#                       neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1]))
+#                       neuron_types=torch.tensor([1, -1]))

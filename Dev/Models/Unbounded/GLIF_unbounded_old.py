@@ -11,7 +11,7 @@ class GLIF_unbounded_old(nn.Module):
                                 'I_A': [1.2, 2.]}
 
     def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
-                 neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+                 neuron_types=torch.tensor([1, -1])):
         super(GLIF_unbounded_old, self).__init__()
 
         if parameters is not None:

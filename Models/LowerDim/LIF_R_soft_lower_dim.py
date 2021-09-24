@@ -16,7 +16,7 @@ class LIF_R_soft_lower_dim(nn.Module):
                                  'tau_g': [4., 5.]}
     param_lin_constraints = [[0., 1.], [1.5, 8.], [1., 12.]]
 
-    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.3, w_var=0.2, neuron_types=T([1, -1])):
         super(LIF_R_soft_lower_dim, self).__init__()
         # self.device = device
 

@@ -12,7 +12,7 @@ class GLIF_soft(nn.Module):
                                 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35], 'a_v': [0.15, 0.2], 'b_v': [0.25, 0.35],
                                 'theta_inf': [-10., -8.], 'delta_V': [8., 14.], 'tau_g': [3., 4.]}
 
-    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=torch.tensor([1, -1])):
         super(GLIF_soft, self).__init__()
 
         if parameters is not None:

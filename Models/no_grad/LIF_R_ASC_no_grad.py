@@ -12,7 +12,7 @@ class LIF_R_ASC_no_grad(nn.Module):
     param_lin_constraints = [[0., 1.], [-80., -35.], [1.5, 8.], [0.01, 0.99], [0.01, 0.99], [0.01, 0.99], [6., 30.], [0.01, 0.95],
                              [1., 35.], [1., 12.]]
 
-    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=torch.tensor([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15, neuron_types=torch.tensor([1, -1])):
         super(LIF_R_ASC_no_grad, self).__init__()
 
         if parameters is not None:

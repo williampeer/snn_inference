@@ -162,12 +162,10 @@ def lif_r_soft_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
 #     return LIF_R_ASC_no_grad(parameters=randomised_params, N=N, neuron_types=neuron_types)
 #
 #
-def glif_soft_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
+def glif_soft_continuous_ensembles_model_dales_compliant(random_seed, pop_size=1, N=2):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
 
-    pop_size = int(N / 3)
-    pop_size_last = N - 2*pop_size
     params_pop1 = {'tau_m': 3.4, 'G': 0.7, 'E_L': -52., 'delta_theta_s': 18., 'b_s': 0.4, 'f_v': 0.14, 'delta_V': 10.,
                    'f_I': 0.5, 'b_v': 0.3, 'a_v': 0.2, 'theta_inf': -12., 'tau_g': 4.5}
     weights_std = 0.05
@@ -206,7 +204,7 @@ def glif_soft_continuous_ensembles_model_dales_compliant(random_seed, N = 12):
     randomised_params = zip_tensor_dicts(zip_tensor_dicts(params_pop1, params_pop2), params_pop3)
 
     neuron_types = np.ones((N,))
-    for i in range(int(N / 3)):
+    for i in range(int(N / 2)):
         neuron_types[-(1 + i)] = -1
     return GLIF_soft_no_grad(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
