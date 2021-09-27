@@ -26,24 +26,26 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                  logger=logger)
 
         # ------------- trajectories weights ------------------
+        # TODO: Fix
         if model.state_dict().__contains__('w'):
             tar_weights_params = None
             if target_parameters is not None:
                 tar_weights_params = [np.mean(target_parameters['w'].numpy(), axis=1)]
 
-            # TODO: Fix for model_fixed_weights (CHECK?)
-            weights = model_parameters[0]
+            weights = model_parameters['w']
             assert len(weights[0].shape) == 2, "weights should be 2D"
-            weights_params = {}; w_names = []
-            weights_params[0] = [np.mean(weights[0], axis=1)]
-            for n_i in range(1, len(weights)):
-                weights_params[0].append(np.mean(weights[n_i], axis=1))
-                w_names.append('w_{}'.format(n_i))
+            weights_params = {}
+            w_names = []
+            # weights_params[0] = [np.mean(weights[0], axis=1)]
+            for n_i in range(len(weights)):
+                cur_w_name = 'w_{}'.format(n_i)
+                w_names.append(cur_w_name)
+                weights_params[cur_w_name] = np.mean(weights[n_i], axis=1)
 
             plot_parameter_inference_trajectories_2d(weights_params, target_params=tar_weights_params,
                                                      uuid=constants.UUID,
                                                      exp_type=exp_type_str,
-                                                     param_names=parameter_names,
+                                                     param_names=w_names,
                                                      custom_title='Avg inferred weights across training iterations',
                                                      fname='avg_inferred_weights_param_trajectories_{}_exp_num_{}_train_iters_{}'
                                                      .format(model.__class__.__name__, exp_num, train_i),
@@ -122,7 +124,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     poisson_input_rate.register_hook(lambda grad: static_clamp_for_scalar(grad, 5., 20., poisson_input_rate))
     parameters = {}
     for p_i, key in enumerate(model.state_dict()):
-        parameters[p_i] = [model.state_dict()[key].numpy()]
+        parameters[key] = [model.state_dict()[key].numpy()]
     # parameters[p_i + 1] = [poisson_input_rate.clone().detach().numpy()]
     # poisson_rates = []
     # poisson_rates.append(poisson_input_rate.clone().detach().numpy())
@@ -177,7 +179,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
             logger.log('current parameters {}'.format(cur_params))
 
             for p_i, key in enumerate(cur_params):
-                parameters[p_i].append(cur_params[key].clone().detach().numpy())
+                parameters[key].append(cur_params[key].clone().detach().numpy())
 
             # if constants.EXP_TYPE is not ExperimentType.DataDriven:
             release_computational_graph(target_model, constants.initial_poisson_rate)
@@ -209,13 +211,12 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         train_targets = None; train_loss = None
 
     stats_training_iterations(model_parameters=parameters, model=model, poisson_rate=poisson_input_rate,
-
                               train_losses=train_losses, test_losses=test_losses,
                               constants=constants, logger=logger, exp_type_str=constants.EXP_TYPE.name,
                               target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
     final_model_parameters = {}
     for p_i, key in enumerate(model.state_dict()):
-        final_model_parameters[p_i] = [model.state_dict()[key].numpy()]
+        final_model_parameters[key] = [model.state_dict()[key].numpy()]
     model = None
     # return final_model_parameters, test_losses, train_losses, train_i, poisson_rates
     return final_model_parameters, test_losses, train_losses, train_i, None
@@ -224,13 +225,14 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
 def run_exp_loop(logger, constants, model_class, target_model=None, error_logger=Log.Logger('DEFAULT_ERR_LOG')):
     if hasattr(target_model, 'get_parameters'):
         target_parameters = target_model.get_parameters()
+    elif target_model is not None:
+        target_parameters = target_model.state_dict()
+            # for param_i, key in enumerate(target_model.state_dict()):
+            #     target_parameters[param_i] = target_model.state_dict()[key].clone().detach().numpy()
     else:
-        target_parameters = []
-        if target_model is not None:
-            for param_i, key in enumerate(target_model.state_dict()):
-                target_parameters[param_i] = target_model.state_dict()[key].clone().detach().numpy()
+        target_parameters = False
 
-    recovered_param_per_exp = {}; poisson_rate_per_exp = []
+    recovered_param_per_exp = {}
     for exp_i in range(constants.start_seed, constants.start_seed+constants.N_exp):
         non_overlapping_offset = constants.start_seed + constants.N_exp + 1
         torch.manual_seed(non_overlapping_offset + exp_i)

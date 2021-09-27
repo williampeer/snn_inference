@@ -33,12 +33,13 @@ def transform_model_to_sbi_params(model):
     for i in range(model.w.shape[0]):
         for j in range(model.w.shape[1]):
             if i!=j:
-                m_params[ctr] = model.w[i,j].clone().detach()
+                m_params[ctr] = model.w[i, j].clone().detach()
                 ctr += 1
 
-    model_params_list = list(model.get_parameters())
-    for p_i in range(1, len(model.__class__.parameter_names)):
-        m_params = torch.hstack((m_params, model_params_list[p_i]))
+    model_params = model.get_parameters()
+    for p_i, p_k in enumerate(model_params):
+        if p_k is not 'w':
+            m_params = torch.hstack((m_params, model_params[p_k]))
         # model_params_list[(N ** 2 - N) + N * (i - 1):(N ** 2 - N) + N * i] = [model_class.parameter_names[i]]
 
     return m_params
@@ -103,7 +104,7 @@ def get_binned_spike_counts(out, bin_size=400):
     # bin_len = int(out.shape[0] / bins)
     n_bins = int(out.shape[0] / bin_size)
     out_counts = torch.zeros((n_bins, out.shape[1]))
-    for b_i in range(bin_size):
+    for b_i in range(n_bins):
         out_counts[b_i] = (out[b_i * bin_size:(b_i + 1) * bin_size].sum(dim=0))
     return out_counts
 
@@ -214,7 +215,7 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
         targets = simulator(tar_sbi_params)
         posterior_stats(posterior, method=method,
                         # observation=torch.reshape(avg_tar_model_simulations, (-1, 1)), points=tar_sbi_params,
-                        observation=targets, points=tar_sbi_params,
+                        observation=targets, points=tar_sbi_params, model_dim=N, plot_dim=num_dim,
                         limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
                         m_name=tar_model.name(), dt_descriptor=dt_descriptor, tar_seed=tar_seed)
     except Exception as e:
@@ -223,7 +224,7 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
     return res
 
 
-def posterior_stats(posterior, method, observation, points, limits, figsize, budget, m_name, dt_descriptor, tar_seed):
+def posterior_stats(posterior, method, observation, points, model_dim, plot_dim, limits, figsize, budget, m_name, dt_descriptor, tar_seed):
     print('====== def posterior_stats(posterior, method=None): =====')
     print(posterior)
 
@@ -245,9 +246,11 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
     # plot 100d
     try:
         # def export_plots(samples, points, lim_low, lim_high, N, method, m_name, description, model_class):
-        export_plots(samples, points, limits[0], limits[1], len(points[1]), 'SNRE', m_name, 'sbi_export_{}'.format(dt_descriptor), m_name)
+        plot_dim = len(points)
+        export_plots(samples, points, limits, model_dim, plot_dim, 'SNRE', m_name, 'sbi_export_{}'.format(dt_descriptor), m_name)
     except Exception as e:
         print('exception in new plot code: {}'.format(e))
+        print('samples: {}\npoints: {}\nlimits[0]: {}\nlimits[1]: {}\nmodel_dim: {}'.format(samples, points, limits[0], limits[1], model_dim))
 
     try:
         if samples[0].shape[0] <= 10:
@@ -259,11 +262,14 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
         print("except: {}".format(e))
 
 
-def export_plots(samples, points, lim_low, lim_high, N, method, m_name, description, model_class):
-    num_dim = lim_high.shape[0]
-    if num_dim < 12:  # full marginal plot
+def export_plots(samples, points, limits, model_dim, plot_dim, method, m_name, description, model_class):
+    N = model_dim
+    assert limits.shape[1] == 2, "limits.shape[0] should be 2. limits.shape: {}".format(limits.shape)
+    lim_low = limits[:,0]
+    lim_high = limits[:,1]
+    if plot_dim < 12:  # full marginal plot
         plt.figure()
-        fig, ax = analysis.pairplot(samples, points=points, limits=torch.stack((lim_low, lim_high)).T, figsize=(num_dim, num_dim))
+        fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=(plot_dim, plot_dim))
         fig.savefig('./figures/export_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
         plt.close()
     else:
