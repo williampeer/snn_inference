@@ -24,8 +24,7 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
 
-    loss = calculate_loss(model_spike_train, target_spiketrain, loss_fn=constants.loss_fn,
-                          tau_vr=constants.tau_van_rossum)
+    loss = calculate_loss(model_spike_train, target_spiketrain, constants=constants)
     print('loss:', loss)
 
     if exp_type is None:
@@ -55,14 +54,14 @@ class LossFn(Enum):
     RATE_PCC_HYBRID = 'rph'
 
 
-def calculate_loss(output, target, loss_fn, tau_vr=None, silent_penalty_factor=None):
+def calculate_loss(output, target, loss_fn, constants):
     lfn = LossFn[loss_fn]
     if lfn == LossFn.KL_DIV:
         loss = - kl_div(output, target)
     elif lfn == LossFn.MSE:
         loss = spike_metrics.mse(output, target)
     elif lfn == LossFn.VAN_ROSSUM_DIST:
-        loss = spike_metrics.van_rossum_dist(output, target, tau_vr)
+        loss = spike_metrics.van_rossum_dist(output, target, constants.tau_van_rossum)
     elif lfn == LossFn.FIRING_RATE_DIST:
         # surrogate_gradient_output = torch.sigmoid(8*output-6*torch.ones_like(output))
         # loss = spike_metrics.firing_rate_distance(surrogate_gradient_output, target)
@@ -76,13 +75,14 @@ def calculate_loss(output, target, loss_fn, tau_vr=None, silent_penalty_factor=N
     elif lfn == LossFn.RATE_FANO_HYBRID:
         loss = spike_metrics.firing_rate_distance(output, target) + spike_metrics.fano_factor_dist(output, target)
     elif lfn == LossFn.RATE_PCC_HYBRID:
-        loss = spike_metrics.firing_rate_distance(output, target) + spike_metrics.correlation_metric_distance(output, target)
+        loss = spike_metrics.firing_rate_distance(output, target) + \
+               spike_metrics.correlation_metric_distance(output, target, constants.batch_size)
     else:
         raise NotImplementedError("Loss function not supported.")
 
-    if silent_penalty_factor is not None:
+    if constants.silent_penalty_factor is not None:
         silent_penalty = spike_metrics.silent_penalty_term(output, target)
-        return loss + silent_penalty_factor * silent_penalty
+        return loss + constants.silent_penalty_factor * silent_penalty
     else:
         return loss
     # return loss + silent_penalty + activity_term

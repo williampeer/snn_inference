@@ -1,6 +1,6 @@
 import torch
 
-NUM_BINS = 10
+BIN_SIZE = 400
 
 
 # an approximation using torch.where
@@ -115,7 +115,7 @@ def firing_rate_distance(model_spikes, target_spikes):
     # return torch.sqrt(torch.pow(torch.sub(mean_targets_rate, mean_model_rate), 2).sum() + 1e-18)
 
 
-def fano_factor_dist(out, tar, bins=NUM_BINS):
+def fano_factor_dist(out, tar, bins=BIN_SIZE):
     bin_len = int(out.shape[0]/bins)
     out_counts = torch.zeros((bins,out.shape[1]))
     tar_counts = torch.zeros((bins,tar.shape[1]))
@@ -178,13 +178,14 @@ def calc_pearsonr(counts_out, counts_tar):
 
 
 # correlation metric over binned spike counts
-def correlation_metric_distance(out, tar, bins=NUM_BINS):
-    bin_len = int(out.shape[0] / bins)
-    out_counts = torch.zeros((bins, out.shape[1]))
-    tar_counts = torch.zeros((bins, tar.shape[1]))
-    for b_i in range(bins):
-        out_counts[b_i] = (out[b_i * bin_len:(b_i + 1) * bin_len].sum(dim=0))
-        tar_counts[b_i] = (tar[b_i * bin_len:(b_i + 1) * bin_len].sum(dim=0))
+def correlation_metric_distance(out, tar, bin_size=BIN_SIZE):
+    # bin_len = int(out.shape[0] / bins)
+    n_bins = int(out.shape[0] / bin_size)
+    out_counts = torch.zeros((n_bins, out.shape[1]))
+    tar_counts = torch.zeros((n_bins, tar.shape[1]))
+    for b_i in range(n_bins):
+        out_counts[b_i] = (out[b_i * bin_size:(b_i + 1) * bin_size].sum(dim=0))
+        tar_counts[b_i] = (tar[b_i * bin_size:(b_i + 1) * bin_size].sum(dim=0))
 
     # pcorrcoeff = audtorch.metrics.functional.pearsonr(tar_counts, out_counts)
     pcorrcoeff = calc_pearsonr(tar_counts, out_counts)
@@ -201,7 +202,7 @@ def correlation_metric_distance(out, tar, bins=NUM_BINS):
     return dist
 
 
-def CV_dist(out, tar, bins=NUM_BINS):
+def CV_dist(out, tar, bins=BIN_SIZE):
     bin_len = int(out.shape[0]/bins)
     out_counts = torch.zeros((bins,out.shape[1]))
     tar_counts = torch.zeros((bins,tar.shape[1]))

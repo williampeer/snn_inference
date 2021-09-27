@@ -4,6 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 
 import plot
+from Models.no_grad.GLIF_soft_no_grad import GLIF_soft_no_grad
 from TargetModels.TargetModels import *
 from analysis import parameter_distance
 from analysis.sbi_import_export_spikes import convert_posterior_to_model_params_dict
@@ -20,7 +21,7 @@ def export_stats_model_target(model, observation, descriptor):
     spike_counts_per_sample = None
     spike_count_list = []
     for spike_iters in range(n_samples-1):
-        spike_train, _ = generate_synthetic_data(model, poisson_rate=10., t=10000)
+        spike_train, _ = generate_synthetic_data(model, t=10000)
         cur_cur_spike_count = torch.reshape(get_binned_spike_counts(spike_train.clone().detach()), (-1,))
         if spike_counts_per_sample is None:
             spike_counts_per_sample = cur_cur_spike_count
@@ -93,7 +94,8 @@ def plot_param_dist(parameter_distance, title, fname):
 
 def main():
     # experiments_path = '/media/william/p6/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_SINE_mod_input_2409/archive/saved/data/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_SINE_mod_input_2409/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_2709/saved/data/'
     # experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
     # experiments_path = '/home/william/repos/snn_inference/saved/data/'
 
@@ -119,10 +121,13 @@ def main():
             method = 'SNLE'
         elif sbi_res.keys().__contains__('SNRE'):
             method = 'SNRE'
+        else:
+            raise NotImplementedError("Another method than SNPE,LE,RE")
         posterior = sbi_res[method]
         # if sbi_res.keys()
         model_class = sbi_res['model_class']
         m_name = model_class.__name__
+        tar_model_class = GLIF_soft_no_grad
         N = sbi_res['N']
         dt_descriptor = sbi_res['dt_descriptor']
         if 'param_num' in sbi_res:
@@ -167,14 +172,15 @@ def main():
                 avg_param_dist_across_samples = []
                 converged_avg_param_dist_across_samples = []
                 for s_i in range(N_samples):
-                    model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], N)
+                    model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], tar_model_class, points, N)
                     programmatic_neuron_types = torch.ones((N,))
                     for n_i in range(int(2 * N / 3), N):
                         programmatic_neuron_types[n_i] = -1
+
                     model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
                     cur_mean_spike_counts = export_stats_model_target(model, observation=observation,
-                                                                     descriptor='{}_parallel_sbi_{}_sample_N_{}'.
-                                                                        format(m_name, dt_descriptor, s_i))
+                                                                      descriptor='{}_parallel_sbi_{}_sample_N_{}'.
+                                                                      format(m_name, dt_descriptor, s_i))
                     mean_model_spike_counts = torch.cat((mean_model_spike_counts, cur_mean_spike_counts))
 
 
@@ -184,8 +190,9 @@ def main():
 
                     current_avg_dist_per_p = []
                     model_parameter_list = model.get_parameters()
-                    for p_i in range(len(model_parameter_list)):
-                        dist_p_i = parameter_distance.euclid_dist(model_parameter_list[p_i], points[p_i])
+                    for p_i in range(len(model_class.parameter_names)):
+                        cur_p_name = model_class.parameter_names[p_i]
+                        dist_p_i = parameter_distance.euclid_dist(model_parameter_list[cur_p_name], points[p_i])
                         current_avg_dist_per_p.append(dist_p_i)
                     plot_param_dist(np.array(current_avg_dist_per_p), 'Parameter distance for sample: {}'.format(s_i),
                                     '{}_N_{}_parallel_sbi_{}_sample_num_{}'.format(m_name, N, dt_descriptor, s_i))
@@ -202,7 +209,7 @@ def main():
                 plot_param_dist(converged_mean_p_dist, 'Parameter distance across samples forming non-silent models',
                                 'sbi_samples_converged_non_silent_avg_param_dist_{}_N_{}_{}'.format(m_name, N, dt_descriptor))
 
-                    # std_model_rates.append(cur_std_model_rate)
+                # std_model_rates.append(cur_std_model_rate)
                 mean_model_spike_counts = torch.reshape(mean_model_spike_counts, (N_samples, -1))
                 converged_mean_model_spike_counts = torch.reshape(converged_mean_model_spike_counts, (-1, len(observation)))
                 export_stats_top_samples(torch.mean(mean_model_spike_counts, dim=0), torch.std(mean_model_spike_counts, dim=0),

@@ -40,6 +40,7 @@ def main(argv):
     num_targets = 3
     interval_size = 8000
     batch_size = interval_size; rows_per_train_iter = interval_size
+    bin_size = 400
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     # loss_fn = 'frd'
@@ -120,8 +121,10 @@ def main(argv):
             max_train_iters = int(args[i])
         elif opt in ("-noe", "--numbers-of-experiments"):
             N_exp = int(args[i])
-        elif opt in ("-bs", "--batch-size"):
+        elif opt in ("-bas", "--batch-size"):
             batch_size = int(args[i])
+        elif opt in ("-bis", "--bin-size"):
+            bin_size = int(args[i])
         elif opt in ("-tvr", "--van-rossum-time-constant"):
             tau_van_rossum = float(args[i])
         elif opt in ("-rpti", "--rows-per-training-iteration"):
@@ -238,7 +241,7 @@ def main(argv):
                                             initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
                                             plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name,
                                             exp_type_str=exp_type_str, silent_penalty_factor=silent_penalty_factor,
-                                            norm_grad_flag=norm_grad_flag, data_path=data_path)
+                                            norm_grad_flag=norm_grad_flag, data_path=data_path, bin_size=bin_size)
 
                     exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 

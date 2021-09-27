@@ -3,7 +3,7 @@ from TargetModels.TargetModels import *
 from analysis.spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
-def convert_posterior_to_model_params_dict(model_class, posterior_params, N):
+def convert_posterior_to_model_params_dict(model_class, posterior_params, target_class, target_points, N):
     if posterior_params.shape[0] == 1:
         posterior_params = posterior_params[0]
     model_params = {}
@@ -15,6 +15,13 @@ def convert_posterior_to_model_params_dict(model_class, posterior_params, N):
         else:
             model_params[p_name] = posterior_params[(N**2-N)+N*(p_i-1):(N**2-N)+N*p_i]
         p_i += 1
+
+    t_p_i = 1
+    for t_p_name in target_class.parameter_names:
+        if t_p_name not in model_params:
+            model_params[t_p_name] = target_points[(N**2-N)+N*(t_p_i-1):(N**2-N)+N*t_p_i]
+        t_p_i += 1
+
     return model_params
 
 

@@ -36,7 +36,7 @@ def transform_model_to_sbi_params(model):
                 m_params[ctr] = model.w[i,j].clone().detach()
                 ctr += 1
 
-    model_params_list = model.get_parameters()
+    model_params_list = list(model.get_parameters())
     for p_i in range(1, len(model.__class__.parameter_names)):
         m_params = torch.hstack((m_params, model_params_list[p_i]))
         # model_params_list[(N ** 2 - N) + N * (i - 1):(N ** 2 - N) + N * i] = [model_class.parameter_names[i]]
@@ -99,11 +99,12 @@ def main(argv):
         sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS)
 
 
-def get_binned_spike_counts(out, bins=10):
-    bin_len = int(out.shape[0] / bins)
-    out_counts = torch.zeros((bins, out.shape[1]))
-    for b_i in range(bins):
-        out_counts[b_i] = (out[b_i * bin_len:(b_i + 1) * bin_len].sum(dim=0))
+def get_binned_spike_counts(out, bin_size=400):
+    # bin_len = int(out.shape[0] / bins)
+    n_bins = int(out.shape[0] / bin_size)
+    out_counts = torch.zeros((n_bins, out.shape[1]))
+    for b_i in range(bin_size):
+        out_counts[b_i] = (out[b_i * bin_size:(b_i + 1) * bin_size].sum(dim=0))
     return out_counts
 
 

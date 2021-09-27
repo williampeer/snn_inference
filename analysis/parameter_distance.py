@@ -1,20 +1,15 @@
 import os
 
-import numpy as np
-import torch
 from torch import FloatTensor as FT
-from torch import tensor as T
 
 from Models.GLIF import GLIF
-from Models.LIF import LIF
-from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
-from experiments import draw_from_uniform, zip_dicts
-from plot import bar_plot_pair_custom_labels, bar_plot_two_grps
 from TargetModels.TargetModels import *
+from experiments import draw_from_uniform, zip_dicts
+from plot import bar_plot_pair_custom_labels
 
-class_lookup = {'LIF': LIF, 'LIF_R': LIF_R, 'LIF_ASC': LIF_ASC, 'LIF_R_ASC': LIF_R_ASC, 'GLIF': GLIF}
+class_lookup = {'LIF_R': LIF_R, 'LIF_R_ASC': LIF_R_ASC, 'GLIF': GLIF}
 target_fn_lookup = {'LIF': lif_continuous_ensembles_model_dales_compliant,
                     'LIF_R': lif_r_continuous_ensembles_model_dales_compliant,
                     'LIF_ASC': lif_asc_continuous_ensembles_model_dales_compliant,
