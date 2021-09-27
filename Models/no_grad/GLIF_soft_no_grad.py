@@ -91,22 +91,23 @@ class GLIF_soft_no_grad(nn.Module):
         self.register_backward_clamp_hooks()
 
     def get_parameters(self):
-        params_list = []
-        params_list.append(self.w.data)
-        params_list.append(self.E_L.data)
-        params_list.append(self.tau_m.data)
-        params_list.append(self.G.data)
-        params_list.append(self.f_v.data)
-        params_list.append(self.f_I.data)
-        params_list.append(self.delta_theta_s.data)
-        params_list.append(self.b_s.data)
-        params_list.append(self.a_v.data)
-        params_list.append(self.b_v.data)
-        params_list.append(self.theta_inf.data)
-        params_list.append(self.delta_V.data)
-        params_list.append(self.tau_g.data)
+        params_dict = {}
 
-        return params_list
+        params_dict['w'] = self.w.data
+        params_dict['E_L'] = self.E_L.data
+        params_dict['tau_m'] = self.tau_m.data
+        params_dict['G'] = self.G.data
+        params_dict['f_v'] = self.f_v.data
+        params_dict['f_I'] = self.f_I.data
+        params_dict['delta_theta_s'] = self.delta_theta_s.data
+        params_dict['b_s'] = self.b_s.data
+        params_dict['a_v'] = self.a_v.data
+        params_dict['b_v'] = self.b_v.data
+        params_dict['theta_inf'] = self.theta_inf.data
+        params_dict['delta_V'] = self.delta_V.data
+        params_dict['tau_g'] = self.tau_g.data
+
+        return params_dict
 
     def name(self):
         return GLIF.__name__

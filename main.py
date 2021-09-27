@@ -30,8 +30,8 @@ def main(argv):
 
     # Default values
     start_seed = 42
-    exp_type_str = C.ExperimentType.SanityCheck.name
-    # exp_type_str = C.ExperimentType.Synthetic.name
+    # exp_type_str = C.ExperimentType.SanityCheck.name
+    exp_type_str = C.ExperimentType.Synthetic.name
     # exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
@@ -85,7 +85,7 @@ def main(argv):
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_12_seed_4_duration_900000.mat'
     # data_path = data_util.prefix + data_util.path + 'target_model_spikes_LIF_R_N_3_seed_4_duration_900000.mat'  # !!!!!
 
-    model_type = None
+    # model_type = None
     # model_type = 'GLIF'
     # model_type = 'LIF'
     # model_type = 'LIF_weights_only'
@@ -179,13 +179,10 @@ def main(argv):
     # models = [LIF_weights_only, LIF_fixed_weights, LIF_R]
 
     if loss_fn is None:
-        loss_functions = [
-                          LossFn.VAN_ROSSUM_DIST.name,
+        loss_functions = [LossFn.RATE_PCC_HYBRID.name, LossFn.VAN_ROSSUM_DIST.name, LossFn.FIRING_RATE_DIST.name]
                           # LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
                           # LossFn.RATE_FANO_HYBRID.name,
-                          LossFn.RATE_PCC_HYBRID.name,
-                          LossFn.FIRING_RATE_DIST.name]  #,
                           # LossFn.CV_DIST.name]
                           # LossFn.KL_DIV.name]
                           # LossFn.MSE.name]

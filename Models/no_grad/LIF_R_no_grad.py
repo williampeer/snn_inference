@@ -87,19 +87,19 @@ class LIF_R_no_grad(nn.Module):
         return LIF_R.__name__
 
     def get_parameters(self):
-        params_list = []
-        # parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'G', 'f_v', 'delta_theta_s', 'b_s', 'delta_V']
-        params_list.append(self.w.data)
-        params_list.append(self.E_L.data)
-        params_list.append(self.tau_m.data)
-        params_list.append(self.G.data)
-        params_list.append(self.f_v.data)
-        params_list.append(self.delta_theta_s.data)
-        params_list.append(self.b_s.data)
-        params_list.append(self.delta_V.data)
-        params_list.append(self.tau_s.data)
+        params_dict = {}
 
-        return params_list
+        params_dict['w'] = self.w.data
+        params_dict['E_L'] = self.E_L.data
+        params_dict['tau_m'] = self.tau_m.data
+        params_dict['G'] = self.G.data
+        params_dict['f_v'] = self.f_v.data
+        params_dict['delta_theta_s'] = self.delta_theta_s.data
+        params_dict['b_s'] = self.b_s.data
+        params_dict['delta_V'] = self.delta_V.data
+        params_dict['tau_s'] = self.tau_s.data
+
+        return params_dict
 
     def params_wrapper(self):
         return { 0: self.w.data.numpy(), 1: self.E_L.data.numpy(), 2: self.tau_m.data.numpy(), 3: self.tau_s.data.numpy(),

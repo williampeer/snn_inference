@@ -494,42 +494,61 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     big_ax.set_xticks([])
     big_ax.set_yticks([])
     # big_ax.set_axis_off()
+    print('num_of_parameters: {}'.format(num_of_parameters))
     axs = fig.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1, sharex=True, sharey=True)
     # fig.set_title('Parameter trajectory for ${}$'.format(name))
     # plt.xlabel(name)
     # plt.ylabel(name)
-    [axi.set_axis_off() for axi in axs.ravel()]
     dot_msize = 5.0
+    if num_of_parameters == 2:
+        if current_targets is not False:
+            x_min = float('{:.1f}'.format(np.min(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
+            x_max = float('{:.1f}'.format(np.max(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
+            plt.xticks([x_min, x_max])
 
-    for i in range(num_of_parameters):
-        # for j in range(i+1, num_of_parameters):
-        for j in range(i+1, num_of_parameters):
-            # 2D plot between p_i and p_j
-            # cur_ax = axs[i, j - 1]
-            cur_ax = axs[j - 1, i]
-            # cur_ax = axs[num_of_parameters-i-2, j - 1]
-            # cur_ax = axs[j - 1, num_of_parameters-i-2]
-            cur_ax.set_axis_on()
-            cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
-            # cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-            x_min = float('{:.1f}'.format(np.min(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
-            x_max = float('{:.1f}'.format(np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
-            cur_ax.set_xticks([x_min, x_max])
+        # try:
+        p_len = len(params_by_exp[0])
+        colors = cm.rainbow(np.linspace(0, 1, p_len))
+        for p_i in range(p_len):
+            plt.scatter(params_by_exp[0][p_i], params_by_exp[1][p_i], color=colors[p_i], marker='o', s=dot_msize)
+        # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
 
-            # try:
-            p_len = len(params_by_exp[i])
-            colors = cm.rainbow(np.linspace(0, 1, p_len))
-            for p_i in range(p_len):
-                cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
-            # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
+        if current_targets is not False:
+            plt.scatter(current_targets[0], current_targets[1], color='black', marker='x',
+                           s=2. * dot_msize)  # test 2*dot_msize
+    else:
+        [axi.set_axis_off() for axi in axs.ravel()]
 
-            if current_targets is not False:
-                cur_ax.scatter(current_targets[i], current_targets[j], color='black', marker='x', s=2.*dot_msize)  # test 2*dot_msize
-                # cur_ax.plot(current_targets[i], current_targets[j], color='black', marker='x', s=2.*dot_msize)  # test 2*dot_msize
-            # except:
-            #     print('WARN: Failed to plot trajectory for params: {}, {}. targets: {}, i: {}, j: {}'.format(params_by_exp[i], params_by_exp[j], current_targets, i, j))
+        for i in range(num_of_parameters):
+            # for j in range(i+1, num_of_parameters):
+            for j in range(i+1, num_of_parameters):
+                # 2D plot between p_i and p_j
+                # cur_ax = axs[i, j - 1]
+                cur_ax = axs[j - 1, i]
+                # cur_ax = axs[num_of_parameters-i-2, j - 1]
+                # cur_ax = axs[j - 1, num_of_parameters-i-2]
+                cur_ax.set_axis_on()
+                cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+                # cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+                if current_targets is not False:
+                    x_min = float('{:.1f}'.format(np.min(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+                    x_max = float('{:.1f}'.format(np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+                    cur_ax.set_xticks([x_min, x_max])
 
-    # fig.suptitle('GD trajectory-projections for parameter ${}$'.format(name))
+                # try:
+                p_len = len(params_by_exp[i])
+                colors = cm.rainbow(np.linspace(0, 1, p_len))
+                for p_i in range(p_len):
+                    cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
+                # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
+
+                if current_targets is not False:
+                    cur_ax.scatter(current_targets[i], current_targets[j], color='black', marker='x', s=2.*dot_msize)  # test 2*dot_msize
+                    # cur_ax.plot(current_targets[i], current_targets[j], color='black', marker='x', s=2.*dot_msize)  # test 2*dot_msize
+                # except:
+                #     print('WARN: Failed to plot trajectory for params: {}, {}. targets: {}, i: {}, j: {}'.format(params_by_exp[i], params_by_exp[j], current_targets, i, j))
+
+        # fig.suptitle('GD trajectory-projections for parameter ${}$'.format(name))
 
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
@@ -556,8 +575,10 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
         for i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
             # for plot_j in range(plot_i + 1, number_of_parameters):
             current_targets = False
-            if target_params is not None and len(target_params) > i:
-                current_targets = target_params[i]
+            # if target_params is not None and len(target_params) > i:
+            #     current_targets = target_params[i]
+            if param_names[i] in target_params:
+                current_targets = target_params[param_names[i]]
 
             cur_p = np.array(param_means[i])
             if param_names:

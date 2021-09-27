@@ -29,7 +29,7 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
         if model.state_dict().__contains__('w'):
             tar_weights_params = None
             if target_parameters is not None:
-                tar_weights_params = [np.mean(target_parameters[0].numpy(), axis=1)]
+                tar_weights_params = [np.mean(target_parameters['w'].numpy(), axis=1)]
 
             # TODO: Fix for model_fixed_weights (CHECK?)
             weights = model_parameters[0]
@@ -113,7 +113,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         for p_i in range(1, len(tar_p_names)):
             cur_tar_p_name = tar_p_names[p_i]
             if not model_p_names.__contains__(cur_tar_p_name):
-                params_model[cur_tar_p_name] = tar_params[p_i].clone().detach()
+                params_model[cur_tar_p_name] = tar_params[cur_tar_p_name].clone().detach()
 
     model = model_class(N=num_neurons, parameters=params_model, neuron_types=neuron_types)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])

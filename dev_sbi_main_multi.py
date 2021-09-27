@@ -150,7 +150,7 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
             for p_i in range(1, len(tar_model_p_names)):
                 cur_tar_p_name = tar_model_p_names[p_i]
                 if not model_class.parameter_names.__contains__(cur_tar_p_name):
-                    programmatic_params_dict[cur_tar_p_name] = tar_params[p_i].clone().detach()
+                    programmatic_params_dict[cur_tar_p_name] = tar_params[cur_tar_p_name].clone().detach()
 
         for i in range(1, len(model_class.parameter_names)):
             programmatic_params_dict[model_class.parameter_names[i]] = parameter_set[(N**2-N)+N*(i-1):(N**2-N)+N*i]  # assuming only N-dimensional params otherwise
