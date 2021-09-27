@@ -13,7 +13,7 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
         assert (inputs.shape[0] == target_spiketrain.shape[0]), \
             "inputs and targets should have same shape. inputs shape: {}, targets shape: {}".format(inputs.shape, target_spiketrain.shape)
     else:
-        inputs = sine_modulated_white_noise_input(rate=p_rate, t=target_spiketrain.shape[0], N=model.N)
+        inputs = sine_modulated_white_noise_input(t=target_spiketrain.shape[0], N=model.N)
 
     model_spike_train = model_util.feed_inputs_sequentially_return_spike_train(model, inputs)
 
@@ -54,8 +54,8 @@ class LossFn(Enum):
     RATE_PCC_HYBRID = 'rph'
 
 
-def calculate_loss(output, target, loss_fn, constants):
-    lfn = LossFn[loss_fn]
+def calculate_loss(output, target, constants):
+    lfn = LossFn[constants.loss_fn]
     if lfn == LossFn.KL_DIV:
         loss = - kl_div(output, target)
     elif lfn == LossFn.MSE:
@@ -71,12 +71,12 @@ def calculate_loss(output, target, loss_fn, constants):
     elif lfn == LossFn.CV_DIST:
         loss = spike_metrics.CV_dist(output, target)
     elif lfn == LossFn.PEARSON_CORRELATION_COEFFICIENT:
-        loss = spike_metrics.correlation_metric_distance(output, target)
+        loss = spike_metrics.correlation_metric_distance(output, target, constants.bin_size)
     elif lfn == LossFn.RATE_FANO_HYBRID:
         loss = spike_metrics.firing_rate_distance(output, target) + spike_metrics.fano_factor_dist(output, target)
     elif lfn == LossFn.RATE_PCC_HYBRID:
         loss = spike_metrics.firing_rate_distance(output, target) + \
-               spike_metrics.correlation_metric_distance(output, target, constants.batch_size)
+               spike_metrics.correlation_metric_distance(output, target, constants.bin_size)
     else:
         raise NotImplementedError("Loss function not supported.")
 

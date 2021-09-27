@@ -183,6 +183,7 @@ def correlation_metric_distance(out, tar, bin_size=BIN_SIZE):
     n_bins = int(out.shape[0] / bin_size)
     out_counts = torch.zeros((n_bins, out.shape[1]))
     tar_counts = torch.zeros((n_bins, tar.shape[1]))
+    # assert n_bins >= 3, "n_bins should be at least 3. was: {}\nout.shape: {}, bin_size: {}".format(n_bins, out.shape, bin_size)
     for b_i in range(n_bins):
         out_counts[b_i] = (out[b_i * bin_size:(b_i + 1) * bin_size].sum(dim=0))
         tar_counts[b_i] = (tar[b_i * bin_size:(b_i + 1) * bin_size].sum(dim=0))
