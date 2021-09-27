@@ -57,7 +57,9 @@ def sine_modulated_white_noise_input(t, N):
     # return torch.poisson((rate/1000.) * torch.ones((int(t), N))).clamp(0., 1.)  # t x N
 
 
-def sine_modulated_white_noise(t, N, neurons_coeff=torch.tensor([0.25, 0.1])):
+def sine_modulated_white_noise(t, N, neurons_coeff=None):
+    if neurons_coeff is None:
+        neurons_coeff = torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])])
     # noise = torch.poisson(p_lambda * torch.ones(t, N))
     # return noise / torch.max(noise)  # normalised
     # B sin(ωt) · (1 + qξ(t))
