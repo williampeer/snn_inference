@@ -182,7 +182,8 @@ def main(argv):
     # models = [LIF_weights_only, LIF_fixed_weights, LIF_R]
 
     if loss_fn is None:
-        loss_functions = [LossFn.RATE_PCC_HYBRID.name, LossFn.VAN_ROSSUM_DIST.name, LossFn.FIRING_RATE_DIST.name]
+        loss_functions = [LossFn.VAN_ROSSUM_DIST.name, LossFn.FIRING_RATE_DIST.name]
+        # LossFn.RATE_PCC_HYBRID.name, 
                           # LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
                           # LossFn.RATE_FANO_HYBRID.name,
