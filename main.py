@@ -36,11 +36,11 @@ def main(argv):
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 0.02; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
-    max_train_iters = 30
+    max_train_iters = 200
     num_targets = 3
-    interval_size = 8000
+    interval_size = 10000
     batch_size = interval_size; rows_per_train_iter = interval_size
-    bin_size = 400
+    bin_size = 400  # for RPH
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     # loss_fn = 'frd'
@@ -71,10 +71,10 @@ def main(argv):
     optimiser = 'SGD'
     # optimiser = 'RMSprop'
     initial_poisson_rate = 10.  # Hz
-    network_size = 2
+    # network_size = 2
     # network_size = 4
     # network_size = 8
-    # network_size = 16
+    network_size = 16
 
     evaluate_step = 1
     # evaluate_step = int(max(max_train_iters/10, 1))
