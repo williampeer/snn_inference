@@ -26,7 +26,6 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                  logger=logger)
 
         # ------------- trajectories weights ------------------
-        # TODO: Fix
         if model.state_dict().__contains__('w'):
             tar_weights_params = None
             if target_parameters is not None:
@@ -35,12 +34,12 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
             weights = model_parameters['w']
             assert len(weights[0].shape) == 2, "weights should be 2D"
             weights_params = {}
-            w_names = []
+            w_names = ['w']
             # weights_params[0] = [np.mean(weights[0], axis=1)]
             for n_i in range(len(weights)):
-                cur_w_name = 'w_{}'.format(n_i)
-                w_names.append(cur_w_name)
-                weights_params[cur_w_name] = np.mean(weights[n_i], axis=1)
+                # cur_w_name = 'w_{}'.format(n_i)
+                # w_names.append(cur_w_name)
+                weights_params['w'].append(np.mean(weights[n_i], axis=1))
 
             plot_parameter_inference_trajectories_2d(weights_params, target_params=tar_weights_params,
                                                      uuid=constants.UUID,

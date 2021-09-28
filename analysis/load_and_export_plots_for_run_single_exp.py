@@ -7,7 +7,8 @@ import torch
 import Log
 import plot
 from Constants import ExperimentType
-from Models.LIF import LIF
+from Models.LowerDim.GLIF_soft_lower_dim import GLIF_soft_lower_dim
+from Models.Sigmoidal.GLIF_soft import GLIF_soft
 
 
 def main(argv):
@@ -23,7 +24,8 @@ def main(argv):
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/plot_data/08-28_01-13-47-801/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0909/archive/saved/plot_data/09-09_00-33-03-791/'
     # experiments_path = '/home/william/repos/archives_snn_inference/archive_0909/archive/saved/plot_data/09-08_17-26-32-607/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_1609/archive/saved/plot_data/09-15_21-53-55-818/'
+    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1609/archive/saved/plot_data/09-15_21-53-55-818/'
+    experiments_path = '/home/william/repos/archives_snn_inference/archive_2809/archive/saved/plot_data/09-28_05-24-59-978/'
 
     # for i, opt in enumerate(opts):
     #     if opt == '-h':
@@ -93,40 +95,40 @@ def main(argv):
         #         #                            uuid='export',
         #         #                            fname='rate_plot_bin_{}_{}'.format(bin_size, save_fname))
 
-    for f in plot_all_param_pairs_with_variance_files:
-        data = torch.load(experiments_path + f)
-        print('Loaded saved plot data.')
-
-        plot_data = data['plot_data']
-        plot_fn = data['plot_fn']
-
-        fname = f.split('/')[-1]
-        fname = fname.split('.pt')[0].replace('.', '_')
-        # save_fname = 'export_{}.eps'.format(fname)
-        save_fname = 'export_{}.eps'.format(plot_data['fname'])
-        print('Saving to fname: {}'.format(save_fname))
-        print('target params', plot_data['target_params'])
-        fixed_exp_params = {}
-        for i in range(1,len(plot_data['param_means'])):
-            cur_p = np.array(plot_data['param_means'][i])
-            s = cur_p.shape
-            assert len(s) == 3, "for reshaping length should be 3"
-            fixed_exp_params[i-1] = np.reshape(np.array(cur_p), (s[0], s[2]))
-
-        tar_params = []
-        for tar_param in plot_data['target_params']:
-            # plot_data['target_params'][key] = [plot_data['target_params'][key]]
-            tar_params.append([tar_param])
-
-        plot.plot_all_param_pairs_with_variance(param_means=fixed_exp_params, target_params=tar_params, #plot_data['target_params'],
-                                                param_names=LIF.parameter_names[1:],
-                                                # exp_type=plot_data['exp_type'],
-                                                exp_type=ExperimentType.SanityCheck.name,
-                                                uuid=plot_data['uuid'],
-                                                fname='export_{}.eps'.format(save_fname),
-                                                custom_title='',
-                                                logger=Log.Logger('test'),
-                                                export_flag=True)
+    # for f in plot_all_param_pairs_with_variance_files:
+    #     data = torch.load(experiments_path + f)
+    #     print('Loaded saved plot data.')
+    #
+    #     plot_data = data['plot_data']
+    #     plot_fn = data['plot_fn']
+    #
+    #     fname = f.split('/')[-1]
+    #     fname = fname.split('.pt')[0].replace('.', '_')
+    #     # save_fname = 'export_{}.eps'.format(fname)
+    #     save_fname = 'export_{}.eps'.format(plot_data['fname'])
+    #     print('Saving to fname: {}'.format(save_fname))
+    #     print('target params', plot_data['target_params'])
+    #     fixed_exp_params = {}
+    #     for i in range(1,len(plot_data['param_means'])):
+    #         cur_p = np.array(plot_data['param_means'][i])
+    #         s = cur_p.shape
+    #         assert len(s) == 3, "for reshaping length should be 3"
+    #         fixed_exp_params[i-1] = np.reshape(np.array(cur_p), (s[0], s[2]))
+    #
+    #     tar_params = []
+    #     for tar_param in plot_data['target_params']:
+    #         # plot_data['target_params'][key] = [plot_data['target_params'][key]]
+    #         tar_params.append([tar_param])
+    #
+    #     plot.plot_all_param_pairs_with_variance(param_means=fixed_exp_params, target_params=tar_params, #plot_data['target_params'],
+    #                                             param_names=GLIF_soft_lower_dim.parameter_names,
+    #                                             # exp_type=plot_data['exp_type'],
+    #                                             exp_type=plot_data['exp_type'],
+    #                                             uuid=plot_data['uuid'],
+    #                                             fname='export_{}.eps'.format(save_fname),
+    #                                             custom_title='',
+    #                                             logger=Log.Logger('test'),
+    #                                             export_flag=True)
 
     for f in plot_parameter_inference_trajectories_2d_files:
         data = torch.load(experiments_path + f)
@@ -138,7 +140,7 @@ def main(argv):
         print('Saving to fname: {}'.format(save_fname))
 
         plot.plot_parameter_inference_trajectories_2d(plot_data['param_means'], plot_data['target_params'],
-                                                      LIF.parameter_names, plot_data['exp_type'], 'export',
+                                                      GLIF_soft_lower_dim.parameter_names, plot_data['exp_type'], 'export',
                                                       save_fname, plot_data['custom_title'], Log.Logger('export'))
 
 

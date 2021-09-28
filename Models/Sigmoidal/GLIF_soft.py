@@ -89,21 +89,21 @@ class GLIF_soft(nn.Module):
         self.register_backward_clamp_hooks()
 
     def get_parameters(self):
-        params_list = []
-        # parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'tau_s']
-        params_list.append(self.w.data)
-        params_list.append(self.E_L.data)
-        params_list.append(self.tau_m.data)
-        params_list.append(self.G.data)
-        params_list.append(self.f_v.data)
-        params_list.append(self.f_I.data)
-        params_list.append(self.delta_theta_s.data)
-        params_list.append(self.b_s.data)
-        params_list.append(self.a_v.data)
-        params_list.append(self.b_v.data)
-        params_list.append(self.theta_inf.data)
-        params_list.append(self.delta_V.data)
-        params_list.append(self.tau_g.data)
+        params_list = {}
+
+        params_list['w'] = self.w.data
+        params_list['E_L'] = self.E_L.data
+        params_list['tau_m'] = self.tau_m.data
+        params_list['G'] = self.G.data
+        params_list['f_v'] = self.f_v.data
+        params_list['f_I'] = self.f_I.data
+        params_list['delta_theta_s'] = self.delta_theta_s.data
+        params_list['b_s'] = self.b_s.data
+        params_list['a_v'] = self.a_v.data
+        params_list['b_v'] = self.b_v.data
+        params_list['theta_inf'] = self.theta_inf.data
+        params_list['delta_V'] = self.delta_V.data
+        params_list['tau_g'] = self.tau_g.data
 
         return params_list
 
