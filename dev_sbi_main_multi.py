@@ -46,7 +46,7 @@ def main(argv):
     NUM_WORKERS = 5
     # NUM_WORKERS = 1
 
-    t_interval = 16000
+    t_interval = 12000
     # t_interval = 1600
     N = 16
     # methods = ['SNPE', 'SNLE', 'SNRE']
