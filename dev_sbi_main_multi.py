@@ -12,9 +12,6 @@ from Models.LowerDim.LIF_R_soft_lower_dim import LIF_R_soft_lower_dim
 from Models.no_grad.GLIF_no_grad import GLIF_no_grad
 from Models.no_grad.LIF_R_ASC_no_grad import LIF_R_ASC_no_grad
 from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
-from TargetModels.TargetModels import lif_continuous_ensembles_model_dales_compliant, \
-    glif_continuous_ensembles_model_dales_compliant, lif_r_asc_continuous_ensembles_model_dales_compliant, \
-    lif_r_continuous_ensembles_model_dales_compliant
 from TargetModels.TargetModelsSoft import glif_soft_continuous_ensembles_model_dales_compliant
 from experiments import sine_modulated_white_noise_input
 from model_util import feed_inputs_sequentially_return_spike_train
@@ -27,7 +24,7 @@ torch.autograd.set_detect_anomaly(True)
 #                                                       spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
 
 
-def transform_model_to_sbi_params(model):
+def transform_model_to_sbi_params(model, model_class):
     m_params = torch.zeros((model.N**2-model.N,))
     ctr = 0
     for i in range(model.w.shape[0]):
@@ -38,7 +35,7 @@ def transform_model_to_sbi_params(model):
 
     model_params = model.get_parameters()
     for p_i, p_k in enumerate(model_params):
-        if p_k is not 'w':
+        if p_k is not 'w' and p_k in model_class.parameter_names:
             m_params = torch.hstack((m_params, model_params[p_k]))
         # model_params_list[(N ** 2 - N) + N * (i - 1):(N ** 2 - N) + N * i] = [model_class.parameter_names[i]]
 
@@ -46,10 +43,12 @@ def transform_model_to_sbi_params(model):
 
 
 def main(argv):
-    NUM_WORKERS = 6
+    NUM_WORKERS = 5
+    # NUM_WORKERS = 1
 
     t_interval = 16000
-    N = 2
+    # t_interval = 1600
+    N = 16
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
     # method = None
@@ -58,7 +57,7 @@ def main(argv):
     model_type = 'GLIF_soft_lower_dim'
     # model_type = 'LIF_R_soft_lower_dim'
     budget = 10000
-    # budget = 10
+    # budget = 20
     tar_seed = 42
 
     class_lookup = { 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad,
@@ -92,9 +91,6 @@ def main(argv):
     # assert param_number >= 0, "please specify a parameter to fit. (-pn || --param-number)"
     assert model_type is not None, "please specify a model type (-mt || --model-type)"
     model_class = class_lookup[model_type]
-    # assert param_number < len(model_class.parameter_names), \
-    #     "param_number: {} cannot be greater than number of parameters: {} in model_class: {}" \
-    #         .format(param_number, len(model_class.parameter_names), model_class)
 
     if method is not None:
         sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS)
@@ -109,26 +105,24 @@ def get_binned_spike_counts(out, bin_size=400):
     return out_counts
 
 
-def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
-    tar_model_fn_lookup = { 'LIF_no_grad': lif_continuous_ensembles_model_dales_compliant,
-                            'LIF_R_no_grad': lif_r_continuous_ensembles_model_dales_compliant,
-                            'LIF_R_ASC_no_grad': lif_r_asc_continuous_ensembles_model_dales_compliant,
-                            'GLIF_no_grad': glif_continuous_ensembles_model_dales_compliant,
-                            # 'LIF_R_soft_lower_dim': lif_r_soft_continuous_ensembles_model_dales_compliant,
-                            'GLIF_soft_lower_dim': glif_soft_continuous_ensembles_model_dales_compliant }
-    tar_in_rate = 10.
+def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=5):
+    tar_model_fn_lookup = { 'GLIF_soft_lower_dim': glif_soft_continuous_ensembles_model_dales_compliant }
+    # tar_in_rate = 10.
     tar_model_fn = tar_model_fn_lookup[model_class.__name__]
     if N == 4:
         N_pops = 2
         pop_size = 2
     elif N == 16:
         N_pops = 4
+        pop_size = 4
+    elif N == 8:
+        N_pops = 4
         pop_size = 2
     elif N == 2:
         N_pops = 2
         pop_size = 1
     else:
-        raise NotImplementedError('N has to be in [2, 4, 16]')
+        raise NotImplementedError('N has to be in [2, 4, 8, 16]')
 
     tar_model = tar_model_fn(random_seed=tar_seed, pop_size=pop_size, N_pops=N_pops)
 
@@ -158,22 +152,14 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
             programmatic_params_dict[model_class.parameter_names[i]] = parameter_set[(N**2-N)+N*(i-1):(N**2-N)+N*i]  # assuming only N-dimensional params otherwise
 
         programmatic_neuron_types = torch.ones((N,))
-        for n_i in range(int(2 * N / 3), N):
+        for n_i in range(int(N / 2), N):
             programmatic_neuron_types[n_i] = -1
 
         model = model_class(parameters=programmatic_params_dict, N=N, neuron_types=programmatic_neuron_types)
         inputs = sine_modulated_white_noise_input(t=t_interval, N=N)
         outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
 
-        # model.reset()
-        # mean_output_rates = outputs.sum(dim=0) * 1000. / outputs.shape[0]  # Hz
-        # return mean_output_rates
-
         return torch.reshape(get_binned_spike_counts(outputs.clone().detach()), (-1,))
-
-        # return outputs.clone().detach()
-
-    # inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
 
     limits_low = torch.zeros((N**2-N,))
     limits_high = torch.ones((N**2-N,))
@@ -184,17 +170,7 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
 
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
-    tar_sbi_params = transform_model_to_sbi_params(tar_model)
-    # targets_per_sample = None
-    # n_samples = 8
-    # for i in range(n_samples):
-    #     cur_targets = simulator(tar_sbi_params)
-    #     if targets_per_sample is None:
-    #         targets_per_sample = cur_targets
-    #     else:
-    #         spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
-            # targets_per_sample = targets_per_sample + cur_targets
-    # avg_tar_model_simulations = targets_per_sample / n_samples
+    tar_sbi_params = transform_model_to_sbi_params(tar_model, model_class)
 
     posterior = infer(simulator, prior, method=method, num_simulations=budget, num_workers=NUM_WORKERS)
     # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
@@ -208,23 +184,24 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
     # num_dim = N**2-N+N*(len(model_class.parameter_names)-1)
     num_dim = limits_high.shape[0]
 
-    try:
-        IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
-                     fname='res_{}_dt_{}_tar_seed_{}'.format(method, dt_descriptor, tar_seed))
+    # try:
+    IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
+                 fname='res_{}_dt_{}_tar_seed_{}'.format(method, dt_descriptor, tar_seed))
 
-        targets = simulator(tar_sbi_params)
-        posterior_stats(posterior, method=method,
-                        # observation=torch.reshape(avg_tar_model_simulations, (-1, 1)), points=tar_sbi_params,
-                        observation=targets, points=tar_sbi_params, model_dim=N, plot_dim=num_dim,
-                        limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
-                        m_name=tar_model.name(), dt_descriptor=dt_descriptor, tar_seed=tar_seed)
-    except Exception as e:
-        print("except: {}".format(e))
+    targets = simulator(tar_sbi_params)
+    posterior_stats(posterior, method=method,
+                    # observation=torch.reshape(avg_tar_model_simulations, (-1, 1)), points=tar_sbi_params,
+                    observation=targets, points=tar_sbi_params, model_dim=N, plot_dim=num_dim,
+                    limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
+                    m_name=tar_model.name(), dt_descriptor=dt_descriptor, tar_seed=tar_seed, model_class=model_class)
+    # except Exception as e:
+    #     print("except: {}".format(e))
 
     return res
 
 
-def posterior_stats(posterior, method, observation, points, model_dim, plot_dim, limits, figsize, budget, m_name, dt_descriptor, tar_seed):
+def posterior_stats(posterior, method, observation, points, model_dim, plot_dim, limits, figsize, budget,
+                    m_name, dt_descriptor, tar_seed, model_class):
     print('====== def posterior_stats(posterior, method=None): =====')
     print(posterior)
 
@@ -242,24 +219,12 @@ def posterior_stats(posterior, method, observation, points, model_dim, plot_dim,
     IO.save_data(data_arr, 'sbi_samples', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
                  fname='samples_method_{}_m_name_{}_dt_{}_tar_seed_{}'.format(method, m_name, dt_descriptor, tar_seed))
 
-    # checking docs for convergence criterion
-    # plot 100d
-    try:
-        # def export_plots(samples, points, lim_low, lim_high, N, method, m_name, description, model_class):
-        plot_dim = len(points)
-        export_plots(samples, points, limits, model_dim, plot_dim, 'SNRE', m_name, 'sbi_export_{}'.format(dt_descriptor), m_name)
-    except Exception as e:
-        print('exception in new plot code: {}'.format(e))
-        print('samples: {}\npoints: {}\nlimits[0]: {}\nlimits[1]: {}\nmodel_dim: {}'.format(samples, points, limits[0], limits[1], model_dim))
-
-    try:
-        if samples[0].shape[0] <= 10:
-            fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=figsize)
-            if method is None:
-                method = dt_descriptor
-            fig.savefig('./figures/analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, dt_descriptor))
-    except Exception as e:
-        print("except: {}".format(e))
+    plot_dim = len(points)
+    export_plots(samples, points, limits, model_dim, plot_dim, method, m_name, 'sbi_export_{}'.format(dt_descriptor), model_class)
+    # except Exception as e:
+    #     print('exception in new plot code: {}'.format(e))
+    #     print('samples: {}\npoints: {}\nlimits[0]: {}\nlimits[1]: {}\nmodel_dim: {}'.format(samples, points, limits[0], limits[1], model_dim))
+    sys.exit(0)
 
 
 def export_plots(samples, points, limits, model_dim, plot_dim, method, m_name, description, model_class):
@@ -267,54 +232,50 @@ def export_plots(samples, points, limits, model_dim, plot_dim, method, m_name, d
     assert limits.shape[1] == 2, "limits.shape[0] should be 2. limits.shape: {}".format(limits.shape)
     lim_low = limits[:,0]
     lim_high = limits[:,1]
-    if plot_dim < 12:  # full marginal plot
-        plt.figure()
-        fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=(plot_dim, plot_dim))
-        fig.savefig('./figures/export_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
-        plt.close()
-    else:
+    # if plot_dim < 12:  # full marginal plot
+    #     plt.figure()
+    #     fig, ax = analysis.pairplot(samples, points=points, limits=limits, figsize=(plot_dim, plot_dim))
+    #     fig.savefig('./figures/export_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
+    #     plt.close()
+    # else:
+    # plt.figure()
+    weights_offset = N ** 2 - N
+
+    # WEIGHTS
+    # plt.figure()
+    # cur_limits = torch.stack((lim_low[:weights_offset], lim_high[:weights_offset]))
+    cur_mean_limits = torch.stack((torch.zeros((N,)), torch.ones((N,))))
+    cur_pt = points[:weights_offset]
+    cur_samples = samples[:, :weights_offset]
+
+    weights_mean = torch.tensor([])
+    tar_ws_mean = torch.tensor([])
+    # cur_limits_low_mean = torch.tensor([]); cur_limits_high_mean = torch.tensor([])
+    for n_i in range(N):
+        # for w_i in range(N-1):
+        weights_mean = torch.hstack([weights_mean, torch.reshape(torch.mean(cur_samples[:, n_i*(N-1):(n_i+1)*(N-1)], axis=-1), (-1, 1))])
+        tar_ws_mean = torch.hstack([tar_ws_mean, torch.reshape(torch.mean(cur_pt[n_i*(N-1):(n_i+1)*(N-1)], axis=-1), (-1, 1))])
+        # cur_limits_mean = torch.cat([cur_limits_mean, torch.mean(cur_limits[:, n_i*N:n_i*N+(N-1)], axis=0)])
+
+    fig_subset_mean, ax_mean = analysis.pairplot(weights_mean, points=tar_ws_mean, limits=cur_mean_limits.T, figsize=(N, N))
+    path = './figures/sbi/{}/{}/'.format(m_name, description)
+    IO.makedir_if_not_exists(path)
+    fname = 'export_sut_subset_analysis_pairplot_{}_{}_weights_{}.png'.format(method, m_name, description)
+    fig_subset_mean.savefig(path + fname)
+    # plt.close()
+
+    # Marginals only for p_i, p_i
+    for p_i in range(1, len(model_class.parameter_names)):
         # plt.figure()
-        weights_offset = N ** 2 - N
-        # sample_means = [torch.mean(samples[:, :weights_offset])]
-        # lim_low_means = [torch.mean(lim_low[:weights_offset])]
-        # lim_high_means = [torch.mean(lim_high[:weights_offset])]
-        # # pt_means = [torch.mean(points[0])]
-        # for p_j in range(1, len(points)):
-        #     sample_means.append(torch.mean(samples[:, weights_offset+(p_j-1)*N:weights_offset+p_j*N]))
-        #     lim_low_means.append(torch.mean(lim_low[weights_offset+(p_j-1)*N:weights_offset+p_j*N]))
-        #     lim_high_means.append(torch.mean(lim_high[weights_offset+(p_j-1)*N:weights_offset+p_j*N]))
-        #     # pt_means.append(torch.mean(points[p_j]))
-        # # fig_subset_mean, ax_mean = analysis.pairplot(torch.tensor([sample_means]).T, points=torch.tensor([pt_means]).T,
-        # fig_subset_mean, ax_mean = analysis.pairplot(torch.tensor([sample_means]), points=points,
-        #                                              limits=torch.stack((torch.tensor([lim_low_means]), torch.tensor([lim_high_means]))),
-        #                                              figsize=(num_dim, num_dim))
-        # fig_subset_mean.savefig('./figures/sbi/export_sut_means_analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, description))
-        # plt.close()
-
-        # Marginals only for p_i, p_i
-        for p_i in range(1, len(model_class.parameter_names)):
-            plt.figure()
-            cur_limits = torch.stack((lim_low[weights_offset+(p_i-1)*N:weights_offset+p_i*N], lim_high[weights_offset+(p_i-1)*N:weights_offset+p_i*N]))
-            cur_pt = points[weights_offset+(p_i-1)*N:weights_offset+p_i*N]
-            cur_samples = samples[:, weights_offset+(p_i-1)*N:weights_offset+p_i*N]
-            fig_subset_mean, ax_mean = analysis.pairplot(cur_samples, points=cur_pt, limits=cur_limits.T, figsize=(N, N))
-            path = './figures/sbi/{}/{}/'.format(m_name, description)
-            IO.makedir_if_not_exists(path)
-            fname = 'export_sut_subset_analysis_pairplot_{}_{}_one_param_{}_{}.png'.format(method, m_name, p_i, description)
-            fig_subset_mean.savefig(path + fname)
-            plt.close()
-
-        # pass
-        plt.figure()
-        w_limits = torch.stack((lim_low[:weights_offset], lim_high[:weights_offset]))
-        w_pt = points[:weights_offset]
-        w_samples = samples[:, :weights_offset]
-        fig_subset_mean, ax_mean = analysis.pairplot(w_samples, points=w_pt, limits=w_limits.T, figsize=(weights_offset, weights_offset))
+        cur_mean_limits = torch.stack((lim_low[weights_offset+(p_i-1)*N:weights_offset+p_i*N], lim_high[weights_offset+(p_i-1)*N:weights_offset+p_i*N]))
+        cur_pt = points[weights_offset+(p_i-1)*N:weights_offset+p_i*N]
+        cur_samples = samples[:, weights_offset+(p_i-1)*N:weights_offset+p_i*N]
+        fig_subset_mean, ax_mean = analysis.pairplot(cur_samples, points=cur_pt, limits=cur_mean_limits.T, figsize=(N, N))
         path = './figures/sbi/{}/{}/'.format(m_name, description)
         IO.makedir_if_not_exists(path)
-        fname = 'export_sut_subset_analysis_pairplot_{}_{}_w_param_{}.png'.format(method, m_name, description)
+        fname = 'export_sut_subset_analysis_pairplot_{}_{}_one_param_{}_{}.png'.format(method, m_name, p_i, description)
         fig_subset_mean.savefig(path + fname)
-        plt.close()
+        # plt.close()
 
 
 if __name__ == "__main__":
