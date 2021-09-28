@@ -33,7 +33,7 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
 
             weights = model_parameters['w']
             assert len(weights[0].shape) == 2, "weights should be 2D"
-            weights_params = {}
+            weights_params = { 'w' : [] }
             w_names = ['w']
             # weights_params[0] = [np.mean(weights[0], axis=1)]
             for n_i in range(len(weights)):
