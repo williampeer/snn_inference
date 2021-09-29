@@ -182,7 +182,7 @@ def main(argv):
     # models = [LIF_weights_only, LIF_fixed_weights, LIF_R]
 
     if loss_fn is None:
-        loss_functions = [LossFn.VAN_ROSSUM_DIST.name, LossFn.FIRING_RATE_DIST.name]
+        loss_functions = [LossFn.FIRING_RATE_DIST.name, LossFn.VAN_ROSSUM_DIST.name]
         # LossFn.RATE_PCC_HYBRID.name, 
                           # LossFn.PEARSON_CORRELATION_COEFFICIENT.name,
                           # LossFn.FANO_FACTOR_DIST.name,
@@ -204,6 +204,9 @@ def main(argv):
         N_pops = 2
         pop_size = 2
     elif N == 16:
+        N_pops = 4
+        pop_size = 2
+    elif N == 8:
         N_pops = 4
         pop_size = 2
     elif N == 2:
