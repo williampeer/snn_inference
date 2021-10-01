@@ -6,7 +6,7 @@ from Models.no_grad.GLIF_soft_no_grad import GLIF_soft_no_grad
 from experiments import randomise_parameters, zip_tensor_dicts
 
 
-def glif_soft_continuous_ensembles_model_dales_compliant(random_seed, pop_size=1, N_pops=2):
+def glif_soft_continuous_population_models(random_seed, pop_size=1, N_pops=2):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
 
@@ -17,20 +17,20 @@ def glif_soft_continuous_ensembles_model_dales_compliant(random_seed, pop_size=1
 
     if N_pops == 2:
         weights_excit_1 = (torch.ones((pop_size, 1)) + (2 * weights_std * torch.randn((pop_size, N))) - weights_std) * \
-                          torch.cat([T(pop_size * [0.2]), T(pop_size * [0.8])])
+                          torch.cat([T(pop_size * [2.482]), T(pop_size * [1.245])])
         weights_inhib_1 = (torch.ones((pop_size, 1)) + (2 * weights_std * torch.randn((pop_size, N))) - weights_std) * \
-                          torch.cat([T(pop_size * [.9]), T(pop_size * [.4])])
+                          torch.cat([T(pop_size * [-4.964]), T(pop_size * [-4.964])])
 
         # Excitatory:
-        params_pop_excit_1 = {'tau_m': 4., 'G': 0.6, 'E_L': -58., 'delta_theta_s': 18., 'b_s': 0.35, 'f_v': 0.14,
-                              'delta_V': 10.,
-                              'f_I': 0.45, 'b_v': 0.3, 'a_v': 0.2, 'theta_inf': -5., 'tau_g': 4.5}
+        params_pop_excit_1 = {'tau_m': 10., 'G': 0.6, 'E_L': -64., 'delta_theta_s': 18., 'b_s': 0.35, 'f_v': 0.14,
+                              'delta_V': 5.,
+                              'f_I': 0.45, 'b_v': 0.3, 'a_v': 0.2, 'theta_inf': -5., 'tau_g': 3., 'R_m': 19.}
         hand_coded_params_pop_excit_1 = {'preset_weights': weights_excit_1}
 
         # Inhibitory
-        params_pop_inhib_1 = {'tau_m': 2.5, 'G': 0.7, 'E_L': -66., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
-                              'delta_V': 12.,
-                              'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -10., 'tau_g': 3.}
+        params_pop_inhib_1 = {'tau_m': 10., 'G': 0.7, 'E_L': -66., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
+                              'delta_V': 5.,
+                              'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -10., 'tau_g': 6., 'R_m': 11.964}
         hand_coded_params_pop_inhib_1 = {'preset_weights': weights_inhib_1}
 
         params_pop_excit_1 = randomise_parameters(params_pop_excit_1, coeff=T(0.025), N_dim=pop_size)
@@ -43,114 +43,31 @@ def glif_soft_continuous_ensembles_model_dales_compliant(random_seed, pop_size=1
         # up to 4 populations, TODO: test values
         weights_excit_1 = (torch.ones((pop_size, 1)) + (
                     2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [0.6]), T(pop_size * [0.4]), T(pop_size * [0.9]), T(pop_size * [0.9])])
+            [T(pop_size * [1.245]), T(pop_size * [1.245]), T(pop_size * [1.245]), T(pop_size * [1.245])])
         weights_excit_2 = (torch.ones((pop_size, 1)) + (
                     2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [.4]), T(pop_size * [.6]), T(pop_size * [.9]), T(pop_size * [.9])])
+            [T(pop_size * [1.245]), T(pop_size * [1.245]), T(pop_size * [2.482]), T(pop_size * [1.245])])
         weights_inhib_1 = (torch.ones((pop_size, 1)) + (
                     2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [.8]), T(pop_size * [.8]), T(pop_size * [.2]), T(pop_size * [.1])])
+            [T(pop_size * [-4.964]), T(pop_size * [-4.964]), T(pop_size * [-4.964]), T(pop_size * [-4.964])])
         weights_inhib_2 = (torch.ones((pop_size, 1)) + (
                     2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [.9]), T(pop_size * [.9]), T(pop_size * [.1]), T(pop_size * [.2])])
+            [T(pop_size * [-4.964]), T(pop_size * [-4.964]), T(pop_size * [-4.964]), T(pop_size * [-4.964])])
 
         # Excitatory:
-        params_pop_excit_1 = {'tau_m': 4., 'G': 0.7, 'E_L': -52., 'delta_theta_s': 18., 'b_s': 0.4, 'f_v': 0.14,
-                              'delta_V': 12., 'f_I': 0.45, 'b_v': 0.3, 'a_v': 0.2, 'theta_inf': -4., 'tau_g': 4.5 }
+        params_pop_excit_1 = {'tau_m': 10., 'G': 0.7, 'E_L': -52., 'delta_theta_s': 18., 'b_s': 0.4, 'f_v': 0.14,
+                              'delta_V': 5., 'f_I': 0.45, 'b_v': 0.3, 'a_v': 0.2, 'theta_inf': -4., 'tau_g': 3., 'R_m': 0. }
         hand_coded_params_pop_excit_1 = {'preset_weights': weights_excit_1 }
-        params_pop_excit_2 = {'tau_m': 4.9, 'G': 0.6, 'E_L': -64., 'delta_theta_s': 14., 'b_s': 0.3, 'f_v': 0.14,
-                              'delta_V': 12., 'f_I': 0.4, 'b_v': 0.35, 'a_v': 0.25, 'theta_inf': -2., 'tau_g': 5.8 }
+        params_pop_excit_2 = {'tau_m': 10., 'G': 0.6, 'E_L': -64., 'delta_theta_s': 14., 'b_s': 0.3, 'f_v': 0.14,
+                              'delta_V': 5., 'f_I': 0.4, 'b_v': 0.35, 'a_v': 0.25, 'theta_inf': -2., 'tau_g': 3., 'R_m': 0. }
         hand_coded_params_pop_excit_2 = {'preset_weights': weights_excit_2 }
 
         # Inhibitory
-        params_pop_inhib_1 = {'tau_m': 2.6, 'G': 0.7, 'E_L': -66., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
-                              'delta_V': 12., 'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -11., 'tau_g': 3. }
+        params_pop_inhib_1 = {'tau_m': 10., 'G': 0.7, 'E_L': -66., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
+                              'delta_V': 5., 'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -11., 'tau_g': 6., 'R_m': 19. }
         hand_coded_params_pop_inhib_1 = {'preset_weights': weights_inhib_1 }
-        params_pop_inhib_2 = {'tau_m': 2.1, 'G': 0.8, 'E_L': -66., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
-                              'delta_V': 12., 'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -7., 'tau_g': 2.6 }
-        hand_coded_params_pop_inhib_2 = {'preset_weights': weights_inhib_2 }
-
-        params_pop_excit_1 = randomise_parameters(params_pop_excit_1, coeff=T(0.025), N_dim=pop_size)
-        params_pop_excit_1 = zip_tensor_dicts(params_pop_excit_1, hand_coded_params_pop_excit_1)
-        params_pop_excit_2 = randomise_parameters(params_pop_excit_2, coeff=T(0.025), N_dim=pop_size)
-        params_pop_excit_2 = zip_tensor_dicts(params_pop_excit_2, hand_coded_params_pop_excit_2)
-        params_pop_inhib_1 = randomise_parameters(params_pop_inhib_1, coeff=T(0.025), N_dim=pop_size)
-        params_pop_inhib_1 = zip_tensor_dicts(params_pop_inhib_1, hand_coded_params_pop_inhib_1)
-        params_pop_inhib_2 = randomise_parameters(params_pop_inhib_2, coeff=T(0.025), N_dim=pop_size)
-        params_pop_inhib_2 = zip_tensor_dicts(params_pop_inhib_2, hand_coded_params_pop_inhib_2)
-
-        randomised_params = zip_tensor_dicts(zip_tensor_dicts(zip_tensor_dicts(params_pop_excit_1, params_pop_excit_2), params_pop_inhib_1), params_pop_inhib_2)
-    else:
-        raise NotImplementedError("Model only supports 2 or 4 populations.")
-
-    neuron_types = np.ones((N,))
-    for i in range(int(N / 2)):
-        neuron_types[-(1 + i)] = -1
-    return GLIF_soft_no_grad(parameters=randomised_params, N=N, neuron_types=neuron_types)
-
-
-def glif_soft_cortical_populations(random_seed, pop_size=1, N_pops=2):
-    torch.manual_seed(random_seed)
-    np.random.seed(random_seed)
-
-    weights_std = 0.05
-    # weights_std = 0
-
-    N = N_pops * pop_size
-
-    if N_pops == 2:
-        weights_excit_1 = (torch.ones((pop_size, 1)) + (2 * weights_std * torch.randn((pop_size, N))) - weights_std) * \
-                          torch.cat([T(pop_size * [0.2]), T(pop_size * [0.2])])
-        weights_inhib_1 = (torch.ones((pop_size, 1)) + (2 * weights_std * torch.randn((pop_size, N))) - weights_std) * \
-                          torch.cat([T(pop_size * [.9]), T(pop_size * [.4])])
-
-        # Excitatory:
-        params_pop_excit_1 = {'tau_m': 4., 'G': 0.6, 'E_L': -58., 'delta_theta_s': 18., 'b_s': 0.35, 'f_v': 0.14,
-                              'delta_V': 10.,
-                              'f_I': 0.45, 'b_v': 0.3, 'a_v': 0.2, 'theta_inf': -5., 'tau_g': 4.5}
-        hand_coded_params_pop_excit_1 = {'preset_weights': weights_excit_1}
-
-        # Inhibitory
-        params_pop_inhib_1 = {'tau_m': 2.5, 'G': 0.7, 'E_L': -66., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
-                              'delta_V': 12.,
-                              'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -10., 'tau_g': 3.}
-        hand_coded_params_pop_inhib_1 = {'preset_weights': weights_inhib_1}
-
-        params_pop_excit_1 = randomise_parameters(params_pop_excit_1, coeff=T(0.025), N_dim=pop_size)
-        params_pop_excit_1 = zip_tensor_dicts(params_pop_excit_1, hand_coded_params_pop_excit_1)
-        params_pop_inhib_1 = randomise_parameters(params_pop_inhib_1, coeff=T(0.025), N_dim=pop_size)
-        params_pop_inhib_1 = zip_tensor_dicts(params_pop_inhib_1, hand_coded_params_pop_inhib_1)
-
-        randomised_params = zip_tensor_dicts(params_pop_excit_1, params_pop_inhib_1)
-    elif N_pops == 4:
-        # up to 4 populations
-        weights_excit_1 = (torch.ones((pop_size, 1)) + (
-                    2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [0.6]), T(pop_size * [0.4]), T(pop_size * [0.9]), T(pop_size * [0.9])])
-        weights_excit_2 = (torch.ones((pop_size, 1)) + (
-                    2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [.4]), T(pop_size * [.6]), T(pop_size * [.9]), T(pop_size * [.9])])
-        weights_inhib_1 = (torch.ones((pop_size, 1)) + (
-                    2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [.8]), T(pop_size * [.8]), T(pop_size * [.2]), T(pop_size * [.1])])
-        weights_inhib_2 = (torch.ones((pop_size, 1)) + (
-                    2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [.9]), T(pop_size * [.9]), T(pop_size * [.1]), T(pop_size * [.2])])
-
-        # Excitatory:
-        params_pop_excit_1 = {'tau_m': 4., 'G': 0.7, 'E_L': -52., 'delta_theta_s': 18., 'b_s': 0.4, 'f_v': 0.14,
-                              'delta_V': 12., 'f_I': 0.45, 'b_v': 0.3, 'a_v': 0.2, 'theta_inf': -4., 'tau_g': 4.5 }
-        hand_coded_params_pop_excit_1 = {'preset_weights': weights_excit_1 }
-        params_pop_excit_2 = {'tau_m': 4.9, 'G': 0.6, 'E_L': -64., 'delta_theta_s': 14., 'b_s': 0.3, 'f_v': 0.14,
-                              'delta_V': 12., 'f_I': 0.4, 'b_v': 0.35, 'a_v': 0.25, 'theta_inf': -2., 'tau_g': 5.8 }
-        hand_coded_params_pop_excit_2 = {'preset_weights': weights_excit_2 }
-
-        # Inhibitory
-        params_pop_inhib_1 = {'tau_m': 2.6, 'G': 0.7, 'E_L': -66., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
-                              'delta_V': 12., 'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -11., 'tau_g': 3. }
-        hand_coded_params_pop_inhib_1 = {'preset_weights': weights_inhib_1 }
-        params_pop_inhib_2 = {'tau_m': 2.1, 'G': 0.8, 'E_L': -66., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
-                              'delta_V': 12., 'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -7., 'tau_g': 2.6 }
+        params_pop_inhib_2 = {'tau_m': 10., 'G': 0.8, 'E_L': -66., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14,
+                              'delta_V': 5., 'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -7., 'tau_g': 6., 'R_m': 11.964 }
         hand_coded_params_pop_inhib_2 = {'preset_weights': weights_inhib_2 }
 
         params_pop_excit_1 = randomise_parameters(params_pop_excit_1, coeff=T(0.025), N_dim=pop_size)
