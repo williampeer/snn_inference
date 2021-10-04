@@ -142,7 +142,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         next_step, train_targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
                                                           spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
     else:
-        train_targets, gen_inputs = generate_synthetic_data(target_model, t=constants.rows_per_train_iter)
+        train_targets, gen_inputs = generate_synthetic_data(target_model, t=constants.rows_per_train_iter, burn_in=constants.burn_in)
         if constants.EXP_TYPE == ExperimentType.SanityCheck:
             inputs = gen_inputs
 
@@ -164,7 +164,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
                                                               spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
             train_input = None
         else:
-            train_targets, gen_train_input = generate_synthetic_data(gen_model=target_model, t=constants.rows_per_train_iter)
+            train_targets, gen_train_input = generate_synthetic_data(gen_model=target_model, t=constants.rows_per_train_iter, burn_in=constants.burn_in)
             if constants.EXP_TYPE == ExperimentType.SanityCheck:
                 train_input = gen_train_input
 

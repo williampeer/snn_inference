@@ -35,15 +35,19 @@ def main(argv):
     # exp_type_str = C.ExperimentType.DataDriven.name
     # learn_rate = 0.05; N_exp = 5; tau_van_rossum = 4.0; plot_flag = True
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
-    learn_rate = 0.02; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
-    max_train_iters = 200
-    num_targets = 3
-    interval_size = 10000
+    learn_rate = 0.015; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
+    # Run 100 with lr 0.01 and 0.02
+    max_train_iters = 70
+    num_targets = 1
+    # Q: Interval size effect on loss curve and param retrieval for both lfns
+    interval_size = 5000
     batch_size = interval_size; rows_per_train_iter = interval_size
-    bin_size = 400  # for RPH
+    bin_size = int(interval_size/10)  # for RPH
+    # burn_in = False
+    burn_in = True
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
-    # loss_fn = 'frd'
+    loss_fn = 'frd'
     # loss_fn = 'vrd'
     # loss_fn = 'FF'
     # loss_fn = 'CV'
@@ -51,7 +55,7 @@ def main(argv):
     # loss_fn = 'rfh'
     # loss_fn = 'rph'
     # loss_fn = 'kl_div'
-    loss_fn = None
+    # loss_fn = None
     # silent_penalty_factor = 10.0
     silent_penalty_factor = None
 
@@ -73,8 +77,8 @@ def main(argv):
     initial_poisson_rate = 10.  # Hz
     # network_size = 2
     # network_size = 4
-    # network_size = 8
-    network_size = 16
+    network_size = 8
+    # network_size = 16
 
     evaluate_step = 1
     # evaluate_step = int(max(max_train_iters/10, 1))
@@ -156,6 +160,8 @@ def main(argv):
         elif opt in ("-nt", "--num-targets"):
             num_targets = int(args[i])
             assert num_targets > 0, "num targets must be >= 1. currently: {}".format(num_targets)
+        elif opt in ("-bi", "--burn-in"):
+            burn_in = bool(args[i])
 
     all_models = [LIF_R, LIF_R_ASC, GLIF,
                   LIF_R_soft, LIF_R_ASC_soft, GLIF_soft,
@@ -245,7 +251,8 @@ def main(argv):
                                             initial_poisson_rate=initial_poisson_rate, loss_fn=loss_fn, evaluate_step=evaluate_step,
                                             plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name,
                                             exp_type_str=exp_type_str, silent_penalty_factor=silent_penalty_factor,
-                                            norm_grad_flag=norm_grad_flag, data_path=data_path, bin_size=bin_size)
+                                            norm_grad_flag=norm_grad_flag, data_path=data_path, bin_size=bin_size,
+                                            burn_in=burn_in)
 
                     exp_suite.start_exp(constants=constants, model_class=m_class, target_model=target_model)
 

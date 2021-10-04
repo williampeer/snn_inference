@@ -10,7 +10,7 @@ class Constants:
                  initial_poisson_rate, rows_per_train_iter, optimiser, loss_fn, evaluate_step,
                  data_set=None, data_path=None, plot_flag=True, fitted_model_path=None, data_bin_size=None,
                  target_bin_size=None, start_seed=0, target_fname=None, exp_type_str=None, silent_penalty_factor=None,
-                 norm_grad_flag=False, bin_size=400):
+                 norm_grad_flag=False, bin_size=400, burn_in=False):
         if data_bin_size is not None:
             self.data_bin_size = int(data_bin_size)
         else:
@@ -38,6 +38,7 @@ class Constants:
         self.start_seed = start_seed
         self.target_fname = target_fname
         self.bin_size = bin_size
+        self.burn_in = burn_in
         try:
             self.EXP_TYPE = ExperimentType[exp_type_str]
         except:
@@ -63,12 +64,12 @@ class Constants:
                'tau_van_rossum: {}, initial_poisson_rate: {}, rows_per_train_iter: {}, ' \
                'optimiser: {}, loss_fn: {}, data_set: {}, evaluate_step: {}, fitted_model_path: {}, data_path: {}, ' \
                'plot_flag: {}, start_seed: {}, target_fname: {}, EXP_TYPE: {}, silent_penalty_factor: {}, ' \
-               'norm_grad_flag: {}, bin_size: {}'.\
+               'norm_grad_flag: {}, bin_size: {}, burn_in: {}'.\
             format(self.data_bin_size, self.target_bin_size, self.learn_rate, self.train_iters, self.N_exp,
                    self.batch_size, self.tau_van_rossum, self.initial_poisson_rate, self.rows_per_train_iter,
                    self.optimiser, self.loss_fn, self.data_set, self.evaluate_step, self.fitted_model_path,
                    self.data_path, self.plot_flag, self.start_seed, self.target_fname, self.EXP_TYPE,
-                   self.silent_penalty_factor, self.norm_grad_flag, self.bin_size)
+                   self.silent_penalty_factor, self.norm_grad_flag, self.bin_size, self.burn_in)
 
 
 class ExperimentType(enum.Enum):

@@ -84,8 +84,11 @@ def release_computational_graph(model, rate_parameter, inputs=None):
         # print('debug in inputs is not None and hasattr(inputs, \'grad\')')
 
 
-def generate_synthetic_data(gen_model, t):
+def generate_synthetic_data(gen_model, t, burn_in=False):
     gen_model.reset()
+    if burn_in:
+        gen_input = sine_modulated_white_noise(t=int(t/10), N=gen_model.N)
+        _ = generate_model_data(model=gen_model, inputs=gen_input)
     # gen_input = poisson_input(rate=poisson_rate, t=t, N=gen_model.N)
     gen_input = sine_modulated_white_noise(t=t, N=gen_model.N)
     gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)

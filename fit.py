@@ -4,7 +4,7 @@ import torch
 import model_util
 from Constants import ExperimentType
 from eval import calculate_loss
-from experiments import release_computational_graph, sine_modulated_white_noise
+from experiments import release_computational_graph, sine_modulated_white_noise, generate_synthetic_data
 
 
 def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, train_i=None, logger=None):
@@ -34,6 +34,9 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, trai
             current_inputs = gen_inputs[batch_size * batch_i:batch_size * (batch_i + 1)].clone().detach().requires_grad_(True)
             current_inputs.retain_grad()
         else:
+            if constants.burn_in:
+                burn_in_inputs = sine_modulated_white_noise(t=int(target_spiketrain.shape[0]/10), N=model.N)
+                _ = model_util.feed_inputs_sequentially_return_spike_train(model, burn_in_inputs)
             current_inputs = sine_modulated_white_noise(t=batch_size, N=model.N)
             current_inputs.retain_grad()
 
