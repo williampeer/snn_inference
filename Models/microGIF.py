@@ -30,6 +30,8 @@ class microGIF(nn.Module):
                     J_theta = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'c':
                     c = FT(torch.ones((N,)) * parameters[key])
+                elif key == 'pop_sizes':
+                    pop_sizes = FT(torch.ones((N,)) * parameters[key])
                 # elif key == 'u_th':
                 #     u_th = FT(torch.ones((N,)) * parameters[key])
 
@@ -39,19 +41,20 @@ class microGIF(nn.Module):
         if parameters.__contains__('preset_weights'):
             # print('DEBUG: Setting w to preset weights: {}'.format(parameters['preset_weights']))
             # print('Setting w to preset weights.')
-            rand_ws = parameters['preset_weights']
+            rand_ws = torch.abs(parameters['preset_weights'])
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             rand_ws = (0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N))
         nt = torch.tensor(neuron_types).float()
         self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
-        # self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
-        self.self_recurrence_mask = torch.ones((self.N, self.N))
+        self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
+        # self.self_recurrence_mask = torch.ones((self.N, self.N))
 
         self.v = E_L * torch.ones((self.N,))
-        self.s = torch.zeros_like(self.v)
-        self.time_since_spike = 1e03 * torch.ones_like(self.v)
+        self.s = torch.zeros((self.N,))
+        # self.g = torch.zeros((self.N,))
+        self.time_since_spike = torch.zeros((N,))
 
         self.E_L = nn.Parameter(FT(E_L), requires_grad=True)  # Rest potential
         self.tau_m = nn.Parameter(FT(tau_m), requires_grad=True)
@@ -59,13 +62,14 @@ class microGIF(nn.Module):
         self.tau_theta = nn.Parameter(FT(tau_theta), requires_grad=True)  # Adaptation time constant
         self.J_theta = nn.Parameter(FT(J_theta), requires_grad=True)  # Adaptation strength
         self.Delta_delay = 1.  # Transmission delay
-        self.Delta_noise = 5.  # Sensitivity
+        self.Delta_u = 5.  # Sensitivity
         self.theta_inf = 15.
+        self.reset_potential = 0.
         self.theta_v = FT(self.theta_inf * torch.ones((N,)))
         self.R_m = FT(R_m)
         self.t_refractory = 2.
-        self.reset_potential = 0.
         self.c = c
+        self.pop_sizes = FT(pop_sizes)
 
         # self.register_backward_clamp_hooks()
 
@@ -83,7 +87,7 @@ class microGIF(nn.Module):
     #     self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
     #     self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_s))
     #
-    #     self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
+    #     self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 10., self.w))
 
     def get_parameters(self):
         params_list = []
@@ -108,20 +112,31 @@ class microGIF(nn.Module):
         epsilon = (0.5 + 0.5 * torch.tanh(self.time_since_spike - self.Delta_delay - self.t_refractory)) * torch.exp(
             -(self.time_since_spike - self.Delta_delay - self.t_refractory) / self.tau_s) / self.tau_s
         # dv/dt = (-v + E_L + R * I )/ tau_m
-        I_syn = (self.tau_m * self.w * (epsilon * self.s)) / self.R_m
-        dv = (-self.v + self.E_L + self.R_m * (I_syn + I_ext)) / self.tau_m
+
+        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        # W_syn = self.w * self.neuron_types
+        I_syn = (self.tau_m * (epsilon * self.pop_sizes*self.s).matmul(W_syn)) / self.R_m
+        dv = (self.E_L - self.v + self.R_m * (I_syn + I_ext)) / self.tau_m
+        # dv = (-self.v + self.E_L + self.R_m * (I_syn)) / self.tau_m
+        # dv = (-self.v + self.E_L + self.R_m * (I_ext)) / self.tau_m
+        # dv = (-self.v + self.E_L + self.R_m * (0.)) / self.tau_m
         v_next = self.v + dv
 
         # differentiable
-        spikes_lambda = self.c * torch.exp((v_next - self.theta_v) / self.Delta_noise)
-        # non-differentiable
-        spiked = spikes_lambda.float()
+        spikes_lambda = self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)
+        # self.s = torch.binomial()  #spikes_lambda
+        spiked = torch.distributions.bernoulli.Bernoulli(spikes_lambda).sample()
         not_spiked = (spiked - 1.) / -1.
+        # self.s = (32/self.N) * spiked
+
+        # self.s = (16/self.N) * spiked + not_spiked * (self.s-self.s/self.tau_s)
+        # self.s = (32/self.N) * spiked + not_spiked * (self.g-self.g/self.tau_s)
+        # self.s = (32/self.N) * spiked
+        # self.s = spiked + not_spiked * (self.s - self.s/self.tau_s)
+        self.s = spiked
 
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
 
-        # self.s = torch.binomial()  #spikes_lambda
-        self.s = torch.distributions.bernoulli.Bernoulli(spikes_lambda).sample(self.s.shape)
         # return self.s
-        return self.v, self.s
+        return self.v, spiked
