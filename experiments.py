@@ -53,13 +53,13 @@ def zip_tensor_dicts(a, b):
 
 # Assumes rate in Hz
 def sine_modulated_white_noise_input(t, N):
-    return sine_modulated_white_noise(t, N, neurons_coeff=torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]))
+    return sine_modulated_white_noise(t, N, neurons_coeff=torch.cat([T([0., 0.]), T([0.25, 0.1])]))
     # return torch.poisson((rate/1000.) * torch.ones((int(t), N))).clamp(0., 1.)  # t x N
 
 
 def sine_modulated_white_noise(t, N, neurons_coeff=None):
     if neurons_coeff is None:
-        neurons_coeff = torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])])
+        neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])])
     # noise = torch.poisson(p_lambda * torch.ones(t, N))
     # return noise / torch.max(noise)  # normalised
     # B sin(ωt) · (1 + qξ(t))

@@ -1,10 +1,11 @@
+from enum import Enum
+
 import torch.nn.functional
 from torch.nn.functional import kl_div
-from enum import Enum
 
 import model_util
 import spike_metrics
-from experiments import sine_modulated_white_noise_input, release_computational_graph
+from experiments import release_computational_graph, sine_modulated_white_noise
 from plot import *
 
 
@@ -13,7 +14,7 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
         assert (inputs.shape[0] == target_spiketrain.shape[0]), \
             "inputs and targets should have same shape. inputs shape: {}, targets shape: {}".format(inputs.shape, target_spiketrain.shape)
     else:
-        inputs = sine_modulated_white_noise_input(t=target_spiketrain.shape[0], N=model.N)
+        inputs = sine_modulated_white_noise(t=target_spiketrain.shape[0], N=model.N)
 
     model_spike_train = model_util.feed_inputs_sequentially_return_spike_train(model, inputs)
 
