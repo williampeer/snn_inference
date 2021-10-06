@@ -18,7 +18,8 @@ from Models.Sigmoidal.GLIF_soft_positive_weights import GLIF_soft_positive_weigh
 from Models.Sigmoidal.LIF_R_ASC_soft import LIF_R_ASC_soft
 from Models.Sigmoidal.LIF_R_soft import LIF_R_soft
 from Models.Sigmoidal.LIF_R_soft_weights_only import LIF_R_soft_weights_only
-from TargetModels import TargetModels, TargetModelsSoft
+from Models.microGIF import microGIF
+from TargetModels import TargetModels, TargetModelsSoft, TargetModelMicroGIF
 from eval import LossFn
 
 
@@ -37,7 +38,7 @@ def main(argv):
     # max_train_iters = 10; batch_size = 1000; rows_per_train_iter = 2000
     learn_rate = 0.015; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
     # Run 100 with lr 0.01 and 0.02
-    max_train_iters = 70
+    max_train_iters = 80
     num_targets = 1
     # Q: Interval size effect on loss curve and param retrieval for both lfns
     interval_size = 5000
@@ -106,7 +107,8 @@ def main(argv):
     # model_type = 'LIF_R_ASC_soft'
     # model_type = 'LIF_R_ASC_soft_ReLu'
     # model_type = 'GLIF_soft'
-    model_type = 'GLIF_soft_lower_dim'
+    # model_type = 'GLIF_soft_lower_dim'
+    model_type = 'microGIF'
     norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -168,7 +170,8 @@ def main(argv):
                   LIF_R_weights_only, LIF_R_soft_weights_only,
                   GLIF_soft_positive_weights, GLIF_soft_lower_dim,
                   LIF_R_ASC_soft_lower_dim, LIF_R_soft_lower_dim,
-                  GLIF_lower_dim, LIF_R_ASC_lower_dim, LIF_R_lower_dim]
+                  GLIF_lower_dim, LIF_R_ASC_lower_dim, LIF_R_lower_dim,
+                  microGIF]
     # models = [LIF_HS_17]
     # models = [LIF, LIF_R, LIF_ASC, LIF_R_ASC, GLIF]
     # models = [LIF_soft_weights_only, LIF_R_soft, LIF_ASC_soft, LIF_R_ASC_soft, GLIF_soft]
@@ -242,6 +245,9 @@ def main(argv):
                     if m_class.__name__ in [GLIF_soft.__name__, GLIF_soft_lower_dim.__name__]:
                         target_model_name = 'glif_soft_ensembles_model_dales_compliant_seed_{}'.format(f_i)
                         target_model = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+                    elif m_class.__name__ in [microGIF.__name__]:
+                        target_model_name = 'gif_soft_continuous_populations_model{}'.format(f_i)
+                        target_model = TargetModelMicroGIF.gif_soft_continuous_populations_model(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
 
                     else:
                         raise NotImplementedError()

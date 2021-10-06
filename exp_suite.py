@@ -115,6 +115,10 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
             cur_tar_p_name = tar_p_names[p_i]
             if not model_p_names.__contains__(cur_tar_p_name):
                 params_model[cur_tar_p_name] = tar_params[cur_tar_p_name].clone().detach()
+    elif model_class.__name__.__contains__('microGIF'):
+        params_model['R_m'] = target_model.R_m.clone().detach()
+        params_model['c'] = target_model.c.clone().detach()
+        params_model['pop_sizes'] = target_model.pop_sizes.clone().detach()
 
     model = model_class(N=num_neurons, parameters=params_model, neuron_types=neuron_types)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
