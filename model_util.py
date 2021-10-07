@@ -1,7 +1,7 @@
 import torch
 
 
-def feed_inputs_sequentially_return_spikes_and_potentials(model, inputs):
+def feed_inputs_sequentially_return_tuple(model, inputs):
     print('Feeding {} inputs sequentially through SNN in time'.format(inputs.size(0)))
     membrane_potentials, model_spiketrain = model(inputs[0])
     for x_in in inputs[1:]:
