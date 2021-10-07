@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.tensor as T
 
-from model_util import generate_model_data
+from model_util import generate_model_data, feed_inputs_sequentially_return_tuple
 
 
 # torch.backends.cudnn.deterministic = True
@@ -92,6 +92,21 @@ def generate_synthetic_data(gen_model, t, burn_in=False):
     # gen_input = poisson_input(rate=poisson_rate, t=t, N=gen_model.N)
     gen_input = sine_modulated_white_noise(t=t, N=gen_model.N)
     gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_input)
+    # for gen spiketrain this may be thresholded to binary values:
+    gen_spiketrain = torch.round(gen_spiketrain)
+    gen_spiketrain.grad = None
+
+    return gen_spiketrain.clone().detach(), gen_input.clone().detach()
+
+
+def generate_synthetic_data_tuple(gen_model, t, burn_in=False):
+    gen_model.reset()
+    if burn_in:
+        gen_input = sine_modulated_white_noise(t=int(t/10), N=gen_model.N)
+        _, _ = feed_inputs_sequentially_return_tuple(model=gen_model, inputs=gen_input)
+    # gen_input = poisson_input(rate=poisson_rate, t=t, N=gen_model.N)
+    gen_input = sine_modulated_white_noise(t=t, N=gen_model.N)
+    _, gen_spiketrain = feed_inputs_sequentially_return_tuple(model=gen_model, inputs=gen_input)
     # for gen spiketrain this may be thresholded to binary values:
     gen_spiketrain = torch.round(gen_spiketrain)
     gen_spiketrain.grad = None

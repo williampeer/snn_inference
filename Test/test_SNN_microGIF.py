@@ -9,12 +9,11 @@ from TargetModels import TargetModelMicroGIF
 from experiments import sine_modulated_white_noise
 from plot import plot_spike_trains_side_by_side, plot_spike_train_projection, plot_neuron
 
-num_pops = 2
-# num_pops = 4
-# pop_size = 1
-# pop_size = 4
+# num_pops = 2
+num_pops = 4
+pop_size = 4
 # pop_size = 2
-pop_size = 1
+# pop_size = 1
 
 for random_seed in range(3, 4):
     # snn = lif_ensembles_model_dales_compliant(random_seed=random_seed)
@@ -26,13 +25,14 @@ for random_seed in range(3, 4):
     # snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
     # snn = TargetModelsSoft.lif_r_soft_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
     # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
-    snn = TargetModelMicroGIF.gif_soft_continuous_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
+    snn = TargetModelMicroGIF.micro_gif_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
+    # snn = TargetModelMicroGIF.non_differentiable_micro_gif_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
 
-    inputs = sine_modulated_white_noise(t=10000, N=snn.N)
+    inputs = sine_modulated_white_noise(t=5000, N=snn.N)
 
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(inputs.sum()))
-    membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
+    membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, inputs)
     # spikes = model_util.feed_inputs_sequentially_return_spike_train(snn, inputs)
     # print('snn weights: {}'.format(snn.w))
     hard_thresh_spikes_sum = torch.round(spikes).sum()
@@ -49,7 +49,7 @@ for random_seed in range(3, 4):
     #             uuid='test', fname='test_{}_poisson_input'.format(snn.__class__.__name__) + '_' + str(random_seed))
 
     zeros = torch.zeros_like(inputs)
-    membrane_potentials_zeros, spikes_zeros = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, zeros)
+    membrane_potentials_zeros, spikes_zeros = model_util.feed_inputs_sequentially_return_tuple(snn, zeros)
     # spikes_zeros = model_util.feed_inputs_sequentially_return_spike_train(snn, zeros)
     # plot_neuron(membrane_potentials_zeros.detach().numpy(), title='Neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()),
                 # uuid='test', fname='test_LIF_no_input'  + '_' + str(random_seed))
@@ -58,7 +58,7 @@ for random_seed in range(3, 4):
     # plot_spiketrains_side_by_side(spikes, spikes_zeros, 'test_LIF', title='Test LIF spiketrains random and zero input', legend=['Poisson input', 'No input'])
     snn.w = torch.nn.Parameter(torch.zeros((snn.v.shape[0],snn.v.shape[0])), requires_grad=True)
     # spikes_zero_weights = model_util.feed_inputs_sequentially_return_spike_train(snn, inputs)
-    membrane_potentials_zero_weights, spikes_zero_weights = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
+    membrane_potentials_zero_weights, spikes_zero_weights = model_util.feed_inputs_sequentially_return_tuple(snn, inputs)
     print('#spikes no weights: {}'.format(torch.round(spikes_zero_weights).sum()))
     plot_neuron(inputs.detach().numpy(), title='I_ext'.format(snn.name(), spikes.sum()),
                 uuid='test', fname='test_ext_input'.format(snn.name()) + '_' + str(random_seed))

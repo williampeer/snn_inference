@@ -33,7 +33,7 @@ class microGIF(nn.Module):
                 elif key == 'pop_sizes':
                     pop_sizes = FT(torch.ones((N,)) * parameters[key])
 
-        __constants__ = ['N', 'norm_R_const', 'self_recurrence_mask', 'Theta_max']
+        __constants__ = ['N', 'self_recurrence_mask', 'R_m']
         self.N = N
 
         if parameters.__contains__('preset_weights'):
@@ -69,7 +69,7 @@ class microGIF(nn.Module):
         self.c = c
         self.pop_sizes = FT(pop_sizes)
 
-        # self.register_backward_clamp_hooks()
+        self.register_backward_clamp_hooks()
 
     def reset(self):
         for p in self.parameters():
@@ -79,31 +79,33 @@ class microGIF(nn.Module):
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()
         self.spiked = self.spiked.clone().detach()
+        self.time_since_spike = self.time_since_spike.clone().detach()
+        self.theta_v = self.theta_v.clone().detach()
 
-    # def register_backward_clamp_hooks(self):
-    #     self.E_L.register_hook(lambda grad: static_clamp_for(grad, -10., 40., self.E_L))
-    #     self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 5., 20., self.tau_m))
-    #     self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1.5, 20., self.tau_s))
-    #
-    #     self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
+    def register_backward_clamp_hooks(self):
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -10., 40., self.E_L))
+        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 5., 20., self.tau_m))
+        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1.5, 20., self.tau_s))
+        self.tau_theta.register_hook(lambda grad: static_clamp_for(grad, 650., 1350, self.tau_theta))
+        self.J_theta.register_hook(lambda grad: static_clamp_for(grad, 0.1, 4., self.J_theta))
+
+        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
     def get_parameters(self):
-        params_list = []
+        params_dict = {}
 
-        params_list.append(self.w.data)
-        params_list.append(self.E_L.data)
-        params_list.append(self.tau_m.data)
-        params_list.append(self.tau_s.data)
+        params_dict['w'] = self.w.data
+        params_dict['E_L'] = self.E_L.data
+        params_dict['tau_m'] = self.tau_m.data
+        params_dict['tau_s'] = self.tau_s.data
 
-        return params_list
+        return params_dict
 
     def name(self):
         return self.__class__.__name__
 
     def forward(self, I_ext):
-        ## Integral and infetesimally small steps. theta_alpha * ds ?
-        # adaptation_kernel = (self.J/self.tau_theta) * torch.exp(-self.time_since_spike / self.tau_theta)
-        #   Can be rewritten to:
+        #   adaptation_kernel can be rewritten to:
         dtheta_v = (self.theta_inf - self.theta_v + self.J_theta * self.spiked) / self.tau_theta
         self.theta_v = self.theta_v + dtheta_v
 
@@ -111,17 +113,28 @@ class microGIF(nn.Module):
             -(self.time_since_spike - self.Delta_delay - self.t_refractory) / self.tau_s) / self.tau_s
 
         W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        # Scale synaptic currents with pop sizes.
         I_syn = (self.tau_m * (epsilon * self.pop_sizes * self.spiked).matmul(W_syn)) / self.R_m
         dv = (self.E_L - self.v + self.R_m * (I_syn + I_ext)) / self.tau_m
         v_next = self.v + dv
 
-        # differentiable
+        # TODO: Differentiability
         spikes_lambda = self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)
-        self.spiked = torch.distributions.bernoulli.Bernoulli(spikes_lambda).sample()
-        not_spiked = (self.spiked - 1.) / -1.
+        m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
+        spiked = m.sample()
+        # spiked = torch.bernoulli(spikes_lambda)
+        # spiked = m.rsample()
+        # spiked = torch.sigmoid(100.*(spikes_lambda-draw))
+        # spiked = torch.sigmoid(spikes_lambda-0.1)
+        self.spiked = spiked
+        # self.spiked = spiked
+        not_spiked = (spiked - 1.) / -1.
 
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
-        self.v = not_spiked * v_next + self.spiked * self.reset_potential
+        self.v = not_spiked * v_next + spiked * self.reset_potential
 
-        return self.spiked
-        # return self.v, self.spiked
+        # return m.log_prob(spiked)
+        # return spikes_lambda
+        # return spiked
+        return spikes_lambda, spiked
+        # return self.v, spiked

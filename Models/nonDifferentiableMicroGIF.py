@@ -2,17 +2,15 @@ import torch
 import torch.nn as nn
 from torch import FloatTensor as FT
 
-from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
-
-class microGIF(nn.Module):
+class nonDifferentiableMicroGIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta']
     parameter_init_intervals = { 'E_L': [0., 5.], 'tau_m': [9., 12.], 'tau_s': [3., 6.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1] }
     param_lin_constraints = [[0., 1.], [-10., 30.], [2., 20.], [1.5, 20.], [800., 1500.], [0.5, 1.5]]
 
     def __init__(self, parameters, N=4, neuron_types=[1, -1]):
-        super(microGIF, self).__init__()
+        super(nonDifferentiableMicroGIF, self).__init__()
 
         if parameters is not None:
             for key in parameters.keys():
@@ -69,8 +67,6 @@ class microGIF(nn.Module):
         self.c = c
         self.pop_sizes = FT(pop_sizes)
 
-        # self.register_backward_clamp_hooks()
-
     def reset(self):
         for p in self.parameters():
             p.grad = None
@@ -79,13 +75,6 @@ class microGIF(nn.Module):
     def reset_hidden_state(self):
         self.v = self.v.clone().detach()
         self.spiked = self.spiked.clone().detach()
-
-    # def register_backward_clamp_hooks(self):
-    #     self.E_L.register_hook(lambda grad: static_clamp_for(grad, -10., 40., self.E_L))
-    #     self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 5., 20., self.tau_m))
-    #     self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1.5, 20., self.tau_s))
-    #
-    #     self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
     def get_parameters(self):
         params_list = []
@@ -101,35 +90,31 @@ class microGIF(nn.Module):
         return self.__class__.__name__
 
     def forward(self, I_ext):
-        # TODO: Test with original equations
-        #  differentiability OK justification for e.g. tanh adjustment
-        # adaptation_kernel = (self.J/self.tau_theta) * torch.exp(-self.time_since_spike / self.tau_theta)
-        #   Can be rewritten to:
+        #   adaptation_kernel Can be rewritten to:
         dtheta_v = (self.theta_inf - self.theta_v + self.J_theta * self.spiked) / self.tau_theta
         self.theta_v = self.theta_v + dtheta_v
 
-        epsilon = (0.5 + 0.5 * torch.tanh(self.time_since_spike - self.Delta_delay - self.t_refractory)) * torch.exp(
-            -(self.time_since_spike - self.Delta_delay - self.t_refractory) / self.tau_s) / self.tau_s
+        def Heaviside(x):
+            return (x>0).float()
+
+        epsilon = Heaviside(self.time_since_spike-self.Delta_delay)\
+                  *torch.exp(-(self.time_since_spike-self.Delta_delay)/self.tau_s)/self.tau_s
 
         W_syn = self.self_recurrence_mask * self.w * self.neuron_types
-        # TODO: Check pop sizes
+        # Scale synaptic currents with pop sizes.
         I_syn = (self.tau_m * (epsilon * self.pop_sizes * self.spiked).matmul(W_syn)) / self.R_m
         dv = (self.E_L - self.v + self.R_m * (I_syn + I_ext)) / self.tau_m
         v_next = self.v + dv
 
-        # differentiable
         spikes_lambda = self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)
         m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
-        # m = torch.distributions.normal.Normal()
         spiked = m.sample()
-        # spiked = m.rsample()
         self.spiked = spiked
         not_spiked = (spiked - 1.) / -1.
 
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
 
-        # return spikes_lambda
         # return spiked
         # return m.log_prob(spiked)
         return self.v, spiked

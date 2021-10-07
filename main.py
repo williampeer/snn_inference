@@ -44,8 +44,8 @@ def main(argv):
     interval_size = 5000
     batch_size = interval_size; rows_per_train_iter = interval_size
     bin_size = int(interval_size/10)  # for RPH
-    # burn_in = False
-    burn_in = True
+    burn_in = False
+    # burn_in = True
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     loss_fn = 'frd'
@@ -247,7 +247,7 @@ def main(argv):
                         target_model = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
                     elif m_class.__name__ in [microGIF.__name__]:
                         target_model_name = 'gif_soft_continuous_populations_model{}'.format(f_i)
-                        target_model = TargetModelMicroGIF.gif_soft_continuous_populations_model(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+                        target_model = TargetModelMicroGIF.micro_gif_populations_model(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
 
                     else:
                         raise NotImplementedError()
