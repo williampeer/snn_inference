@@ -12,11 +12,11 @@ free_parameters = {'c': -62.5, 'd': 6., 'tau_g': 2.5}
 snn = Izhikevich(device='cpu', parameters=zip_dicts(static_init_parameters, randomise_parameters(free_parameters)), a=0.025, b=0.25, d=8.)
 
 inputs = sine_modulated_white_noise_input(0.5, t=500, N=static_init_parameters['N'])
-membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, inputs)
+membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, inputs)
 plot_neuron(membrane_potentials.data, title='Neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_Izhikevich_poisson_input')
 
 zeros = torch.zeros_like(inputs)
-membrane_potentials_zeros, spikes_zeros = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, zeros)
+membrane_potentials_zeros, spikes_zeros = model_util.feed_inputs_sequentially_return_tuple(snn, zeros)
 plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()), fname_ext='test_Izhikevich_no_input')
 
 plot_spike_trains_side_by_side(spikes, spikes_zeros, 'test_Izhikevich', title='Spiketrains random and zero input (Izhikevich)')

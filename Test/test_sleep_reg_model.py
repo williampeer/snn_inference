@@ -9,11 +9,11 @@ from plot import plot_neuron, plot_spike_trains_side_by_side
 snn = SleepRegulationModel(0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
 
 sample_inputs = sine_modulated_white_noise_input(0.6, t=400, N=3)
-membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, sample_inputs)
+membrane_potentials, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, sample_inputs)
 plot_neuron(membrane_potentials.data, title='Neuron plot ({:.2f} spikes)'.format(spikes.sum()), fname_ext='test_sleep_reg_model_poisson_input')
 
 zeros = torch.zeros_like(sample_inputs)
-membrane_potentials_zeros, spikes_zeros = model_util.feed_inputs_sequentially_return_spikes_and_potentials(snn, zeros)
+membrane_potentials_zeros, spikes_zeros = model_util.feed_inputs_sequentially_return_tuple(snn, zeros)
 plot_neuron(membrane_potentials_zeros.data, title='Neuron plot ({:.2f} spikes)'.format(spikes_zeros.sum()), fname_ext='test_sleep_reg_model_no_input')
 
 plot_spike_trains_side_by_side(spikes, spikes_zeros, 'test_Izhikevich', title='Spiketrains random and zero input (Sleep Reg. Model)')

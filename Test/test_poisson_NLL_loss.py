@@ -33,9 +33,9 @@ def test_poisson_NLL_models():
     m2 = GLIF(device='cpu', parameters=zip_dicts(static_parameters, randomise_parameters(free_parameters, coeff=torch.tensor(0.25))))
 
     inputs = sine_modulated_white_noise_input(0.5, t=500, N=static_parameters['N'])
-    membrane_potentials, spikes1 = model_util.feed_inputs_sequentially_return_spikes_and_potentials(m1, inputs)
-    membrane_potentials, spikes1_2 = model_util.feed_inputs_sequentially_return_spikes_and_potentials(m1, inputs)
-    membrane_potentials, spikes2 = model_util.feed_inputs_sequentially_return_spikes_and_potentials(m2, inputs)
+    membrane_potentials, spikes1 = model_util.feed_inputs_sequentially_return_tuple(m1, inputs)
+    membrane_potentials, spikes1_2 = model_util.feed_inputs_sequentially_return_tuple(m1, inputs)
+    membrane_potentials, spikes2 = model_util.feed_inputs_sequentially_return_tuple(m2, inputs)
 
     print('num of sample model1 spikes1: {}'.format(spikes1.sum()))
     print('num of sample model1 spikes2: {}'.format(spikes1_2.sum()))

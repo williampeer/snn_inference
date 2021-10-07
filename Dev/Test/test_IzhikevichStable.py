@@ -8,7 +8,7 @@ from plot import plot_neuron
 neuron = IzhikevichStable(device='cpu', parameters={'N': 1}, N=1)
 
 ones = torch.ones((1000, 1))
-membrane_potentials, model_spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(neuron, ones)
+membrane_potentials, model_spikes = model_util.feed_inputs_sequentially_return_tuple(neuron, ones)
 plot_neuron(membrane_potentials.data, title="IzhikevichStable neuron test (1)", fname_ext='IzhikevichStable_1')
 model_spikes_shifted = torch.cat([model_spikes.clone()[1:], torch.tensor([[0.]])])
 
@@ -27,7 +27,7 @@ print('loss_identical_trains: {}'.format(loss_identical_trains))
 
 
 zeros = torch.zeros_like(ones)
-membrane_potentials, model_spikes = model_util.feed_inputs_sequentially_return_spikes_and_potentials(neuron, zeros)
+membrane_potentials, model_spikes = model_util.feed_inputs_sequentially_return_tuple(neuron, zeros)
 plot_neuron(membrane_potentials.data, title="IzhikevichStable neuron test (2)", fname_ext='IzhikevichStable_2')
 # transformed_potentials = torch.sigmoid(membrane_potentials)
 loss = spike_metrics.van_rossum_dist(spikes=torch.zeros_like(membrane_potentials),
