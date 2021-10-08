@@ -15,7 +15,7 @@ from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
 from TargetModels.TargetModelMicroGIF import micro_gif_populations_model
 from TargetModels.TargetModelsSoft import glif_soft_continuous_ensembles_model_dales_compliant
 from experiments import sine_modulated_white_noise
-from model_util import feed_inputs_sequentially_return_spike_train
+from model_util import feed_inputs_sequentially_return_tuple
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -36,9 +36,9 @@ def transform_model_to_sbi_params(model, model_class):
 
     model_params = model.get_parameters()
     for p_i, p_k in enumerate(model_params):
-        if p_k is not 'w' and p_k in model_class.parameter_names:
+        if p_k is not 'w' and p_k in model_class.free_parameters:
             m_params = torch.hstack((m_params, model_params[p_k]))
-        # model_params_list[(N ** 2 - N) + N * (i - 1):(N ** 2 - N) + N * i] = [model_class.parameter_names[i]]
+        # model_params_list[(N ** 2 - N) + N * (i - 1):(N ** 2 - N) + N * i] = [model_class.free_parameters[i]]
 
     return m_params
 
@@ -47,19 +47,17 @@ def main(argv):
     NUM_WORKERS = 4
     # NUM_WORKERS = 1
 
-    # t_interval = 12000
-    t_interval = 1600
+    t_interval = 10000
+    # t_interval = 1600
     N = 8
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
     # method = None
-    method = 'SNRE'
+    method = 'SNPE'
     # model_type = None
-    # model_type = 'GLIF_soft_lower_dim'
     model_type = 'microGIF'
-    # model_type = 'LIF_R_soft_lower_dim'
-    # budget = 10000
-    budget = 20
+    budget = 10000
+    # budget = 20
     tar_seed = 42
 
     class_lookup = { 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad,
@@ -82,8 +80,6 @@ def main(argv):
             N = int(args[i])
         elif opt in ("-t", "--t-interval"):
             t_interval = int(args[i])
-        elif opt in ("-pn", "--param-number"):
-            param_number = int(args[i])
         elif opt in ("-b", "--budget"):
             budget = int(args[i])
         elif opt in ("-nw", "--num-workers"):
@@ -142,18 +138,15 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=5):
                 if (n_i != n_j):
                     preset_weights[n_i, n_j] = parsed_preset_weights[ctr]
                     ctr += 1
-        programmatic_params_dict[model_class.parameter_names[0]] = preset_weights
+        programmatic_params_dict[model_class.free_parameters[0]] = preset_weights
 
         tar_params = tar_model.get_parameters()
-        # for t_i in range(1, len(tar_model_p_names)):
-        #     for p_i in range(1, len(tar_model_p_names)):
-        #         cur_tar_p_name = tar_model_p_names[p_i]
         for p_i, p_k in enumerate(tar_model.get_parameters()):
-            if not model_class.parameter_names.__contains__(p_k):
+            if not model_class.free_parameters.__contains__(p_k):
                 programmatic_params_dict[p_k] = tar_params[p_k].clone().detach()
 
-        for i in range(1, len(model_class.parameter_names)):
-            programmatic_params_dict[model_class.parameter_names[i]] = parameter_set[(N**2-N)+N*(i-1):(N**2-N)+N*i]  # assuming only N-dimensional params otherwise
+        for i in range(1, len(model_class.free_parameters)):
+            programmatic_params_dict[model_class.free_parameters[i]] = parameter_set[(N**2-N)+N*(i-1):(N**2-N)+N*i]  # assuming only N-dimensional params otherwise
 
         programmatic_neuron_types = torch.ones((N,))
         for n_i in range(int(N / 2), N):
@@ -161,14 +154,14 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=5):
 
         model = model_class(parameters=programmatic_params_dict, N=N, neuron_types=programmatic_neuron_types)
         inputs = sine_modulated_white_noise(t=t_interval, N=N)
-        outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
+        spike_probas, outputs = feed_inputs_sequentially_return_tuple(model=model, inputs=inputs)
 
         return torch.reshape(get_binned_spike_counts(outputs.clone().detach()), (-1,))
 
     limits_low = torch.zeros((N**2-N,))
     limits_high = torch.ones((N**2-N,))
 
-    for i in range(1, len(model_class.parameter_names)):
+    for i in range(1, len(model_class.free_parameters)):
         limits_low = torch.hstack((limits_low, torch.ones((N,)) * model_class.param_lin_constraints[i][0]))
         limits_high = torch.hstack((limits_high, torch.ones((N,)) * model_class.param_lin_constraints[i][1]))
 
@@ -185,7 +178,7 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=5):
     res['N'] = N
     res['dt_descriptor'] = dt_descriptor
     res['tar_seed'] = tar_seed
-    # num_dim = N**2-N+N*(len(model_class.parameter_names)-1)
+    # num_dim = N**2-N+N*(len(model_class.free_parameters)-1)
     num_dim = limits_high.shape[0]
 
     # try:
@@ -269,7 +262,7 @@ def export_plots(samples, points, limits, model_dim, plot_dim, method, m_name, d
     # plt.close()
 
     # Marginals only for p_i, p_i
-    for p_i in range(1, len(model_class.parameter_names)):
+    for p_i in range(1, len(model_class.free_parameters)):
         # plt.figure()
         cur_mean_limits = torch.stack((lim_low[weights_offset+(p_i-1)*N:weights_offset+p_i*N], lim_high[weights_offset+(p_i-1)*N:weights_offset+p_i*N]))
         cur_pt = points[weights_offset+(p_i-1)*N:weights_offset+p_i*N]

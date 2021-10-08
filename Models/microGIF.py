@@ -6,10 +6,10 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class microGIF(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta']
+    free_parameters = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta']
     parameter_init_intervals = { 'E_L': [2., 8.], 'tau_m': [6., 15.], 'tau_s': [2., 8.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1] }
-    param_lin_constraints = [[0., 1.], [-10., 30.], [2., 20.], [1.5, 20.], [800., 1500.], [0.5, 1.5]]
+    param_lin_constraints = [[0., 1.], [-5., 25.], [2., 20.], [1.5, 20.], [800., 1500.], [0.5, 1.5]]
 
     def __init__(self, parameters, N=4, neuron_types=[1, -1]):
         super(microGIF, self).__init__()
@@ -61,7 +61,7 @@ class microGIF(nn.Module):
         self.J_theta = nn.Parameter(FT(J_theta), requires_grad=True)  # Adaptation strength
         self.Delta_delay = 1.  # Transmission delay
         self.Delta_u = 5.  # Sensitivity
-        self.theta_inf = 15.
+        self.theta_inf = FT(torch.ones((N,)) * 15.)
         self.reset_potential = 0.
         self.theta_v = FT(self.theta_inf * torch.ones((N,)))
         self.R_m = FT(R_m)
@@ -83,7 +83,7 @@ class microGIF(nn.Module):
         self.theta_v = self.theta_v.clone().detach()
 
     def register_backward_clamp_hooks(self):
-        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -10., 40., self.E_L))
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -5., 25., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 5., 20., self.tau_m))
         self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1.5, 20., self.tau_s))
         self.tau_theta.register_hook(lambda grad: static_clamp_for(grad, 650., 1350, self.tau_theta))
@@ -101,6 +101,10 @@ class microGIF(nn.Module):
         params_dict['tau_theta'] = self.tau_theta.data
         params_dict['J_theta'] = self.J_theta.data
 
+        params_dict['R_m'] = self.R_m
+        params_dict['theta_inf'] = self.theta_inf
+        params_dict['c'] = self.c
+        params_dict['pop_sizes'] = self.pop_sizes
 
         return params_dict
 
