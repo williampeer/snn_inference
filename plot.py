@@ -208,6 +208,31 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     plt.savefig(fname=full_path + fname)
 
 
+def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False):
+    if not fname:
+        fname = 'loss'+IO.dt_descriptor()
+    else:
+        fname = fname+IO.dt_descriptor()
+    data = {'loss': loss, 'exp_type': exp_type, 'custom_title': custom_title, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_losses')
+
+    plt.plot(loss)
+    # plt.legend(['Training loss', 'Test loss'])
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    # plt.xticks(range(len(loss_arr+1)))
+    if custom_title:
+        plt.title(custom_title)
+    else:
+        plt.title('Loss')
+
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+    plt.savefig(fname=full_path + fname)
+    # plt.show()
+    plt.close()
+
 def plot_losses(training_loss, test_loss, uuid, exp_type='default', custom_title=False, fname=False):
     if not fname:
         fname = 'training_and_test_loss'+IO.dt_descriptor()

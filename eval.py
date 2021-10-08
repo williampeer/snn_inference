@@ -53,7 +53,6 @@ class LossFn(Enum):
     PEARSON_CORRELATION_COEFFICIENT = 'PCC'
     RATE_FANO_HYBRID = 'rfh'
     RATE_PCC_HYBRID = 'rph'
-    SPIKE_PROBA_NLL = 'spnll'
 
 
 def calculate_loss(output, target, constants):
@@ -79,9 +78,6 @@ def calculate_loss(output, target, constants):
     elif lfn == LossFn.RATE_PCC_HYBRID:
         loss = spike_metrics.firing_rate_distance(output, target) + \
                spike_metrics.correlation_metric_distance(output, target, constants.bin_size)
-    elif lfn == LossFn.SPIKE_PROBA_NLL:
-        m = torch.distributions.bernoulli.Bernoulli(output)
-        loss = -m.log_prob(target).sum()
     else:
         raise NotImplementedError("Loss function not supported.")
 

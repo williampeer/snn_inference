@@ -18,9 +18,9 @@ def main(argv):
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.015; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
+    learn_rate = 0.02; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
     # Run 100 with lr 0.01 and 0.02
-    max_train_iters = 80
+    max_train_iters = 30
     num_targets = 1
     # Q: Interval size effect on loss curve and param retrieval for both lfns
     interval_size = 5000
@@ -39,6 +39,8 @@ def main(argv):
     data_path = None
 
     model_type = 'microGIF'
+    loss_fn = 'frd'
+    # loss_fn = 'vrd'
     norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -69,6 +71,8 @@ def main(argv):
             optimiser = str(args[i])
         elif opt in ("-es", "--evaluate-step"):
             evaluate_step = int(args[i])
+        elif opt in ("-lfn", "--loss-function"):
+            loss_fn = args[i]
         elif opt in ("-sp", "--should-plot"):
             plot_flag = bool(args[i])
         elif opt in ("-ss", "--start-seed"):
@@ -112,13 +116,14 @@ def main(argv):
 
             constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
                                     tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
-                                    initial_poisson_rate=0., loss_fn=LossFn.SPIKE_PROBA_NLL.name, evaluate_step=evaluate_step,
+                                    initial_poisson_rate=0., loss_fn=LossFn(loss_fn).name, evaluate_step=evaluate_step,
                                     plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name,
                                     exp_type_str=exp_type_str, silent_penalty_factor=None,
                                     norm_grad_flag=norm_grad_flag, data_path=data_path, bin_size=bin_size,
                                     burn_in=burn_in)
 
             gif_exp_suite.start_exp(constants=constants, model_class=microGIF, target_model=target_model)
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

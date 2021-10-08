@@ -7,7 +7,7 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 class microGIF(nn.Module):
     parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta']
-    parameter_init_intervals = { 'E_L': [0., 5.], 'tau_m': [9., 12.], 'tau_s': [3., 6.], 'tau_theta': [950., 1050.],
+    parameter_init_intervals = { 'E_L': [2., 8.], 'tau_m': [6., 15.], 'tau_s': [2., 8.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1] }
     param_lin_constraints = [[0., 1.], [-10., 30.], [2., 20.], [1.5, 20.], [800., 1500.], [0.5, 1.5]]
 
@@ -98,6 +98,9 @@ class microGIF(nn.Module):
         params_dict['E_L'] = self.E_L.data
         params_dict['tau_m'] = self.tau_m.data
         params_dict['tau_s'] = self.tau_s.data
+        params_dict['tau_theta'] = self.tau_theta.data
+        params_dict['J_theta'] = self.J_theta.data
+
 
         return params_dict
 

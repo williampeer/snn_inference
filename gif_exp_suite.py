@@ -52,10 +52,16 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                      logger=logger)
         # ------------------------------------------------------
 
-        plot_losses(training_loss=train_losses, test_loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
-                    custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
-                                                                       constants.loss_fn, constants.learn_rate),
-                    fname='training_and_test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn, str(constants.tau_van_rossum).replace('.', '_')))
+        plot_loss(loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
+                  custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
+                                                                 constants.loss_fn, constants.learn_rate),
+                  fname='test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn, str(constants.tau_van_rossum).replace('.', '_')))
+        plot_loss(loss=train_losses, uuid=constants.UUID, exp_type=exp_type_str,
+                  custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
+                                                                 constants.loss_fn, constants.learn_rate),
+                  fname='train_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn,
+                                                                       str(constants.tau_van_rossum).replace('.', '_')))
+
 
     logger.log('train_losses: #{}'.format(train_losses))
     mean_test_loss = torch.mean(torch.tensor(test_losses)).clone().detach().numpy()
@@ -107,7 +113,13 @@ def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_typ
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
 
-    loss = calculate_loss(sproba, target_spiketrain, constants=constants)
+    m = torch.distributions.bernoulli.Bernoulli(sproba)
+    spikes = m.sample()
+    loss = calculate_loss(spikes, target_spiketrain, constants=constants)
+    # nll_target = -m.log_prob(target_spikes).sum()
+    # loss = calculate_loss(sproba, target_spiketrain, constants=constants)
+    # loss = spike_metrics.spike_proba_metric(sproba, model_spike_train, target_spiketrain)
+    # loss = spike_metrics.test_metric(sproba, model_spike_train, target_spiketrain)
     print('loss:', loss)
 
     if exp_type is None:

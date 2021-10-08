@@ -2,6 +2,7 @@ import numpy as np
 import torch
 
 import model_util
+import spike_metrics
 from Constants import ExperimentType
 from eval import calculate_loss
 from experiments import release_computational_graph, sine_modulated_white_noise
@@ -35,7 +36,11 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, trai
     spike_probs, spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
 
     # returns tensor, maintains gradient
-    loss = calculate_loss(spike_probs, target_spiketrain.detach(), constants=constants)
+    m = torch.distributions.bernoulli.Bernoulli(spike_probs)
+    # spikes = m.sample()
+    nll_target = -m.log_prob(target_spiketrain.detach()).sum()
+    loss = nll_target * calculate_loss(spikes, target_spiketrain.detach(), constants=constants)
+    # loss = spike_metrics.spike_proba_metric(spike_probs, spikes, target_spiketrain.detach())
 
     loss.backward(retain_graph=True)
 

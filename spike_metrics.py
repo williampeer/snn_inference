@@ -203,6 +203,23 @@ def correlation_metric_distance(out, tar, bin_size=BIN_SIZE):
     return dist
 
 
+def spike_proba_metric(sprobs, spikes, target_spikes):
+    m = torch.distributions.bernoulli.Bernoulli(sprobs)
+    # nll_target = -m.log_prob(target_spikes).sum()
+    frd = firing_rate_distance(spikes, target_spikes)
+    nll_output = -m.log_prob(target_spikes).sum()
+    return frd*nll_output
+
+
+def test_metric(sprobs, spikes, target_spikes):
+    m = torch.distributions.bernoulli.Bernoulli(sprobs)
+    spikes = m.sample()
+    # nll_target = -m.log_prob(target_spikes).sum()
+    frd = firing_rate_distance(spikes, target_spikes)
+    # nll_output = -m.log_prob(target_spikes).sum()
+    return frd
+
+
 def CV_dist(out, tar, bins=BIN_SIZE):
     bin_len = int(out.shape[0]/bins)
     out_counts = torch.zeros((bins,out.shape[1]))
