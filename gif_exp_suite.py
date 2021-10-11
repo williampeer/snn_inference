@@ -142,7 +142,7 @@ def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_typ
 def fit_model(logger, constants, model_class, params_model, exp_num, target_model=None, target_parameters=None, num_neurons=12):
     params_model['N'] = num_neurons
     neuron_types = np.ones((num_neurons,))
-    for i in range(int(num_neurons/3)):
+    for i in range(int(num_neurons/2)):
         neuron_types[-(1+i)] = -1
 
     # if model_class.__name__.__contains__('microGIF'):
