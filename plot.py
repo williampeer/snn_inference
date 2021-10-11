@@ -489,8 +489,8 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     dot_msize = 5.0
     if num_of_parameters == 2:
         if current_targets is not False:
-            x_min = float('{:.1f}'.format(np.min(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
-            x_max = float('{:.1f}'.format(np.max(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
+            x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
+            x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
             plt.xticks([x_min, x_max])
 
         p_len = len(params_by_exp[0])
@@ -510,8 +510,8 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
                 cur_ax.set_axis_on()
                 cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
                 if current_targets is not False:
-                    x_min = float('{:.1f}'.format(np.min(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
-                    x_max = float('{:.1f}'.format(np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+                    x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+                    x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
                     cur_ax.set_xticks([x_min, x_max])
 
                 # try:
@@ -550,10 +550,10 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
                     current_targets = target_params[p_k]
 
             cur_p = np.array(param_means[p_k])
-            if param_names:
-                name = param_names[p_i]
-            else:
-                name = 'p_{}'.format(p_k)
+            # if param_names:
+            #     name = param_names[p_i]
+            # else:
+            name = '{}'.format(p_k)
 
             # silently fail for 3D params (weights)
             if len(cur_p.shape) == 2:

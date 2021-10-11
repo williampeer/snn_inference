@@ -15,7 +15,7 @@ torch.autograd.set_detect_anomaly(True)
 
 def stats_training_iterations(model_parameters, model, poisson_rate, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
     if constants.plot_flag:
-        parameter_names = model.parameter_names
+        parameter_names = model.free_parameters
         plot_parameter_inference_trajectories_2d(model_parameters,
                                                  uuid=constants.UUID,
                                                  exp_type=exp_type_str,
@@ -28,9 +28,9 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
 
         # ------------- trajectories weights ------------------
         if model.state_dict().__contains__('w'):
-            tar_weights_params = None
+            tar_weights_params = {}
             if target_parameters is not None:
-                tar_weights_params = [np.mean(target_parameters['w'].numpy(), axis=1)]
+                tar_weights_params['w'] = np.mean(target_parameters['w'].numpy(), axis=1)
 
             weights = model_parameters['w']
             assert len(weights[0].shape) == 2, "weights should be 2D"
@@ -259,7 +259,7 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
                 recovered_param_per_exp[key] = [recovered_parameters[key]]
             else:
                 recovered_param_per_exp[key].append(recovered_parameters[key])
-    parameter_names = model_class.parameter_names
+    parameter_names = model_class.free_parameters
     if constants.plot_flag:
         plot_all_param_pairs_with_variance(recovered_param_per_exp,
                                            uuid=constants.UUID,

@@ -27,13 +27,13 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
 
         # ------------- trajectories weights ------------------
         if model.state_dict().__contains__('w'):
-            tar_weights_params = None
+            tar_weights_params = {}
             if target_parameters is not None:
-                tar_weights_params = [np.mean(target_parameters['w'].numpy(), axis=1)]
+                tar_weights_params['w'] = np.mean(target_parameters['w'].numpy(), axis=1)
 
             weights = model_parameters['w']
             assert len(weights[0].shape) == 2, "weights should be 2D"
-            weights_params = { 'w' : [] }
+            weights_params = {'w': []}
             w_names = ['w']
             # weights_params[0] = [np.mean(weights[0], axis=1)]
             for n_i in range(len(weights)):
