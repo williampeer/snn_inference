@@ -119,13 +119,12 @@ class microGIF(nn.Module):
         epsilon = (0.5 + 0.5 * torch.tanh(self.time_since_spike - self.Delta_delay - self.t_refractory)) * torch.exp(
             -(self.time_since_spike - self.Delta_delay - self.t_refractory) / self.tau_s) / self.tau_s
 
-        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        W_syn = 10. * self.self_recurrence_mask * self.w * self.neuron_types
         # Scale synaptic currents with pop sizes.
         I_syn = (self.tau_m * (epsilon * self.pop_sizes * self.spiked).matmul(W_syn)) / self.R_m
         dv = (self.E_L - self.v + self.R_m * (I_syn + I_ext)) / self.tau_m
         v_next = self.v + dv
 
-        # TODO: Differentiability
         spikes_lambda = self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)
         m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
         spiked = m.sample()

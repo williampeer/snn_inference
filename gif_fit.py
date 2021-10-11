@@ -56,7 +56,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, trai
 
         cur_p_mean_grad = np.mean(np.abs(param.grad.clone().detach().numpy()))
         if p_i > 0:
-            cur_p_max = model.__class__.parameter_init_intervals[model.__class__.parameter_names[p_i]][1]
+            cur_p_max = model.__class__.parameter_init_intervals[model.__class__.free_parameters[p_i]][1]
         else:  # 'w'
             cur_p_max = 1.
 

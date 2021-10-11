@@ -4,7 +4,7 @@ from torch import FloatTensor as FT
 
 
 class nonDifferentiableMicroGIF(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta']
+    free_parameters = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta']
     parameter_init_intervals = { 'E_L': [0., 5.], 'tau_m': [9., 12.], 'tau_s': [3., 6.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1] }
     param_lin_constraints = [[0., 1.], [-10., 30.], [2., 20.], [1.5, 20.], [800., 1500.], [0.5, 1.5]]
@@ -100,7 +100,7 @@ class nonDifferentiableMicroGIF(nn.Module):
         epsilon = Heaviside(self.time_since_spike-self.Delta_delay)\
                   *torch.exp(-(self.time_since_spike-self.Delta_delay)/self.tau_s)/self.tau_s
 
-        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        W_syn = 10. * self.self_recurrence_mask * self.w * self.neuron_types
         # Scale synaptic currents with pop sizes.
         I_syn = (self.tau_m * (epsilon * self.pop_sizes * self.spiked).matmul(W_syn)) / self.R_m
         dv = (self.E_L - self.v + self.R_m * (I_syn + I_ext)) / self.tau_m
