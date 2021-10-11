@@ -7,7 +7,7 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 class microGIF(nn.Module):
     free_parameters = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta']
-    parameter_init_intervals = { 'E_L': [2., 8.], 'tau_m': [6., 15.], 'tau_s': [2., 8.], 'tau_theta': [950., 1050.],
+    parameter_init_intervals = { 'E_L': [2., 6.], 'tau_m': [12., 14.], 'tau_s': [2., 8.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1] }
     param_lin_constraints = [[0., 1.], [-5., 10.], [2., 20.], [1.5, 20.], [800., 1500.], [0.5, 1.5]]
 
@@ -126,7 +126,7 @@ class microGIF(nn.Module):
         v_next = self.v + dv
 
         spikes_lambda = self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)
-        m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
+        m = torch.distributions.bernoulli.Bernoulli(spikes_lambda.clip(0., 1.))
         spiked = m.sample()
         # spiked = torch.bernoulli(spikes_lambda)
         # spiked = m.rsample()

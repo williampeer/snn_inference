@@ -11,7 +11,7 @@ from plot import plot_spike_trains_side_by_side, plot_spike_train_projection, pl
 
 # num_pops = 2
 num_pops = 4
-pop_size = 4
+pop_size = 2
 # pop_size = 2
 # pop_size = 1
 
@@ -28,7 +28,7 @@ for random_seed in range(3, 4):
     snn = TargetModelMicroGIF.micro_gif_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
     # snn = TargetModelMicroGIF.non_differentiable_micro_gif_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
 
-    inputs = sine_modulated_white_noise(t=5000, N=snn.N)
+    inputs = sine_modulated_white_noise(t=8000, N=snn.N)
 
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(inputs.sum()))
