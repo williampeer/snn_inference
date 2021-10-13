@@ -57,7 +57,7 @@ def main(argv):
     # model_type = None
     model_type = 'microGIF'
     budget = 10000
-    # budget = 20
+    # budget = 100
     tar_seed = 42
 
     class_lookup = { 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad,
@@ -95,7 +95,7 @@ def main(argv):
         sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS)
 
 
-def get_binned_spike_counts(out, bin_size=400):
+def get_binned_spike_counts(out, bin_size=200):
     # bin_len = int(out.shape[0] / bins)
     n_bins = int(out.shape[0] / bin_size)
     out_counts = torch.zeros((n_bins, out.shape[1]))

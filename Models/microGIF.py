@@ -9,7 +9,7 @@ class microGIF(nn.Module):
     free_parameters = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta']
     parameter_init_intervals = { 'E_L': [2., 6.], 'tau_m': [12., 14.], 'tau_s': [2., 8.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1] }
-    param_lin_constraints = [[0., 1.], [-5., 10.], [2., 20.], [1.5, 20.], [800., 1500.], [0.5, 1.5]]
+    param_lin_constraints = [[0., 1.], [-5., 10.], [5., 20.], [1., 20.], [800., 1500.], [0.5, 1.5]]
 
     def __init__(self, parameters, N=4, neuron_types=[1, -1]):
         super(microGIF, self).__init__()
@@ -83,11 +83,11 @@ class microGIF(nn.Module):
         self.theta_v = self.theta_v.clone().detach()
 
     def register_backward_clamp_hooks(self):
-        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -5., 25., self.E_L))
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -5., 10., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 5., 20., self.tau_m))
-        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1.5, 20., self.tau_s))
-        self.tau_theta.register_hook(lambda grad: static_clamp_for(grad, 650., 1350, self.tau_theta))
-        self.J_theta.register_hook(lambda grad: static_clamp_for(grad, 0.1, 4., self.J_theta))
+        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.tau_s))
+        self.tau_theta.register_hook(lambda grad: static_clamp_for(grad, 800., 1500, self.tau_theta))
+        self.J_theta.register_hook(lambda grad: static_clamp_for(grad, 0.5, 1.5, self.J_theta))
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
