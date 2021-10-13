@@ -125,8 +125,8 @@ class microGIF(nn.Module):
         dv = (self.E_L - self.v + self.R_m * (I_syn + I_ext)) / self.tau_m
         v_next = self.v + dv
 
-        spikes_lambda = self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)
-        m = torch.distributions.bernoulli.Bernoulli(spikes_lambda.clip(0., 1.))
+        spikes_lambda = (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)).clip(0., 1.)
+        m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
         spiked = m.sample()
         # spiked = torch.bernoulli(spikes_lambda)
         # spiked = m.rsample()

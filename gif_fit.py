@@ -33,13 +33,14 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, trai
         current_inputs = sine_modulated_white_noise(t=constants.rows_per_train_iter, N=model.N)
         current_inputs.retain_grad()
 
-    spike_probs, spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
+    spike_probs, expressed_model_spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
 
     # returns tensor, maintains gradient
     m = torch.distributions.bernoulli.Bernoulli(spike_probs)
     # spikes = m.sample()
     nll_target = -m.log_prob(target_spiketrain.detach()).sum()
-    loss = nll_target * calculate_loss(spikes, target_spiketrain.detach(), constants=constants)
+    loss = nll_target * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
+    # loss = nll_target
     # loss = spike_metrics.spike_proba_metric(spike_probs, spikes, target_spiketrain.detach())
 
     loss.backward(retain_graph=True)

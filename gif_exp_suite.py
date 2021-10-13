@@ -114,9 +114,11 @@ def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_typ
     print('-- sanity-checks-done --')
 
     m = torch.distributions.bernoulli.Bernoulli(sproba)
-    spikes = m.sample()
-    loss = calculate_loss(spikes, target_spiketrain, constants=constants)
-    # nll_target = -m.log_prob(target_spikes).sum()
+    # spikes = m.sample()
+    nll_target = -m.log_prob(target_spiketrain).sum()
+    # loss = calculate_loss(spikes, target_spiketrain, constants=constants)
+    loss = nll_target * calculate_loss(model_spike_train, target_spiketrain, constants=constants)
+    # loss = nll_target
     # loss = calculate_loss(sproba, target_spiketrain, constants=constants)
     # loss = spike_metrics.spike_proba_metric(sproba, model_spike_train, target_spiketrain)
     # loss = spike_metrics.test_metric(sproba, model_spike_train, target_spiketrain)
