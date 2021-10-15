@@ -40,8 +40,9 @@ def main(argv):
     data_path = None
 
     model_type = 'microGIF'
-    loss_fn = 'frd'
+    # loss_fn = 'frd'
     # loss_fn = 'vrd'
+    loss_fn = None
     norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -112,20 +113,26 @@ def main(argv):
     else:
         raise NotImplementedError('N has to be in [2, 4, 16]')
 
+    if loss_fn is None:
+        loss_functions = [LossFn.FIRING_RATE_DIST.name, LossFn.VAN_ROSSUM_DIST.name]
+    else:
+        loss_functions = [LossFn(loss_fn).name]
+
     if exp_type_str in [C.ExperimentType.Synthetic.name, C.ExperimentType.SanityCheck.name]:
-        for f_i in range(3+tar_start_seed_offset, 3+tar_start_seed_offset+num_targets):
-            target_model_name = 'gif_soft_continuous_populations_model{}'.format(f_i)
-            target_model = TargetModelMicroGIF.micro_gif_populations_model(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+        for loss_fn in loss_functions:
+            for f_i in range(3+tar_start_seed_offset, 3+tar_start_seed_offset+num_targets):
+                target_model_name = 'gif_soft_continuous_populations_model{}'.format(f_i)
+                target_model = TargetModelMicroGIF.micro_gif_populations_model(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
 
-            constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
-                                    tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
-                                    initial_poisson_rate=0., loss_fn=LossFn(loss_fn).name, evaluate_step=evaluate_step,
-                                    plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name,
-                                    exp_type_str=exp_type_str, silent_penalty_factor=None,
-                                    norm_grad_flag=norm_grad_flag, data_path=data_path, bin_size=bin_size,
-                                    burn_in=burn_in, tar_start_seed_offset=tar_start_seed_offset)
+                constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
+                                        tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
+                                        initial_poisson_rate=0., loss_fn=loss_fn, evaluate_step=evaluate_step,
+                                        plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name,
+                                        exp_type_str=exp_type_str, silent_penalty_factor=None,
+                                        norm_grad_flag=norm_grad_flag, data_path=data_path, bin_size=bin_size,
+                                        burn_in=burn_in, tar_start_seed_offset=tar_start_seed_offset)
 
-            gif_exp_suite.start_exp(constants=constants, model_class=microGIF, target_model=target_model)
+                gif_exp_suite.start_exp(constants=constants, model_class=microGIF, target_model=target_model)
 
 
 if __name__ == "__main__":
