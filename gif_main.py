@@ -15,6 +15,7 @@ def main(argv):
 
     # Default values
     start_seed = 42
+    tar_start_seed_offset = 0
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
     # exp_type_str = C.ExperimentType.DataDriven.name
@@ -77,6 +78,8 @@ def main(argv):
             plot_flag = bool(args[i])
         elif opt in ("-ss", "--start-seed"):
             start_seed = int(args[i])
+        elif opt in ("-tsso", "--target-start-seed-offset"):
+            tar_start_seed_offset = int(args[i])
         elif opt in ("-et", "--experiment-type"):
             exp_type_str = args[i]
         elif opt in ("-mt", "--model-type"):
@@ -110,7 +113,7 @@ def main(argv):
         raise NotImplementedError('N has to be in [2, 4, 16]')
 
     if exp_type_str in [C.ExperimentType.Synthetic.name, C.ExperimentType.SanityCheck.name]:
-        for f_i in range(3, 3+num_targets):
+        for f_i in range(3+tar_start_seed_offset, 3+tar_start_seed_offset+num_targets):
             target_model_name = 'gif_soft_continuous_populations_model{}'.format(f_i)
             target_model = TargetModelMicroGIF.micro_gif_populations_model(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
 
@@ -120,7 +123,7 @@ def main(argv):
                                     plot_flag=plot_flag, start_seed=start_seed, target_fname=target_model_name,
                                     exp_type_str=exp_type_str, silent_penalty_factor=None,
                                     norm_grad_flag=norm_grad_flag, data_path=data_path, bin_size=bin_size,
-                                    burn_in=burn_in)
+                                    burn_in=burn_in, tar_start_seed_offset=tar_start_seed_offset)
 
             gif_exp_suite.start_exp(constants=constants, model_class=microGIF, target_model=target_model)
 
