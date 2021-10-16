@@ -204,7 +204,7 @@ def posterior_stats(posterior, method, observation, points, model_dim, plot_dim,
 
     # observation = torch.reshape(targets, (1, -1))
     data_arr = {}
-    samples = posterior.sample((budget,), x=observation)
+    samples = posterior.sample((budget,), x=observation, sample_with_mcmc=True)
     data_arr['samples'] = samples
     data_arr['observation'] = observation
     data_arr['tar_parameters'] = points
