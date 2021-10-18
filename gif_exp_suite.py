@@ -1,3 +1,6 @@
+import torch.distributions.poisson
+import torch.tensor as T
+
 import Log
 import gif_fit
 import model_util
@@ -6,18 +9,18 @@ from Models.TORCH_CUSTOM import static_clamp_for_scalar
 from data_util import load_sparse_data
 from eval import sanity_checks, calculate_loss
 from experiments import draw_from_uniform, release_computational_graph, \
-    generate_synthetic_data_tuple, sine_modulated_white_noise
+    generate_synthetic_data_tuple, micro_gif_input
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)
 # ---------------------------------------
 
 
-def stats_training_iterations(model_parameters, model, poisson_rate, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
+def stats_training_iterations(model_parameters, model, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
     if constants.plot_flag:
         parameter_names = model.free_parameters
         plot_parameter_inference_trajectories_2d(model_parameters,
-                                                 uuid=constants.UUID,
+                                                 uuid=model.__class__.__name__+'/'+constants.UUID,
                                                  exp_type=exp_type_str,
                                                  target_params=target_parameters,
                                                  param_names=parameter_names,
@@ -43,7 +46,7 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                 weights_params['w'].append(np.mean(weights[n_i], axis=1))
 
             plot_parameter_inference_trajectories_2d(weights_params, target_params=tar_weights_params,
-                                                     uuid=constants.UUID,
+                                                     uuid=model.__class__.__name__+'/'+constants.UUID,
                                                      exp_type=exp_type_str,
                                                      param_names=w_names,
                                                      custom_title='Avg inferred weights across training iterations',
@@ -52,11 +55,11 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                      logger=logger)
         # ------------------------------------------------------
 
-        plot_loss(loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
+        plot_loss(loss=test_losses, uuid=model.__class__.__name__+'/'+constants.UUID, exp_type=exp_type_str,
                   custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
                                                                  constants.loss_fn, constants.learn_rate),
                   fname='test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn, str(constants.tau_van_rossum).replace('.', '_')))
-        plot_loss(loss=train_losses, uuid=constants.UUID, exp_type=exp_type_str,
+        plot_loss(loss=train_losses, uuid=model.__class__.__name__+'/'+constants.UUID, exp_type=exp_type_str,
                   custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
                                                                  constants.loss_fn, constants.learn_rate),
                   fname='train_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn,
@@ -68,7 +71,7 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
     logger.log('test_losses: #{}'.format(test_losses), ['mean test loss: {}'.format(mean_test_loss)])
 
     cur_fname = '{}_exp_num_{}_data_set_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, constants.data_set, mean_test_loss, constants.UUID)
-    IO.save(model, rate=poisson_rate, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
+    IO.save(model, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
 
     del model, mean_test_loss
 
@@ -102,7 +105,9 @@ def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_typ
             "inputs and targets should have same shape. inputs shape: {}, targets shape: {}".format(inputs.shape,
                                                                                                     target_spiketrain.shape)
     else:
-        inputs = sine_modulated_white_noise(t=target_spiketrain.shape[0], N=model.N)
+        N = model.N
+        inputs = micro_gif_input(t=target_spiketrain.shape[0], N=N,
+                                            neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])]))
 
     sproba, model_spike_train = model_util.feed_inputs_sequentially_return_tuple(model, inputs)
 
@@ -113,13 +118,14 @@ def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_typ
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
 
-    m = torch.distributions.bernoulli.Bernoulli(sproba)
+    # m = torch.distributions.bernoulli.Bernoulli(sproba)
+    m = torch.distributions.poisson.Poisson(sproba)
     # spikes = m.sample()
     nll_target = -m.log_prob(target_spiketrain).sum()
-    loss = nll_target * calculate_loss(model_spike_train, target_spiketrain, constants=constants)
+    # loss = nll_target * calculate_loss(model_spike_train, target_spiketrain, constants=constants)
     # nll_model_spikes = -m.log_prob(model_spike_train.detach()).sum()
     # loss = (nll_target - nll_model_spikes) * calculate_loss(model_spike_train, target_spiketrain.detach(), constants=constants)
-    # loss = nll_target
+    loss = nll_target
     # loss = calculate_loss(sproba, target_spiketrain, constants=constants)
     # loss = spike_metrics.spike_proba_metric(sproba, model_spike_train, target_spiketrain)
     # loss = spike_metrics.test_metric(sproba, model_spike_train, target_spiketrain)
@@ -131,13 +137,13 @@ def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_typ
         exp_type_str = exp_type.name
 
     if train_i % constants.evaluate_step == 0 or converged or train_i == constants.train_iters - 1:
-        plot_spike_trains_side_by_side(model_spike_train, target_spiketrain, uuid=constants.UUID,
+        plot_spike_trains_side_by_side(model_spike_train, target_spiketrain, uuid=model.__class__.__name__+'/'+constants.UUID,
                                        exp_type=exp_type_str,
                                        title='Spike trains ({}, loss: {:.3f})'.format(label, loss),
                                        fname='spiketrains_set_{}_exp_{}_train_iter_{}'.format(
                                            model.__class__.__name__, exp_num, train_i))
     np_loss = loss.clone().detach().numpy()
-    release_computational_graph(model, p_rate, inputs)
+    release_computational_graph(model, inputs)
     loss = None
     return np_loss
 
@@ -168,7 +174,10 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     test_losses = np.array([]); train_losses = np.array([]); train_i = 0; converged = False; next_step = 0
 
     inputs = None
-    train_targets, gen_inputs = generate_synthetic_data_tuple(target_model, t=constants.rows_per_train_iter, burn_in=constants.burn_in)
+    N = model.N
+    train_targets, gen_inputs = generate_synthetic_data_tuple(target_model, t=constants.rows_per_train_iter,
+                                                              neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])]),
+                                                              burn_in=constants.burn_in)
     if constants.EXP_TYPE == ExperimentType.SanityCheck:
         inputs = gen_inputs
 
@@ -184,7 +193,9 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
 
         # ---- Train ----
         train_input = None
-        train_targets, gen_train_input = generate_synthetic_data_tuple(gen_model=target_model, t=constants.rows_per_train_iter, burn_in=constants.burn_in)
+        train_targets, gen_train_input = generate_synthetic_data_tuple(gen_model=target_model, t=constants.rows_per_train_iter,
+                                                                       neurons_coeff=torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.1])]),
+                                                                       burn_in=constants.burn_in)
         if constants.EXP_TYPE == ExperimentType.SanityCheck:
             train_input = gen_train_input
 
@@ -212,10 +223,10 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         train_losses = np.concatenate((train_losses, np.asarray([train_loss])))
 
         release_computational_graph(target_model, constants.initial_poisson_rate)
-        release_computational_graph(model, poisson_input_rate, train_input)
+        release_computational_graph(model, train_input)
         train_targets = None; train_loss = None
 
-    stats_training_iterations(model_parameters=parameters, model=model, poisson_rate=poisson_input_rate,
+    stats_training_iterations(model_parameters=parameters, model=model,
                               train_losses=train_losses, test_losses=test_losses,
                               constants=constants, logger=logger, exp_type_str=constants.EXP_TYPE.name,
                               target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
@@ -265,7 +276,7 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
     parameter_names = model_class.free_parameters
     if constants.plot_flag:
         plot_all_param_pairs_with_variance(recovered_param_per_exp,
-                                           uuid=constants.UUID,
+                                           uuid=model_class.__name__+'/'+constants.UUID,
                                            exp_type=constants.EXP_TYPE.name,
                                            target_params=target_parameters,
                                            param_names=parameter_names,

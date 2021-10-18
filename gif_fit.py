@@ -1,11 +1,11 @@
 import numpy as np
 import torch
+import torch.tensor as T
 
 import model_util
-import spike_metrics
 from Constants import ExperimentType
 from eval import calculate_loss
-from experiments import release_computational_graph, sine_modulated_white_noise
+from experiments import release_computational_graph, micro_gif_input
 
 
 def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, train_i=None, logger=None):
@@ -25,24 +25,28 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, trai
         current_inputs = gen_inputs.clone().detach().requires_grad_(True)
         current_inputs.retain_grad()
     else:
+        N = model.N
         if constants.burn_in:
             burn_in_len = int(target_spiketrain.shape[0] / 10)
             print('simulating burn_in for {} ms..'.format(burn_in_len))
-            burn_in_inputs = sine_modulated_white_noise(t=burn_in_len, N=model.N)
+            burn_in_inputs = micro_gif_input(t=burn_in_len, N=model.N,
+                                             neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])]))
             _, _ = model_util.feed_inputs_sequentially_return_tuple(model, burn_in_inputs)
-        current_inputs = sine_modulated_white_noise(t=constants.rows_per_train_iter, N=model.N)
+        current_inputs = micro_gif_input(t=constants.rows_per_train_iter, N=model.N,
+                                         neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])]))
         current_inputs.retain_grad()
 
     spike_probs, expressed_model_spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
 
     # returns tensor, maintains gradient
-    m = torch.distributions.bernoulli.Bernoulli(spike_probs)
+    # m = torch.distributions.bernoulli.Bernoulli(spike_probs)
+    m = torch.distributions.poisson.Poisson(spike_probs)
     # spikes = m.sample()
     nll_target = -m.log_prob(target_spiketrain.detach()).sum()
-    loss = nll_target * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
+    # loss = nll_target * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
     # nll_model_spikes = -m.log_prob(expressed_model_spikes.detach()).sum()
     # loss = (nll_target-nll_model_spikes) * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
-    # loss = nll_target
+    loss = nll_target
     # loss = spike_metrics.spike_proba_metric(spike_probs, spikes, target_spiketrain.detach())
 
     loss.backward(retain_graph=True)
@@ -70,7 +74,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, trai
     converged_batches.append(converged)
 
     optimiser.step()
-    release_computational_graph(model, False, current_inputs)
+    release_computational_graph(model, current_inputs)
     avg_unseen_loss = loss.clone().detach()
     spikes = None; loss = None; current_inputs = None
 

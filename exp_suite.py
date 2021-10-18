@@ -1,6 +1,6 @@
+import torch.tensor as T
 import Log
 from Constants import ExperimentType
-from Models.TORCH_CUSTOM import static_clamp_for_scalar
 from data_util import load_sparse_data, get_spike_train_matrix
 from eval import evaluate_loss
 from experiments import generate_synthetic_data, draw_from_uniform, release_computational_graph
@@ -11,12 +11,12 @@ torch.autograd.set_detect_anomaly(True)
 # ---------------------------------------
 
 
-def stats_training_iterations(model_parameters, model, poisson_rate, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
+def stats_training_iterations(model_parameters, model, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
     if constants.plot_flag:
         parameter_names = model.parameter_names
         # parameter_names.append('p_rate')
         plot_parameter_inference_trajectories_2d(model_parameters,
-                                                 uuid=constants.UUID,
+                                                 uuid=model.__class__.__name__+'/'+constants.UUID,
                                                  exp_type=exp_type_str,
                                                  target_params=target_parameters,
                                                  param_names=parameter_names,
@@ -42,7 +42,7 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                 weights_params['w'].append(np.mean(weights[n_i], axis=1))
 
             plot_parameter_inference_trajectories_2d(weights_params, target_params=tar_weights_params,
-                                                     uuid=constants.UUID,
+                                                     uuid=model.__class__.__name__+'/'+constants.UUID,
                                                      exp_type=exp_type_str,
                                                      param_names=w_names,
                                                      custom_title='Avg inferred weights across training iterations',
@@ -51,7 +51,8 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
                                                      logger=logger)
         # ------------------------------------------------------
 
-        plot_losses(training_loss=train_losses, test_loss=test_losses, uuid=constants.UUID, exp_type=exp_type_str,
+        plot_losses(training_loss=train_losses, test_loss=test_losses, uuid=model.__class__.__name__+'/'+constants.UUID,
+                    exp_type=exp_type_str,
                     custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
                                                                        constants.loss_fn, constants.learn_rate),
                     fname='training_and_test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn, str(constants.tau_van_rossum).replace('.', '_')))
@@ -61,7 +62,7 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
     logger.log('test_losses: #{}'.format(test_losses), ['mean test loss: {}'.format(mean_test_loss)])
 
     cur_fname = '{}_exp_num_{}_data_set_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, constants.data_set, mean_test_loss, constants.UUID)
-    IO.save(model, rate=poisson_rate, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
+    IO.save(model, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
 
     del model, mean_test_loss
 
@@ -122,18 +123,11 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
 
     model = model_class(N=num_neurons, parameters=params_model, neuron_types=neuron_types)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
-    poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
-    poisson_input_rate.clamp(5., 20.)
-    poisson_input_rate.register_hook(lambda grad: static_clamp_for_scalar(grad, 5., 20., poisson_input_rate))
     parameters = {}
     for p_i, key in enumerate(model.state_dict()):
         parameters[key] = [model.state_dict()[key].numpy()]
-    # parameters[p_i + 1] = [poisson_input_rate.clone().detach().numpy()]
-    # poisson_rates = []
-    # poisson_rates.append(poisson_input_rate.clone().detach().numpy())
 
     optim_params = list(model.parameters())
-    # optim_params.append(poisson_input_rate)
     optim = constants.optimiser(optim_params, lr=constants.learn_rate)
 
     test_losses = np.array([]); train_losses = np.array([]); prev_spike_index = 0; train_i = 0; converged = False
@@ -146,14 +140,18 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         next_step, train_targets = get_spike_train_matrix(index_last_step=next_step, advance_by_t_steps=constants.rows_per_train_iter,
                                                           spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
     else:
-        train_targets, gen_inputs = generate_synthetic_data(target_model, t=constants.rows_per_train_iter, burn_in=constants.burn_in)
+        N = model.N
+        train_targets, gen_inputs = generate_synthetic_data(target_model, t=constants.rows_per_train_iter,
+                                                            neurons_coeff=torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]),
+                                                            burn_in=constants.burn_in)
         if constants.EXP_TYPE == ExperimentType.SanityCheck:
             inputs = gen_inputs
 
-    loss_prior_to_training = evaluate_loss(model, inputs=inputs, p_rate=poisson_input_rate.clone().detach(),
+    loss_prior_to_training = evaluate_loss(model, inputs=inputs,
                                            target_spiketrain=train_targets, label='train i: {}'.format(train_i),
                                            exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
-                                           constants=constants, converged=converged)
+                                           constants=constants, converged=converged,
+                                           neurons_coeff=torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]))
     test_losses = np.concatenate((test_losses, np.asarray([loss_prior_to_training])))
 
     while not converged and (train_i < constants.train_iters):
@@ -168,7 +166,10 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
                                                               spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
             train_input = None
         else:
-            train_targets, gen_train_input = generate_synthetic_data(gen_model=target_model, t=constants.rows_per_train_iter, burn_in=constants.burn_in)
+            N = model.N
+            train_targets, gen_train_input = generate_synthetic_data(gen_model=target_model, t=constants.rows_per_train_iter,
+                                                                     neurons_coeff=torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]),
+                                                                     burn_in=constants.burn_in)
             if constants.EXP_TYPE == ExperimentType.SanityCheck:
                 train_input = gen_train_input
 
@@ -200,20 +201,21 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         #         error_logger.log('Exception occurred: {}'.format(e))
         #     # converged = True  # stop if vanishing gradients
 
-        train_loss = evaluate_loss(model, inputs=train_input, p_rate=poisson_input_rate.clone().detach(),
+        train_loss = evaluate_loss(model, inputs=train_input,
                                    target_spiketrain=train_targets, label='train i: {}'.format(train_i),
                                    exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
-                                   constants=constants, converged=converged)
+                                   constants=constants, converged=converged,
+                                   neurons_coeff=torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]))
         # validation_loss = last_loss
         logger.log(parameters=['train loss', train_loss])
         train_losses = np.concatenate((train_losses, np.asarray([train_loss])))
 
         # if constants.EXP_TYPE is not ExperimentType.DataDriven:
         release_computational_graph(target_model, constants.initial_poisson_rate)
-        release_computational_graph(model, poisson_input_rate, train_input)
+        release_computational_graph(model, train_input)
         train_targets = None; train_loss = None
 
-    stats_training_iterations(model_parameters=parameters, model=model, poisson_rate=poisson_input_rate,
+    stats_training_iterations(model_parameters=parameters, model=model,
                               train_losses=train_losses, test_losses=test_losses,
                               constants=constants, logger=logger, exp_type_str=constants.EXP_TYPE.name,
                               target_parameters=target_parameters, exp_num=exp_num, train_i=train_i)
@@ -283,7 +285,7 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
     # parameter_names.append('p_rate')
     if constants.plot_flag:
         plot_all_param_pairs_with_variance(recovered_param_per_exp,
-                                           uuid=constants.UUID,
+                                           uuid=model_class.__name__+'/'+constants.UUID,
                                            exp_type=constants.EXP_TYPE.name,
                                            target_params=target_parameters,
                                            param_names=parameter_names,

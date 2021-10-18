@@ -5,16 +5,16 @@ from torch.nn.functional import kl_div
 
 import model_util
 import spike_metrics
-from experiments import release_computational_graph, sine_modulated_white_noise
+from experiments import release_computational_graph, micro_gif_input
 from plot import *
 
 
-def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=None, train_i=None, exp_num=None, constants=None, converged=False):
+def evaluate_loss(model, inputs, target_spiketrain, neurons_coeff, label='', exp_type=None, train_i=None, exp_num=None, constants=None, converged=False):
     if inputs is not None:
         assert (inputs.shape[0] == target_spiketrain.shape[0]), \
             "inputs and targets should have same shape. inputs shape: {}, targets shape: {}".format(inputs.shape, target_spiketrain.shape)
     else:
-        inputs = sine_modulated_white_noise(t=target_spiketrain.shape[0], N=model.N)
+        inputs = micro_gif_input(t=target_spiketrain.shape[0], N=model.N, neurons_coeff=neurons_coeff)
 
     model_spike_train = model_util.feed_inputs_sequentially_return_spike_train(model, inputs)
 
@@ -34,11 +34,11 @@ def evaluate_loss(model, inputs, p_rate, target_spiketrain, label='', exp_type=N
         exp_type_str = exp_type.name
 
     if train_i % constants.evaluate_step == 0 or converged or train_i == constants.train_iters -1:
-        plot_spike_trains_side_by_side(model_spike_train, target_spiketrain, uuid=constants.UUID, exp_type=exp_type_str,
-                                       title='Spike trains ({}, loss: {:.3f})'.format(label, loss),
+        plot_spike_trains_side_by_side(model_spike_train, target_spiketrain, uuid=model.__class__.__name__+'/'+constants.UUID,
+                                       exp_type=exp_type_str, title='Spike trains ({}, loss: {:.3f})'.format(label, loss),
                                        fname='spiketrains_set_{}_exp_{}_train_iter_{}'.format(model.__class__.__name__, exp_num, train_i))
     np_loss = loss.clone().detach().numpy()
-    release_computational_graph(model, p_rate, inputs)
+    release_computational_graph(model, inputs)
     loss = None
     return np_loss
 

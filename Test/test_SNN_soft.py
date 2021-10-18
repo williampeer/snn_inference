@@ -7,7 +7,7 @@ from torch import tensor as T
 import model_util
 import spike_metrics
 from TargetModels import TargetModelsSoft
-from experiments import sine_modulated_white_noise, sine_modulated_white_noise_input
+from experiments import sine_modulated_white_noise
 from plot import plot_spike_trains_side_by_side, plot_spike_train_projection, plot_neuron
 
 # num_pops = 2
@@ -28,7 +28,7 @@ for random_seed in range(3, 7):
     # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
     snn = TargetModelsSoft.glif_soft_continuous_ensembles_model_dales_compliant(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
 
-    inputs = sine_modulated_white_noise_input(t=8000, N=snn.N)
+    inputs = sine_modulated_white_noise(t=8000, N=snn.N, neurons_coeff=torch.cat([T(int(snn.N/2) * [0.25]), T(int(snn.N/2) * [0.1])]))
 
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(inputs.sum()))

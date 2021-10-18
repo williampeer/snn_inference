@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from torch import tensor as T
 
+from Models.LowerDim.GLIF_soft_lower_dim import GLIF_soft_lower_dim
 from Models.no_grad.GLIF_soft_no_grad import GLIF_soft_no_grad
 from experiments import randomise_parameters, zip_tensor_dicts
 
@@ -40,7 +41,7 @@ def glif_soft_continuous_ensembles_model_dales_compliant(random_seed, pop_size=1
 
         randomised_params = zip_tensor_dicts(params_pop_excit_1, params_pop_inhib_1)
     elif N_pops == 4:
-        # up to 4 populations, TODO: test values
+        # up to 4 populations
         weights_excit_1 = (torch.ones((pop_size, 1)) + (
                     2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
             [T(pop_size * [0.6]), T(pop_size * [0.4]), T(pop_size * [0.9]), T(pop_size * [0.9])])
@@ -55,10 +56,10 @@ def glif_soft_continuous_ensembles_model_dales_compliant(random_seed, pop_size=1
             [T(pop_size * [.9]), T(pop_size * [.9]), T(pop_size * [.1]), T(pop_size * [.2])])
 
         # Excitatory:
-        params_pop_excit_1 = {'tau_m': 4., 'G': 0.7, 'E_L': -52., 'delta_theta_s': 18., 'b_s': 0.4, 'f_v': 0.14,
+        params_pop_excit_1 = {'tau_m': 4., 'G': 0.7, 'E_L': -58., 'delta_theta_s': 18., 'b_s': 0.4, 'f_v': 0.14,
                               'delta_V': 12., 'f_I': 0.45, 'b_v': 0.3, 'a_v': 0.2, 'theta_inf': -4., 'tau_g': 4.5 }
         hand_coded_params_pop_excit_1 = {'preset_weights': weights_excit_1 }
-        params_pop_excit_2 = {'tau_m': 4.9, 'G': 0.6, 'E_L': -64., 'delta_theta_s': 14., 'b_s': 0.3, 'f_v': 0.14,
+        params_pop_excit_2 = {'tau_m': 4.9, 'G': 0.6, 'E_L': -55., 'delta_theta_s': 14., 'b_s': 0.3, 'f_v': 0.14,
                               'delta_V': 12., 'f_I': 0.4, 'b_v': 0.35, 'a_v': 0.25, 'theta_inf': -2., 'tau_g': 5.8 }
         hand_coded_params_pop_excit_2 = {'preset_weights': weights_excit_2 }
 
@@ -87,6 +88,7 @@ def glif_soft_continuous_ensembles_model_dales_compliant(random_seed, pop_size=1
     for i in range(int(N / 2)):
         neuron_types[-(1 + i)] = -1
     return GLIF_soft_no_grad(parameters=randomised_params, N=N, neuron_types=neuron_types)
+    # return GLIF_soft_lower_dim(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
 
 def glif_soft_cortical_populations(random_seed, pop_size=1, N_pops=2):

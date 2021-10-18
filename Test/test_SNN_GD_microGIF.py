@@ -2,12 +2,12 @@ import sys
 
 import numpy as np
 import torch
+import torch.tensor as T
 
 import model_util
-import spike_metrics
 from TargetModels import TargetModelMicroGIF
-from experiments import sine_modulated_white_noise, release_computational_graph
-from plot import plot_spike_trains_side_by_side, plot_spike_train_projection, plot_neuron
+from experiments import sine_modulated_white_noise
+from plot import plot_spike_train_projection
 
 # num_pops = 2
 num_pops = 4
@@ -20,7 +20,9 @@ for random_seed in range(3, 4):
     np.random.seed(random_seed)
     snn = TargetModelMicroGIF.micro_gif_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
 
-    sample_inputs = sine_modulated_white_noise(t=5000, N=snn.N)
+    N = snn.N
+    neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.1])])
+    sample_inputs = sine_modulated_white_noise(t=5000, N=snn.N, neurons_coeff=neurons_coeff)
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(sample_inputs.sum()))
     _, sample_targets = model_util.feed_inputs_sequentially_return_tuple(snn, sample_inputs)

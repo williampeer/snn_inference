@@ -2,7 +2,7 @@ import Log
 from IO import save_poisson_rates
 from data_util import load_sparse_data, get_spike_train_matrix
 from eval import evaluate_loss
-from experiments import generate_synthetic_data, draw_from_uniform, release_computational_graph
+from experiments import draw_from_uniform
 from fit import fit_batches
 from plot import *
 
@@ -32,7 +32,7 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
     logger.log('test_losses: #{}'.format(test_losses), ['mean test loss: {}'.format(mean_test_loss)])
 
     cur_fname = '{}_exp_num_{}_data_set_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, constants.data_set, mean_test_loss, constants.UUID)
-    IO.save(model, rate=poisson_rate, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
+    IO.save(model, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
 
     del model, mean_test_loss
 

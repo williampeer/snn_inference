@@ -1,6 +1,7 @@
 import sys
 
 import torch
+import torch.tensor as T
 from sbi import analysis as analysis
 from sbi import utils as utils
 from sbi.inference.base import infer
@@ -47,8 +48,8 @@ def main(argv):
     NUM_WORKERS = 4
     # NUM_WORKERS = 1
 
-    t_interval = 10000
-    # t_interval = 1600
+    # t_interval = 10000
+    t_interval = 1600
     N = 8
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
@@ -56,8 +57,8 @@ def main(argv):
     method = 'SNPE'
     # model_type = None
     model_type = 'microGIF'
-    budget = 10000
-    # budget = 100
+    # budget = 10000
+    budget = 100
     tar_seed = 42
 
     class_lookup = { 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad,
@@ -153,7 +154,7 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=5):
             programmatic_neuron_types[n_i] = -1
 
         model = model_class(parameters=programmatic_params_dict, N=N, neuron_types=programmatic_neuron_types)
-        inputs = sine_modulated_white_noise(t=t_interval, N=N)
+        inputs = sine_modulated_white_noise(t=t_interval, N=N, neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])]))
         spike_probas, outputs = feed_inputs_sequentially_return_tuple(model=model, inputs=inputs)
 
         return torch.reshape(get_binned_spike_counts(outputs.clone().detach()), (-1,))
