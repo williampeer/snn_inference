@@ -8,7 +8,7 @@ from eval import calculate_loss
 from experiments import release_computational_graph, sine_modulated_white_noise
 
 
-def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, train_i=None, logger=None):
+def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neurons_coeff, train_i=None, logger=None):
     if gen_inputs is not None:
         assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
             "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
@@ -39,10 +39,9 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, trai
             if constants.burn_in:
                 burn_in_len = int(target_spiketrain.shape[0] / 10)
                 print('simulating burn_in for {} ms..'.format(burn_in_len))
-                burn_in_inputs = sine_modulated_white_noise(t=burn_in_len, N=N,
-                                                            neurons_coeff = torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]))
+                burn_in_inputs = sine_modulated_white_noise(t=burn_in_len, N=N, neurons_coeff=neurons_coeff)
                 _ = model_util.feed_inputs_sequentially_return_spike_train(model, burn_in_inputs)
-            current_inputs = sine_modulated_white_noise(t=batch_size, N=N, neurons_coeff = torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]))
+            current_inputs = sine_modulated_white_noise(t=batch_size, N=N, neurons_coeff=neurons_coeff)
             current_inputs.retain_grad()
 
         spikes = model_util.feed_inputs_sequentially_return_spike_train(model, current_inputs)

@@ -90,7 +90,7 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
     return float(overall_mean.clone().detach())
 
 
-def fit_model(logger, constants, model_class, params_model, exp_num, target_model=None, target_parameters=None, num_neurons=12,
+def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coeff, target_model=None, target_parameters=None, num_neurons=12,
               error_logger=None):
     params_model['N'] = num_neurons
     neuron_types = np.ones((num_neurons,))
@@ -142,16 +142,14 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     else:
         N = model.N
         train_targets, gen_inputs = generate_synthetic_data(target_model, t=constants.rows_per_train_iter,
-                                                            neurons_coeff=torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]),
-                                                            burn_in=constants.burn_in)
+                                                            neurons_coeff=neurons_coeff, burn_in=constants.burn_in)
         if constants.EXP_TYPE == ExperimentType.SanityCheck:
             inputs = gen_inputs
 
     loss_prior_to_training = evaluate_loss(model, inputs=inputs,
                                            target_spiketrain=train_targets, label='train i: {}'.format(train_i),
                                            exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
-                                           constants=constants, converged=converged,
-                                           neurons_coeff=torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]))
+                                           constants=constants, converged=converged, neurons_coeff=neurons_coeff)
     test_losses = np.concatenate((test_losses, np.asarray([loss_prior_to_training])))
 
     while not converged and (train_i < constants.train_iters):
@@ -168,16 +166,14 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         else:
             N = model.N
             train_targets, gen_train_input = generate_synthetic_data(gen_model=target_model, t=constants.rows_per_train_iter,
-                                                                     neurons_coeff=torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]),
-                                                                     burn_in=constants.burn_in)
+                                                                     neurons_coeff=neurons_coeff, burn_in=constants.burn_in)
             if constants.EXP_TYPE == ExperimentType.SanityCheck:
                 train_input = gen_train_input
 
         # try:
-            avg_unseen_loss, abs_grads_mean, last_loss, converged = fit_batches(model, gen_inputs=train_input, target_spiketrain=train_targets,
-                                                                                # poisson_input_rate=poisson_input_rate,
-                                                                                optimiser=optim,
-                                                                                constants=constants, train_i=train_i, logger=logger)
+            avg_unseen_loss, abs_grads_mean, last_loss, converged = \
+                fit_batches(model, gen_inputs=train_input, target_spiketrain=train_targets, optimiser=optim,
+                            constants=constants, neurons_coeff=neurons_coeff, train_i=train_i, logger=logger)
 
             cur_params = model.state_dict()
             logger.log('current parameters {}'.format(cur_params))
@@ -205,7 +201,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
                                    target_spiketrain=train_targets, label='train i: {}'.format(train_i),
                                    exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
                                    constants=constants, converged=converged,
-                                   neurons_coeff=torch.cat([T(int(N / 2) * [0.25]), T(int(N/2) * [0.1])]))
+                                   neurons_coeff=neurons_coeff)
         # validation_loss = last_loss
         logger.log(parameters=['train loss', train_loss])
         train_losses = np.concatenate((train_losses, np.asarray([train_loss])))
@@ -252,12 +248,14 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
             num_neurons = len(node_indices)
 
         init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
+        N = num_neurons
+        neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.5]), T(int(N / 4) * [0.])])
 
         # try:
         recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
             fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
                       target_parameters=target_parameters, num_neurons=num_neurons,
-                      error_logger=error_logger)
+                      error_logger=error_logger, neurons_coeff=neurons_coeff)
 
         # logger.log('poisson rates for exp {}'.format(exp_i), poisson_rates)
 

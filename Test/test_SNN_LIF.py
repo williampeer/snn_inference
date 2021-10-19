@@ -40,9 +40,9 @@ for random_seed in range(3, 4):
     print('=========avg. zero thresh rate: {}'.format(1000*zero_thresh_spikes_sum / (spikes.shape[1] * spikes.shape[0])))
     plot_spike_train_projection(spikes, fname='test_projection_{}_ext_input'.format(snn.__class__.__name__) + '_' + str(random_seed))
 
-    zeros = torch.zeros_like(inputs)
-    spikes_zeros = model_util.feed_inputs_sequentially_return_spike_train(snn, zeros)
-    print('#spikes no input: {}'.format(torch.round(spikes_zeros).sum()))
+    # zeros = torch.zeros_like(inputs)
+    # spikes_zeros = model_util.feed_inputs_sequentially_return_spike_train(snn, zeros)
+    # print('#spikes no input: {}'.format(torch.round(spikes_zeros).sum()))
 
     snn.w = torch.nn.Parameter(torch.zeros((snn.v.shape[0],snn.v.shape[0])), requires_grad=True)
     spikes_zero_weights = model_util.feed_inputs_sequentially_return_spike_train(snn, inputs)
@@ -53,9 +53,9 @@ for random_seed in range(3, 4):
                                    title='Test {} spiketrains random input'.format(snn.__class__.__name__),
                                    legend=['Random weights', 'No weights'])
 
-    tau_vr = torch.tensor(5.0)
-    loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)
-    print('tau_vr: {}, loss: {}'.format(tau_vr, loss))
+    # tau_vr = torch.tensor(5.0)
+    # loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)
+    # print('tau_vr: {}, loss: {}'.format(tau_vr, loss))
     loss_rate = spike_metrics.firing_rate_distance(spikes, spikes_zero_weights)
     print('firing rate loss: {}'.format(loss_rate))
 

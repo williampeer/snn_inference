@@ -453,17 +453,17 @@ def lif_pop_model(random_seed, pop_size=1, N_pops=2):
         # up to 4 populations
         weights_excit_L2_3 = (torch.ones((pop_size, 1)) + (
                     2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [.45]), T(pop_size * [.45]), T(pop_size * [.2]), T(pop_size * [.3])])
+            [T(pop_size * [.35]), T(pop_size * [.45]), T(pop_size * [.2]), T(pop_size * [.45])])
         weights_inhib_L2_3 = (torch.ones((pop_size, 1)) + (
                     2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [.15]), T(pop_size * [.15]), T(pop_size * [.6]), T(pop_size * [.6])])
+            [T(pop_size * [.3]), T(pop_size * [.15]), T(pop_size * [.3]), T(pop_size * [.15])])
 
         weights_excit_L4 = (torch.ones((pop_size, 1)) + (
                     2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [0.7]), T(pop_size * [0.6]), T(pop_size * [0.3]), T(pop_size * [0.7])])
+            [T(pop_size * [0.8]), T(pop_size * [0.7]), T(pop_size * [0.3]), T(pop_size * [0.7])])
         weights_inhib_L4 = (torch.ones((pop_size, 1)) + (
                     2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
-            [T(pop_size * [.3]), T(pop_size * [.3]), T(pop_size * [.3]), T(pop_size * [.3])])
+            [T(pop_size * [.2]), T(pop_size * [.1]), T(pop_size * [.3]), T(pop_size * [.1])])
 
         params_pop_excit_L2_3 = {'tau_m': 4.9, 'E_L': -55., 'tau_g': 5.8 }
         hand_coded_params_pop_excit_L2_3 = {'preset_weights': weights_excit_L2_3 }
