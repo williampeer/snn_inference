@@ -340,7 +340,7 @@ def plot_avg_losses_composite(loss_res, keys, archive_path='default_export'):
 
     full_path = './figures/' + archive_path + '/'
     IO.makedir_if_not_exists(full_path)
-    plt.savefig(fname=full_path + 'export_avg_loss_composite.eps')
+    plt.savefig(fname=full_path + 'export_avg_loss_composite.png')
     # plt.show()
     plt.close()
 
@@ -526,7 +526,7 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
     # plt.show()
-    fig.savefig(path + '.eps')
+    fig.savefig(path + '.png')
     plt.close()
 
 

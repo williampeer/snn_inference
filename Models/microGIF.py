@@ -37,7 +37,6 @@ class microGIF(nn.Module):
         self.N = N
 
         if parameters.__contains__('preset_weights'):
-            # print('DEBUG: Setting w to preset weights: {}'.format(parameters['preset_weights']))
             # print('Setting w to preset weights.')
             rand_ws = torch.abs(parameters['preset_weights'])
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
@@ -129,9 +128,6 @@ class microGIF(nn.Module):
         m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
         spiked = m.sample()
         # spiked = torch.bernoulli(spikes_lambda)
-        # spiked = m.rsample()
-        # spiked = torch.sigmoid(100.*(spikes_lambda-draw))
-        # spiked = torch.sigmoid(spikes_lambda-0.1)
         self.spiked = spiked
         # self.spiked = spiked
         not_spiked = (spiked - 1.) / -1.
@@ -139,8 +135,5 @@ class microGIF(nn.Module):
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
 
-        # return m.log_prob(spiked)
-        # return spikes_lambda
-        # return spiked
         return spikes_lambda, spiked
         # return self.v, spiked

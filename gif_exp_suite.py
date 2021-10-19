@@ -118,14 +118,14 @@ def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_typ
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
 
-    # m = torch.distributions.bernoulli.Bernoulli(sproba)
-    m = torch.distributions.poisson.Poisson(sproba)
+    m = torch.distributions.bernoulli.Bernoulli(sproba)
+    # m = torch.distributions.poisson.Poisson(sproba)
     # spikes = m.sample()
     nll_target = -m.log_prob(target_spiketrain).sum()
-    # loss = nll_target * calculate_loss(model_spike_train, target_spiketrain, constants=constants)
+    loss = nll_target * calculate_loss(model_spike_train, target_spiketrain, constants=constants)
     # nll_model_spikes = -m.log_prob(model_spike_train.detach()).sum()
     # loss = (nll_target - nll_model_spikes) * calculate_loss(model_spike_train, target_spiketrain.detach(), constants=constants)
-    loss = nll_target
+    # loss = nll_target
     # loss = calculate_loss(sproba, target_spiketrain, constants=constants)
     # loss = spike_metrics.spike_proba_metric(sproba, model_spike_train, target_spiketrain)
     # loss = spike_metrics.test_metric(sproba, model_spike_train, target_spiketrain)
@@ -148,7 +148,7 @@ def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_typ
     return np_loss
 
 
-def fit_model(logger, constants, model_class, params_model, exp_num, target_model=None, target_parameters=None, num_neurons=12):
+def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coeff, target_model=None, target_parameters=None, num_neurons=12):
     params_model['N'] = num_neurons
     neuron_types = np.ones((num_neurons,))
     for i in range(int(num_neurons/2)):
@@ -176,7 +176,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
     inputs = None
     N = model.N
     train_targets, gen_inputs = generate_synthetic_data_tuple(target_model, t=constants.rows_per_train_iter,
-                                                              neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])]),
+                                                              neurons_coeff = neurons_coeff,
                                                               burn_in=constants.burn_in)
     if constants.EXP_TYPE == ExperimentType.SanityCheck:
         inputs = gen_inputs
@@ -194,15 +194,14 @@ def fit_model(logger, constants, model_class, params_model, exp_num, target_mode
         # ---- Train ----
         train_input = None
         train_targets, gen_train_input = generate_synthetic_data_tuple(gen_model=target_model, t=constants.rows_per_train_iter,
-                                                                       neurons_coeff=torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.1])]),
+                                                                       neurons_coeff=neurons_coeff,
                                                                        burn_in=constants.burn_in)
         if constants.EXP_TYPE == ExperimentType.SanityCheck:
             train_input = gen_train_input
 
         avg_unseen_loss, abs_grads_mean, converged = gif_fit.fit_batches(model, gen_inputs=train_input, target_spiketrain=train_targets,
-                                                                            # poisson_input_rate=poisson_input_rate,
-                                                                            optimiser=optim,
-                                                                            constants=constants, train_i=train_i, logger=logger)
+                                                                         neurons_coeff=neurons_coeff, optimiser=optim,
+                                                                         constants=constants, train_i=train_i, logger=logger)
 
         cur_params = model.state_dict()
         logger.log('current parameters {}'.format(cur_params))
@@ -259,10 +258,11 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
             num_neurons = len(node_indices)
 
         init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-
+        N = num_neurons
+        neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.])])
         recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
             fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
-                      target_parameters=target_parameters, num_neurons=num_neurons)
+                      target_parameters=target_parameters, num_neurons=num_neurons, neurons_coeff=neurons_coeff)
 
         if train_i >= constants.train_iters:
             print('DID NOT CONVERGE FOR SEED, CONTINUING ON TO NEXT SEED. exp_i: {}, train_i: {}, train_losses: {}, test_losses: {}'

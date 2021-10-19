@@ -57,9 +57,9 @@ def zip_tensor_dicts(a, b):
 #     # return torch.poisson((rate/1000.) * torch.ones((int(t), N))).clamp(0., 1.)  # t x N
 
 def micro_gif_input(t, N, neurons_coeff):
-    return sine_modulated_white_noise(t, N, neurons_coeff)
+    # return sine_modulated_white_noise(t, N, neurons_coeff)
     # return strong_sine_modulated_white_noise(t, N, neurons_coeff)
-    # return sine_modulation(t, N, neurons_coeff)
+    return sine_input(t, N, neurons_coeff)
 
 
 def sine_modulated_white_noise(t, N, neurons_coeff):
@@ -86,7 +86,7 @@ def strong_sine_modulated_white_noise(t, N, neurons_coeff):
     return ret
 
 
-def sine_modulation(t, N, neurons_coeff):
+def sine_input(t, N, neurons_coeff):
     # if neurons_coeff is None:
     #     neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])])
     # return noise / torch.max(noise)  # normalised

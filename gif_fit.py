@@ -8,7 +8,7 @@ from eval import calculate_loss
 from experiments import release_computational_graph, micro_gif_input
 
 
-def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, train_i=None, logger=None):
+def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neurons_coeff, train_i=None, logger=None):
     if gen_inputs is not None:
         assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
             "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
@@ -29,24 +29,22 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, trai
         if constants.burn_in:
             burn_in_len = int(target_spiketrain.shape[0] / 10)
             print('simulating burn_in for {} ms..'.format(burn_in_len))
-            burn_in_inputs = micro_gif_input(t=burn_in_len, N=model.N,
-                                             neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])]))
+            burn_in_inputs = micro_gif_input(t=burn_in_len, N=model.N, neurons_coeff=neurons_coeff)
             _, _ = model_util.feed_inputs_sequentially_return_tuple(model, burn_in_inputs)
-        current_inputs = micro_gif_input(t=constants.rows_per_train_iter, N=model.N,
-                                         neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])]))
+        current_inputs = micro_gif_input(t=constants.rows_per_train_iter, N=model.N, neurons_coeff=neurons_coeff)
         current_inputs.retain_grad()
 
     spike_probs, expressed_model_spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
 
     # returns tensor, maintains gradient
-    # m = torch.distributions.bernoulli.Bernoulli(spike_probs)
-    m = torch.distributions.poisson.Poisson(spike_probs)
+    m = torch.distributions.bernoulli.Bernoulli(spike_probs)
+    # m = torch.distributions.poisson.Poisson(spike_probs)
     # spikes = m.sample()
     nll_target = -m.log_prob(target_spiketrain.detach()).sum()
-    # loss = nll_target * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
+    loss = nll_target * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
     # nll_model_spikes = -m.log_prob(expressed_model_spikes.detach()).sum()
     # loss = (nll_target-nll_model_spikes) * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
-    loss = nll_target
+    # loss = nll_target
     # loss = spike_metrics.spike_proba_metric(spike_probs, spikes, target_spiketrain.detach())
 
     loss.backward(retain_graph=True)

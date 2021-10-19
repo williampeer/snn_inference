@@ -41,7 +41,7 @@ def main(argv):
     max_train_iters = 40
     num_targets = 5
     # Q: Interval size effect on loss curve and param retrieval for both lfns
-    interval_size = 4000
+    interval_size = 4800
     batch_size = interval_size; rows_per_train_iter = interval_size
     # bin_size = int(interval_size/10)  # for RPH
     bin_size = 100  # ms

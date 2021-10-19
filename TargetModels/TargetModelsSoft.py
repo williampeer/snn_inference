@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from torch import tensor as T
 
+from Models.LIF import LIF
 from Models.LowerDim.GLIF_soft_lower_dim import GLIF_soft_lower_dim
 from Models.no_grad.GLIF_soft_no_grad import GLIF_soft_no_grad
 from experiments import randomise_parameters, zip_tensor_dicts
@@ -418,3 +419,80 @@ def glif_soft_cortical_populations(random_seed, pop_size=1, N_pops=2):
 #     # for i in range(int(N / 3)):
 #     #     neuron_types[-(1 + i)] = -1
 #     return GLIF_soft_no_grad(parameters=randomised_params, N=N, neuron_types=neuron_types)
+
+def lif_pop_model(random_seed, pop_size=1, N_pops=2):
+    torch.manual_seed(random_seed)
+    np.random.seed(random_seed)
+
+    # weights_std = 0.05
+    weights_std = 0
+
+    N = N_pops * pop_size
+
+    if N_pops == 2:
+        weights_excit_L4 = (torch.ones((pop_size, 1)) + (2 * weights_std * torch.randn((pop_size, N))) - weights_std) * \
+                          torch.cat([T(pop_size * [0.2]), T(pop_size * [0.8])])
+        weights_inhib_L4 = (torch.ones((pop_size, 1)) + (2 * weights_std * torch.randn((pop_size, N))) - weights_std) * \
+                          torch.cat([T(pop_size * [.9]), T(pop_size * [.4])])
+
+        # Excitatory:
+        params_pop_excit_L4 = {'tau_m': 4., 'E_L': -58., 'tau_g': 4.5}
+        hand_coded_params_pop_excit_L4 = {'preset_weights': weights_excit_L4}
+
+        # Inhibitory
+        params_pop_inhib_L4 = {'tau_m': 2.5, 'E_L': -66., 'tau_g': 3.}
+        hand_coded_params_pop_inhib_L4 = {'preset_weights': weights_inhib_L4}
+
+        params_pop_excit_L4 = randomise_parameters(params_pop_excit_L4, coeff=T(0.025), N_dim=pop_size)
+        params_pop_excit_L4 = zip_tensor_dicts(params_pop_excit_L4, hand_coded_params_pop_excit_L4)
+        params_pop_inhib_L4 = randomise_parameters(params_pop_inhib_L4, coeff=T(0.025), N_dim=pop_size)
+        params_pop_inhib_L4 = zip_tensor_dicts(params_pop_inhib_L4, hand_coded_params_pop_inhib_L4)
+
+        randomised_params = zip_tensor_dicts(params_pop_excit_L4, params_pop_inhib_L4)
+    elif N_pops == 4:
+        # up to 4 populations
+        weights_excit_L2_3 = (torch.ones((pop_size, 1)) + (
+                    2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
+            [T(pop_size * [.45]), T(pop_size * [.45]), T(pop_size * [.2]), T(pop_size * [.3])])
+        weights_inhib_L2_3 = (torch.ones((pop_size, 1)) + (
+                    2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
+            [T(pop_size * [.15]), T(pop_size * [.15]), T(pop_size * [.6]), T(pop_size * [.6])])
+
+        weights_excit_L4 = (torch.ones((pop_size, 1)) + (
+                    2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
+            [T(pop_size * [0.7]), T(pop_size * [0.6]), T(pop_size * [0.3]), T(pop_size * [0.7])])
+        weights_inhib_L4 = (torch.ones((pop_size, 1)) + (
+                    2 * weights_std * torch.randn((pop_size, N))) - weights_std) * torch.cat(
+            [T(pop_size * [.3]), T(pop_size * [.3]), T(pop_size * [.3]), T(pop_size * [.3])])
+
+        params_pop_excit_L2_3 = {'tau_m': 4.9, 'E_L': -55., 'tau_g': 5.8 }
+        hand_coded_params_pop_excit_L2_3 = {'preset_weights': weights_excit_L2_3 }
+        hand_coded_params_pop_inhib_L4 = {'preset_weights': weights_inhib_L4 }
+        params_pop_inhib_L2_3 = {'tau_m': 2.1, 'E_L': -66., 'tau_g': 2.6 }
+        hand_coded_params_pop_inhib_L2_3 = {'preset_weights': weights_inhib_L2_3 }
+
+        params_pop_excit_L4 = {'tau_m': 4., 'E_L': -58., 'tau_g': 4.5 }
+        hand_coded_params_pop_excit_L4 = {'preset_weights': weights_excit_L4 }
+        params_pop_inhib_L4 = {'tau_m': 2.6, 'E_L': -62., 'tau_g': 3. }
+
+        params_pop_excit_L2_3 = randomise_parameters(params_pop_excit_L2_3, coeff=T(0.025), N_dim=pop_size)
+        params_pop_excit_L2_3 = zip_tensor_dicts(params_pop_excit_L2_3, hand_coded_params_pop_excit_L2_3)
+        params_pop_inhib_L2_3 = randomise_parameters(params_pop_inhib_L2_3, coeff=T(0.025), N_dim=pop_size)
+        params_pop_inhib_L2_3 = zip_tensor_dicts(params_pop_inhib_L2_3, hand_coded_params_pop_inhib_L2_3)
+        params_pop_excit_L4 = randomise_parameters(params_pop_excit_L4, coeff=T(0.025), N_dim=pop_size)
+        params_pop_excit_L4 = zip_tensor_dicts(params_pop_excit_L4, hand_coded_params_pop_excit_L4)
+        params_pop_inhib_L4 = randomise_parameters(params_pop_inhib_L4, coeff=T(0.025), N_dim=pop_size)
+        params_pop_inhib_L4 = zip_tensor_dicts(params_pop_inhib_L4, hand_coded_params_pop_inhib_L4)
+
+        randomised_params = zip_tensor_dicts(zip_tensor_dicts(zip_tensor_dicts(params_pop_excit_L2_3, params_pop_inhib_L2_3), params_pop_excit_L4), params_pop_inhib_L4)
+    else:
+        raise NotImplementedError("Model only supports 2 or 4 populations.")
+
+    # neuron_types = T([1,1, -1,-1, 1,1, -1,-1])
+    pop_types = [1, -1, 1, -1]
+    neuron_types = torch.ones((N,))
+    for n_i in range(N_pops):
+        for n_j in range(pop_size):
+            ind = n_i * pop_size + n_j
+            neuron_types[ind] = pop_types[n_i]
+    return LIF(parameters=randomised_params, N=N, neuron_types=neuron_types)

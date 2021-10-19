@@ -7,7 +7,7 @@ import torch.tensor as T
 import model_util
 import spike_metrics
 from TargetModels import TargetModelMicroGIF
-from experiments import sine_modulated_white_noise, strong_sine_modulated_white_noise, sine_modulation
+from experiments import sine_modulated_white_noise, strong_sine_modulated_white_noise, sine_input
 from plot import plot_spike_trains_side_by_side, plot_spike_train_projection, plot_neuron
 
 # num_pops = 2
@@ -17,23 +17,15 @@ pop_size = 2
 # pop_size = 1
 
 for random_seed in range(3, 4):
-    # snn = lif_ensembles_model_dales_compliant(random_seed=random_seed)
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
-    # model_class = LIF_soft_weights_only
-    # init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-    # snn = model_class(init_params_model)
-    # snn = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
-    # snn = TargetModelsSoft.lif_r_soft_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
-    # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
     snn = TargetModelMicroGIF.micro_gif_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
-    # snn = TargetModelMicroGIF.non_differentiable_micro_gif_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
 
     N = snn.N
-    neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.1])])
+    neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.])])
     # inputs = sine_modulated_white_noise(t=7200, N=snn.N, neurons_coeff=neurons_coeff)
     # inputs = strong_sine_modulated_white_noise(t=7200, N=snn.N, neurons_coeff=neurons_coeff)
-    inputs = sine_modulation(t=4800, N=snn.N, neurons_coeff=neurons_coeff)
+    inputs = sine_input(t=4800, N=snn.N, neurons_coeff=neurons_coeff)
 
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(inputs.sum()))
@@ -72,6 +64,9 @@ for random_seed in range(3, 4):
     plot_spike_trains_side_by_side(spikes, spikes_zero_weights, 'test_{}'.format(snn.__class__.__name__),
                                    title='Test {} spiketrains random input'.format(snn.__class__.__name__),
                                    legend=['Random weights', 'No weights'])
+    plot_spike_trains_side_by_side(spikes, spikes_zeros, 'test_{}'.format(snn.__class__.__name__),
+                                   title='Test {} spiketrains no input'.format(snn.__class__.__name__),
+                                   legend=['Random weights', 'No input'])
 
     tau_vr = torch.tensor(5.0)
     loss = spike_metrics.van_rossum_dist(spikes, spikes_zeros, tau=tau_vr)

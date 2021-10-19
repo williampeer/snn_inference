@@ -19,18 +19,19 @@ def main(argv):
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.02; N_exp = 4; tau_van_rossum = 20.0; plot_flag = True
+    learn_rate = 0.02; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
     # Run 100 with lr 0.01 and 0.02
-    max_train_iters = 30
-    num_targets = 5
+    max_train_iters = 40
+    num_targets = 1
     # Q: Interval size effect on loss curve and param retrieval for both lfns
-    interval_size = 4000
+    interval_size = 4800
     batch_size = interval_size; rows_per_train_iter = interval_size
     bin_size = int(interval_size/10)  # for RPH
     # burn_in = False
     burn_in = True
 
-    optimiser = 'SGD'
+    # optimiser = 'SGD'
+    optimiser = 'Adam'
     # network_size = 2
     # network_size = 4
     network_size = 8
@@ -39,7 +40,7 @@ def main(argv):
     evaluate_step = 10
     data_path = None
 
-    model_type = 'microGIF'
+    # model_type = 'microGIF'
     # loss_fn = 'frd'
     # loss_fn = 'vrd'
     loss_fn = None
