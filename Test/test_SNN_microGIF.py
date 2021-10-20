@@ -19,11 +19,12 @@ pop_size = 2
 for random_seed in range(3, 4):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
-    snn = TargetModelMicroGIF.micro_gif_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
+    pop_sizes, snn = TargetModelMicroGIF.micro_gif_populations_model_full_size(random_seed=random_seed)
 
     N = snn.N
-    neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.1])])
-    inputs = sine_modulated_white_noise(t=4800, N=snn.N, neurons_coeff=neurons_coeff)
+    # pop_sizes = [8, 2, 9, 2]
+    neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
+    inputs = sine_modulated_white_noise(t=1200*5, N=snn.N, neurons_coeff=neurons_coeff)
     # inputs = strong_sine_modulated_white_noise(t=4800, N=snn.N, neurons_coeff=neurons_coeff)
     # inputs = sine_input(t=4800, N=snn.N, neurons_coeff=neurons_coeff)
 

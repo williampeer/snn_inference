@@ -156,8 +156,6 @@ def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coe
 
     # if model_class.__name__.__contains__('microGIF'):
     params_model['R_m'] = target_model.R_m.clone().detach()
-    params_model['c'] = target_model.c.clone().detach()
-    params_model['pop_sizes'] = target_model.pop_sizes.clone().detach()
 
     model = model_class(N=num_neurons, parameters=params_model, neuron_types=neuron_types)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
@@ -236,7 +234,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coe
     return final_model_parameters, test_losses, train_losses, train_i, None
 
 
-def run_exp_loop(logger, constants, model_class, target_model=None, error_logger=Log.Logger('DEFAULT_ERR_LOG')):
+def run_exp_loop(logger, constants, model_class, target_model, pop_sizes, error_logger=Log.Logger('DEFAULT_ERR_LOG')):
     if hasattr(target_model, 'get_parameters'):
         target_parameters = target_model.get_parameters()
     elif target_model is not None:
@@ -258,8 +256,7 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
             num_neurons = len(node_indices)
 
         init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-        N = num_neurons
-        neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.])])
+        neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
         recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
             fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
                       target_parameters=target_parameters, num_neurons=num_neurons, neurons_coeff=neurons_coeff)
@@ -285,7 +282,7 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
                                            logger=logger, fname='all_inferred_params_{}'.format(model_class.__name__))
 
 
-def start_exp(constants, model_class, target_model=None):
+def start_exp(constants, model_class, target_model, pop_sizes):
     log_fname = model_class.__name__ + '_{}_{}_{}_lr_{}_batchsize_{}_trainiters_{}_rowspertrainiter_{}_uuid_{}'. \
         format(constants.optimiser.__name__, constants.loss_fn, constants.EXP_TYPE.name,
                '{:1.3f}'.format(constants.learn_rate).replace('.', '_'),
@@ -294,4 +291,4 @@ def start_exp(constants, model_class, target_model=None):
     err_logger = Log.Logger('ERROR_LOG_{}'.format(log_fname))
     logger.log('Starting exp. with listed hyperparameters.', [constants.__str__()])
 
-    run_exp_loop(logger, constants, model_class, target_model, err_logger)
+    run_exp_loop(logger, constants, model_class, target_model, pop_sizes, err_logger)

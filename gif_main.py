@@ -24,7 +24,7 @@ def main(argv):
     max_train_iters = 40
     num_targets = 1
     # Q: Interval size effect on loss curve and param retrieval for both lfns
-    interval_size = 4800
+    interval_size = 1200*6
     batch_size = interval_size; rows_per_train_iter = interval_size
     bin_size = int(interval_size/10)  # for RPH
     # burn_in = False
@@ -98,21 +98,21 @@ def main(argv):
         elif opt in ("-bi", "--burn-in"):
             burn_in = bool(args[i])
 
-    N = network_size
-    if N == 4:
-        N_pops = 2
-        pop_size = 2
-    elif N == 16:
-        N_pops = 4
-        pop_size = 2
-    elif N == 8:
-        N_pops = 4
-        pop_size = 2
-    elif N == 2:
-        N_pops = 2
-        pop_size = 1
-    else:
-        raise NotImplementedError('N has to be in [2, 4, 16]')
+    # N = network_size
+    # if N == 4:
+    #     N_pops = 2
+    #     pop_size = 2
+    # elif N == 16:
+    #     N_pops = 4
+    #     pop_size = 2
+    # elif N == 8:
+    #     N_pops = 4
+    #     pop_size = 2
+    # elif N == 2:
+    #     N_pops = 2
+    #     pop_size = 1
+    # else:
+    #     raise NotImplementedError('N has to be in [2, 4, 16]')
 
     if loss_fn is None:
         loss_functions = [LossFn.FIRING_RATE_DIST.name, LossFn.VAN_ROSSUM_DIST.name]
@@ -123,7 +123,7 @@ def main(argv):
         for loss_fn in loss_functions:
             for f_i in range(3+tar_start_seed_offset, 3+tar_start_seed_offset+num_targets):
                 target_model_name = 'gif_soft_continuous_populations_model{}'.format(f_i)
-                target_model = TargetModelMicroGIF.micro_gif_populations_model(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+                pop_sizes, target_model = TargetModelMicroGIF.micro_gif_populations_model_full_size(random_seed=f_i)
 
                 constants = C.Constants(learn_rate=learn_rate, train_iters=max_train_iters, N_exp=N_exp, batch_size=batch_size,
                                         tau_van_rossum=tau_van_rossum, rows_per_train_iter=rows_per_train_iter, optimiser=optimiser,
@@ -133,7 +133,7 @@ def main(argv):
                                         norm_grad_flag=norm_grad_flag, data_path=data_path, bin_size=bin_size,
                                         burn_in=burn_in, tar_start_seed_offset=tar_start_seed_offset)
 
-                gif_exp_suite.start_exp(constants=constants, model_class=microGIF, target_model=target_model)
+                gif_exp_suite.start_exp(constants=constants, model_class=microGIF, target_model=target_model, pop_sizes=pop_sizes)
 
 
 if __name__ == "__main__":
