@@ -98,10 +98,11 @@ class microGIF(nn.Module):
         params_dict['tau_s'] = self.tau_s.data
         params_dict['tau_theta'] = self.tau_theta.data
         params_dict['J_theta'] = self.J_theta.data
+        params_dict['c'] = self.c.data
+        params_dict['Delta_u'] = self.Delta_u.data
 
         params_dict['R_m'] = self.R_m
         params_dict['theta_inf'] = self.theta_inf
-        params_dict['c'] = self.c
 
         return params_dict
 
@@ -116,7 +117,8 @@ class microGIF(nn.Module):
         epsilon_spike_pulse = (1 + torch.tanh(self.time_since_spike - self.Delta_delay)) * torch.exp(
             -(self.time_since_spike - self.Delta_delay) / self.tau_s) / self.tau_s
 
-        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        # W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        W_syn = self.w * self.neuron_types
         I_syn = (self.tau_m * (epsilon_spike_pulse).matmul(W_syn))
         dv = (self.E_L - self.v + I_syn + self.R_m * I_ext) / self.tau_m
         v_next = self.v + dv

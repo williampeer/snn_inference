@@ -17,7 +17,7 @@ num_pops = 4
 pop_size = 2
 # pop_size = 4
 
-for random_seed in range(3, 4):
+for random_seed in range(3, 5):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
     # tar_snn = TargetModelsSoft.lif_pop_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
