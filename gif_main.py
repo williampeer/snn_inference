@@ -37,7 +37,7 @@ def main(argv):
     network_size = 8
     # network_size = 16
 
-    evaluate_step = 10
+    evaluate_step = 5
     data_path = None
 
     # model_type = 'microGIF'

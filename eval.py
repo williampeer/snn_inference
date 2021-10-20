@@ -5,7 +5,7 @@ from torch.nn.functional import kl_div
 
 import model_util
 import spike_metrics
-from experiments import release_computational_graph, micro_gif_input
+from experiments import release_computational_graph, sine_modulated_white_noise
 from plot import *
 
 
@@ -14,7 +14,7 @@ def evaluate_loss(model, inputs, target_spiketrain, neurons_coeff, label='', exp
         assert (inputs.shape[0] == target_spiketrain.shape[0]), \
             "inputs and targets should have same shape. inputs shape: {}, targets shape: {}".format(inputs.shape, target_spiketrain.shape)
     else:
-        inputs = micro_gif_input(t=target_spiketrain.shape[0], N=model.N, neurons_coeff=neurons_coeff)
+        inputs = sine_modulated_white_noise(t=target_spiketrain.shape[0], N=model.N, neurons_coeff=neurons_coeff)
 
     model_spike_train = model_util.feed_inputs_sequentially_return_spike_train(model, inputs)
 

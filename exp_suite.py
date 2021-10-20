@@ -93,9 +93,14 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
 def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coeff, target_model=None, target_parameters=None, num_neurons=12,
               error_logger=None):
     params_model['N'] = num_neurons
+    pop_types = [1, -1, 1, -1]
     neuron_types = np.ones((num_neurons,))
-    for i in range(int(num_neurons/3)):
-        neuron_types[-(1+i)] = -1
+    N_pops = 4
+    pop_size = int(num_neurons/N_pops)
+    for n_i in range(N_pops):
+        for n_j in range(pop_size):
+            ind = n_i * pop_size + n_j
+            neuron_types[ind] = pop_types[n_i]
 
     if model_class.__name__.__contains__('fixed_weights'):
         params_model['preset_weights'] = target_model.w.clone().detach()
@@ -220,7 +225,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coe
         final_model_parameters[key] = [model.state_dict()[key].numpy()]
     model = None
     # return final_model_parameters, test_losses, train_losses, train_i, poisson_rates
-    return final_model_parameters, test_losses, train_losses, train_i, None
+    return final_model_parameters, test_losses, train_losses, train_i
 
 
 def run_exp_loop(logger, constants, model_class, target_model=None, error_logger=Log.Logger('DEFAULT_ERR_LOG')):
@@ -249,10 +254,10 @@ def run_exp_loop(logger, constants, model_class, target_model=None, error_logger
 
         init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
         N = num_neurons
-        neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.5]), T(int(N / 4) * [0.])])
+        neurons_coeff = torch.cat([T(int(N / 4) * [0.1]), T(int(N / 4) * [0.1]), T(int(N / 4) * [0.5]), T(int(N / 4) * [0.2])])
 
         # try:
-        recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
+        recovered_parameters, train_losses, test_losses, train_i = \
             fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
                       target_parameters=target_parameters, num_neurons=num_neurons,
                       error_logger=error_logger, neurons_coeff=neurons_coeff)

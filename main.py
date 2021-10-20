@@ -51,14 +51,14 @@ def main(argv):
     # batch_size = 2000; rows_per_train_iter = 8000
     # learn_rate = 0.01; N_exp = 3; tau_van_rossum = 4.0; plot_flag = True
     # loss_fn = 'frd'
-    # loss_fn = 'vrd'
+    loss_fn = 'vrd'
     # loss_fn = 'FF'
     # loss_fn = 'CV'
     # loss_fn = 'PCC'
     # loss_fn = 'rfh'
     # loss_fn = 'rph'
     # loss_fn = 'kl_div'
-    loss_fn = None
+    # loss_fn = None
     # silent_penalty_factor = 10.0
     silent_penalty_factor = None
 
@@ -96,6 +96,7 @@ def main(argv):
     # model_type = None
     # model_type = 'GLIF'
     model_type = 'LIF'
+    # model_type = 'microGIF'
     # model_type = 'LIF_weights_only'
     # model_type = 'LIF_fixed_weights'
     # model_type = 'LIF_soft'
@@ -110,7 +111,6 @@ def main(argv):
     # model_type = 'LIF_R_ASC_soft_ReLu'
     # model_type = 'GLIF_soft'
     # model_type = 'GLIF_soft_lower_dim'
-    # model_type = 'microGIF'
     norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]
@@ -249,6 +249,9 @@ def main(argv):
                     elif m_class.__name__ in [LIF.__name__]:
                         target_model_name = 'lif_pop_model_{}'.format(f_i)
                         target_model = TargetModelsSoft.lif_pop_model(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
+                    elif m_class.__name__ in [microGIF.__name__]:
+                        target_model_name = 'micro_gif_populations_model_{}'.format(f_i)
+                        target_model = TargetModelMicroGIF.micro_gif_populations_model(random_seed=f_i, pop_size=pop_size, N_pops=N_pops)
 
                     else:
                         raise NotImplementedError()

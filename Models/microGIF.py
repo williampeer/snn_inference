@@ -51,7 +51,7 @@ class microGIF(nn.Module):
         self.v = E_L * torch.ones((self.N,))
         self.spiked = torch.zeros((self.N,))
         # self.g = torch.zeros((self.N,))
-        self.time_since_spike = torch.zeros((N,))
+        self.time_since_spike = 1e5 * torch.ones((N,))
 
         self.E_L = nn.Parameter(FT(E_L), requires_grad=True)  # Rest potential
         self.tau_m = nn.Parameter(FT(tau_m), requires_grad=True)
@@ -115,25 +115,32 @@ class microGIF(nn.Module):
         dtheta_v = (self.theta_inf - self.theta_v + self.J_theta * self.spiked) / self.tau_theta
         self.theta_v = self.theta_v + dtheta_v
 
-        epsilon = (0.5 + 0.5 * torch.tanh(self.time_since_spike - self.Delta_delay - self.t_refractory)) * torch.exp(
-            -(self.time_since_spike - self.Delta_delay - self.t_refractory) / self.tau_s) / self.tau_s
+        epsilon_spike_pulse = (1 + torch.tanh(self.time_since_spike - self.Delta_delay)) * torch.exp(
+            -(self.time_since_spike - self.Delta_delay) / self.tau_s) / self.tau_s
 
-        W_syn = 10. * self.self_recurrence_mask * self.w * self.neuron_types
-        # Scale synaptic currents with pop sizes.
-        I_syn = (self.tau_m * (epsilon * self.pop_sizes * self.spiked).matmul(W_syn)) / self.R_m
-        dv = (self.E_L - self.v + self.R_m * (I_syn + I_ext)) / self.tau_m
+        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        I_syn = (self.tau_m * (epsilon_spike_pulse).matmul(W_syn))
+        dv = (self.E_L - self.v + I_syn + self.R_m * I_ext) / self.tau_m
         v_next = self.v + dv
 
-        spikes_lambda = (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)).clip(0., 1.)
-        m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
+        # spikes_lambda = (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)).clip(0., 1.)
+        not_refractory = torch.where(self.time_since_spike > self.t_refractory, 1., 0.)
+        spikes_lambda = not_refractory * (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u))
+
+        # spiked = torch.where(spikes_lambda >= 1., 1., 0.)
+        m = torch.distributions.bernoulli.Bernoulli(spikes_lambda.clip(0., 1.))
         spiked = m.sample()
-        # spiked = torch.bernoulli(spikes_lambda)
+
         self.spiked = spiked
-        # self.spiked = spiked
         not_spiked = (spiked - 1.) / -1.
 
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
 
+        # if spiked.any():
+        #     print('askljdalkjsjd')
+
+        # return spikes_lambda
         return spikes_lambda, spiked
+        # return self.v, spiked
         # return self.v, spiked

@@ -22,10 +22,10 @@ for random_seed in range(3, 4):
     snn = TargetModelMicroGIF.micro_gif_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
 
     N = snn.N
-    neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.])])
-    # inputs = sine_modulated_white_noise(t=7200, N=snn.N, neurons_coeff=neurons_coeff)
-    # inputs = strong_sine_modulated_white_noise(t=7200, N=snn.N, neurons_coeff=neurons_coeff)
-    inputs = sine_input(t=4800, N=snn.N, neurons_coeff=neurons_coeff)
+    neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.1])])
+    inputs = sine_modulated_white_noise(t=4800, N=snn.N, neurons_coeff=neurons_coeff)
+    # inputs = strong_sine_modulated_white_noise(t=4800, N=snn.N, neurons_coeff=neurons_coeff)
+    # inputs = sine_input(t=4800, N=snn.N, neurons_coeff=neurons_coeff)
 
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(inputs.sum()))

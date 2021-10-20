@@ -7,10 +7,10 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class LIF(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'tau_g']
-    parameter_init_intervals = {'E_L': [-64., -55.], 'tau_m': [3.5, 4.0], 'tau_g': [5., 6.] }
+    free_parameters = ['w', 'E_L', 'tau_m', 'tau_g']
+    parameter_init_intervals = {'E_L': [-54., -52.], 'tau_m': [2., 2.5], 'tau_g': [3.5, 4.] }
 
-    def __init__(self, parameters, N=12, w_mean=0.4, w_var=0.25, neuron_types=T([1, -1])):
+    def __init__(self, parameters, N=12, w_mean=0.6, w_var=0.2, neuron_types=T([1, -1])):
         super(LIF, self).__init__()
         # self.device = device
 
@@ -61,14 +61,14 @@ class LIF(nn.Module):
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
     def get_parameters(self):
-        params_list = []
+        params_dict = {}
 
-        params_list.append(self.w.data)
-        params_list.append(self.E_L.data)
-        params_list.append(self.tau_m.data)
-        params_list.append(self.tau_g.data)
+        params_dict['w'] = self.w.data
+        params_dict['E_L'] = self.E_L.data
+        params_dict['tau_m'] = self.tau_m.data
+        params_dict['tau_g'] = self.tau_g.data
 
-        return params_list
+        return params_dict
 
     def reset(self):
         for p in self.parameters():
@@ -107,4 +107,5 @@ class LIF(nn.Module):
         #     print('hooyray')
         # differentiable soft threshold
         soft_spiked = torch.sigmoid(torch.sub(v_next, self.V_thresh))
-        return soft_spiked
+        # return soft_spiked
+        return self.v, soft_spiked

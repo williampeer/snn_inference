@@ -99,7 +99,7 @@ def overall_gradients_mean(gradients, train_i, loss_fn):
     return float(overall_mean.clone().detach())
 
 
-def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_type, train_i, exp_num, constants, converged):
+def evaluate_loss_tuple(model, inputs, target_spiketrain, label, exp_type, train_i, exp_num, constants, converged, neurons_coeff):
     if inputs is not None:
         assert (inputs.shape[0] == target_spiketrain.shape[0]), \
             "inputs and targets should have same shape. inputs shape: {}, targets shape: {}".format(inputs.shape,
@@ -107,7 +107,7 @@ def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_typ
     else:
         N = model.N
         inputs = micro_gif_input(t=target_spiketrain.shape[0], N=N,
-                                            neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])]))
+                                            neurons_coeff=neurons_coeff)
 
     sproba, model_spike_train = model_util.feed_inputs_sequentially_return_tuple(model, inputs)
 
@@ -122,10 +122,10 @@ def evaluate_loss_tuple(model, inputs, p_rate, target_spiketrain, label, exp_typ
     # m = torch.distributions.poisson.Poisson(sproba)
     # spikes = m.sample()
     nll_target = -m.log_prob(target_spiketrain).sum()
-    loss = nll_target * calculate_loss(model_spike_train, target_spiketrain, constants=constants)
+    # loss = nll_target * calculate_loss(model_spike_train, target_spiketrain, constants=constants)
     # nll_model_spikes = -m.log_prob(model_spike_train.detach()).sum()
     # loss = (nll_target - nll_model_spikes) * calculate_loss(model_spike_train, target_spiketrain.detach(), constants=constants)
-    # loss = nll_target
+    loss = nll_target
     # loss = calculate_loss(sproba, target_spiketrain, constants=constants)
     # loss = spike_metrics.spike_proba_metric(sproba, model_spike_train, target_spiketrain)
     # loss = spike_metrics.test_metric(sproba, model_spike_train, target_spiketrain)
@@ -181,10 +181,10 @@ def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coe
     if constants.EXP_TYPE == ExperimentType.SanityCheck:
         inputs = gen_inputs
 
-    loss_prior_to_training = evaluate_loss_tuple(model, inputs=inputs, p_rate=poisson_input_rate.clone().detach(),
+    loss_prior_to_training = evaluate_loss_tuple(model, inputs=inputs,
                                            target_spiketrain=train_targets, label='train i: {}'.format(train_i),
                                            exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
-                                           constants=constants, converged=converged)
+                                           constants=constants, converged=converged, neurons_coeff=neurons_coeff)
     test_losses = np.concatenate((test_losses, np.asarray([loss_prior_to_training])))
 
     while not converged and (train_i < constants.train_iters):
@@ -214,10 +214,10 @@ def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coe
         logger.log(parameters=[avg_unseen_loss, abs_grads_mean])
         test_losses = np.concatenate((test_losses, np.asarray([avg_unseen_loss])))
 
-        train_loss = evaluate_loss_tuple(model, inputs=train_input, p_rate=poisson_input_rate.clone().detach(),
+        train_loss = evaluate_loss_tuple(model, inputs=train_input,
                                    target_spiketrain=train_targets, label='train i: {}'.format(train_i),
                                    exp_type=constants.EXP_TYPE, train_i=train_i, exp_num=exp_num,
-                                   constants=constants, converged=converged)
+                                   constants=constants, converged=converged, neurons_coeff=neurons_coeff)
         logger.log(parameters=['train loss', train_loss])
         train_losses = np.concatenate((train_losses, np.asarray([train_loss])))
 

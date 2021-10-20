@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-import torch.tensor as T
 
 import model_util
 from Constants import ExperimentType
@@ -14,9 +13,6 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
             "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
         gen_inputs = gen_inputs.clone().detach()
 
-    learn_rate = constants.learn_rate
-
-    tau_vr = torch.tensor(constants.tau_van_rossum)
     batch_size = constants.batch_size
     batch_N = int(target_spiketrain.shape[0]/batch_size)
     assert batch_N > 0, "batch_N was not above zero. batch_N: {}".format(batch_N)
@@ -27,7 +23,6 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
 
     optimiser.zero_grad()
     converged_batches = []
-    # poisson_input_rate.grad = torch.tensor(0.)
     for batch_i in range(batch_N):
         print('batch #{}'.format(batch_i))
 
@@ -49,15 +44,11 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
         # returns tensor, maintains gradient
         loss = calculate_loss(spikes, target_spiketrain[batch_size * batch_i:batch_size * (batch_i + 1)].detach(), constants=constants)
 
-        # if batch_i<batch_N-1:
-        # loss.backward(retain_graph=True)
-        # else:
         # optimiser.zero_grad()
         loss.backward(retain_graph=True)
         # optimiser.step()
         # loss.backward()
 
-        # poisson_input_rate.grad = torch.mean(current_inputs.grad)  # TODO: test w. "final" learn rate
         param_grads_converged = []
         for p_i, param in enumerate(list(model.parameters())):
             logger.log('grad for param #{}: {}'.format(p_i, param.grad))
@@ -70,7 +61,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
 
             cur_p_mean_grad = np.mean(np.abs(param.grad.clone().detach().numpy()))
             if p_i > 0:
-                cur_p_max = model.__class__.parameter_init_intervals[model.__class__.parameter_names[p_i]][1]
+                cur_p_max = model.__class__.parameter_init_intervals[model.__class__.free_parameters[p_i]][1]
             else:  # 'w'
                 cur_p_max = 1.
 
@@ -80,16 +71,9 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
         converged = np.array(param_grads_converged).sum() == len(param_grads_converged)
         converged_batches.append(converged)
 
-        # if constants.EXP_TYPE is not ExperimentType.SanityCheck:
-        #     avg_abs_grads[p_i + 1].append(np.abs(poisson_input_rate.grad.clone().detach().numpy()))
-        #     # print('p_i+1, poisson_input_rate.grad', p_i + 1, poisson_input_rate.grad)
-        # else:
-        #     avg_abs_grads[p_i + 1].append(0.)
-
         print('batch loss: {}'.format(loss))
         batch_losses.append(float(loss.clone().detach().data))
 
-    # loss.backward()
     optimiser.step()
     release_computational_graph(model,
                                 # poisson_input_rate,
