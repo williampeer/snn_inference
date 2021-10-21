@@ -19,7 +19,7 @@ def main(argv):
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.02; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
+    learn_rate = 0.01; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
     # Run 100 with lr 0.01 and 0.02
     max_train_iters = 60
     num_targets = 1
@@ -115,7 +115,7 @@ def main(argv):
     #     raise NotImplementedError('N has to be in [2, 4, 16]')
 
     if loss_fn is None:
-        loss_functions = [LossFn.NLL.name, LossFn.FIRING_RATE_DIST.name, LossFn.VAN_ROSSUM_DIST.name]
+        loss_functions = [LossFn.FIRING_RATE_DIST.name, LossFn.VAN_ROSSUM_DIST.name, LossFn.NLL.name]
     else:
         loss_functions = [LossFn(loss_fn).name]
 

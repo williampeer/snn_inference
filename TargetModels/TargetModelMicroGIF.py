@@ -47,10 +47,14 @@ def micro_gif_populations_model_full_size(random_seed):
                 neur_ind_offset += pop_sizes[pop_i]
         return Ws_pop_to_N
 
-    weights_excit_L2_3 = draw_weights_for_pop(pop_num=0, pop_sizes=[8,2,9,2], probabilities=[0.1009, 0.1346, 0.0077, 0.0691], weights=4*[1.245])
-    weights_inhib_L2_3 = draw_weights_for_pop(pop_num=1, pop_sizes=[8,2,9,2], probabilities=[0.1689, 0.1371, 0.0059, 0.0029], weights=4*[-4.964])
-    weights_excit_L4 = draw_weights_for_pop(pop_num=2, pop_sizes=[8,2,9,2], probabilities=[0.0437, 0.0316, 0.0497, 0.0794], weights=[1.245, 1.245, 2.482, 1.245])
-    weights_inhib_L4 = draw_weights_for_pop(pop_num=3, pop_sizes=[8,2,9,2], probabilities=[0.0818, 0.0515, 0.1350, 0.1597], weights=4*[-4.964])
+    # weights_excit_L2_3 = draw_weights_for_pop(pop_num=0, pop_sizes=[8,2,9,2], probabilities=[0.1009, 0.1346, 0.0077, 0.0691], weights=4*[1.245])
+    # weights_inhib_L2_3 = draw_weights_for_pop(pop_num=1, pop_sizes=[8,2,9,2], probabilities=[0.1689, 0.1371, 0.0059, 0.0029], weights=4*[-4.964])
+    # weights_excit_L4 = draw_weights_for_pop(pop_num=2, pop_sizes=[8,2,9,2], probabilities=[0.0437, 0.0316, 0.0497, 0.0794], weights=[1.245, 1.245, 2.482, 1.245])
+    # weights_inhib_L4 = draw_weights_for_pop(pop_num=3, pop_sizes=[8,2,9,2], probabilities=[0.0818, 0.0515, 0.1350, 0.1597], weights=4*[-4.964])
+    weights_excit_L2_3 = draw_weights_for_pop(pop_num=0, pop_sizes=[8,2,9,2], probabilities=4*[1.], weights=torch.mul(T(4*[1.245]), T([0.1009, 0.1346, 0.0077, 0.0691])))
+    weights_inhib_L2_3 = draw_weights_for_pop(pop_num=1, pop_sizes=[8, 2, 9, 2], probabilities=4*[1.], weights=torch.mul(T(4 * [-4.964]), T([0.1689, 0.1371, 0.0059, 0.0029])))
+    weights_excit_L4 = draw_weights_for_pop(pop_num=2, pop_sizes=[8, 2, 9, 2], probabilities=4*[1.], weights=torch.mul(T([1.245, 1.245, 2.482, 1.245]), T([0.0437, 0.0316, 0.0497, 0.0794])))
+    weights_inhib_L4 = draw_weights_for_pop(pop_num=3, pop_sizes=[8, 2, 9, 2], probabilities=4*[1.], weights=torch.mul(T(4 * [-4.964]), T([0.0818, 0.0515, 0.1350, 0.1597])))
 
     E_L_origo = 0.
     params_pop_excit_L2_3 = {'tau_m': 10., 'tau_s': 3., 'Delta_u': 5., 'tau_theta': 1000., 'c': 0.1,

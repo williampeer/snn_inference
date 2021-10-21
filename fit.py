@@ -75,9 +75,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
         batch_losses.append(float(loss.clone().detach().data))
 
     optimiser.step()
-    release_computational_graph(model,
-                                # poisson_input_rate,
-                                current_inputs)
+    release_computational_graph(model, current_inputs)
     spikes = None; loss = None; current_inputs = None
 
     avg_batch_loss = np.mean(np.asarray(batch_losses, dtype=np.float))
