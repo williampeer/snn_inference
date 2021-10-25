@@ -19,9 +19,9 @@ def main(argv):
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.01; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
+    learn_rate = 0.001; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
     # Run 100 with lr 0.01 and 0.02
-    max_train_iters = 60
+    max_train_iters = 100
     num_targets = 1
     # Q: Interval size effect on loss curve and param retrieval for both lfns
     interval_size = 1200*6
@@ -43,7 +43,8 @@ def main(argv):
     # model_type = 'microGIF'
     # loss_fn = 'frd'
     # loss_fn = 'vrd'
-    loss_fn = None
+    loss_fn = 'nll'
+    # loss_fn = None
     norm_grad_flag = False
 
     opts = [opt for opt in argv if opt.startswith("-")]

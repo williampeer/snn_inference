@@ -41,11 +41,12 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
     # m = torch.distributions.poisson.Poisson(spike_probs)
     # spikes = m.sample()
     nll_target = -m.log_prob(target_spiketrain.detach()).sum()
-    loss = nll_target * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
+    # loss = nll_target * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
+    loss = nll_target
     # nll_model_spikes = -m.log_prob(expressed_model_spikes.detach()).sum()
     # loss = (nll_target-nll_model_spikes) * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
-    # loss = nll_target
     # loss = spike_metrics.spike_proba_metric(spike_probs, spikes, target_spiketrain.detach())
+    # loss = calculate_loss(expressed_model_spikes, target_spiketrain.clone().detach(), constants=constants)
 
     loss.backward(retain_graph=True)
 

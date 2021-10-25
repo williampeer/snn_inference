@@ -214,7 +214,7 @@ def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False):
     else:
         fname = fname+IO.dt_descriptor()
     data = {'loss': loss, 'exp_type': exp_type, 'custom_title': custom_title, 'fname': fname}
-    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_losses')
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_loss')
 
     plt.plot(loss)
     # plt.legend(['Training loss', 'Test loss'])
