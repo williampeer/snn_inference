@@ -5,14 +5,14 @@ from torch import FloatTensor as FT
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
-class microGIF(nn.Module):
+class microGIF_exact(nn.Module):
     free_parameters = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta', 'c', 'Delta_u']
     parameter_init_intervals = { 'E_L': [0., 3.], 'tau_m': [7., 9.], 'tau_s': [4., 8.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1], 'c': [0.15, 0.2], 'Delta_u': [3.5, 4.5] }
     param_lin_constraints = [[0., 1.], [-5., 25.], [1., 20.], [1., 20.], [800., 1500.], [0.5, 1.5], [1., 20.]]
 
     def __init__(self, parameters, N=4, neuron_types=[1, -1]):
-        super(microGIF, self).__init__()
+        super(microGIF_exact, self).__init__()
 
         if parameters is not None:
             for key in parameters.keys():
@@ -41,7 +41,8 @@ class microGIF(nn.Module):
             rand_ws = torch.abs(parameters['preset_weights'])
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
-            rand_ws = (0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N))
+            rand_ws = (0.6 - 0.6) + 2 * 0.6 * torch.randn((self.N, self.N))
+            rand_ws = torch.abs(rand_ws.clamp(-1., 1.))
         nt = torch.tensor(neuron_types).float()
         self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
@@ -125,20 +126,9 @@ class microGIF(nn.Module):
         dv = (self.E_L - self.v + I_syn + self.R_m * I_ext) / self.tau_m
         v_next = self.v + dv
 
-        # spikes_lambda = (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)).clip(0., 1.)
         not_refractory = torch.where(self.time_since_spike > self.t_refractory, 1, 0)
-
-        spikes_lambda = not_refractory * (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u))
-        spikes_lambda = spikes_lambda.clip(0., 1.)
-
-        # spiked = torch.where(spikes_lambda >= 1., 1., 0.)
-        try:
-            m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
-            spiked = m.sample()
-        except Exception as e:
-            print(e)
-            print('spikes_lambda: {}'.format(spikes_lambda))
-            raise e
+        spiked = not_refractory * torch.where(v_next >= self.theta_v, 1, 0)
+        spiked_soft = not_refractory * torch.sigmoid(v_next - self.theta_v)
 
         self.spiked = spiked
         not_spiked = (spiked - 1) / -1
@@ -146,7 +136,8 @@ class microGIF(nn.Module):
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
 
-        # return spikes_lambda
-        return spikes_lambda, spiked
-        # return self.v, spiked
+        # if spiked.any():
+        #     print('askljdalkjsjd')
+
+        return self.v, spiked_soft
         # return self.v, spiked
