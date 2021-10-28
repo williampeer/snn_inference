@@ -86,12 +86,12 @@ def strong_sine_modulated_white_noise(t, N, neurons_coeff):
     return ret
 
 
-def sine_input(t, N, neurons_coeff):
+def sine_input(t, N, neurons_coeff, period=1200.):
     # if neurons_coeff is None:
     #     neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])])
     # return noise / torch.max(noise)  # normalised
     # B sin(ωt) · (1 + qξ(t))
-    omega = (3.141592/1200.)
+    omega = (3.141592/period)
     ret = torch.tensor(neurons_coeff * torch.ones((1, N)) * torch.sin(omega * torch.reshape(torch.arange(0, t), (t, 1))), requires_grad=True)
     assert ret.shape[0] == t, "ret.shape[0] should be t, {}, {}".format(ret.shape[0], t)
     assert ret.shape[1] == N, "ret.shape[1] should be N, {}, {}".format(ret.shape[1], N)

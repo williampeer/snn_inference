@@ -3,8 +3,8 @@ import sys
 import Constants as C
 import gif_exp_suite
 from Models.microGIF import microGIF
+from PDF_metrics import PDF_LFN
 from TargetModels import TargetModelMicroGIF
-from eval import LossFn
 
 
 def main(argv):
@@ -19,14 +19,15 @@ def main(argv):
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.001; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
+    learn_rate = 0.01; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
     # Run 100 with lr 0.01 and 0.02
-    max_train_iters = 100
+    max_train_iters = 50
     num_targets = 1
     # Q: Interval size effect on loss curve and param retrieval for both lfns
-    interval_size = 1200*6
+    interval_size = 1200*7
     batch_size = interval_size; rows_per_train_iter = interval_size
-    bin_size = int(interval_size/10)  # for RPH
+    # bin_size = int(interval_size/10)  # for RPH
+    bin_size = 100  # for RPH, PNLL
     # burn_in = False
     burn_in = True
 
@@ -41,9 +42,7 @@ def main(argv):
     data_path = None
 
     # model_type = 'microGIF'
-    # loss_fn = 'frd'
-    # loss_fn = 'vrd'
-    loss_fn = 'nll'
+    loss_fn = 'BERNOULLI'
     # loss_fn = None
     norm_grad_flag = False
 
@@ -116,9 +115,9 @@ def main(argv):
     #     raise NotImplementedError('N has to be in [2, 4, 16]')
 
     if loss_fn is None:
-        loss_functions = [LossFn.FIRING_RATE_DIST.name, LossFn.VAN_ROSSUM_DIST.name, LossFn.NLL.name]
+        loss_functions = [PDF_LFN.BERNOULLI, PDF_LFN.POISSON]
     else:
-        loss_functions = [LossFn(loss_fn).name]
+        loss_functions = [PDF_LFN(loss_fn).name]
 
     if exp_type_str in [C.ExperimentType.Synthetic.name, C.ExperimentType.SanityCheck.name]:
         for loss_fn in loss_functions:

@@ -2,6 +2,7 @@ import torch.distributions.poisson
 import torch.tensor as T
 
 import Log
+import PDF_metrics
 import gif_fit
 import model_util
 from Constants import ExperimentType
@@ -118,17 +119,9 @@ def evaluate_loss_tuple(model, inputs, target_spiketrain, label, exp_type, train
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
 
-    m = torch.distributions.bernoulli.Bernoulli(sproba)
-    # m = torch.distributions.poisson.Poisson(sproba)
-    # spikes = m.sample()
-    nll_target = -m.log_prob(target_spiketrain).sum()
-    # loss = nll_target * calculate_loss(model_spike_train, target_spiketrain, constants=constants)
-    loss = nll_target
-    # nll_model_spikes = -m.log_prob(model_spike_train.detach()).sum()
-    # loss = (nll_target - nll_model_spikes) * calculate_loss(model_spike_train, target_spiketrain.detach(), constants=constants)
-    # loss = calculate_loss(model_spike_train, target_spiketrain.clone().detach(), constants=constants)
-    # loss = spike_metrics.spike_proba_metric(sproba, model_spike_train, target_spiketrain)
-    # loss = spike_metrics.test_metric(sproba, model_spike_train, target_spiketrain)
+    loss = PDF_metrics.calculate_loss(spike_probabilities=sproba, target_spikes=target_spiketrain, constants=constants)
+    loss.backward(retain_graph=True)
+
     print('loss:', loss)
 
     if exp_type is None:

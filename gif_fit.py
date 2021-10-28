@@ -1,10 +1,9 @@
 import numpy as np
 import torch
-import torch.tensor as T
 
+import PDF_metrics
 import model_util
 from Constants import ExperimentType
-from eval import calculate_loss
 from experiments import release_computational_graph, micro_gif_input
 
 
@@ -36,18 +35,8 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
 
     spike_probs, expressed_model_spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
 
-    # returns tensor, maintains gradient
-    m = torch.distributions.bernoulli.Bernoulli(spike_probs)
-    # m = torch.distributions.poisson.Poisson(spike_probs)
-    # spikes = m.sample()
-    nll_target = -m.log_prob(target_spiketrain.detach()).sum()
-    # loss = nll_target * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
-    loss = nll_target
-    # nll_model_spikes = -m.log_prob(expressed_model_spikes.detach()).sum()
-    # loss = (nll_target-nll_model_spikes) * calculate_loss(expressed_model_spikes, target_spiketrain.detach(), constants=constants)
-    # loss = spike_metrics.spike_proba_metric(spike_probs, spikes, target_spiketrain.detach())
-    # loss = calculate_loss(expressed_model_spikes, target_spiketrain.clone().detach(), constants=constants)
-
+    # loss = PDF_metrics.bernoulli_nll(spike_probabilities=spike_probs, target_spikes=target_spiketrain)
+    loss = PDF_metrics.calculate_loss(spike_probs, target_spiketrain.detach(), constants)
     loss.backward(retain_graph=True)
 
     param_grads_converged = []

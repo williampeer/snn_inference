@@ -12,6 +12,7 @@ from Models.microGIF import microGIF
 from Models.no_grad.GLIF_no_grad import GLIF_no_grad
 from Models.no_grad.LIF_R_ASC_no_grad import LIF_R_ASC_no_grad
 from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
+from PDF_metrics import get_binned_spike_counts
 from TargetModels.TargetModelMicroGIF import micro_gif_populations_model
 from TargetModels.TargetModelsSoft import glif_soft_continuous_ensembles_model_dales_compliant
 from experiments import sine_modulated_white_noise
@@ -97,15 +98,6 @@ def main(argv):
 
     if method is not None:
         sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS)
-
-
-def get_binned_spike_counts(out, bin_size=400):
-    # bin_len = int(out.shape[0] / bins)
-    n_bins = int(out.shape[0] / bin_size)
-    out_counts = torch.zeros((n_bins, out.shape[1]))
-    for b_i in range(n_bins):
-        out_counts[b_i] = (out[b_i * bin_size:(b_i + 1) * bin_size].sum(dim=0))
-    return out_counts
 
 
 def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=5):

@@ -7,7 +7,6 @@ import plot
 from TargetModels.TargetModels import *
 from analysis import parameter_distance
 from analysis.sbi_import_export_spikes import convert_posterior_to_model_params_dict
-from dev_sbi_main_multi import get_binned_spike_counts
 from experiments import generate_synthetic_data
 
 

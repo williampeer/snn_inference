@@ -149,8 +149,8 @@ class GLIF(nn.Module):
         dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
         v_next = self.v + dv
         # non-differentiable, hard threshold
-        spiked = (v_next >= self.theta_s + self.theta_v).float()
-        not_spiked = (spiked - 1.) / -1.
+        spiked = (v_next >= self.theta_s + self.theta_v).int()
+        not_spiked = (spiked - 1) / -1
 
         gating = ((v_next-self.theta_inf) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
         # gating = ((v_next) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
