@@ -33,7 +33,7 @@ def bernoulli_nll(spike_probabilities, target_spikes):
 
 
 def calculate_loss(spike_probabilities, target_spikes, constants):
-    lfn = constants.loss_fn
+    lfn = PDF_LFN[constants.loss_fn]
     if lfn == PDF_LFN.BERNOULLI:
         return bernoulli_nll(spike_probabilities, target_spikes)
     elif lfn == PDF_LFN.POISSON:
