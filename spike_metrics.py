@@ -94,15 +94,6 @@ def silent_penalty_term(spikes, targets):
     return torch.pow(torch.exp(-normalised_spike_rate) - torch.exp(-normalised_target_rate), 2).sum()
     # return torch.exp(-normalised_spike_rate).sum()
 
-# def silent_penalty_term(model_spikes, target_spikes):
-#     mean_model_rate = model_spikes.sum(dim=0)
-#     mean_targets_rate = target_spikes.sum(dim=0)
-#     # assert model_spikes.shape[0] > model_spikes.shape[1]
-#     T = model_spikes.shape[0] / 1000.
-#     # f_penalty(x,y) = sqrt(pow(e^(-x/T.) - e^(-y/T.)).sum() + 1e-18)
-#     silent_penalty = torch.sqrt(torch.pow(torch.exp(-mean_targets_rate/torch.tensor(T)) - torch.exp(-mean_model_rate/torch.tensor(T)), 2).sum()+1e-18) / model_spikes.shape[1]
-#     return silent_penalty
-
 
 def firing_rate_distance(model_spikes, target_spikes):
     mean_model_rate = model_spikes.sum(dim=0) * 1000. / model_spikes.shape[0]  # Hz
@@ -126,31 +117,6 @@ def fano_factor_dist(out, tar, bins=BIN_SIZE):
     F_out = torch.var(out_counts) / torch.mean(out_counts)
     F_tar = torch.var(tar_counts) / torch.mean(tar_counts)
     return euclid_dist(F_out, F_tar)
-# def get_spike_times_helper(spikes, threshold=0.5):
-#     times = torch.reshape(torch.arange(spikes.shape[0]), (-1, 1)) * torch.ones_like(spikes)
-#     spike_times_per_neuron = []
-#     for neur_i in range(spikes.shape[1]):
-#         spike_times_per_neuron.append(times[:, neur_i][spikes[:, neur_i] > threshold])
-#         # spike_times_per_neuron.append(times[:, neur_i][torch.round(spikes[:, neur_i]) > 0])
-#
-#     return spike_times_per_neuron
-#
-# def fano_factor_dist(out, tar):
-#     out_spike_times = get_spike_times_helper(out)
-#     tar_spike_times = get_spike_times_helper(tar)
-#
-#     F_out = torch.zeros((len(out_spike_times),))
-#     F_tar = torch.zeros((len(out_spike_times),))
-#     for neur_i in range(len(out_spike_times)):
-#         out_isi_i = out_spike_times[neur_i][1:-1] - out_spike_times[neur_i][:-2]
-#         tar_isi_i = tar_spike_times[neur_i][1:-1] - tar_spike_times[neur_i][:-2]
-#
-#         # F_out_i = torch.var(out_isi_i) / torch.mean(out_isi_i)
-#         # F_tar_i = torch.var(tar_isi_i) / torch.mean(tar_isi_i)
-#         F_out[neur_i] = torch.var(out_isi_i) / torch.mean(out_isi_i)
-#         F_tar[neur_i] = torch.var(tar_isi_i) / torch.mean(tar_isi_i)
-#
-#     return euclid_dist(F_out, F_tar)
 
 
 def calc_pearsonr(counts_out, counts_tar):
@@ -166,12 +132,6 @@ def calc_pearsonr(counts_out, counts_tar):
 
     pcorrcoeff = (counts_out - torch.ones_like(counts_out) * mu_out) * (counts_tar - torch.ones_like(counts_tar) * mu_tar) / (std_out * std_tar + 1e-12)
 
-    # print('..............-------------------................')
-    # print('counts_out: {}'.format(counts_out))
-    # print('counts_tar: {}'.format(counts_tar))
-    # print('pcorrcoeff: {}'.format(pcorrcoeff))
-    # print('..............-------------------................')
-
     assert torch.isnan(pcorrcoeff).sum() == 0, "found nan-values in pcorrcoeff: {}".format(pcorrcoeff)
 
     return pcorrcoeff
@@ -179,7 +139,6 @@ def calc_pearsonr(counts_out, counts_tar):
 
 # correlation metric over binned spike counts
 def correlation_metric_distance(out, tar, bin_size=BIN_SIZE):
-    # bin_len = int(out.shape[0] / bins)
     n_bins = int(out.shape[0] / bin_size)
     out_counts = torch.zeros((n_bins, out.shape[1]))
     tar_counts = torch.zeros((n_bins, tar.shape[1]))
@@ -195,11 +154,6 @@ def correlation_metric_distance(out, tar, bin_size=BIN_SIZE):
     # squared_dist[torch.isnan(squared_dist)] = 1e-06
     # dist = torch.sqrt(squared_dist + 1e-12).sum() / out.shape[0]
     dist = torch.sqrt(squared_dist + 1e-12).sum()
-    # print('-----------************------------***********------------')
-    # print('neg_dist: {}'.format(neg_dist))
-    # print('squared_dist: {}'.format(squared_dist))
-    # print('dist: {}'.format(dist))
-    # print('-----------************------------***********------------')
     return dist
 
 
