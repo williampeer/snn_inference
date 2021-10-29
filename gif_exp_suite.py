@@ -178,7 +178,8 @@ def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coe
                                            constants=constants, converged=converged, neurons_coeff=neurons_coeff)
     test_losses = np.concatenate((test_losses, np.asarray([loss_prior_to_training])))
 
-    while not converged and (train_i < constants.train_iters):
+    # while not converged and (train_i < constants.train_iters):
+    while train_i < constants.train_iters:
         train_i += 1
         logger.log('training iteration #{}'.format(train_i), [constants.EXP_TYPE])
 
