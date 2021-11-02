@@ -8,6 +8,7 @@ figures/*
 data/*
 Logs/*
 archive.zip
+*.zip
 
 .DS_store
 
