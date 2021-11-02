@@ -3,6 +3,7 @@ import torch
 from torch import tensor as T
 
 from Models.microGIF import microGIF
+from Models.microGIF_transposed import microGIF_transposed
 from Models.nonDifferentiableMicroGIF import nonDifferentiableMicroGIF
 from experiments import randomise_parameters, zip_tensor_dicts
 
@@ -84,7 +85,7 @@ def micro_gif_populations_model_full_size(random_seed):
     rand_params_L4 = zip_tensor_dicts(params_pop_excit_L4, params_pop_inhib_L4)
     randomised_params = zip_tensor_dicts(rand_params_L2_3, rand_params_L4)
 
-    return pop_sizes, microGIF(parameters=randomised_params, N=N, neuron_types=neuron_types)
+    return pop_sizes, microGIF_transposed(parameters=randomised_params, N=N, neuron_types=neuron_types)
 
 
 def meso_gif_populations_model(random_seed, pop_size=1, N_pops=2):

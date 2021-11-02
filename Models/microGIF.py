@@ -9,7 +9,7 @@ class microGIF(nn.Module):
     free_parameters = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta', 'c', 'Delta_u']
     parameter_init_intervals = { 'E_L': [0., 3.], 'tau_m': [7., 9.], 'tau_s': [4., 8.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1], 'c': [0.15, 0.2], 'Delta_u': [3.5, 4.5] }
-    param_lin_constraints = [[0., 1.], [-5., 25.], [1., 20.], [1., 20.], [800., 1500.], [0.5, 1.5], [1., 20.]]
+    param_lin_constraints = [[0., 2.], [-5., 25.], [1., 20.], [1., 20.], [800., 1500.], [0.5, 1.5], [1., 20.]]
 
     def __init__(self, parameters, N=4, neuron_types=[1, -1]):
         super(microGIF, self).__init__()
@@ -85,11 +85,11 @@ class microGIF(nn.Module):
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 2., 20., self.tau_m))
         self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.tau_s))
         self.tau_theta.register_hook(lambda grad: static_clamp_for(grad, 800., 1500, self.tau_theta))
-        self.J_theta.register_hook(lambda grad: static_clamp_for(grad, 0.5, 1.5, self.J_theta))
+        self.J_theta.register_hook(lambda grad: static_clamp_for(grad, 0.1, 2., self.J_theta))
         self.Delta_u.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.Delta_u))
         self.c.register_hook(lambda grad: static_clamp_for(grad, 0.01, 1., self.c))
 
-        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
+        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 2., self.w))
 
     def get_parameters(self):
         params_dict = {}
@@ -132,13 +132,13 @@ class microGIF(nn.Module):
         spikes_lambda = spikes_lambda.clip(0., 1.)
 
         # spiked = torch.where(spikes_lambda >= 1., 1., 0.)
-        try:
-            m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
-            spiked = m.sample()
-        except Exception as e:
-            print(e)
-            print('spikes_lambda: {}'.format(spikes_lambda))
-            raise e
+        # try:
+        m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
+        spiked = m.sample()
+        # except Exception as e:
+        #     print(e)
+        #     print('spikes_lambda: {}'.format(spikes_lambda))
+        #     raise e
 
         self.spiked = spiked
         not_spiked = (spiked - 1) / -1
