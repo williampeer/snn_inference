@@ -29,39 +29,39 @@ def main(argv):
     sample_spikes_other_second = m_bernoulli_other.sample()
 
     # TEST
-    lowest_nll = PDF_metrics.poisson_nll(spike_probs_main, sample_spikes_main, bin_size=bin_size)
-    lowest_nll_second = PDF_metrics.poisson_nll(spike_probs_main, sample_spikes_second, bin_size=bin_size)
+    lowest_nll = PDF_metrics.bernoulli_nll(spike_probs_main, sample_spikes_main)
+    lowest_nll_second = PDF_metrics.bernoulli_nll(spike_probs_main, sample_spikes_second)
     print('lowest_nll: {}'.format(lowest_nll))
     print('lowest_nll_second: {}'.format(lowest_nll_second))
     assert lowest_nll < 1.5 * lowest_nll_second and lowest_nll_second < 1.5 * lowest_nll, "lowest_nll should be fairly similar to lowest_2nd"
 
-    pnll_chaotic = PDF_metrics.poisson_nll(spike_probs_main, extreme_chaotic, bin_size=bin_size)
+    pnll_chaotic = PDF_metrics.bernoulli_nll(spike_probs_main, extreme_chaotic)
     print('pnll chaotic: {}'.format(pnll_chaotic))
-    sine_fast = PDF_metrics.poisson_nll(spike_probs_main, sinusoidal_fast.round(), bin_size=bin_size)
-    sine_slow = PDF_metrics.poisson_nll(spike_probs_main, sinusoidal_slow.round(), bin_size=bin_size)
+    sine_fast = PDF_metrics.bernoulli_nll(spike_probs_main, sinusoidal_fast.round())
+    sine_slow = PDF_metrics.bernoulli_nll(spike_probs_main, sinusoidal_slow.round())
     print('pnll sine fast: {}'.format(sine_fast))
     print('pnll sine_slow: {}'.format(sine_slow))
 
-    # assert lowest_nll < PDF_metrics.poisson_nll(spike_probs_main, extreme_silent, bin_size=bin_size)
+    # assert lowest_nll < PDF_metrics.bernoulli_nll(spike_probs_main, extreme_silent, bin_size=bin_size)
     assert lowest_nll < pnll_chaotic, "lowest nll: {}, pnll_chaotic: {}".format(lowest_nll, pnll_chaotic)
     assert lowest_nll < sine_fast
     assert lowest_nll < sine_slow
 
-    pnll_main_to_other = PDF_metrics.poisson_nll(spike_probs_main, sample_spikes_other, bin_size=bin_size)
-    pnll_main_to_second_other = PDF_metrics.poisson_nll(spike_probs_main, sample_spikes_other_second, bin_size=bin_size)
+    pnll_main_to_other = PDF_metrics.bernoulli_nll(spike_probs_main, sample_spikes_other)
+    pnll_main_to_second_other = PDF_metrics.bernoulli_nll(spike_probs_main, sample_spikes_other_second)
     print('pnll pnll_main_to_other: {}'.format(pnll_main_to_other))
     print('pnll pnll_main_to_second_other: {}'.format(pnll_main_to_second_other))
 
     assert lowest_nll < pnll_main_to_other
     assert lowest_nll < pnll_main_to_second_other
 
-    assert PDF_metrics.poisson_nll(spike_probas_other, sample_spikes_other, bin_size) < \
-           PDF_metrics.poisson_nll(spike_probas_other, sample_spikes_main, bin_size)
+    assert PDF_metrics.bernoulli_nll(spike_probas_other, sample_spikes_other) < \
+           PDF_metrics.bernoulli_nll(spike_probas_other, sample_spikes_main)
 
-    pnll_sine_fast_to_slow = PDF_metrics.poisson_nll(sinusoidal_fast, sinusoidal_slow.round(), bin_size)
-    pnll_sine_fast_to_fast = PDF_metrics.poisson_nll(sinusoidal_fast, sinusoidal_fast.round(), bin_size)
-    pnll_sine_slow_to_slow = PDF_metrics.poisson_nll(sinusoidal_slow, sinusoidal_slow.round(), bin_size)
-    pnll_sine_slow_to_fast = PDF_metrics.poisson_nll(sinusoidal_slow, sinusoidal_fast.round(), bin_size)
+    pnll_sine_fast_to_slow = PDF_metrics.bernoulli_nll(sinusoidal_fast, sinusoidal_slow.round())
+    pnll_sine_fast_to_fast = PDF_metrics.bernoulli_nll(sinusoidal_fast, sinusoidal_fast.round())
+    pnll_sine_slow_to_slow = PDF_metrics.bernoulli_nll(sinusoidal_slow, sinusoidal_slow.round())
+    pnll_sine_slow_to_fast = PDF_metrics.bernoulli_nll(sinusoidal_slow, sinusoidal_fast.round())
 
     print('pnll_sine_fast_to_fast: {}'.format(pnll_sine_fast_to_fast))
     print('pnll_sine_slow_to_slow: {}'.format(pnll_sine_slow_to_slow))

@@ -19,6 +19,16 @@ torch.autograd.set_detect_anomaly(True)
 
 def stats_training_iterations(model_parameters, model, train_losses, test_losses, constants, logger, exp_type_str, target_parameters, exp_num, train_i):
     if constants.plot_flag:
+        plot_loss(loss=test_losses, uuid=model.__class__.__name__+'/'+constants.UUID, exp_type=exp_type_str,
+                  custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
+                                                                 constants.loss_fn, constants.learn_rate),
+                  fname='test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn, str(constants.tau_van_rossum).replace('.', '_')))
+        plot_loss(loss=train_losses, uuid=model.__class__.__name__+'/'+constants.UUID, exp_type=exp_type_str,
+                  custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
+                                                                 constants.loss_fn, constants.learn_rate),
+                  fname='train_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn,
+                                                                       str(constants.tau_van_rossum).replace('.', '_')))
+
         parameter_names = model.free_parameters
         plot_parameter_inference_trajectories_2d(model_parameters,
                                                  uuid=model.__class__.__name__+'/'+constants.UUID,
@@ -55,17 +65,6 @@ def stats_training_iterations(model_parameters, model, train_losses, test_losses
                                                      .format(model.__class__.__name__, exp_num, train_i),
                                                      logger=logger)
         # ------------------------------------------------------
-
-        plot_loss(loss=test_losses, uuid=model.__class__.__name__+'/'+constants.UUID, exp_type=exp_type_str,
-                  custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
-                                                                 constants.loss_fn, constants.learn_rate),
-                  fname='test_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn, str(constants.tau_van_rossum).replace('.', '_')))
-        plot_loss(loss=train_losses, uuid=model.__class__.__name__+'/'+constants.UUID, exp_type=exp_type_str,
-                  custom_title='Loss ({}, {}, {}, lr={})'.format(model.__class__.__name__, constants.optimiser.__name__,
-                                                                 constants.loss_fn, constants.learn_rate),
-                  fname='train_loss_exp_{}_loss_fn_{}_tau_vr_{}'.format(exp_num, constants.loss_fn,
-                                                                       str(constants.tau_van_rossum).replace('.', '_')))
-
 
     logger.log('train_losses: #{}'.format(train_losses))
     mean_test_loss = torch.mean(torch.tensor(test_losses)).clone().detach().numpy()

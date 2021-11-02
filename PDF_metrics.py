@@ -4,7 +4,6 @@ import torch
 
 
 def get_binned_spike_counts(out, bin_size=400):
-    # bin_len = int(out.shape[0] / bins)
     n_bins = int(out.shape[0] / bin_size)
     out_counts = torch.zeros((n_bins, out.shape[1]))
     for b_i in range(n_bins):
@@ -13,16 +12,8 @@ def get_binned_spike_counts(out, bin_size=400):
 
 
 def poisson_nll(spike_probabilities, target_spikes, bin_size):
-    m = torch.distributions.bernoulli.Bernoulli(spike_probabilities)
-    expressed_spikes = m.sample()
-    # lambda_spikes = get_binned_spike_counts(expressed_spikes, bin_size=bin_size).clamp(1., bin_size)
-    lambda_spikes = get_binned_spike_counts(spike_probabilities, bin_size).round().clamp(1., bin_size)
-
-    # assert expressed_spikes.shape[0] > expressed_spikes.shape[1], "assert row is time-step"  # comment out to not escape to interpreter
-    # num_bins = expressed_spikes.shape[0] / bin_size
-
+    lambda_spikes = get_binned_spike_counts(spike_probabilities, bin_size).clamp(1., bin_size)
     target_spike_counts = get_binned_spike_counts(target_spikes, bin_size=bin_size).clamp(1., bin_size)
-
     m_Poiss = torch.distributions.poisson.Poisson(lambda_spikes)
     return torch.mean(-m_Poiss.log_prob(target_spike_counts))
 

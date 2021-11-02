@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.tensor as T
 
+import PDF_metrics
 import model_util
 from TargetModels import TargetModelMicroGIF
 from experiments import sine_modulated_white_noise
@@ -18,11 +19,12 @@ pop_size = 4
 for random_seed in range(3, 4):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
-    snn = TargetModelMicroGIF.micro_gif_populations_model(random_seed=random_seed, pop_size=pop_size, N_pops=num_pops)
+    pop_sizes, snn = TargetModelMicroGIF.micro_gif_populations_model_full_size(random_seed=random_seed)
 
     N = snn.N
-    neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N / 4) * [0.25]), T(int(N / 4) * [0.1])])
-    sample_inputs = sine_modulated_white_noise(t=5000, N=snn.N, neurons_coeff=neurons_coeff)
+    t = 4800
+    neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
+    sample_inputs = sine_modulated_white_noise(t=t, N=snn.N, neurons_coeff=neurons_coeff)
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(sample_inputs.sum()))
     _, sample_targets = model_util.feed_inputs_sequentially_return_tuple(snn, sample_inputs)
@@ -33,14 +35,16 @@ for random_seed in range(3, 4):
     optimiser.zero_grad()
 
     for i in range(3):
-        current_inputs = sine_modulated_white_noise(t=5000, N=snn.N)
+        current_inputs = sine_modulated_white_noise(t=t, N=snn.N, neurons_coeff=neurons_coeff)
         current_inputs.retain_grad()
 
         spike_probs, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, current_inputs)
 
         # loss = spike_metrics.firing_rate_distance(spikes, sample_targets)
-        m = torch.distributions.bernoulli.Bernoulli(spike_probs)
-        loss = -m.log_prob(sample_targets).sum()
+        # m = torch.distributions.bernoulli.Bernoulli(spike_probs)
+        # loss = -m.log_prob(sample_targets).sum()
+        # loss = PDF_metrics.bernoulli_nll(spike_probabilities=spike_probs, target_spikes=sample_targets)
+        loss = PDF_metrics.poisson_nll(spike_probabilities=spike_probs, target_spikes=sample_targets, bin_size=100)
 
         loss.backward(retain_graph=True)
         # loss.backward()

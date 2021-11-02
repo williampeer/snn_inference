@@ -468,6 +468,9 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
 
 
 def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
+    if os.path.exists(path + '.png'):
+        return
+
     params_by_exp = np.array(param_2D).T
     num_of_parameters = params_by_exp.shape[0]
 
@@ -550,14 +553,13 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
                     current_targets = target_params[p_k]
 
             cur_p = np.array(param_means[p_k])
-            # if param_names:
-            #     name = param_names[p_i]
-            # else:
             name = '{}'.format(p_k)
 
             # silently fail for 3D params (weights)
             if len(cur_p.shape) == 2:
-                decompose_param_pair_trajectory_plot(cur_p, current_targets, name=name, path=path+'_param_{}'.format(p_k))
+                param_path = path+'_param_{}'.format(p_k)
+                if not os.path.exists(param_path) and not os.path.exists(param_path + '.png'):
+                    decompose_param_pair_trajectory_plot(cur_p[:5], current_targets[:5], name=name, path=param_path)
 
 
 def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname, custom_title=False):
