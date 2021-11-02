@@ -559,7 +559,9 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
             if len(cur_p.shape) == 2:
                 param_path = path+'_param_{}'.format(p_k)
                 if not os.path.exists(param_path) and not os.path.exists(param_path + '.png'):
-                    decompose_param_pair_trajectory_plot(cur_p[:5], current_targets[:5], name=name, path=param_path)
+                    # decompose_param_pair_trajectory_plot(cur_p[:,:,:4], current_targets[:,:,:4], name=name, path=param_path)
+                    max_index = min(5, len(current_targets))
+                    decompose_param_pair_trajectory_plot(cur_p[:, :max_index], current_targets[:max_index], name=name, path=param_path)
 
 
 def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname, custom_title=False):

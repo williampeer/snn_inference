@@ -249,7 +249,10 @@ def run_exp_loop(logger, constants, model_class, target_model, pop_sizes, error_
             num_neurons = len(node_indices)
 
         init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
-        neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
+        if len(pop_sizes) == 4:
+            neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
+        elif len(pop_sizes) == 2:
+            neurons_coeff = torch.cat([T(2 * [0.25]), T(2 * [0.1])])
         recovered_parameters, train_losses, test_losses, train_i, poisson_rates = \
             fit_model(logger, constants, model_class, init_params_model, exp_num=exp_i, target_model=target_model,
                       target_parameters=target_parameters, num_neurons=num_neurons, neurons_coeff=neurons_coeff)
