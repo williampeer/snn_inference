@@ -21,13 +21,16 @@ def main(argv):
     # exp_type_str = C.ExperimentType.DataDriven.name
     learn_rate = 0.02; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
     # Run 100 with lr 0.01 and 0.02
-    max_train_iters = 40
+    max_train_iters = 20
     num_targets = 1
     # Q: Interval size effect on loss curve and param retrieval for both lfns
     interval_size = 1200*4
     batch_size = interval_size; rows_per_train_iter = interval_size
     # bin_size = int(interval_size/10)  # for RPH
-    bin_size = 100  # for RPH, PNLL
+    bin_size = 200  # for RPH, PNLL
+    # TODO: (A) weights only first,
+    #   (B) make dynamics more interesting; shift inputs, create activity that is more interesting,
+    #   (C) give one neuron stimulus (sub-set already the case)
     # burn_in = False
     burn_in = True
 
