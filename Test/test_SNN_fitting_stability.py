@@ -3,8 +3,8 @@ import torch
 from Constants import Constants
 from Models.GLIF import GLIF
 from Models.LIF import LIF
-from experiments import poisson_input, zip_dicts
-from fit import fit_mini_batches
+from experiments import sine_modulated_white_noise_input, zip_dicts
+from fit import fit_batches
 from model_util import generate_model_data
 from plot import plot_neuron, plot_losses
 
@@ -13,7 +13,7 @@ def test_stability_with_matching_configurations_deprecated(model, gen_model, rat
     t=4000
 
     poisson_rate = torch.tensor(rate_factor)
-    gen_inputs = poisson_input(poisson_rate, t, gen_model.N)
+    gen_inputs = sine_modulated_white_noise_input(poisson_rate, t, gen_model.N)
     gen_membrane_potentials, gen_spiketrain = generate_model_data(model=gen_model, inputs=gen_inputs)
 
     optims = [optim(list(model.parameters()), lr=learn_rate),
@@ -22,11 +22,11 @@ def test_stability_with_matching_configurations_deprecated(model, gen_model, rat
         plot_neuron(gen_membrane_potentials[:, neur_ind].data, title='Generative neuron model #{}'.format(neur_ind),
                     fname_ext='_test_1_neuron_{}'.format(neur_ind))
 
-    avg_batch_loss = fit_mini_batches(model=model, gen_inputs=gen_inputs,
-                                      target_spiketrain=gen_spiketrain,
-                                      poisson_input_rate=poisson_rate,
-                                      optimiser=optims,
-                                      constants=Constants(0, 0, 0, 500, tau_vr, 0.6, 2000, optim, 'van_rossum_dist', 1))
+    avg_batch_loss = fit_batches(model=model, gen_inputs=gen_inputs,
+                                 target_spiketrain=gen_spiketrain,
+                                 poisson_input_rate=poisson_rate,
+                                 optimiser=optims,
+                                 constants=Constants(0, 0, 0, 500, tau_vr, 0.6, 2000, optim, 'van_rossum_dist', 1))
 
     for param_i, param in enumerate(list(model.parameters())):
         # print('parameter #{}: {}'.format(param_i, param))
@@ -49,7 +49,7 @@ def test_stability_with_matching_configurations(model, gen_model, rate_factor, t
     batch_losses = []
     train_iter = 0; avg_batch_loss = 10
     while train_iter < train_iter_cap and avg_batch_loss > 5.0:
-        gen_inputs = poisson_input(gen_model_rate, t, gen_model.N)
+        gen_inputs = sine_modulated_white_noise_input(gen_model_rate, t, gen_model.N)
         gen_model.reset_hidden_state()
         # for gen spiketrain this may be thresholded to binary values:
         gen_membrane_potentials, targets = generate_model_data(model=gen_model, inputs=gen_inputs)
@@ -63,9 +63,9 @@ def test_stability_with_matching_configurations(model, gen_model, rate_factor, t
         #                 fname_ext='_test_2_neuron_{}'.format(neur_ind))
         del gen_membrane_potentials, targets, gen_inputs
 
-        avg_batch_loss = fit_mini_batches(model=model, gen_inputs=None, target_spiketrain=gen_spiketrain, poisson_input_rate=model_rate,
-                                          optimiser=optims,
-                                          constants=Constants(0, 0, 0, 500, tau_vr, model_rate, 2000, optim, 'van_rossum_dist', 1))
+        avg_batch_loss = fit_batches(model=model, gen_inputs=None, target_spiketrain=gen_spiketrain, poisson_input_rate=model_rate,
+                                     optimiser=optims,
+                                     constants=Constants(0, 0, 0, 500, tau_vr, model_rate, 2000, optim, 'van_rossum_dist', 1))
         model_rate = model_rate.clone().detach()  # reset
 
         # for param_i, param in enumerate(list(model.parameters())):

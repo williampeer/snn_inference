@@ -1,4 +1,4 @@
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from plot import plot_neuron
 from spike_metrics import *
 
@@ -6,8 +6,8 @@ import torch
 
 
 def test_greedy_shortest_dist_vr():
-    tar_spikes = poisson_input(20., t=1000, N=3)
-    model_spikes = poisson_input(20. * torch.ones((3,)), t=1000, N=3)
+    tar_spikes = sine_modulated_white_noise_input(20., t=1000, N=3)
+    model_spikes = sine_modulated_white_noise_input(20. * torch.ones((3,)), t=1000, N=3)
     print('num of sample model spikes: {}'.format(model_spikes.sum()))
     print('num of sample target spikes: {}'.format(tar_spikes.sum()))
 
@@ -31,8 +31,8 @@ def test_greedy_shortest_dist_vr():
 
 
 def test_van_rossum_dist():
-    tar_spikes = poisson_input(10., t=1000, N=3)
-    model_spikes = poisson_input(10., t=1000, N=3)
+    tar_spikes = sine_modulated_white_noise_input(10., t=1000, N=3)
+    model_spikes = sine_modulated_white_noise_input(10., t=1000, N=3)
     print('num of sample model spikes: {}'.format(model_spikes.sum()))
     print('num of sample target spikes: {}'.format(tar_spikes.sum()))
 
@@ -58,7 +58,7 @@ def test_van_rossum_dist():
 def test_optimised_van_rossum():
     tau = torch.tensor(20.0)
     # spikes = (torch.rand((100, 3)) > 0.85).float()
-    spikes = poisson_input(20., 200., 3)
+    spikes = sine_modulated_white_noise_input(20., 200., 3)
 
     torch_conv = torch_van_rossum_convolution(spikes, tau)
     plot_neuron(torch_conv, "van Rossum convolved spike train", fname_ext="_vr_test")
@@ -70,7 +70,7 @@ def test_optimised_van_rossum():
 def test_optimised_van_rossum_two_sided():
     tau = torch.tensor(10.0)
     # spikes = (torch.rand((100, 3)) > 0.85).float()
-    spikes = poisson_input(20., 200., 3)
+    spikes = sine_modulated_white_noise_input(20., 200., 3)
 
     torch_conv = torch_van_rossum_convolution(spikes, tau)
     plot_neuron(torch_conv, "van Rossum convolved spike train", fname_ext="_vr_test_one_sided")
@@ -88,7 +88,7 @@ def test_optimised_van_rossum_two_sided():
 def test_different_taus_van_rossum_dist():
     t = 400; N=12
     zeros = torch.zeros((t, N))
-    sample_spikes = poisson_input(10., t, N)
+    sample_spikes = sine_modulated_white_noise_input(10., t, N)
     cur_tau = torch.tensor(25.0)
     cur_dist = van_rossum_dist(sample_spikes, zeros, cur_tau)
     print('cur_tau: {:.2f}, cur_dist: {:.4f}'.format(cur_tau, cur_dist))
@@ -105,7 +105,7 @@ def test_van_rossum_convolution():
     tau_vr = torch.tensor(20.0)
 
     zeros = torch.zeros((t, N))
-    sample_spikes = (poisson_input(10., t, N) > 0).float()
+    sample_spikes = (sine_modulated_white_noise_input(10., t, N) > 0).float()
     print('no. of spikes: {}'.format(sample_spikes.sum()))
 
     lower_avg_rate = 6. * (t/1000.) * N

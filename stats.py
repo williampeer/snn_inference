@@ -28,7 +28,8 @@ def binned_avg_firing_rate_per_neuron(spikes, bin_size):
     mean_per_node = torch.zeros((spikes.shape[1],))
     for node_i in range(spikes.shape[1]):
         avgs = binned_firing_rates(spikes[:, node_i], bin_size)
-        std_per_node[node_i], mean_per_node[node_i] = torch.std_mean(torch.tensor(avgs))
+        std_per_node[node_i] = torch.std(torch.tensor(avgs))
+        mean_per_node[node_i] = torch.mean(torch.tensor(avgs))
     return std_per_node, mean_per_node
 
 
@@ -41,6 +42,11 @@ def binned_firing_rates(vec, bin_size):
         avgs[i] = np.mean(cur_interval)
 
     return avgs
+
+
+def rate_Hz(spike_train):
+    rate_Hz = spike_train.sum(dim=0) * 1000. / spike_train.shape[0]
+    return rate_Hz
 
 # ----------------------------------------
 
@@ -89,7 +95,7 @@ def higher_order_stats(s1, s2, bin_size=20):
     N = s1.shape[1]
     for m_i in range(N):
         if s1_spikes[m_i] < 0.01 or s2_spikes[m_i] < 0.01:
-            corrcoef[12 + m_i, :] = 0.
+            corrcoef[N + m_i, :] = 0.
             corrcoef[:, m_i] = 0.
 
     return np.abs(corrcoef), mu1, std1, mu2, std2, CV1, CV2

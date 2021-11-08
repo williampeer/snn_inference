@@ -2,21 +2,21 @@ import torch
 
 import model_util
 import spike_metrics
-from TargetModels import TargetEnsembleModels
-from experiments import poisson_input, release_computational_graph
+from TargetModels import TargetModels
+from experiments import sine_modulated_white_noise_input, release_computational_graph
 
 
 def test_model_grad_is_clamped(model):
     t_interval = 2000
-    inputs = poisson_input(10., t=t_interval, N=model.N)
+    inputs = sine_modulated_white_noise_input(10., t=t_interval, N=model.N)
     inputs.retain_grad()
     print('#inputs: {}'.format(inputs.sum()))
 
-    spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs)
+    spikes = model_util.feed_inputs_sequentially_return_spike_train(model, inputs)
     print('#spikes: {}'.format(spikes.sum()))
 
     learn_rate = 0.1
-    loss_0 = spike_metrics.firing_rate_distance(spikes, poisson_input(10., t=t_interval, N=model.N))
+    loss_0 = spike_metrics.firing_rate_distance(spikes, sine_modulated_white_noise_input(10., t=t_interval, N=model.N))
 
     optim_params = list(model.parameters())
     optim = torch.optim.SGD(optim_params, lr=learn_rate)
@@ -33,10 +33,10 @@ def test_model_grad_is_clamped(model):
     loss_0.grad = None
     optim.zero_grad()
 
-    inputs =  poisson_input(10., t_interval, model.N)
+    inputs =  sine_modulated_white_noise_input(10., t_interval, model.N)
     inputs.retain_grad()
-    spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs)
-    loss_1 = spike_metrics.firing_rate_distance(spikes, poisson_input(100., t_interval, model.N))
+    spikes = model_util.feed_inputs_sequentially_return_spike_train(model, inputs)
+    loss_1 = spike_metrics.firing_rate_distance(spikes, sine_modulated_white_noise_input(100., t_interval, model.N))
     assert loss_1 > loss_0, "much bigger rate difference should give higher loss. loss_0: {}, loss_1: {}".format(loss_0, loss_1)
 
     loss_1.backward(retain_graph=True)
@@ -50,10 +50,10 @@ def test_model_grad_is_clamped(model):
     for _ in range(5):
         optim.zero_grad()
 
-        inputs = poisson_input(10., t_interval, model.N)
+        inputs = sine_modulated_white_noise_input(10., t_interval, model.N)
         inputs.retain_grad()
-        spikes = model_util.feed_inputs_sequentially_return_spiketrain(model, inputs)
-        loss_big = spike_metrics.firing_rate_distance(spikes, poisson_input(100., t_interval, model.N))
+        spikes = model_util.feed_inputs_sequentially_return_spike_train(model, inputs)
+        loss_big = spike_metrics.firing_rate_distance(spikes, sine_modulated_white_noise_input(100., t_interval, model.N))
         assert loss_big > 10., "loss: {}".format(loss_big)
 
         loss_big.backward(retain_graph=True)
@@ -72,8 +72,14 @@ def test_model_grad_is_clamped(model):
 random_seed = 42
 ext_name = 'ensembles_1_dales'
 
-m_LIF = TargetEnsembleModels.lif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
-m_GLIF = TargetEnsembleModels.glif_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+m_LIF = TargetModels.lif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+m_LIF_R = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+m_LIF_ASC = TargetModels.lif_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+m_LIF_R_ASC = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
+m_GLIF = TargetModels.glif_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N = 12)
 
 test_model_grad_is_clamped(m_LIF)
-# test_model_grad_is_clamped(m_GLIF)
+test_model_grad_is_clamped(m_LIF_R)
+test_model_grad_is_clamped(m_LIF_ASC)
+test_model_grad_is_clamped(m_LIF_R_ASC)
+test_model_grad_is_clamped(m_GLIF)

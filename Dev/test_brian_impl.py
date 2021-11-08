@@ -1,7 +1,7 @@
 from Dev.setup_data_for_brian import *
 from Dev.brian2_custom_network_opt import *
 from TargetModels import TargetModels
-from plot import plot_spiketrains_side_by_side
+from plot import plot_spike_trains_side_by_side
 
 model_num = 0
 target_params_dict = TargetModels.glif1().state_dict()
@@ -26,5 +26,5 @@ next_target_index, sample_targets = data_util.get_spike_train_matrix(index_last_
 
 print('brian2 spikes: {}, pytorch spikes: {}'.format(spike_train.sum(), sample_targets.sum()))
 
-plot_spiketrains_side_by_side(spike_train, sample_targets, exp_type='single_objective_optim', uuid='TEST',
-                              title='Spike trains brian test', fname='spike_trains_brian_test')
+plot_spike_trains_side_by_side(spike_train, sample_targets, exp_type='single_objective_optim', uuid='TEST',
+                               title='Spike trains brian test', fname='spike_trains_brian_test')

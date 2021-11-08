@@ -2,8 +2,8 @@ import Log
 from IO import save_poisson_rates
 from data_util import load_sparse_data, get_spike_train_matrix
 from eval import evaluate_loss
-from experiments import generate_synthetic_data, draw_from_uniform, release_computational_graph
-from fit import fit_mini_batches
+from experiments import draw_from_uniform
+from fit import fit_batches
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)
@@ -32,7 +32,7 @@ def stats_training_iterations(model_parameters, model, poisson_rate, train_losse
     logger.log('test_losses: #{}'.format(test_losses), ['mean test loss: {}'.format(mean_test_loss)])
 
     cur_fname = '{}_exp_num_{}_data_set_{}_mean_loss_{:.3f}_uuid_{}'.format(model.__class__.__name__, exp_num, constants.data_set, mean_test_loss, constants.UUID)
-    IO.save(model, rate=poisson_rate, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
+    IO.save(model, loss={'train_losses': train_losses, 'test_losses': test_losses}, uuid=constants.UUID, fname=cur_fname)
 
     del model, mean_test_loss
 
@@ -67,7 +67,7 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num):
 
     params_model['N'] = N
     model = model_class(N=N, parameters=params_model,
-                        neuron_types=[1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])  # set to ground truth for this file only
+                        neuron_types=[1, -1])  # set to ground truth for this file only
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
     poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
     poisson_input_rate.clamp(1., 40.)
@@ -91,9 +91,10 @@ def fit_model_to_data(logger, constants, model_class, params_model, exp_num):
         index_last_step, data_spike_train = get_spike_train_matrix(index_last_step, advance_by_t_steps=constants.rows_per_train_iter,
                                                                    spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
 
-        avg_train_loss, abs_grads_mean, last_loss = fit_mini_batches(model, gen_inputs=None, target_spiketrain=data_spike_train,
-                                                                     poisson_input_rate=poisson_input_rate, optimiser=optim,
-                                                                     constants=constants, train_i=train_i, logger=logger)
+        avg_train_loss, abs_grads_mean, last_loss = fit_batches(model, gen_inputs=None, target_spiketrain=data_spike_train,
+                                                                # poisson_input_rate=poisson_input_rate,
+                                                                optimiser=optim,
+                                                                constants=constants, train_i=train_i, logger=logger)
         # release_computational_graph(target_model, constants.initial_poisson_rate, gen_input)
 
         logger.log(parameters=[avg_train_loss, abs_grads_mean])

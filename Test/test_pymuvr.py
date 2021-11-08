@@ -2,12 +2,12 @@ import pymuvr
 import numpy as np
 
 from data_util import convert_to_sparse_vectors, get_spike_times_list
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from ext_spike_metrics import get_pymuvr_dist
 
 t = 4000
-model_spike_train = poisson_input(rate=10., t=t, N=4)
-target_spike_train = poisson_input(rate=10., t=t, N=4)
+model_spike_train = sine_modulated_white_noise_input(rate=10., t=t, N=4)
+target_spike_train = sine_modulated_white_noise_input(rate=10., t=t, N=4)
 spike_indices, spike_times = convert_to_sparse_vectors(model_spike_train)
 target_indices, target_times = convert_to_sparse_vectors(target_spike_train)
 

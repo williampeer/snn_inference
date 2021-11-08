@@ -1,3 +1,3 @@
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 
-sut = poisson_input(rate=20, t=1000, N=3)
+sut = sine_modulated_white_noise_input(rate=20, t=1000, N=3)

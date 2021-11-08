@@ -3,12 +3,12 @@ from torch.nn.functional import poisson_nll_loss
 
 import model_util
 from Models.GLIF import GLIF
-from experiments import poisson_input, randomise_parameters, zip_dicts
+from experiments import sine_modulated_white_noise_input, randomise_parameters, zip_dicts
 
 
 def test_poisson_NLL():
-    tar_spikes = poisson_input(1. * torch.ones((12,)), t=100, N=12)
-    model_spikes = poisson_input(1. * torch.ones((12,)), t=100, N=12)
+    tar_spikes = sine_modulated_white_noise_input(1. * torch.ones((12,)), t=100, N=12)
+    model_spikes = sine_modulated_white_noise_input(1. * torch.ones((12,)), t=100, N=12)
     zeros = torch.zeros_like(tar_spikes)
     print('num of sample model spikes: {}'.format(model_spikes.sum()))
     print('num of sample target spikes: {}'.format(tar_spikes.sum()))
@@ -32,10 +32,10 @@ def test_poisson_NLL_models():
     m1 = GLIF(device='cpu', parameters=zip_dicts(static_parameters, free_parameters))
     m2 = GLIF(device='cpu', parameters=zip_dicts(static_parameters, randomise_parameters(free_parameters, coeff=torch.tensor(0.25))))
 
-    inputs = poisson_input(0.5, t=500, N=static_parameters['N'])
-    membrane_potentials, spikes1 = model_util.feed_inputs_sequentially_return_spikes_and_potentials(m1, inputs)
-    membrane_potentials, spikes1_2 = model_util.feed_inputs_sequentially_return_spikes_and_potentials(m1, inputs)
-    membrane_potentials, spikes2 = model_util.feed_inputs_sequentially_return_spikes_and_potentials(m2, inputs)
+    inputs = sine_modulated_white_noise_input(0.5, t=500, N=static_parameters['N'])
+    membrane_potentials, spikes1 = model_util.feed_inputs_sequentially_return_tuple(m1, inputs)
+    membrane_potentials, spikes1_2 = model_util.feed_inputs_sequentially_return_tuple(m1, inputs)
+    membrane_potentials, spikes2 = model_util.feed_inputs_sequentially_return_tuple(m2, inputs)
 
     print('num of sample model1 spikes1: {}'.format(spikes1.sum()))
     print('num of sample model1 spikes2: {}'.format(spikes1_2.sum()))

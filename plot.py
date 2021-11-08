@@ -1,4 +1,8 @@
+import os
+
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import torch
 import matplotlib.cm as cm
@@ -7,7 +11,7 @@ from scipy.stats import gaussian_kde
 import IO
 import data_util
 
-plt.rcParams.update({'font.size': 14})
+plt.rcParams.update({'font.size': 12})
 
 
 def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiketrain_test'):
@@ -40,7 +44,7 @@ def plot_spike_train(spike_train, title, uuid, exp_type='default', fname='spiket
     plt.close()
 
 
-def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='default', title=False, fname=False, legend=None, export=False):
+def plot_spike_trains_side_by_side(model_spikes, target_spikes, uuid, exp_type='default', title=False, fname=False, legend=None, export=False):
     assert model_spikes.shape[0] > model_spikes.shape[1], \
         "assert one node per column, one bin per row. spikes shape: {}".format(model_spikes.shape)
     assert model_spikes.shape[0] == target_spikes.shape[0], \
@@ -59,6 +63,7 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
     # ensure binary values:
     model_spike_history = torch.round(model_spikes)
     target_spike_history = torch.round(target_spikes)
+
     model_spike_times = model_spike_history * time_indices
     target_spike_times = target_spike_history * time_indices
 
@@ -72,11 +77,11 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
     for neuron_i in range(model_spike_history.shape[1]):
         if model_spike_times[:, neuron_i].nonzero().sum() > 0:
             plt.plot(torch.reshape(model_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
-                     neuron_i + 1.1, '.b', markersize=4.0, label='Model')
+                     neuron_i + 1.1, '.b', markersize=3.0, label='Model')
     for neuron_i in range(target_spike_times.shape[1]):
         if target_spike_times[:, neuron_i].nonzero().sum() > 0:
             plt.plot(torch.reshape(target_spike_times[:, neuron_i].nonzero(), (1, -1)).numpy(),
-                     neuron_i + 0.9, '.g', markersize=4.0-0.04*int(neuron_i/10), label='Target')
+                     neuron_i + 0.9, '.g', markersize=3.0-0.04*int(neuron_i/10), label='Target')
 
     plt.xlabel('Time (ms)')
     plt.ylabel('Neuron')
@@ -90,6 +95,46 @@ def plot_spiketrains_side_by_side(model_spikes, target_spikes, uuid, exp_type='d
     # plt.title(title)
 
     full_path = './figures/' + exp_type + '/' +  uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+    fig.savefig(fname=full_path + fname)
+    # plt.show()
+    plt.close()
+
+
+def plot_spike_train_projection(spikes, uuid='test', exp_type='default', title=False, fname=False, legend=None, export=False):
+    fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    ax = Axes3D(fig)
+
+    time_indices = torch.reshape(torch.arange(spikes.shape[0]), (spikes.shape[0], 1)).float()
+    # ensure binary values:
+    spike_history = torch.round(spikes)
+    model_spike_times = spike_history * time_indices
+
+    # ensure binary values:
+    for neuron_i in range(spike_history.shape[1]):
+        if model_spike_times[:, neuron_i].nonzero().sum() > 0:
+            spike_times_reshaped = torch.reshape(model_spike_times[:, neuron_i].nonzero(), (1, -1))
+            ax.scatter3D(spike_times_reshaped.numpy(),
+                         (torch.ones_like(spike_times_reshaped) * neuron_i + 1.1).numpy(),
+                         zs=0, label='Model')
+
+    plt.xlabel('Time ($ms$)')
+    plt.ylabel('Neuron')
+    ax.set_zlabel('Parameters $P \in \Re^\mathbf{D}$')
+    ax.set_zticks(range(-1, 2))
+    if neuron_i > 20:
+        ax.set_yticks(range(int((neuron_i + 1) / 10), neuron_i + 1, int((neuron_i + 1) / 10)))
+    else:
+        ax.set_yticks(range(1, neuron_i + 2))
+    ax.set_xticks(range(0, 5000, 1000))
+    ax.set_ylim(0, neuron_i + 2)
+
+    if not fname:
+        fname = 'spike_train_projection' + IO.dt_descriptor()
+
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
     fig.savefig(fname=full_path + fname)
@@ -152,17 +197,41 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     for i in range(len(membrane_potentials_through_time)):
         legend.append('N.{}'.format(i+1))
     plt.figure()
-    plt.plot(torch.arange(membrane_potentials_through_time.shape[0]), membrane_potentials_through_time)
+    plt.plot(np.arange(membrane_potentials_through_time.shape[0]), membrane_potentials_through_time)
     plt.legend(legend, loc='upper left', ncol=4)
     # plt.title(title)
     plt.xlabel('Time (ms)')
     plt.ylabel(ylabel)
     # plt.show()
     full_path = './figures/' + exp_type + '/' + uuid + '/'
-    # IO.makedir_if_not_exists('/figures/' + exp_type + '/')
-    # IO.makedir_if_not_exists(full_path)
+    IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
 
+
+def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False):
+    if not fname:
+        fname = 'loss'+IO.dt_descriptor()
+    else:
+        fname = fname+IO.dt_descriptor()
+    data = {'loss': loss, 'exp_type': exp_type, 'custom_title': custom_title, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_loss')
+
+    plt.plot(loss)
+    # plt.legend(['Training loss', 'Test loss'])
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    # plt.xticks(range(len(loss_arr+1)))
+    if custom_title:
+        plt.title(custom_title)
+    else:
+        plt.title('Loss')
+
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+    plt.savefig(fname=full_path + fname)
+    # plt.show()
+    plt.close()
 
 def plot_losses(training_loss, test_loss, uuid, exp_type='default', custom_title=False, fname=False):
     if not fname:
@@ -171,7 +240,11 @@ def plot_losses(training_loss, test_loss, uuid, exp_type='default', custom_title
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_losses')
 
     plt.figure()
-    plt.plot(training_loss)
+    if len(test_loss) > len(training_loss):
+        plt.plot(range(1, len(training_loss)+1), training_loss)
+    else:
+        plt.plot(training_loss)
+
     plt.plot(test_loss)
     plt.legend(['Training loss', 'Test loss'])
     plt.xlabel('Epoch')
@@ -267,7 +340,7 @@ def plot_avg_losses_composite(loss_res, keys, archive_path='default_export'):
 
     full_path = './figures/' + archive_path + '/'
     IO.makedir_if_not_exists(full_path)
-    plt.savefig(fname=full_path + 'export_avg_loss_composite.eps')
+    plt.savefig(fname=full_path + 'export_avg_loss_composite.png')
     # plt.show()
     plt.close()
 
@@ -321,54 +394,15 @@ def calculate_kde(p1, p2, logger):
     return Z, Xgrid, x_min, x_max, y_min, y_max
 
 
-def plot_parameter_pair_with_variance(p1_means, p2_means, target_params, path, xlabel='Parameter 1', ylabel='Parameter 2',
-                                      custom_title=False, logger=False):
-    try:
-        Z, Xgrid, x_min, x_max, y_min, y_max = calculate_kde(p1_means, p2_means, logger)
-
-        plt.figure()
-        # Plot the result as an image
-        plt.imshow(Z.reshape(Xgrid.shape),
-                   origin='lower', aspect='auto',
-                   extent=[x_min, x_max, y_min, y_max],
-                   cmap='Blues')
-        cb = plt.colorbar()
-        cb.set_label("density")
-
-        if target_params:
-            plt.plot(target_params[0], target_params[1], 'oy')
-            plt.legend(['True value'])
-
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        # if custom_title:
-        #     plt.title(custom_title)
-        # else:
-        #     plt.title('Inferred KDE')
-
-        # plt.imsave(fname, image)
-        plt.savefig(fname=path)
-        # plt.show()
-        plt.close()
-    except:
-        if not logger:
-            print('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means))
-        else:
-            logger.log('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means), ['plot.plot_parameter_pair_with_variance'])
-
-
-# TODO: fix spaghetti-implementation
 def decompose_param_plot(param_2D, target_params, name, path, custom_title=False):
     params_by_exp = np.array(param_2D).T
     num_of_parameters = params_by_exp.shape[0]
-    # print('in decompose_param_plot.. params_by_exp: {}'.format(params_by_exp))
 
     fig, axs = plt.subplots(nrows=num_of_parameters-1, ncols=num_of_parameters-1)
     [axi.set_axis_off() for axi in axs.ravel()]
 
     for i in range(num_of_parameters):
         for j in range(i + 1, num_of_parameters):
-            # 2D plot KDE between p_i and p_j
             cur_ax = axs[i,j-1]
             cur_ax.set_xlabel(name)
             cur_ax.set_ylabel(name)
@@ -379,28 +413,23 @@ def decompose_param_plot(param_2D, target_params, name, path, custom_title=False
                                   origin='lower', aspect='auto',
                                   extent=[x_min, x_max, y_min, y_max],
                                   cmap='Blues')
-                if target_params and len(target_params[0]) > np.max([i, j]):
+                if target_params is not None and hasattr(target_params, 'shape') and len(target_params[0]) > np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'or', markersize=2.8)
-            except ArithmeticError:
+            except ArithmeticError as ae:
+                print('arithmetic error:\n{}'.format(ae))
                 cur_ax.plot(params_by_exp[i], params_by_exp[j], 'xb', markersize=3.5)
-                if target_params and len(target_params) > np.max([i, j]):
+                if target_params is not None and hasattr(target_params, 'shape') and len(target_params) > np.max([i, j]):
                     cur_ax.plot(target_params[0][i], target_params[0][j], 'or', markersize=2.8)
-            except:
+            except Exception as e:
+                print('exception:\n{}'.format(e))
                 print('WARN: Failed to calculate KDE for param.s: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
-
-    # if custom_title:
-    #     fig.suptitle(custom_title + ' ${}$'.format(name))
-    # else:
-    #     fig.suptitle('Decomposed KDEs between neurons for parameter ${}$'.format(name))
 
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
-    # plt.show()
     fig.savefig(path)
     plt.close()
 
 
-# TODO: fix spaghetti-implementation
 def plot_all_param_pairs_with_variance(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger, export_flag=False):
     if export_flag:
         full_path = data_util.prefix + 'data/export/' + exp_type + '/'
@@ -422,228 +451,117 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
         fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
     path = full_path + fname
 
-    number_of_parameters = min(len(param_names), len(param_means))
-    for i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
-        # for plot_j in range(plot_i + 1, number_of_parameters):
-        #     cur_tar_params = False
-        #     if target_params and len(target_params) > i:
-        #         cur_tar_params = target_params[i]
+    # number_of_parameters = min(len(param_names), len(param_means))
+    for p_i, p_k in enumerate(param_means):  # assuming a dict., for all parameter combinations
 
-            cur_p = np.array(param_means[i])
-            # cur_p_j = np.array(param_means[plot_j])
-            name = '{}'.format(i)
-            if param_names:
-                name = param_names[i]
-                # name_j = param_names[plot_j]
-            else:
-                name_i = 'p_{}'.format(i)
-                # name_j = 'p_{}'.format(plot_j)
-            # silently fail for 1D and 3D params
+            cur_p = np.array(param_means[p_k])
+            name = '{}'.format(p_k)
             if len(cur_p.shape) == 2:
                 cur_tar = False
-                if target_params and len(target_params) > i:
-                    cur_tar = target_params[i]
+                if target_params and p_k in target_params:
+                    cur_tar = target_params[p_k]
                 if path.__contains__('.eps'):
                     p_split = path.split('.eps')
                     decompose_param_plot(cur_p, cur_tar, name=name, path=p_split[0]+'_param_{}'.format(name)+'.eps', custom_title=custom_title)
                 else:
                     decompose_param_plot(cur_p, cur_tar, name=name, path=path+'_param_{}'.format(name), custom_title=custom_title)
-            # if len(cur_p_j.shape) == 2:
-            #     cur_tar = False
-            #     if target_params and len(target_params) > plot_j:
-            #         cur_tar = target_params[plot_j]
-            #     decompose_param_plot(cur_p_j, cur_tar, name=name_j, path=path+'_param_{}'.format(name_i),
-            #                          custom_title=custom_title)
-            # if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
-            #     plot_parameter_pair_with_variance(cur_p_i, cur_p_j, target_params=cur_tar_params,
-            #                                       path=path+'_i_j_{}_{}'.format(name_i, name_j),
-            #                                       xlabel=name_i, ylabel=name_j,
-            #                                       custom_title=custom_title, logger=logger)
 
 
-# def decompose_param_pair_trajectory_plot(param_2D, target_params, xlabel, ylabel, path):
-#     params_by_exp = np.array(param_2D).T
-#     num_of_parameters = params_by_exp.shape[0]
-#
-#     fig, axs = plt.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1)
-#     plt.xlabel(xlabel)
-#     plt.ylabel(ylabel)
-#     [axi.set_axis_off() for axi in axs.ravel()]
-#     dot_msize = 5.0
-#
-#     for i in range(num_of_parameters):
-#         for j in range(i + 1, num_of_parameters):
-#             # 2D plot between p_i and p_j
-#             cur_ax = axs[i, j - 1]
-#             try:
-#                 p_len = len(params_by_exp[i])
-#                 colors = cm.rainbow(np.linspace(0, 1, p_len))
-#                 for p_i in range(p_len):
-#                     cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
-#                 # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
-#
-#                 if target_params and len(target_params) >= np.max([i, j]):
-#                     cur_ax.plot(target_params[0][i], target_params[0][j], 'x', color='gray', markersize=0.8 * dot_msize)
-#             except:
-#                 print('WARN: Failed to plot trajectory for params: {}, {}'.format(params_by_exp[i], params_by_exp[j]))
-#
-#     fig.suptitle('GD trajectories between neurons for parameters ${} x {}$'.format(xlabel, ylabel))
-#
-#     if not path:
-#         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
-#     # plt.show()
-#     fig.savefig(path)
-#     plt.close()
-# TODO: fix spaghetti-implementation
 def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
+    if os.path.exists(path + '.png'):
+        return
+
     params_by_exp = np.array(param_2D).T
     num_of_parameters = params_by_exp.shape[0]
 
-    fig, axs = plt.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1)
-    plt.xlabel(name)
-    plt.ylabel(name)
-    [axi.set_axis_off() for axi in axs.ravel()]
+    plt.rcParams.update({'font.size': 8})
+    plt.locator_params(axis='x', nbins=2)
+
+    fig = plt.figure()
+    big_ax = fig.add_subplot(111)
+    big_ax.set_axis_on()
+    big_ax.grid(False)
+    name = name.replace('tau', '\\tau').replace('spike_threshold', '\\theta')
+    big_ax.set_title('Parameter trajectory for ${} \\times {}$'.format(name, name))
+    big_ax.set_xlabel('${}$'.format(name), labelpad=20)
+    big_ax.set_ylabel('${}$'.format(name), labelpad=34)
+    big_ax.set_xticks([])
+    big_ax.set_yticks([])
+    print('num_of_parameters: {}'.format(num_of_parameters))
+    axs = fig.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1, sharex=True, sharey=True)
     dot_msize = 5.0
+    if num_of_parameters == 2:
+        if current_targets is not False:
+            x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
+            x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
+            plt.xticks([x_min, x_max])
 
-    for i in range(num_of_parameters):
-        for j in range(i + 1, num_of_parameters):
-            # 2D plot between p_i and p_j
-            cur_ax = axs[i, j - 1]
-            # try:
-            p_len = len(params_by_exp[i])
-            colors = cm.rainbow(np.linspace(0, 1, p_len))
-            for p_i in range(p_len):
-                cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
-            # cur_ax.plot(params_by_exp[i], params_by_exp[j], color='gray', linewidth=0.4)
+        p_len = len(params_by_exp[0])
+        colors = cm.YlGn(np.linspace(0, 1, p_len))
+        for p_i in range(p_len):
+            plt.scatter(params_by_exp[0][p_i], params_by_exp[1][p_i], color=colors[p_i], marker='o', s=dot_msize)
 
-            if current_targets is not False:
-                cur_ax.plot(current_targets[i], current_targets[j], 'x', color='black', markersize=0.8 * dot_msize)
-            # except:
-            #     print('WARN: Failed to plot trajectory for params: {}, {}. targets: {}, i: {}, j: {}'.format(params_by_exp[i], params_by_exp[j], current_targets, i, j))
+        if current_targets is not False:
+            plt.scatter(current_targets[0], current_targets[1], color='black', marker='x',
+                           s=2. * dot_msize)  # test 2*dot_msize
+    else:
+        [axi.set_axis_off() for axi in axs.ravel()]
 
-    # fig.suptitle('GD trajectory-projections for parameter ${}$'.format(name))
+        for i in range(num_of_parameters):
+            for j in range(i+1, num_of_parameters):
+                cur_ax = axs[j - 1, i]
+                cur_ax.set_axis_on()
+                cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+                if current_targets is not False:
+                    x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+                    x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+                    cur_ax.set_xticks([x_min, x_max])
+
+                # try:
+                p_len = len(params_by_exp[i])
+                colors = cm.YlGn(np.linspace(0, 1, p_len))
+                for p_i in range(p_len):
+                    cur_ax.scatter(params_by_exp[i][p_i], params_by_exp[j][p_i], color=colors[p_i], marker='o', s=dot_msize)
+
+                if current_targets is not False:
+                    cur_ax.scatter(current_targets[i], current_targets[j], color='black', marker='x', s=2.*dot_msize)  # test 2*dot_msize
 
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
     # plt.show()
-    fig.savefig(path + '.eps')
+    fig.savefig(path + '.png')
     plt.close()
 
 
-# TODO: fix spaghetti-implementation
-def param_pair_trajectory_plot(p1_means, p2_means, target_params, path, xlabel='Parameter 1', ylabel='Parameter 2',
-                               custom_title=False, logger=False):
-    try:
-        # Z, Xgrid, x_min, x_max, y_min, y_max = calculate_kde(p1_means, p2_means, logger)
-        plt.figure()
-
-        p_len = len(p1_means)
-        colors = cm.rainbow(np.linspace(0, 1, p_len))
-        for p_i in range(p_len):
-            plt.scatter(p1_means[p_i], p2_means[p_i], color=colors[p_i], marker='x', alpha=0.5)
-        plt.plot(p1_means, p2_means, color='gray')
-
-        # if target_params:
-        # plt.plot(p1_means, p2_means, 'S', markersize=4.)
-
-        plt.xlabel(xlabel)
-        plt.ylabel(ylabel)
-        # if custom_title:
-        #     plt.title(custom_title)
-        # else:
-        #     plt.title('GD trajectory for parameters')
-
-        # plt.imsave(fname, image)
-        plt.savefig(fname=path)
-        # plt.show()
-        plt.close()
-    except:
-        if not logger:
-            print('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means))
-        else:
-            logger.log('WARN: Error calculating the kde. params: {}. {}'.format(p1_means, p2_means),
-                       ['plot.plot_parameter_pair_with_variance'])
-
-
-# TODO: fix spaghetti-implementation
 def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
 
-    data = {'param_means': param_means, 'target_params': target_params, 'exp_type': exp_type, 'uuid': uuid, 'custom_title': custom_title, 'fname': fname}
-    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_parameter_inference_trajectories_2d')
-
     if not fname:
         fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
     path = full_path + fname
 
-    number_of_parameters = min(len(param_names), len(param_means))
-    for i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
-        # for plot_j in range(plot_i + 1, number_of_parameters):
-        current_targets = False
-        if target_params and target_params.__contains__(i):
-            current_targets = target_params[i]
+    if not os.path.exists(path):
+        data = {'param_means': param_means, 'target_params': target_params, 'exp_type': exp_type, 'uuid': uuid, 'custom_title': custom_title, 'fname': fname}
+        IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_parameter_inference_trajectories_2d')
 
-        cur_p = np.array(param_means[i])
-        if param_names:
-            name = param_names[i]
-        else:
-            name = 'p_{}'.format(i)
+        for p_i, p_k in enumerate(param_means):  # assuming a dict., for all parameter combinations
+            current_targets = False
+            if target_params is not False:
+                if p_k in target_params:
+                    current_targets = target_params[p_k]
 
-        # silently fail for 3D params (weights)
-        if len(cur_p.shape) == 2:
-            decompose_param_pair_trajectory_plot(cur_p, current_targets, name=name, path=path+'_param_{}'.format(i))
-        # if len(cur_p.shape) == 1:
-        #     param_pair_trajectory_plot(cur_p, cur_p, target_params=cur_tar,
-        #                                path=path+'_i_{}'.format(i),
-        #                                xlabel=name, ylabel=name,
-        #                                custom_title=custom_title, logger=logger)
+            cur_p = np.array(param_means[p_k])
+            name = '{}'.format(p_k)
 
-# TODO: fix spaghetti-implementation
-# def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):
-#     full_path = './figures/' + exp_type + '/' + uuid + '/'
-#     IO.makedir_if_not_exists(full_path)
-#
-#     data = {'param_means': param_means, 'target_params': target_params, 'exp_type': exp_type, 'uuid': uuid, 'custom_title': custom_title, 'fname': fname}
-#     IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_parameter_inference_trajectories_2d')
-#
-#     if not fname:
-#         fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
-#     path = full_path + fname
-#
-#     number_of_parameters = min(len(param_names), len(param_means))
-#     for plot_i in range(number_of_parameters):  # assuming a dict., for all parameter combinations
-#         for plot_j in range(plot_i + 1, number_of_parameters):
-#             cur_tar_params = False
-#             if target_params and len(target_params) > np.max([plot_i, plot_j]):
-#                 cur_tar_params = [target_params[plot_i], target_params[plot_j]]
-#
-#             cur_p_i = np.array(param_means[plot_i])
-#             cur_p_j = np.array(param_means[plot_j])
-#             if param_names:
-#                 name_i = param_names[plot_i]
-#                 name_j = param_names[plot_j]
-#             else:
-#                 name_i = 'p_{}'.format(plot_i)
-#                 name_j = 'p_{}'.format(plot_j)
-#
-#             # silently fail for 3D params (weights)
-#             if len(cur_p_i.shape) == 2:
-#                 cur_tar = False
-#                 if target_params and len(target_params) > plot_i:
-#                     cur_tar = target_params[plot_i]
-#                 decompose_param_pair_trajectory_plot(cur_p_i, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}'.format(plot_i))
-#             if len(cur_p_j.shape) == 2:
-#                 cur_tar = False
-#                 if target_params and len(target_params) > plot_j:
-#                     cur_tar = target_params[plot_j]
-#                 decompose_param_pair_trajectory_plot(cur_p_j, cur_tar, xlabel=name_i, ylabel=name_j, path=path+'_param_{}'.format(plot_j))
-#             if len(cur_p_i.shape) == 1 and len(cur_p_j.shape) == 1:
-#                 param_pair_trajectory_plot(cur_p_i, cur_p_j, target_params=cur_tar_params,
-#                                            path=path+'_i_j_{}_{}'.format(plot_i, plot_j),
-#                                            xlabel=name_i, ylabel=name_j,
-#                                            custom_title=custom_title, logger=logger)
+            # silently fail for 3D params (weights)
+            if len(cur_p.shape) == 2:
+                param_path = path+'_param_{}'.format(p_k)
+                if not os.path.exists(param_path) and not os.path.exists(param_path + '.png'):
+                    # decompose_param_pair_trajectory_plot(cur_p[:,:,:4], current_targets[:,:,:4], name=name, path=param_path)
+                    max_index = min(5, len(current_targets))
+                    decompose_param_pair_trajectory_plot(cur_p[:, :max_index], current_targets[:max_index], name=name, path=param_path)
 
 
 def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname, custom_title=False):
@@ -666,16 +584,66 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     plt.xticks(xs)
     plt.xlabel('Neuron')
     plt.ylabel('$Hz$')
-    # if custom_title:
-    #     plt.title(custom_title)
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+
+
+def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, baseline=False, colours=False):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'y': y, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot')
+
+    if str(type(y)).__contains__('array') or str(type(y)).__contains__('list'):
+        print('len(y): {}'.format(len(y)))
+        xs = np.linspace(1, len(y), len(y))
+    else:
+        xs = np.array([1])
+        y = np.reshape(np.array([y]), (1,))
+        y_std = np.reshape(np.array([y_std]), (1,))
+
+    if hasattr(y_std, 'shape') and len(y_std.shape) > 0 or hasattr(y_std, 'len') and len(y_std) > 0 or hasattr(y_std, 'append'):
+        if colours:
+            plt.bar(xs-0.15, y, yerr=y_std, width=0.3, color=colours)
+        else:
+            plt.bar(xs-0.15, y, yerr=y_std, width=0.3)
+    else:
+        if colours:
+            plt.bar(xs-0.15, y, width=0.3, color=colours)
+        else:
+            plt.bar(xs-0.15, y, width=0.3)
+
+    if baseline:
+        plt.plot(xs, np.ones_like(y) * baseline, 'g--')
+
+    r_max = np.max(y)
+    rstd_max = np.max(y_std)
+    summed_max = r_max + rstd_max
+    if not np.isnan(summed_max) and not np.isinf(summed_max):
+        plt.ylim(0, summed_max + rstd_max*0.05)
+    # plt.ylim(0, 15)
+    if labels:
+        plt.xticks(xs, labels)
+    else:
+        plt.xticks(xs)
+    if xlabel:
+        plt.xlabel(xlabel)
+    if ylabel:
+        plt.ylabel(ylabel)
+    else:
+        plt.ylabel('Distance')
+    # if title:
+    #     plt.title(title)
     # else:
-    #     plt.title('Mean firing rate per neuron (bin size: {} ms)'.format(bin_size))
+    #     plt.title('Variance and CV for each setup')
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
 
 
-def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, xlabel=False, legend=False, baseline=False):
+def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, legend=False, baseline=False, colours=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -683,16 +651,31 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
     data = {'y1': y1, 'y2': y2, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_pair_custom_labels')
 
-    xs = np.linspace(1, len(y1), len(y1))
+    if hasattr(y1, 'len'):
+        xs = np.linspace(1, len(y1), len(y1))
+    else:
+        xs = np.array([1.])
 
-    if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
-        plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)
+    if hasattr(y1_std, 'shape') and len(y1_std.shape) > 0 or hasattr(y1_std, 'append'):
+        if colours:
+            plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3, color=colours[0])
+        else:
+            plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)
     else:
-        plt.bar(xs-0.15, y1, width=0.3)
-    if hasattr(y2_std, 'shape') or hasattr(y2_std, 'append'):
-        plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3)
+        if colours:
+            plt.bar(xs-0.15, y1, width=0.3, color=colours[1])
+        else:
+            plt.bar(xs-0.15, y1, width=0.3)
+    if hasattr(y2_std, 'shape') and len(y2_std.shape) > 0 or hasattr(y2_std, 'append'):
+        if colours:
+            plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3, color=colours[1])
+        else:
+            plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3)
     else:
-        plt.bar(xs+0.15, y2, width=0.3)
+        if colours:
+            plt.bar(xs+0.15, y2, width=0.3, color=colours[1])
+        else:
+            plt.bar(xs+0.15, y2, width=0.3)
 
     if not legend:
         plt.legend(['Fitted model', 'Target model'])
@@ -705,7 +688,8 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
     r_max = np.max([np.array(y1), np.array(y2)])
     rstd_max = np.max([np.array(y1_std), np.array(y2_std)])
     summed_max = r_max + rstd_max
-    plt.ylim(0, summed_max + rstd_max*0.05)
+    if not np.isnan(summed_max) and not np.isinf(summed_max):
+        plt.ylim(0, summed_max + rstd_max*0.05)
     # plt.ylim(0, 15)
     if labels:
         plt.xticks(xs, labels)
@@ -713,10 +697,12 @@ def bar_plot_pair_custom_labels(y1, y2, y1_std, y2_std, labels, exp_type, uuid, 
         plt.xticks(xs)
     if xlabel:
         plt.xlabel(xlabel)
-    # if title:
-    #     plt.title(title)
-    # else:
-    #     plt.title('Variance and CV for each setup')
+    if ylabel:
+        plt.ylabel(ylabel)
+    else:
+        plt.ylabel('Distance')
+    if title:
+        plt.title(title)
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
@@ -732,13 +718,6 @@ def bar_plot_pair_custom_labels_two_grps(y1, y2, y1_std, y2_std, labels, exp_typ
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_pair_custom_labels')
 
 
-    # if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
-    #     plt.bar(xs-0.15, y1, yerr=y1_std, width=0.3)
-    # else:
-    #     plt.bar(xs-0.15, y1, width=0.3)
-    # if hasattr(y2_std, 'shape') or hasattr(y2_std, 'append'):
-    #     plt.bar(xs+0.15, y2, yerr=y2_std, width=0.3)
-    # else:
     num_els = len(y1)
     half = int(num_els/2)
     rest = num_els-half
@@ -746,18 +725,11 @@ def bar_plot_pair_custom_labels_two_grps(y1, y2, y1_std, y2_std, labels, exp_typ
     skip = width*2
     xs = np.linspace(1, half, half)
     xs2 = np.linspace(1+half+skip, half+skip+rest, rest)
+    plt.figure()
     plt.bar(xs-width/2, y1[:half], yerr=y1_std[:half], width=width)
     plt.bar(xs+width/2, y2[:half], yerr=y2_std[:half], width=width)
     plt.bar(xs2-width/2, y1[half:], yerr=y1_std[half:], width=width)
     plt.bar(xs2+width/2, y2[half:], yerr=y2_std[half:], width=width)
-
-    if not legend:
-        plt.legend(['Fitted Adam', 'Target', 'Fitted SGD', 'Target'], loc='lower left', ncol=2)
-    else:
-        plt.legend(legend)
-
-    # if baseline:
-    #     plt.plot(xs, np.ones_like(y1) * baseline, 'g--')
 
     r_max = np.max([np.array(y1), np.array(y2)])
     rstd_max = np.max([np.array(y1_std), np.array(y2_std)])
@@ -844,23 +816,13 @@ def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, tit
     xs2 = np.linspace(1+len(y1)+2*width, 1+len(y1)+len(y2)+2*width, len(y2))
 
     if hasattr(y1_std, 'shape') or hasattr(y1_std, 'append'):
-        # if baseline:
-        #     above_threshold_1 = np.maximum(y1 - np.ones_like(y1) * baseline, 0)
-        #     below_threshold_1 = np.minimum(y1, baseline)
-        #     plt.bar(xs, above_threshold_1, yerr=y1_std, width=0.5*width)
-        #     plt.bar(xs, above_threshold_1, yerr=y1_std, width=0.5*width, bottom=below_threshold_1)
-        #     above_threshold_2 = np.maximum(y2 - np.ones_like(y2) * baseline, 0)
-        #     below_threshold_2 = np.minimum(y2, baseline)
-        #     plt.bar(xs2, below_threshold_2, yerr=y2_std, width=0.5 * width)
-        #     plt.bar(xs2, above_threshold_2, yerr=y2_std, width=0.5 * width, bottom=below_threshold_2)
-        # else:
         plt.bar(xs, y1, yerr=y1_std, width=width)
         plt.bar(xs2, y2, yerr=y2_std, width=width)
     else:
         plt.bar(xs, y1, width=width)
         plt.bar(xs2, y2, width=width)
 
-    plt.legend(['Adam', 'SGD'], loc='upper right')
+    # plt.legend(['Adam', 'SGD'], loc='upper right')
 
     if baseline:
         plt.plot([xs[0]-width/2, xs2[-1]+width/2], [baseline, baseline], 'k--')
@@ -868,7 +830,8 @@ def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, tit
     r_max = np.max(np.array(y1))
     rstd_max = np.max(np.array(y1_std))
     summed_max = r_max + rstd_max
-    plt.ylim(0, summed_max + rstd_max*0.05)
+    if not np.isnan(summed_max) and not np.isinf(summed_max):
+        plt.ylim(0, summed_max + rstd_max*0.05)
     # plt.ylim(0, 15)
     if labels:
         plt.xticks(np.concatenate((xs, xs2)), labels)
@@ -878,7 +841,7 @@ def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, tit
     if xlabel:
         plt.xlabel(xlabel)
     if ylabel:
-        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
     else:
         plt.ylabel('Relative distance')
     # if title:

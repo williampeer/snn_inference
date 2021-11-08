@@ -32,10 +32,10 @@ def main(argv):
     target_model.reset_hidden_state()
 
 
-    plot.plot_spiketrains_side_by_side(model_spiketrain, sleep_model_spiketrain, 'export',
+    plot.plot_spike_trains_side_by_side(model_spiketrain, sleep_model_spiketrain, 'export',
                                        'default', 'Spike trains (Poisson input)',
-                                       legend=['Fitted model', 'Target model'],
-                                       fname='spike_trains_{}'.format(save_fname))
+                                        legend=['Fitted model', 'Target model'],
+                                        fname='spike_trains_{}'.format(save_fname))
 
     s1 = model_spiketrain.detach().numpy()
     s2 = sleep_model_spiketrain.detach().numpy()

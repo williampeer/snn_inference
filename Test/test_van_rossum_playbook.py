@@ -1,18 +1,19 @@
 import torch
 
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from spike_metrics import van_rossum_dist
 
 
-s1 = poisson_input(10., 4000, 12)
-s2 = poisson_input(10., 4000, 12)
+s1 = sine_modulated_white_noise_input(10., 4000, 12)
+s2 = sine_modulated_white_noise_input(10., 4000, 12)
 
 t2 = float(s2.sum())
 
 s2_silent_neuron = s2.clone().detach()
-s2_silent_neuron[:, -1] = torch.zeros((s2.shape[0],))
+s2_silent_neuron[:, 0] = torch.zeros((s2.shape[0],))
+# s2_silent_neuron[:, 1] = torch.zeros((s2.shape[0],))
 
-tau_start = 100.0
+tau_start = 25.0
 
 for i in range(5):
     vrd = van_rossum_dist(s1, s2, tau=torch.tensor(tau_start + 0.1 * tau_start * i))

@@ -1,12 +1,12 @@
 import stats
-from experiments import poisson_input
+from experiments import sine_modulated_white_noise_input
 from plot import heatmap_spike_train_correlations
 
 
 def test_spike_train_correlation():
     t = 12000; N=12; bin_size = 400
-    s1 = (poisson_input(0.6, t=t, N=N) > 0).float()
-    s2 = (poisson_input(0.4, t=t, N=N) > 0).float()
+    s1 = (sine_modulated_white_noise_input(0.6, t=t, N=N) > 0).float()
+    s2 = (sine_modulated_white_noise_input(0.4, t=t, N=N) > 0).float()
 
     corrs_vars = stats.spike_train_correlation(s1, s2, bin_size=bin_size)
     assert corrs_vars.shape[0] == N and corrs_vars.shape[1] == N, \
@@ -21,8 +21,8 @@ def test_spike_train_correlation():
 
 def test_plot_spike_train_correlations():
     t = 12000; N = 12; bin_size = 400
-    s1 = (poisson_input(0.6, t=t, N=N) > 0).float()
-    s2 = (poisson_input(0.4, t=t, N=N) > 0).float()
+    s1 = (sine_modulated_white_noise_input(0.6, t=t, N=N) > 0).float()
+    s2 = (sine_modulated_white_noise_input(0.4, t=t, N=N) > 0).float()
 
     corrs_vars = stats.spike_train_correlation(s1, s2, bin_size=bin_size)
 
@@ -31,7 +31,7 @@ def test_plot_spike_train_correlations():
 
 def test_plot_spike_train_correlation_self():
     t = 12000; N = 12; bin_size = 400
-    spiketrain = (poisson_input(0.5, t=t, N=N) > 0).float()
+    spiketrain = (sine_modulated_white_noise_input(0.5, t=t, N=N) > 0).float()
 
     corrs_vars = stats.spike_train_correlation(spiketrain, spiketrain, bin_size=bin_size)
 

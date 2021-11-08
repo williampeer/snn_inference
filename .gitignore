@@ -7,6 +7,8 @@ saved/*
 figures/*
 data/*
 Logs/*
+archive.zip
+*.zip
 
 .DS_store
 
@@ -28,3 +30,5 @@ __pycache__
 *.txt
 *.pt
 ._*.mat
+
+sbi-logs/*
