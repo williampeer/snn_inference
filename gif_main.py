@@ -3,6 +3,7 @@ import sys
 import Constants as C
 import gif_exp_suite
 from Models.microGIF import microGIF
+from Models.microGIF_weights_only import microGIF_weights_only
 from PDF_metrics import PDF_LFN
 from TargetModels import TargetModelMicroGIF
 
@@ -19,20 +20,20 @@ def main(argv):
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.02; N_exp = 1; tau_van_rossum = 20.0; plot_flag = True
-    # Run 100 with lr 0.01 and 0.02
+    learn_rate = 0.01; N_exp = 1; plot_flag = True
+    tau_van_rossum = 20.0
     max_train_iters = 20
     num_targets = 1
     # Q: Interval size effect on loss curve and param retrieval for both lfns
-    interval_size = 1200*4
+    interval_size = 1200
     batch_size = interval_size; rows_per_train_iter = interval_size
     # bin_size = int(interval_size/10)  # for RPH
     bin_size = 200  # for RPH, PNLL
-    # TODO: (A) weights only first,
-    #   (B) make dynamics more interesting; shift inputs, create activity that is more interesting,
-    #   (C) give one neuron stimulus (sub-set already the case)
-    # burn_in = False
-    burn_in = True
+    # DONE: (A) weights only first,
+    # DONE:  (B) make dynamics more interesting; shift inputs, create activity that is more interesting,
+    # TODO:  (C) give one neuron stimulus (sub-set already the case)
+    burn_in = False
+    # burn_in = True
 
     optimiser = 'SGD'
     # optimiser = 'Adam'
@@ -138,7 +139,8 @@ def main(argv):
                                         norm_grad_flag=norm_grad_flag, data_path=data_path, bin_size=bin_size,
                                         burn_in=burn_in, tar_start_seed_offset=tar_start_seed_offset)
 
-                gif_exp_suite.start_exp(constants=constants, model_class=microGIF, target_model=target_model, pop_sizes=pop_sizes)
+                # gif_exp_suite.start_exp(constants=constants, model_class=microGIF, target_model=target_model, pop_sizes=pop_sizes)
+                gif_exp_suite.start_exp(constants=constants, model_class=microGIF_weights_only, target_model=target_model, pop_sizes=pop_sizes)
 
 
 if __name__ == "__main__":

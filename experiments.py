@@ -97,6 +97,33 @@ def sine_input(t, N, neurons_coeff, period=1200.):
     assert ret.shape[1] == N, "ret.shape[1] should be N, {}, {}".format(ret.shape[1], N)
     return ret
 
+# =============================
+
+def generate_sum_of_sinusoids(t=120, period_ms=40, A_coeff = torch.rand((4,)), phase_shifts=torch.rand((4,))):
+    period_rads = (np.pi / period_ms)
+    return (A_coeff * torch.sin(phase_shifts + period_rads * torch.reshape(torch.arange(0, t), (t, 1)))).sum(dim=1)
+
+def white_noise_sum_of_sinusoids(t=120, A_coeff = torch.rand((4,)), phase_shifts=torch.rand((4,))):
+    period_ms = t / 2
+    period_ms = torch.tensor([period_ms, period_ms / 2, period_ms / 3, period_ms / 4])
+
+    period_rads = (np.pi / period_ms)
+    white_noise = torch.rand((t, 1))
+    arange = torch.reshape(torch.arange(0, t), (t, 1))
+    return (A_coeff * torch.sin(phase_shifts + period_rads * (white_noise+arange))).sum(dim=1)
+
+# low-pass filter
+def auto_encode_input(inputs, tau_filter=20.):
+    outputs = inputs[0,:]/tau_filter
+    outputs = torch.vstack([outputs, outputs])
+    for t_i in range(inputs.shape[0]-1):
+        dv_out = (-outputs[-1, :] + inputs[t_i, :]) / tau_filter
+        out_next = outputs[-1, :] + dv_out
+        outputs = torch.vstack([outputs, out_next])
+    return outputs[1:,:]
+
+# =============================
+
 # def continuous_normalised_poisson_noise(p_lambda, t, N):
 #     noise = torch.poisson(p_lambda * torch.ones(t, N))
 #     return noise / torch.max(noise)  # normalised

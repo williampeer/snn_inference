@@ -2,16 +2,21 @@ import numpy as np
 import torch
 
 import PDF_metrics
+import experiments
 import model_util
 from Constants import ExperimentType
 from experiments import release_computational_graph, micro_gif_input
 
+A_coeff_1 = torch.randn((4,))
+A_coeff_2 = torch.randn((4,))
+phase_shifts_1 = torch.rand((4,))
+phase_shifts_2 = phase_shifts_1 + torch.rand((4,))
 
 def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neurons_coeff, train_i=None, logger=None):
-    if gen_inputs is not None:
-        assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
-            "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
-        gen_inputs = gen_inputs.clone().detach()
+    # if gen_inputs is not None:
+    #     assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
+    #         "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
+    #     gen_inputs = gen_inputs.clone().detach()
 
     avg_abs_grads = []
     for _ in range(len(list(model.parameters()))):
@@ -24,14 +29,21 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
         current_inputs = gen_inputs.clone().detach().requires_grad_(True)
         current_inputs.retain_grad()
     else:
-        N = model.N
-        if constants.burn_in:
-            burn_in_len = int(target_spiketrain.shape[0] / 10)
-            print('simulating burn_in for {} ms..'.format(burn_in_len))
-            burn_in_inputs = micro_gif_input(t=burn_in_len, N=model.N, neurons_coeff=neurons_coeff)
-            _, _ = model_util.feed_inputs_sequentially_return_tuple(model, burn_in_inputs)
-        current_inputs = micro_gif_input(t=constants.rows_per_train_iter, N=model.N, neurons_coeff=neurons_coeff)
-        current_inputs.retain_grad()
+        # N = model.N
+        # if constants.burn_in:
+        #     burn_in_len = int(target_spiketrain.shape[0] / 10)
+        #     print('simulating burn_in for {} ms..'.format(burn_in_len))
+        #     # burn_in_inputs = micro_gif_input(t=burn_in_len, N=model.N, neurons_coeff=neurons_coeff)
+        #     burn_in_inputs = []
+        #     _, _ = model_util.feed_inputs_sequentially_return_tuple(model, burn_in_inputs)
+        # current_inputs = micro_gif_input(t=constants.rows_per_train_iter, N=model.N, neurons_coeff=neurons_coeff)
+        # A_coeff = A_coeff_1, phase_shifts = phase_shifts_1
+        inputs_1 = experiments.white_noise_sum_of_sinusoids(t=constants.rows_per_train_iter, A_coeff=A_coeff_1, phase_shifts=phase_shifts_1)
+        inputs_2 = experiments.white_noise_sum_of_sinusoids(t=constants.rows_per_train_iter, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
+        current_inputs = torch.vstack([inputs_1, inputs_2]).T
+        current_inputs = torch.tensor(current_inputs.clone().detach(), requires_grad=True)
+        target_spiketrain = experiments.auto_encode_input(current_inputs)
+        # current_inputs.retain_grad()
 
     spike_probs, expressed_model_spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
 
