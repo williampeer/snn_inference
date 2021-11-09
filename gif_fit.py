@@ -2,16 +2,17 @@ import numpy as np
 import torch
 
 import PDF_metrics
+import experiments
 import model_util
 from Constants import ExperimentType
 from experiments import release_computational_graph, micro_gif_input
 
 
 def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neurons_coeff, train_i=None, logger=None):
-    if gen_inputs is not None:
-        assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
-            "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
-        gen_inputs = gen_inputs.clone().detach()
+    # if gen_inputs is not None:
+    #     assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
+    #         "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
+    #     gen_inputs = gen_inputs.clone().detach()
 
     avg_abs_grads = []
     for _ in range(len(list(model.parameters()))):
@@ -25,13 +26,16 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
         current_inputs.retain_grad()
     else:
         N = model.N
+        t = constants.rows_per_train_iter
         if constants.burn_in:
             burn_in_len = int(target_spiketrain.shape[0] / 10)
             print('simulating burn_in for {} ms..'.format(burn_in_len))
-            burn_in_inputs = micro_gif_input(t=burn_in_len, N=model.N, neurons_coeff=neurons_coeff)
+            # burn_in_inputs = micro_gif_input(t=burn_in_len, N=model.N, neurons_coeff=neurons_coeff)
+            burn_in_inputs = experiments.get_interesting_inputs(t=burn_in_len, N=model.N)
             _, _ = model_util.feed_inputs_sequentially_return_tuple(model, burn_in_inputs)
-        current_inputs = micro_gif_input(t=constants.rows_per_train_iter, N=model.N, neurons_coeff=neurons_coeff)
-        current_inputs.retain_grad()
+        # current_inputs = micro_gif_input(t=constants.rows_per_train_iter, N=model.N, neurons_coeff=neurons_coeff)
+        current_inputs = experiments.get_interesting_inputs(t, N)
+        current_inputs = torch.tensor(current_inputs.clone().detach(), requires_grad=True)
 
     spike_probs, expressed_model_spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
 

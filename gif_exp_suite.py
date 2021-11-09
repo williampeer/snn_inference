@@ -10,7 +10,7 @@ from Models.TORCH_CUSTOM import static_clamp_for_scalar
 from data_util import load_sparse_data
 from eval import sanity_checks, calculate_loss
 from experiments import draw_from_uniform, release_computational_graph, \
-    generate_synthetic_data_tuple, micro_gif_input
+    generate_synthetic_data_tuple, micro_gif_input, zip_dicts
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)
@@ -146,14 +146,17 @@ def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coe
     for i in range(int(num_neurons/2)):
         neuron_types[-(1+i)] = -1
 
-    # if model_class.__name__.__contains__('microGIF'):
-    params_model['R_m'] = target_model.R_m.clone().detach()
+    if constants.EXP_TYPE == ExperimentType.Synthetic:
+        # if model_class.__name__.__contains__('microGIF'):
+        params_model['R_m'] = target_model.R_m.clone().detach()
+        if model_class.__name__.__contains__('weights_only'):
+            params_model = target_model.get_parameters()
+    elif constants.EXP_TYPE == ExperimentType.SanityCheck:
+        params_model = target_model.get_parameters()
+        params_model['preset_weights'] = params_model['w']
 
     model = model_class(N=num_neurons, parameters=params_model, neuron_types=neuron_types)
     logger.log('initial model parameters: {}'.format(params_model), [model_class.__name__])
-    poisson_input_rate = torch.tensor(constants.initial_poisson_rate, requires_grad=True)
-    poisson_input_rate.clamp(5., 20.)
-    poisson_input_rate.register_hook(lambda grad: static_clamp_for_scalar(grad, 5., 20., poisson_input_rate))
     parameters = {}
     for p_i, key in enumerate(model.state_dict()):
         parameters[key] = [model.state_dict()[key].numpy()]
@@ -248,7 +251,10 @@ def run_exp_loop(logger, constants, model_class, target_model, pop_sizes, error_
             node_indices, spike_times, spike_indices = load_sparse_data(full_path=constants.data_path)
             num_neurons = len(node_indices)
 
-        init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
+        if hasattr(model_class, 'parameter_init_intervals'):
+            init_params_model = draw_from_uniform(model_class.parameter_init_intervals, num_neurons)
+        else:
+            init_params_model = {}
         if len(pop_sizes) == 4:
             neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
         elif len(pop_sizes) == 2:

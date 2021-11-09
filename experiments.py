@@ -97,6 +97,47 @@ def sine_input(t, N, neurons_coeff, period=1200.):
     assert ret.shape[1] == N, "ret.shape[1] should be N, {}, {}".format(ret.shape[1], N)
     return ret
 
+# =============================
+
+def generate_sum_of_sinusoids(t=120, period_ms=40, A_coeff = torch.rand((4,)), phase_shifts=torch.rand((4,))):
+    period_rads = (np.pi / period_ms)
+    return (A_coeff * torch.sin(phase_shifts + period_rads * torch.reshape(torch.arange(0, t), (t, 1)))).sum(dim=1)
+
+def white_noise_sum_of_sinusoids(t=120, A_coeff = torch.rand((4,)), phase_shifts=torch.rand((4,))):
+    period_ms = t / 2
+    period_ms = torch.tensor([period_ms, period_ms / 2, period_ms / 3, period_ms / 4])
+
+    period_rads = (np.pi / period_ms)
+    white_noise = torch.rand((t, 1))
+    arange = torch.reshape(torch.arange(0, t), (t, 1))
+    return (A_coeff * torch.sin(phase_shifts + period_rads * (white_noise+arange))).sum(dim=1)
+
+# low-pass filter
+def auto_encode_input(inputs, tau_filter=20.):
+    outputs = inputs[0,:]/tau_filter
+    outputs = torch.vstack([outputs, outputs])
+    for t_i in range(inputs.shape[0]-1):
+        dv_out = (-outputs[-1, :] + inputs[t_i, :]) / tau_filter
+        out_next = outputs[-1, :] + dv_out
+        outputs = torch.vstack([outputs, out_next])
+    return outputs[1:,:]
+
+A_coeff_1 = torch.randn((4,))
+A_coeff_2 = torch.randn((4,))
+phase_shifts_1 = torch.rand((4,))
+phase_shifts_2 = phase_shifts_1 + torch.rand((4,))
+
+def get_interesting_inputs(t, N):
+    inputs_1 = white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_1, phase_shifts=phase_shifts_1)
+    inputs_2 = white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
+
+    current_inputs = torch.vstack([inputs_1, inputs_2])
+    for _ in range(N - 2):
+        current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
+    return current_inputs.T
+
+# =============================
+
 # def continuous_normalised_poisson_noise(p_lambda, t, N):
 #     noise = torch.poisson(p_lambda * torch.ones(t, N))
 #     return noise / torch.max(noise)  # normalised
@@ -128,10 +169,12 @@ def generate_synthetic_data(gen_model, t, neurons_coeff, burn_in=False):
 def generate_synthetic_data_tuple(gen_model, t, neurons_coeff, burn_in=False):
     gen_model.reset()
     if burn_in:
-        gen_input = micro_gif_input(t=int(t/10), N=gen_model.N, neurons_coeff=neurons_coeff)
+        # gen_input = micro_gif_input(t=int(t/10), N=gen_model.N, neurons_coeff=neurons_coeff)
+        gen_input = get_interesting_inputs(t=int(t/10), N=gen_model.N)
         _, _ = feed_inputs_sequentially_return_tuple(model=gen_model, inputs=gen_input)
     # gen_input = poisson_input(rate=poisson_rate, t=t, N=gen_model.N)
-    gen_input = micro_gif_input(t=t, N=gen_model.N, neurons_coeff=neurons_coeff)
+    # gen_input = micro_gif_input(t=t, N=gen_model.N, neurons_coeff=neurons_coeff)
+    gen_input = get_interesting_inputs(t=t, N=gen_model.N)
     _, gen_spiketrain = feed_inputs_sequentially_return_tuple(model=gen_model, inputs=gen_input)
     # for gen spiketrain this may be thresholded to binary values:
     gen_spiketrain = torch.round(gen_spiketrain)

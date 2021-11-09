@@ -5,14 +5,14 @@ from torch import FloatTensor as FT
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
-class microGIF_transposed(nn.Module):
+class microGIF(nn.Module):
     free_parameters = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta', 'c', 'Delta_u']
     parameter_init_intervals = { 'E_L': [0., 3.], 'tau_m': [7., 9.], 'tau_s': [4., 8.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1], 'c': [0.15, 0.2], 'Delta_u': [3.5, 4.5] }
-    param_lin_constraints = [[0., 2.], [-5., 25.], [1., 20.], [1., 20.], [800., 1500.], [0.1, 2.], [1., 20.], [1., 20.]]
+    param_lin_constraints = [[0., 2.], [-5., 25.], [1., 20.], [1., 20.], [800., 1500.], [0.5, 1.5], [1., 20.]]
 
     def __init__(self, parameters, N=4, neuron_types=[1, -1]):
-        super(microGIF_transposed, self).__init__()
+        super(microGIF, self).__init__()
 
         if parameters is not None:
             for key in parameters.keys():
@@ -41,11 +41,10 @@ class microGIF_transposed(nn.Module):
             rand_ws = torch.abs(parameters['preset_weights'])
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
-            rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
+            rand_ws = (0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N))
         nt = torch.tensor(neuron_types).float()
-        # self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
-        self.neuron_types = nt
-        self.w = nn.Parameter(FT(rand_ws).clip(0., 2.), requires_grad=True)  # initialise with positive weights only
+        self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
+        self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
         # self.self_recurrence_mask = torch.ones((self.N, self.N))
 
@@ -58,7 +57,7 @@ class microGIF_transposed(nn.Module):
         self.tau_m = nn.Parameter(FT(tau_m), requires_grad=True)
         self.tau_s = nn.Parameter(FT(tau_s), requires_grad=True)
         self.tau_theta = nn.Parameter(FT(tau_theta), requires_grad=True)  # Adaptation time constant
-        self.J_theta = nn.Parameter(FT(J_theta).clamp(0.1, 2.), requires_grad=True)  # Adaptation strength
+        self.J_theta = nn.Parameter(FT(J_theta), requires_grad=True)  # Adaptation strength
         self.c = nn.Parameter(FT(c), requires_grad=True)
         self.Delta_u = nn.Parameter(FT(Delta_u), requires_grad=True)  # Noise level
         self.Delta_delay = 1.  # Transmission delay
@@ -82,13 +81,13 @@ class microGIF_transposed(nn.Module):
         self.theta_v = self.theta_v.clone().detach()
 
     def register_backward_clamp_hooks(self):
-        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -5., 25., self.E_L, 'E_L'))
-        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 2., 20., self.tau_m, 'tau_m'))
-        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.tau_s, 'tau_s'))
-        self.tau_theta.register_hook(lambda grad: static_clamp_for(grad, 800., 1500, self.tau_theta, 'tau_theta'))
-        self.J_theta.register_hook(lambda grad: static_clamp_for(grad, 0.1, 2., self.J_theta, 'J_theta'))
-        self.c.register_hook(lambda grad: static_clamp_for(grad, 0.01, 1., self.c, 'c'))
-        self.Delta_u.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.Delta_u, 'Delta_u'))
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -5., 25., self.E_L))
+        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 2., 20., self.tau_m))
+        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.tau_s))
+        self.tau_theta.register_hook(lambda grad: static_clamp_for(grad, 800., 1500, self.tau_theta))
+        self.J_theta.register_hook(lambda grad: static_clamp_for(grad, 0.1, 2., self.J_theta))
+        self.Delta_u.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.Delta_u))
+        self.c.register_hook(lambda grad: static_clamp_for(grad, 0.01, 1., self.c))
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 2., self.w))
 
@@ -120,9 +119,10 @@ class microGIF_transposed(nn.Module):
         epsilon_spike_pulse = (1 + torch.tanh(self.time_since_spike - self.Delta_delay)) * torch.exp(
             -(self.time_since_spike - self.Delta_delay) / self.tau_s) / self.tau_s
 
-        W_syn = self.neuron_types * self.w * self.self_recurrence_mask
-        I_syn = ((W_syn).matmul(epsilon_spike_pulse))
-        dv = (self.E_L - self.v + self.R_m * I_ext) / self.tau_m + I_syn
+        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        # W_syn = self.w * self.neuron_types
+        I_syn = (self.tau_m * (epsilon_spike_pulse).matmul(W_syn))
+        dv = (self.E_L - self.v + I_syn + self.R_m * I_ext) / self.tau_m
         v_next = self.v + dv
 
         # spikes_lambda = (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)).clip(0., 1.)
