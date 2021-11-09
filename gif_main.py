@@ -25,10 +25,10 @@ def main(argv):
     max_train_iters = 20
     num_targets = 1
     # Q: Interval size effect on loss curve and param retrieval for both lfns
-    interval_size = 1200
+    interval_size = 1200*2
     batch_size = interval_size; rows_per_train_iter = interval_size
     # bin_size = int(interval_size/10)  # for RPH
-    bin_size = 200  # for RPH, PNLL
+    bin_size = 100  # for RPH, PNLL
     # DONE: (A) weights only first,
     # DONE:  (B) make dynamics more interesting; shift inputs, create activity that is more interesting,
     # TODO:  (C) give one neuron stimulus (sub-set already the case)

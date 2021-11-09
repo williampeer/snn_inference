@@ -6,9 +6,10 @@ import torch.tensor as T
 
 import IO
 import PDF_metrics
+import experiments
 import model_util
 import plot
-from Models.microGIF_transposed import microGIF_transposed
+from Models.microGIF import microGIF
 from TargetModels.TargetModelMicroGIF import get_low_dim_micro_GIF_transposed
 from experiments import sine_modulated_white_noise, sine_input, release_computational_graph, draw_from_uniform
 from plot import plot_spike_train_projection
@@ -20,23 +21,39 @@ for random_seed in range(3, 4):
     pop_sizes, snn_target = get_low_dim_micro_GIF_transposed(random_seed=random_seed)
 
     N = snn_target.N
-    t = 4800
+    t = 1200
     # neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
     neurons_coeff = torch.cat([T(2 * [0.25]), T(2 * [0.1])])
+
+    A_coeff_1 = torch.randn((4,))
+    A_coeff_2 = torch.randn((4,))
+    phase_shifts_1 = torch.rand((4,))
+    phase_shifts_2 = phase_shifts_1 + torch.rand((4,))
+
+    inputs_1 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_1, phase_shifts=phase_shifts_1)
+    inputs_2 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
+
+    current_inputs = torch.vstack([inputs_1, inputs_2])
+    for _ in range(N - 2):
+        current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
+    current_inputs = current_inputs.T
+    current_inputs = torch.tensor(current_inputs.clone().detach(), requires_grad=True)
+    # target_spiketrain = experiments.auto_encode_input(current_inputs)
+
     # sample_inputs = sine_modulated_white_noise(t=t, N=snn.N, neurons_coeff=neurons_coeff)
-    sample_inputs = sine_input(t=t, N=snn_target.N, neurons_coeff=neurons_coeff)
-    print('- SNN test for class {} -'.format(snn_target.__class__.__name__))
-    print('#inputs: {}'.format(sample_inputs.sum()))
-    _, target_spikes = model_util.feed_inputs_sequentially_return_tuple(snn_target, sample_inputs)
+    # sample_inputs = sine_input(t=t, N=snn_target.N, neurons_coeff=neurons_coeff)
+    # print('- SNN test for class {} -'.format(snn_target.__class__.__name__))
+    # print('#inputs: {}'.format(sample_inputs.sum()))
+    _, target_spikes = model_util.feed_inputs_sequentially_return_tuple(snn_target, current_inputs)
     target_spikes = target_spikes.clone().detach()
 
-    params_model = draw_from_uniform(microGIF_transposed.parameter_init_intervals, N)
+    params_model = draw_from_uniform(microGIF.parameter_init_intervals, N)
     params_model['N'] = N
     params_model['R_m'] = snn_target.R_m.clone().detach()
 
-    snn = microGIF_transposed(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
+    snn = microGIF(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
     optim_params = list(snn.parameters())
-    learn_rate = 0.03
+    learn_rate = 0.01
     # optimiser = torch.optim.SGD(optim_params, lr=learn_rate)
     optimiser = torch.optim.Adam(optim_params, lr=learn_rate)
 
@@ -45,8 +62,17 @@ for random_seed in range(3, 4):
         optimiser.zero_grad()
 
         # current_inputs = sine_modulated_white_noise(t=t, N=snn.N, neurons_coeff=neurons_coeff)
-        current_inputs = sine_input(t=t, N=snn.N, neurons_coeff=neurons_coeff)
-        current_inputs.retain_grad()
+        # current_inputs = sine_input(t=t, N=snn.N, neurons_coeff=neurons_coeff)
+        # current_inputs.retain_grad()
+
+        inputs_1 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_1, phase_shifts=phase_shifts_1)
+        inputs_2 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
+
+        current_inputs = torch.vstack([inputs_1, inputs_2])
+        for _ in range(N - 2):
+            current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
+        current_inputs = current_inputs.T
+        current_inputs = torch.tensor(current_inputs.clone().detach(), requires_grad=True)
 
         spike_probs, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, current_inputs)
 

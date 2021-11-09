@@ -122,6 +122,20 @@ def auto_encode_input(inputs, tau_filter=20.):
         outputs = torch.vstack([outputs, out_next])
     return outputs[1:,:]
 
+A_coeff_1 = torch.randn((4,))
+A_coeff_2 = torch.randn((4,))
+phase_shifts_1 = torch.rand((4,))
+phase_shifts_2 = phase_shifts_1 + torch.rand((4,))
+
+def get_interesting_inputs(t, N):
+    inputs_1 = white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_1, phase_shifts=phase_shifts_1)
+    inputs_2 = white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
+
+    current_inputs = torch.vstack([inputs_1, inputs_2])
+    for _ in range(N - 2):
+        current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
+    return current_inputs.T
+
 # =============================
 
 # def continuous_normalised_poisson_noise(p_lambda, t, N):
@@ -155,10 +169,12 @@ def generate_synthetic_data(gen_model, t, neurons_coeff, burn_in=False):
 def generate_synthetic_data_tuple(gen_model, t, neurons_coeff, burn_in=False):
     gen_model.reset()
     if burn_in:
-        gen_input = micro_gif_input(t=int(t/10), N=gen_model.N, neurons_coeff=neurons_coeff)
+        # gen_input = micro_gif_input(t=int(t/10), N=gen_model.N, neurons_coeff=neurons_coeff)
+        gen_input = get_interesting_inputs(t=int(t/10), N=gen_model.N)
         _, _ = feed_inputs_sequentially_return_tuple(model=gen_model, inputs=gen_input)
     # gen_input = poisson_input(rate=poisson_rate, t=t, N=gen_model.N)
-    gen_input = micro_gif_input(t=t, N=gen_model.N, neurons_coeff=neurons_coeff)
+    # gen_input = micro_gif_input(t=t, N=gen_model.N, neurons_coeff=neurons_coeff)
+    gen_input = get_interesting_inputs(t=t, N=gen_model.N)
     _, gen_spiketrain = feed_inputs_sequentially_return_tuple(model=gen_model, inputs=gen_input)
     # for gen spiketrain this may be thresholded to binary values:
     gen_spiketrain = torch.round(gen_spiketrain)
