@@ -39,10 +39,12 @@ class microGIF_weights_only(nn.Module):
             rand_ws = torch.abs(parameters['preset_weights'])
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
-            rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
+            # rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
+            rand_ws = torch.randn((N, N))
         nt = torch.tensor(neuron_types).float()
         self.neuron_types = nt
-        self.w = nn.Parameter(FT(rand_ws).clip(0., 2.), requires_grad=True)  # initialise with positive weights only
+        # self.neuron_types = (torch.ones((self.N, 1)) * nt).T
+        self.w = nn.Parameter(FT(rand_ws).clip(-10., 10.), requires_grad=True)  # initialise with positive weights only
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
 
         self.v = E_L * torch.ones((self.N,))
@@ -77,7 +79,7 @@ class microGIF_weights_only(nn.Module):
         self.theta_v = self.theta_v.clone().detach()
 
     def register_backward_clamp_hooks(self):
-        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 2., self.w))
+        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, -10., 10., self.w))
 
     def get_parameters(self):
         return { 'w': self.w.data }
@@ -92,8 +94,10 @@ class microGIF_weights_only(nn.Module):
         epsilon_spike_pulse = (1 + torch.tanh(self.time_since_spike - self.Delta_delay)) * torch.exp(
             -(self.time_since_spike - self.Delta_delay) / self.tau_s) / self.tau_s
 
-        W_syn = self.self_recurrence_mask * (self.neuron_types * self.w)
+        # W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        W_syn = self.self_recurrence_mask * self.w
         I_syn = ((W_syn).matmul(epsilon_spike_pulse))
+        # I_syn = ((W_syn) * (epsilon_spike_pulse)).sum(dim=0)
         dv = (self.E_L - self.v + self.R_m * I_ext) / self.tau_m + I_syn
         v_next = self.v + dv
 
@@ -111,6 +115,5 @@ class microGIF_weights_only(nn.Module):
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
 
-        # return spikes_lambda
-        return spikes_lambda, spiked, self.v
-        # return self.v, spiked
+        return spikes_lambda, spiked
+        # return spikes_lambda, spiked, self.v

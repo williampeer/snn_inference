@@ -2,7 +2,6 @@ import sys
 
 import numpy as np
 import torch
-import torch.tensor as T
 
 import IO
 import PDF_metrics
@@ -21,6 +20,7 @@ for random_seed in range(3, 4):
 
     N = snn_target.N
     t = 1200
+    plot_every = 3
     # neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
     # neurons_coeff = torch.cat([T(2 * [0.25]), T(2 * [0.1])])
 
@@ -57,9 +57,11 @@ for random_seed in range(3, 4):
 
     snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
     optim_params = list(snn.parameters())
-    learn_rate = 0.01
-    # optimiser = torch.optim.SGD(optim_params, lr=learn_rate)
-    optimiser = torch.optim.Adam(optim_params, lr=learn_rate)
+    learn_rate = 0.03
+    optimiser = torch.optim.SGD(optim_params, lr=learn_rate)
+    # optimiser = torch.optim.Adam(optim_params, lr=learn_rate)
+    # lfn = PDF_metrics.PDF_LFN.BERNOULLI
+    lfn = PDF_metrics.PDF_LFN.POISSON
 
     losses = []
     for i in range(20):
@@ -84,17 +86,27 @@ for random_seed in range(3, 4):
         # spike_probs, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, current_inputs)
         spike_probs, spikes, vs = model_util.feed_inputs_sequentially_return_args(snn, current_inputs)
 
+        _, target_spikes, target_vs = model_util.feed_inputs_sequentially_return_args(snn_target, current_inputs)
+        target_spikes = target_spikes.clone().detach()
+
         if i == 0:
             plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=snn.__class__.__name__, exp_type='GD_test',
                                                 title='Test {} spike trains'.format(snn.__class__.__name__),
                                                 legend=['Initial', 'Target'], fname='spike_trains_before_training.png')
-        plot.plot_neuron(vs.detach().data, uuid=snn.__class__.__name__, exp_type='GD_test', fname='membrane_pots_train_i_{}.png'.format(i))
+        if i % plot_every == 0:
+            plot.plot_neuron(vs.detach().data, uuid=snn.__class__.__name__, exp_type='GD_test', fname='membrane_pots_train_i_{}.png'.format(i))
+            plot.plot_neuron(current_inputs.detach().data, uuid=snn.__class__.__name__, exp_type='GD_test', fname='inputs_train_i_{}.png'.format(i))
+            plot.plot_neuron(target_vs.detach().data, uuid=snn_target.__class__.__name__, exp_type='GD_test', fname='membrane_pots_target_train_iter_{}.png'.format(i))
 
         # loss = spike_metrics.firing_rate_distance(spikes, sample_targets)
         # m = torch.distributions.bernoulli.Bernoulli(spike_probs)
         # loss = -m.log_prob(sample_targets).sum()
-        # loss = PDF_metrics.bernoulli_nll(spike_probabilities=spike_probs, target_spikes=sample_targets)
-        loss = PDF_metrics.poisson_nll(spike_probabilities=spike_probs, target_spikes=target_spikes, bin_size=200)
+        if lfn == PDF_metrics.PDF_LFN.POISSON:
+            loss = PDF_metrics.poisson_nll(spike_probabilities=spike_probs, target_spikes=target_spikes, bin_size=100)
+        elif lfn == PDF_metrics.PDF_LFN.BERNOULLI:
+            loss = PDF_metrics.bernoulli_nll(spike_probabilities=spike_probs, target_spikes=target_spikes)
+        else:
+            raise NotImplementedError()
 
         loss.backward(retain_graph=True)
         # loss.backward()
@@ -111,7 +123,7 @@ for random_seed in range(3, 4):
 
 
     plot.plot_loss(losses, uuid=snn.__class__.__name__, exp_type='GD_test',
-                   custom_title='Loss {}, $\\alpha$={}, {}'.format('poisson_nll', learn_rate, optimiser.__class__.__name__),
+                   custom_title='Loss {}, $\\alpha$={}, {}'.format(lfn.name, learn_rate, optimiser.__class__.__name__),
                    fname='plot_loss_test'+IO.dt_descriptor())
 
     plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=snn.__class__.__name__, exp_type='GD_test',

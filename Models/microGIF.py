@@ -44,8 +44,9 @@ class microGIF(nn.Module):
             rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
         nt = torch.tensor(neuron_types).float()
         # self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
-        self.neuron_types = (torch.ones((self.N, 1)) * nt).T
-        self.w = nn.Parameter(FT(rand_ws).clip(0., 2.), requires_grad=True)  # initialise with positive weights only
+        # self.neuron_types = (torch.ones((self.N, 1)) * nt).T
+        self.neuron_types = nt
+        self.w = nn.Parameter(FT(rand_ws).clip(0., 10.), requires_grad=True)  # initialise with positive weights only
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
         # self.self_recurrence_mask = torch.ones((self.N, self.N))
 
@@ -90,7 +91,7 @@ class microGIF(nn.Module):
         self.c.register_hook(lambda grad: static_clamp_for(grad, 0.01, 1., self.c, 'c'))
         self.Delta_u.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.Delta_u, 'Delta_u'))
 
-        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 2., self.w))
+        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 10., self.w))
 
     def get_parameters(self):
         params_dict = {}
@@ -120,8 +121,10 @@ class microGIF(nn.Module):
         epsilon_spike_pulse = (1 + torch.tanh(self.time_since_spike - self.Delta_delay)) * torch.exp(
             -(self.time_since_spike - self.Delta_delay) / self.tau_s) / self.tau_s
 
-        W_syn = self.self_recurrence_mask * (self.neuron_types * self.w)
-        I_syn = ((W_syn) * (epsilon_spike_pulse)).sum(dim=0)
+        # W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        I_syn = ((W_syn).matmul(epsilon_spike_pulse))
+        # I_syn = ((W_syn) * (epsilon_spike_pulse)).sum(dim=0)
         dv = (self.E_L - self.v + self.R_m * I_ext) / self.tau_m + I_syn
         v_next = self.v + dv
 
@@ -149,7 +152,5 @@ class microGIF(nn.Module):
         # if spiked[0] > 0:
         #     print('alskjdlaksjd')
 
-        # return spikes_lambda
-        return spikes_lambda, spiked, self.v
-        # return self.v, spiked
-        # return self.v, spiked
+        return spikes_lambda, spiked
+        # return spikes_lambda, spiked, self.v

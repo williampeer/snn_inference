@@ -167,7 +167,7 @@ def generate_synthetic_data(gen_model, t, neurons_coeff, burn_in=False):
     return gen_spiketrain.clone().detach(), gen_input.clone().detach()
 
 
-def generate_synthetic_data_tuple(gen_model, t, neurons_coeff, burn_in=False):
+def generate_synthetic_data_tuple(gen_model, t, burn_in=False):
     gen_model.reset()
     if burn_in:
         # gen_input = micro_gif_input(t=int(t/10), N=gen_model.N, neurons_coeff=neurons_coeff)

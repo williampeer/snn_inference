@@ -20,9 +20,9 @@ def main(argv):
     # exp_type_str = C.ExperimentType.SanityCheck.name
     exp_type_str = C.ExperimentType.Synthetic.name
     # exp_type_str = C.ExperimentType.DataDriven.name
-    learn_rate = 0.01; N_exp = 2; plot_flag = True
+    learn_rate = 0.015; N_exp = 2; plot_flag = True
     tau_van_rossum = 20.0
-    max_train_iters = 30
+    max_train_iters = 60
     num_targets = 2
     # Q: Interval size effect on loss curve and param retrieval for both lfns
     interval_size = 1200
@@ -31,7 +31,7 @@ def main(argv):
     bin_size = 100  # for RPH, PNLL
     # DONE: (A) weights only first,
     # DONE:  (B) make dynamics more interesting; shift inputs, create activity that is more interesting,
-    # TODO:  (C) give one neuron stimulus (sub-set already the case)
+    # DONE:  (C) give one neuron stimulus (sub-set already the case)
     # burn_in = False
     burn_in = True
 

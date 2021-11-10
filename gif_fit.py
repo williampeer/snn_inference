@@ -8,12 +8,7 @@ from Constants import ExperimentType
 from experiments import release_computational_graph, micro_gif_input
 
 
-def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neurons_coeff, train_i=None, logger=None):
-    # if gen_inputs is not None:
-    #     assert gen_inputs.shape[0] == target_spiketrain.shape[0], \
-    #         "inputs shape: {}, target spiketrain shape: {}".format(gen_inputs.shape, target_spiketrain.shape)
-    #     gen_inputs = gen_inputs.clone().detach()
-
+def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, train_i=None, logger=None):
     avg_abs_grads = []
     for _ in range(len(list(model.parameters()))):
         avg_abs_grads.append([])
@@ -39,7 +34,6 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, neur
 
     spike_probs, expressed_model_spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
 
-    # loss = PDF_metrics.bernoulli_nll(spike_probabilities=spike_probs, target_spikes=target_spiketrain)
     loss = PDF_metrics.calculate_loss(spike_probs, target_spiketrain.detach(), constants)
     loss.backward(retain_graph=True)
 
