@@ -154,5 +154,5 @@ class microGIF(nn.Module):
         # if spiked[0] > 0:
         #     print('alskjdlaksjd')
 
-        # return spikes_lambda, spiked
-        return spikes_lambda, spiked, self.v
+        return spikes_lambda, spiked
+        # return spikes_lambda, spiked, self.v
