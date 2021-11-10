@@ -9,10 +9,9 @@ import PDF_metrics
 import experiments
 import model_util
 import plot
-from Models.microGIF import microGIF
+from Models.microGIF_weights_only import microGIF_weights_only
 from TargetModels.TargetModelMicroGIF import get_low_dim_micro_GIF_transposed
-from experiments import sine_modulated_white_noise, sine_input, release_computational_graph, draw_from_uniform
-from plot import plot_spike_train_projection
+from experiments import release_computational_graph
 
 for random_seed in range(3, 4):
     torch.manual_seed(random_seed)
@@ -23,7 +22,7 @@ for random_seed in range(3, 4):
     N = snn_target.N
     t = 1200
     # neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
-    neurons_coeff = torch.cat([T(2 * [0.25]), T(2 * [0.1])])
+    # neurons_coeff = torch.cat([T(2 * [0.25]), T(2 * [0.1])])
 
     A_coeff_1 = torch.randn((4,))
     A_coeff_2 = torch.randn((4,))
@@ -31,11 +30,14 @@ for random_seed in range(3, 4):
     phase_shifts_2 = phase_shifts_1 + torch.rand((4,))
 
     inputs_1 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_1, phase_shifts=phase_shifts_1)
-    inputs_2 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
+    # inputs_2 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
 
-    current_inputs = torch.vstack([inputs_1, inputs_2])
+    current_inputs = torch.vstack([inputs_1, torch.zeros_like(inputs_1)])
     for _ in range(N - 2):
-        current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
+        current_inputs = torch.vstack([current_inputs, torch.zeros_like(inputs_1)])
+    # current_inputs = torch.vstack([inputs_1, inputs_2])
+    # for _ in range(N - 2):
+    #     current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
     current_inputs = current_inputs.T
     current_inputs = torch.tensor(current_inputs.clone().detach(), requires_grad=True)
     # target_spiketrain = experiments.auto_encode_input(current_inputs)
@@ -44,16 +46,18 @@ for random_seed in range(3, 4):
     # sample_inputs = sine_input(t=t, N=snn_target.N, neurons_coeff=neurons_coeff)
     # print('- SNN test for class {} -'.format(snn_target.__class__.__name__))
     # print('#inputs: {}'.format(sample_inputs.sum()))
-    _, target_spikes = model_util.feed_inputs_sequentially_return_tuple(snn_target, current_inputs)
+    _, target_spikes, target_vs = model_util.feed_inputs_sequentially_return_args(snn_target, current_inputs)
     target_spikes = target_spikes.clone().detach()
+    plot.plot_neuron(target_vs.detach().data, uuid=snn_target.__class__.__name__, exp_type='GD_test', fname='membrane_pots_target.png')
 
-    params_model = draw_from_uniform(microGIF.parameter_init_intervals, N)
-    params_model['N'] = N
-    params_model['R_m'] = snn_target.R_m.clone().detach()
+    # params_model = draw_from_uniform(microGIF.parameter_init_intervals, N)
+    # params_model['N'] = N
+    # params_model['R_m'] = snn_target.R_m.clone().detach()
+    params_model = snn_target.get_parameters()
 
-    snn = microGIF(N=N, parameters=params_model, neuron_types=torch.tensor([1., -1., 1., -1.]))
+    snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
     optim_params = list(snn.parameters())
-    learn_rate = 0.03
+    learn_rate = 0.01
     # optimiser = torch.optim.SGD(optim_params, lr=learn_rate)
     optimiser = torch.optim.Adam(optim_params, lr=learn_rate)
 
@@ -66,26 +70,31 @@ for random_seed in range(3, 4):
         # current_inputs.retain_grad()
 
         inputs_1 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_1, phase_shifts=phase_shifts_1)
-        inputs_2 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
+        # inputs_2 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
 
-        current_inputs = torch.vstack([inputs_1, inputs_2])
+        current_inputs = torch.vstack([inputs_1, torch.zeros_like(inputs_1)])
         for _ in range(N - 2):
-            current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
+            current_inputs = torch.vstack([current_inputs, torch.zeros_like(inputs_1)])
+        # current_inputs = torch.vstack([inputs_1, inputs_2])
+        # for _ in range(N - 2):
+        #     current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
         current_inputs = current_inputs.T
         current_inputs = torch.tensor(current_inputs.clone().detach(), requires_grad=True)
 
-        spike_probs, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, current_inputs)
+        # spike_probs, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, current_inputs)
+        spike_probs, spikes, vs = model_util.feed_inputs_sequentially_return_args(snn, current_inputs)
 
         if i == 0:
             plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=snn.__class__.__name__, exp_type='GD_test',
                                                 title='Test {} spike trains'.format(snn.__class__.__name__),
-                                                legend=['Fitted', 'Target'], fname='spike_trains_before_training.png')
+                                                legend=['Initial', 'Target'], fname='spike_trains_before_training.png')
+        plot.plot_neuron(vs.detach().data, uuid=snn.__class__.__name__, exp_type='GD_test', fname='membrane_pots_train_i_{}.png'.format(i))
 
         # loss = spike_metrics.firing_rate_distance(spikes, sample_targets)
         # m = torch.distributions.bernoulli.Bernoulli(spike_probs)
         # loss = -m.log_prob(sample_targets).sum()
         # loss = PDF_metrics.bernoulli_nll(spike_probabilities=spike_probs, target_spikes=sample_targets)
-        loss = PDF_metrics.poisson_nll(spike_probabilities=spike_probs, target_spikes=target_spikes, bin_size=100)
+        loss = PDF_metrics.poisson_nll(spike_probabilities=spike_probs, target_spikes=target_spikes, bin_size=200)
 
         loss.backward(retain_graph=True)
         # loss.backward()

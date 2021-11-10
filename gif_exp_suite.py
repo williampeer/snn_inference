@@ -6,11 +6,10 @@ import PDF_metrics
 import gif_fit
 import model_util
 from Constants import ExperimentType
-from Models.TORCH_CUSTOM import static_clamp_for_scalar
 from data_util import load_sparse_data
-from eval import sanity_checks, calculate_loss
+from eval import sanity_checks
 from experiments import draw_from_uniform, release_computational_graph, \
-    generate_synthetic_data_tuple, micro_gif_input, zip_dicts
+    generate_synthetic_data_tuple, micro_gif_input
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)

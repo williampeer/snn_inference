@@ -44,7 +44,7 @@ class microGIF(nn.Module):
             rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
         nt = torch.tensor(neuron_types).float()
         # self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
-        self.neuron_types = nt
+        self.neuron_types = (torch.ones((self.N, 1)) * nt).T
         self.w = nn.Parameter(FT(rand_ws).clip(0., 2.), requires_grad=True)  # initialise with positive weights only
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
         # self.self_recurrence_mask = torch.ones((self.N, self.N))
@@ -121,7 +121,7 @@ class microGIF(nn.Module):
             -(self.time_since_spike - self.Delta_delay) / self.tau_s) / self.tau_s
 
         W_syn = self.self_recurrence_mask * (self.neuron_types * self.w)
-        I_syn = ((W_syn).matmul(epsilon_spike_pulse))
+        I_syn = ((W_syn) * (epsilon_spike_pulse)).sum(dim=0)
         dv = (self.E_L - self.v + self.R_m * I_ext) / self.tau_m + I_syn
         v_next = self.v + dv
 
@@ -146,7 +146,10 @@ class microGIF(nn.Module):
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
 
+        # if spiked[0] > 0:
+        #     print('alskjdlaksjd')
+
         # return spikes_lambda
-        return spikes_lambda, spiked
+        return spikes_lambda, spiked, self.v
         # return self.v, spiked
         # return self.v, spiked

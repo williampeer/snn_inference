@@ -206,6 +206,7 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
+    plt.close()
 
 
 def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False):

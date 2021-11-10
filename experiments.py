@@ -104,13 +104,14 @@ def generate_sum_of_sinusoids(t=120, period_ms=40, A_coeff = torch.rand((4,)), p
     return (A_coeff * torch.sin(phase_shifts + period_rads * torch.reshape(torch.arange(0, t), (t, 1)))).sum(dim=1)
 
 def white_noise_sum_of_sinusoids(t=120, A_coeff = torch.rand((4,)), phase_shifts=torch.rand((4,))):
-    period_ms = t / 2
+    period_ms = t / 3
     period_ms = torch.tensor([period_ms, period_ms / 2, period_ms / 3, period_ms / 4])
 
     period_rads = (np.pi / period_ms)
     white_noise = torch.rand((t, 1))
     arange = torch.reshape(torch.arange(0, t), (t, 1))
-    return (A_coeff * torch.sin(phase_shifts + period_rads * (white_noise+arange))).sum(dim=1)
+    # return (A_coeff * torch.sin(phase_shifts + period_rads * (white_noise+arange))).sum(dim=1)
+    return 0.2 * (A_coeff * torch.sin(phase_shifts + period_rads * (white_noise+arange))).sum(dim=1)
 
 # low-pass filter
 def auto_encode_input(inputs, tau_filter=20.):
