@@ -58,8 +58,8 @@ for random_seed in range(3, 4):
     snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
     optim_params = list(snn.parameters())
     learn_rate = 0.03
-    optimiser = torch.optim.SGD(optim_params, lr=learn_rate)
-    # optimiser = torch.optim.Adam(optim_params, lr=learn_rate)
+    # optimiser = torch.optim.SGD(optim_params, lr=learn_rate)
+    optimiser = torch.optim.Adam(optim_params, lr=learn_rate)
     # lfn = PDF_metrics.PDF_LFN.BERNOULLI
     lfn = PDF_metrics.PDF_LFN.POISSON
 
@@ -86,8 +86,8 @@ for random_seed in range(3, 4):
         # spike_probs, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, current_inputs)
         spike_probs, spikes, vs = model_util.feed_inputs_sequentially_return_args(snn, current_inputs)
 
-        _, target_spikes, target_vs = model_util.feed_inputs_sequentially_return_args(snn_target, current_inputs)
-        target_spikes = target_spikes.clone().detach()
+        # _, target_spikes, target_vs = model_util.feed_inputs_sequentially_return_args(snn_target, current_inputs)
+        # target_spikes = target_spikes.clone().detach()
 
         if i == 0:
             plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=snn.__class__.__name__, exp_type='GD_test',
@@ -96,7 +96,7 @@ for random_seed in range(3, 4):
         if i % plot_every == 0:
             plot.plot_neuron(vs.detach().data, uuid=snn.__class__.__name__, exp_type='GD_test', fname='membrane_pots_train_i_{}.png'.format(i))
             plot.plot_neuron(current_inputs.detach().data, uuid=snn.__class__.__name__, exp_type='GD_test', fname='inputs_train_i_{}.png'.format(i))
-            plot.plot_neuron(target_vs.detach().data, uuid=snn_target.__class__.__name__, exp_type='GD_test', fname='membrane_pots_target_train_iter_{}.png'.format(i))
+            # plot.plot_neuron(target_vs.detach().data, uuid=snn_target.__class__.__name__, exp_type='GD_test', fname='membrane_pots_target_train_iter_{}.png'.format(i))
 
         # loss = spike_metrics.firing_rate_distance(spikes, sample_targets)
         # m = torch.distributions.bernoulli.Bernoulli(spike_probs)

@@ -11,7 +11,8 @@ class microGIF(nn.Module):
                                  'J_theta': [0.9, 1.1], 'c': [0.15, 0.2], 'Delta_u': [3.5, 4.5] }
     param_lin_constraints = [[0., 2.], [-5., 25.], [1., 20.], [1., 20.], [800., 1500.], [0.1, 2.], [1., 20.], [1., 20.]]
 
-    def __init__(self, parameters, N=4, neuron_types=[1, -1]):
+    # def __init__(self, parameters, N=4, neuron_types=[1, -1]):
+    def __init__(self, parameters, N=4):
         super(microGIF, self).__init__()
 
         if parameters is not None:
@@ -37,15 +38,15 @@ class microGIF(nn.Module):
         self.N = N
 
         if parameters.__contains__('preset_weights'):
-            # print('Setting w to preset weights.')
-            rand_ws = torch.abs(parameters['preset_weights'])
+            print('Setting w to preset weights in {}.'.format(self.__class__.__name__))
+            rand_ws = parameters['preset_weights']
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
-        nt = torch.tensor(neuron_types).float()
+        # nt = torch.tensor(neuron_types).float()
         # self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         # self.neuron_types = (torch.ones((self.N, 1)) * nt).T
-        self.neuron_types = nt
+        # self.neuron_types = nt
         self.w = nn.Parameter(FT(rand_ws).clip(0., 10.), requires_grad=True)  # initialise with positive weights only
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
         # self.self_recurrence_mask = torch.ones((self.N, self.N))
@@ -122,7 +123,8 @@ class microGIF(nn.Module):
             -(self.time_since_spike - self.Delta_delay) / self.tau_s) / self.tau_s
 
         # W_syn = self.self_recurrence_mask * self.w * self.neuron_types
-        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        # W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        W_syn = self.self_recurrence_mask * self.w
         I_syn = ((W_syn).matmul(epsilon_spike_pulse))
         # I_syn = ((W_syn) * (epsilon_spike_pulse)).sum(dim=0)
         dv = (self.E_L - self.v + self.R_m * I_ext) / self.tau_m + I_syn
@@ -152,5 +154,5 @@ class microGIF(nn.Module):
         # if spiked[0] > 0:
         #     print('alskjdlaksjd')
 
-        return spikes_lambda, spiked
-        # return spikes_lambda, spiked, self.v
+        # return spikes_lambda, spiked
+        return spikes_lambda, spiked, self.v

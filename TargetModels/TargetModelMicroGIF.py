@@ -29,12 +29,12 @@ def get_low_dim_micro_GIF_transposed(random_seed):
     np.random.seed(random_seed)
 
     N = 4
-    neuron_types = torch.tensor([1, 1, -1, -1]).float()
+    # neuron_types = torch.tensor([1, 1, -1, -1]).float()
     pop_sizes = [2, 2]
 
     # weights_excit_L4 = draw_weights_for_pop(pop_num=0, pop_sizes=pop_sizes, probabilities=2*[1.], weights=torch.mul(T([2.482, 1.245]), T([0.0497, 0.0794])))
     # weights_inhib_L4 = draw_weights_for_pop(pop_num=1, pop_sizes=pop_sizes, probabilities=2*[1.], weights=torch.mul(T(2 * [-4.964]), T([0.1350, 0.1597])))
-    c = 0.4
+    c = 0.3
     params_pop_excit_L4 = {'tau_m': 10., 'tau_s': 3., 'Delta_u': 5., 'tau_theta': 1000., 'c': c,
                            'J_theta': 1., 'E_L': 0., 'R_m': 19., 'pop_sizes': 438}
     # hand_coded_params_pop_excit_L4 = {'preset_weights': weights_excit_L4}
@@ -53,13 +53,13 @@ def get_low_dim_micro_GIF_transposed(random_seed):
     # rand_ws[2:, :] = 0.
     # rand_ws = torch.zeros((N,N))
     rand_ws = 8.* torch.ones((N,N))
-    rand_ws[:, 2:] = 2.
+    rand_ws[:, 2:] = -2.
     sut_weights_params['preset_weights'] = rand_ws
 
     randomised_params = zip_tensor_dicts(params_pop_excit_L4, params_pop_inhib_L4)
     randomised_params = zip_tensor_dicts(randomised_params, sut_weights_params)
 
-    return pop_sizes, microGIF(parameters=randomised_params, N=N, neuron_types=neuron_types)
+    return pop_sizes, microGIF(parameters=randomised_params, N=N)
 
 
 def micro_gif_populations_model_full_size(random_seed):

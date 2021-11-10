@@ -35,12 +35,12 @@ class microGIF_weights_only(nn.Module):
         self.N = N
 
         if parameters.__contains__('preset_weights'):
-            # print('Setting w to preset weights.')
-            rand_ws = torch.abs(parameters['preset_weights'])
+            print('Setting w to preset weights in {}.'.format(self.__class__.__name__))
+            rand_ws = parameters['preset_weights']
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             # rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
-            rand_ws = torch.randn((N, N))
+            rand_ws = 10. * torch.randn((N, N))
         nt = torch.tensor(neuron_types).float()
         self.neuron_types = nt
         # self.neuron_types = (torch.ones((self.N, 1)) * nt).T
@@ -115,5 +115,5 @@ class microGIF_weights_only(nn.Module):
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
 
-        return spikes_lambda, spiked
-        # return spikes_lambda, spiked, self.v
+        # return spikes_lambda, spiked
+        return spikes_lambda, spiked, self.v
