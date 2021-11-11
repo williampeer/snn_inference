@@ -100,6 +100,7 @@ def plot_spike_trains_side_by_side(model_spikes, target_spikes, uuid, exp_type='
     fig.savefig(fname=full_path + fname)
     # plt.show()
     plt.close()
+    return fig
 
 
 def plot_spike_train_projection(spikes, uuid='test', exp_type='default', title=False, fname=False, legend=None, export=False):
@@ -196,7 +197,7 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     legend = []
     for i in range(len(membrane_potentials_through_time)):
         legend.append('N.{}'.format(i+1))
-    plt.figure()
+    fig = plt.figure()
     plt.plot(np.arange(membrane_potentials_through_time.shape[0]), membrane_potentials_through_time)
     plt.legend(legend, loc='upper left', ncol=4)
     # plt.title(title)
@@ -207,6 +208,7 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
     plt.close()
+    return fig
 
 
 def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False):
@@ -534,7 +536,7 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     plt.close()
 
 
-def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):
+def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -920,3 +922,29 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_siz
     plt.savefig(fname=full_path + fname)
     plt.close()
 
+
+def plot_heatmap(heat_mat, axes, exp_type, uuid, fname):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'heat_mat': heat_mat, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_heatmap')
+
+    for row_i in range(heat_mat.shape[0]):
+        for col_i in range(heat_mat.shape[1]):
+            if np.isnan(heat_mat[row_i][col_i]):
+                heat_mat[row_i][col_i] = 0.
+
+    fig = plt.figure()
+    im = plt.imshow(heat_mat, cmap="PuOr", vmin=-1, vmax=1)
+    cbar = plt.colorbar(im)
+    # cbar.set_label("correlation coeff.")
+    plt.xticks(np.arange(0, len(heat_mat), 5))
+    plt.yticks(np.arange(0, len(heat_mat)))
+    plt.ylabel(axes[0])
+    plt.xlabel(axes[1])
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+    return fig

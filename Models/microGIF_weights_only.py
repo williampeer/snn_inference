@@ -115,5 +115,5 @@ class microGIF_weights_only(nn.Module):
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
 
-        return spikes_lambda, spiked
-        # return spikes_lambda, spiked, self.v
+        # return spikes_lambda, spiked
+        return spikes_lambda, spiked, self.v

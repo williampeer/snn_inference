@@ -32,3 +32,5 @@ __pycache__
 ._*.mat
 
 sbi-logs/*
+
+*.tfevents.*

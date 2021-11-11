@@ -47,7 +47,7 @@ class microGIF(nn.Module):
         # self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         # self.neuron_types = (torch.ones((self.N, 1)) * nt).T
         # self.neuron_types = nt
-        self.w = nn.Parameter(FT(rand_ws).clip(0., 10.), requires_grad=True)  # initialise with positive weights only
+        self.w = nn.Parameter(FT(rand_ws).clip(-10., 10.), requires_grad=True)  # initialise with positive weights only
         self.self_recurrence_mask = torch.ones((self.N, self.N)) - torch.eye(self.N, self.N)
         # self.self_recurrence_mask = torch.ones((self.N, self.N))
 
@@ -154,5 +154,5 @@ class microGIF(nn.Module):
         # if spiked[0] > 0:
         #     print('alskjdlaksjd')
 
-        return spikes_lambda, spiked
-        # return spikes_lambda, spiked, self.v
+        # return spikes_lambda, spiked
+        return spikes_lambda, spiked, self.v
