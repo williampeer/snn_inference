@@ -13,7 +13,9 @@ from Models.microGIF_weights_only import microGIF_weights_only
 from TargetModels.TargetModelMicroGIF import get_low_dim_micro_GIF_transposed
 from experiments import release_computational_graph
 
-for random_seed in range(4, 6):
+start_seed = 6
+num_seeds = 2
+for random_seed in range(start_seed, start_seed+num_seeds):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
     # pop_sizes, snn = TargetModelMicroGIF.micro_gif_populations_model_full_size(random_seed=random_seed)
@@ -21,10 +23,15 @@ for random_seed in range(4, 6):
 
     N = snn_target.N
     t = 1200
-    learn_rate = 0.02
+    learn_rate = 0.05
     num_train_iter = 1000
     plot_every = 50
     bin_size = 100
+    # optim_class = torch.optim.SGD(optfig_params, lr=learn_rate)
+    optim_class = torch.optim.Adam
+    # lfn = PDF_metrics.PDF_LFN.BERNOULLI
+    lfn = PDF_metrics.PDF_LFN.POISSON
+    config_str = '$\\alpha={}$, lfn: {}, bin_size: {}, optim: {}'.format(learn_rate, lfn.name, bin_size, optim_class.__name__)
 
     timestamp = IO.dt_descriptor()
     writer = SummaryWriter('runs/' + timestamp)
@@ -54,14 +61,8 @@ for random_seed in range(4, 6):
     # sample_inputs = sine_input(t=t, N=snn_target.N, neurons_coeff=neurons_coeff)
     # print('- SNN test for class {} -'.format(snn_target.__class__.__name__))
     # print('#inputs: {}'.format(sample_inputs.sum()))
-    tar_W_heatmap_fig = plot.plot_heatmap(snn_target.w.detach().numpy() / 10., ['W_syn_col', 'W_row'],
-                                         uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
-                                         exp_type='GD_test', fname='plot_heatmap_W_target.png')
-
     _, target_spikes, target_vs = model_util.feed_inputs_sequentially_return_args(snn_target, current_inputs)
     target_spikes = target_spikes.clone().detach()
-    fig_tar_vs = plot.plot_neuron(target_vs.detach().data, uuid=snn.__class__.__name__ + '/{}'.format(timestamp), exp_type='GD_test',
-                                  fname='membrane_pots_target.png')
 
     # params_model = draw_from_uniform(microGIF.parameter_init_intervals, N)
     # params_model['N'] = N
@@ -71,18 +72,23 @@ for random_seed in range(4, 6):
     snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
     fig_W_init = plot.plot_heatmap(snn.w.detach().numpy() / 10., ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
                                    exp_type='GD_test', fname='plot_heatmap_W_initial.png')
-    optfig_params = list(snn.parameters())
-    # optimiser = torch.optim.SGD(optfig_params, lr=learn_rate)
-    optimiser = torch.optim.Adam(optfig_params, lr=learn_rate)
-    # lfn = PDF_metrics.PDF_LFN.BERNOULLI
-    lfn = PDF_metrics.PDF_LFN.POISSON
+
+    optim_params = list(snn.parameters())
+    optimiser = optim_class(optim_params, lr=learn_rate)
 
     fig_inputs = plot.plot_neuron(current_inputs.detach().data, uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
                                   exp_type='GD_test', fname='train_inputs.png')
+    fig_tar_vs = plot.plot_neuron(target_vs.detach().data, uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
+                                  exp_type='GD_test',
+                                  fname='membrane_pots_target.png')
+    tar_W_heatmap_fig = plot.plot_heatmap(snn_target.w.detach().numpy() / 10., ['W_syn_col', 'W_row'],
+                                          uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
+                                          exp_type='GD_test', fname='plot_heatmap_W_target.png')
 
     writer.add_figure('Training input', fig_inputs)
     writer.add_figure('Target W heatmap', tar_W_heatmap_fig)
-    writer.add_figure('Initial model W heatmap', fig_W_init)
+    writer.add_figure('Target vs', fig_tar_vs)
+    # writer.add_figure('Initial model W heatmap', fig_W_init)
 
     losses = []; prev_write_index = -1
     weights = []
@@ -136,7 +142,7 @@ for random_seed in range(4, 6):
 
             # writer.add_scalars('training_loss', { 'losses': torch.tensor(losses[prev_write_index:]) }, i)
             for loss_i in range(len(losses) - prev_write_index):
-                writer.add_scalar('training_loss', scalar_value=losses[prev_write_index+loss_i], global_step=i+loss_i)
+                writer.add_scalar('training_loss', scalar_value=losses[prev_write_index+loss_i], global_step=prev_write_index+loss_i)
             prev_write_index = i
 
             # ...log a Matplotlib Figure showing the model's predictions on a random mini-batch

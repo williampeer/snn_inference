@@ -53,7 +53,7 @@ def get_low_dim_micro_GIF_transposed(random_seed):
     # rand_ws[2:, :] = 0.
     # rand_ws = torch.zeros((N,N))
     rand_ws = 8.* torch.ones((N,N))
-    rand_ws[:, 2:] = -2.
+    rand_ws[:, 2:] = -1.5
     sut_weights_params['preset_weights'] = rand_ws
 
     randomised_params = zip_tensor_dicts(params_pop_excit_L4, params_pop_inhib_L4)
@@ -123,7 +123,7 @@ def micro_gif_populations_model_full_size(random_seed):
     rand_params_L4 = zip_tensor_dicts(params_pop_excit_L4, params_pop_inhib_L4)
     randomised_params = zip_tensor_dicts(rand_params_L2_3, rand_params_L4)
 
-    return pop_sizes, microGIF(parameters=randomised_params, N=N, neuron_types=neuron_types)
+    return pop_sizes, microGIF(parameters=randomised_params, N=N)
 
 
 def meso_gif_populations_model(random_seed, pop_size=1, N_pops=2):
