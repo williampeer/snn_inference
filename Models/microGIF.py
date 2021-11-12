@@ -92,7 +92,7 @@ class microGIF(nn.Module):
         self.c.register_hook(lambda grad: static_clamp_for(grad, 0.01, 1., self.c, 'c'))
         self.Delta_u.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.Delta_u, 'Delta_u'))
 
-        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 10., self.w))
+        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, -10., 10., self.w))
 
     def get_parameters(self):
         params_dict = {}

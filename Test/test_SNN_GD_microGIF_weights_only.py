@@ -5,16 +5,16 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 import IO
+import Log
 import PDF_metrics
 import experiments
 import model_util
 import plot
-from Models.microGIF_weights_only import microGIF_weights_only
 from TargetModels.TargetModelMicroGIF import get_low_dim_micro_GIF_transposed
 from experiments import release_computational_graph
 
 start_seed = 6
-num_seeds = 2
+num_seeds = 1
 for random_seed in range(start_seed, start_seed+num_seeds):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
@@ -23,7 +23,7 @@ for random_seed in range(start_seed, start_seed+num_seeds):
 
     N = snn_target.N
     t = 1200
-    learn_rate = 0.02
+    learn_rate = 0.005
     num_train_iter = 1000
     plot_every = 50
     bin_size = 100
@@ -34,33 +34,15 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     config_str = '$\\alpha={}$, lfn: {}, bin_size: {}, optim: {}'.format(learn_rate, lfn.name, bin_size, optim_class.__name__)
 
     timestamp = IO.dt_descriptor()
+    logger = Log.Logger('microGIF_GD_{}.txt'.format(timestamp))
     writer = SummaryWriter('runs/' + timestamp)
 
-    # neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
-    # neurons_coeff = torch.cat([T(2 * [0.25]), T(2 * [0.1])])
+    A_coeffs = [torch.randn((4,))]
+    phase_shifts = [torch.rand((4,))]
+    input_types = [1, 1, 1, 1]
 
-    A_coeff_1 = torch.randn((4,))
-    A_coeff_2 = torch.randn((4,))
-    phase_shifts_1 = torch.rand((4,))
-    phase_shifts_2 = phase_shifts_1 + torch.rand((4,))
 
-    inputs_1 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_1, phase_shifts=phase_shifts_1)
-    # inputs_2 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
-
-    current_inputs = torch.vstack([inputs_1, torch.zeros_like(inputs_1)])
-    for _ in range(N - 2):
-        current_inputs = torch.vstack([current_inputs, torch.zeros_like(inputs_1)])
-    # current_inputs = torch.vstack([inputs_1, inputs_2])
-    # for _ in range(N - 2):
-    #     current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
-    current_inputs = current_inputs.T
-    current_inputs = torch.tensor(current_inputs.clone().detach(), requires_grad=True)
-    # target_spiketrain = experiments.auto_encode_input(current_inputs)
-
-    # sample_inputs = sine_modulated_white_noise(t=t, N=snn.N, neurons_coeff=neurons_coeff)
-    # sample_inputs = sine_input(t=t, N=snn_target.N, neurons_coeff=neurons_coeff)
-    # print('- SNN test for class {} -'.format(snn_target.__class__.__name__))
-    # print('#inputs: {}'.format(sample_inputs.sum()))
+    current_inputs = experiments.generate_composite_input_of_white_noise_modulated_sine_waves(t, A_coeffs, phase_shifts, input_types)
     _, target_spikes, target_vs = model_util.feed_inputs_sequentially_return_args(snn_target, current_inputs)
     target_spikes = target_spikes.clone().detach()
 
@@ -69,7 +51,8 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     # params_model['R_m'] = snn_target.R_m.clone().detach()
     params_model = snn_target.get_parameters()
 
-    snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
+    # snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
+    pop_sizes_snn, snn = get_low_dim_micro_GIF_transposed(random_seed=random_seed)
     fig_W_init = plot.plot_heatmap(snn.w.detach().numpy() / 10., ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
                                    exp_type='GD_test', fname='plot_heatmap_W_initial.png')
 
@@ -95,19 +78,8 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     for i in range(num_train_iter+1):
         optimiser.zero_grad()
 
-        inputs_1 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_1, phase_shifts=phase_shifts_1)
-        # inputs_2 = experiments.white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeff_2, phase_shifts=phase_shifts_2)
-
-        current_inputs = torch.vstack([inputs_1, torch.zeros_like(inputs_1)])
-        for _ in range(N - 2):
-            current_inputs = torch.vstack([current_inputs, torch.zeros_like(inputs_1)])
-        current_inputs = current_inputs.T
-        current_inputs = torch.tensor(current_inputs.clone().detach(), requires_grad=True)
-
+        current_inputs = experiments.generate_composite_input_of_white_noise_modulated_sine_waves(t, A_coeffs, phase_shifts, input_types)
         spike_probs, spikes, vs = model_util.feed_inputs_sequentially_return_args(snn, current_inputs)
-
-        # _, target_spikes, target_vs = model_util.feed_inputs_sequentially_return_args(snn_target, current_inputs)
-        # target_spikes = target_spikes.clone().detach()
 
         if lfn == PDF_metrics.PDF_LFN.POISSON:
             loss = PDF_metrics.poisson_nll(spike_probabilities=spike_probs, target_spikes=target_spikes, bin_size=bin_size)
@@ -120,8 +92,6 @@ for random_seed in range(start_seed, start_seed+num_seeds):
 
         weights.append(snn.w.clone().detach().flatten().numpy())
         # weights.append(np.mean(snn.w.clone().detach().numpy(), axis=1))
-
-        # loss.backward()
 
         for p_i, param in enumerate(list(snn.parameters())):
             print('grad for param #{}: {}'.format(p_i, param.grad))
@@ -137,8 +107,6 @@ for random_seed in range(start_seed, start_seed+num_seeds):
             fig_vs = plot.plot_neuron(vs.detach().data, uuid=snn.__class__.__name__ + '/{}'.format(timestamp), exp_type='GD_test', fname='membrane_pots_train_i_{}.png'.format(i))
             fig_heatmap = plot.plot_heatmap(snn.w.detach().numpy() / 10., ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
                                    exp_type='GD_test', fname='plot_heatmap_W_train_i_{}.png'.format(i))
-            # plot.plot_neuron(target_vs.detach().data, uuid=snn.__class__.__name__+'/{}'.format(timestamp),
-            # exp_type='GD_test', fname='membrane_pots_target_train_iter_{}.png'.format(i))
 
             # writer.add_scalars('training_loss', { 'losses': torch.tensor(losses[prev_write_index:]) }, i)
             for loss_i in range(len(losses) - prev_write_index):
@@ -153,7 +121,6 @@ for random_seed in range(start_seed, start_seed+num_seeds):
         release_computational_graph(snn, current_inputs)
         loss = None; current_inputs = None
 
-
     plot.plot_loss(losses, uuid=snn.__class__.__name__+'/{}'.format(timestamp), exp_type='GD_test',
                    custom_title='Loss {}, $\\alpha$={}, {}, bin_size={}'.format(lfn.name, learn_rate, optimiser.__class__.__name__, bin_size),
                    fname='plot_loss_test'+IO.dt_descriptor())
@@ -165,8 +132,6 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     _ = plot.plot_heatmap(snn.w.detach().numpy() / 10., ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__+'/{}'.format(timestamp),
                           exp_type='GD_test', fname='plot_heatmap_W_after_training.png')
 
-    # spikes = model_util.feed_inputs_sequentially_return_spike_train(snn, inputs)
-    # print('snn weights: {}'.format(snn.w))
     hard_thresh_spikes_sum = torch.round(spikes).sum()
     print('spikes sum: {}'.format(hard_thresh_spikes_sum))
     soft_thresh_spikes_sum = (spikes > 0.333).sum()
@@ -183,5 +148,8 @@ for random_seed in range(start_seed, start_seed+num_seeds):
                                                   param_names=['w'],
                                                   custom_title='Test weights plot',
                                                   fname='test_weights_inference_trajectories')
+
+    logger.log('snn.parameters(): {}'.format(snn.parameters()), list(snn.parameters()))
+    logger.log('params_model: ', params_model)
 
 sys.exit(0)

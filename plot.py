@@ -494,10 +494,10 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     axs = fig.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1, sharex=True, sharey=True)
     dot_msize = 5.0
     if num_of_parameters == 2:
-        if current_targets is not False:
-            x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
-            x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
-            plt.xticks([x_min, x_max])
+        # if current_targets is not False:
+            # x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
+            # x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
+            # plt.xticks([x_min, x_max])
 
         p_len = len(params_by_exp[0])
         colors = cm.YlGn(np.linspace(0, 1, p_len))
@@ -515,10 +515,10 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
                 cur_ax = axs[j - 1, i]
                 cur_ax.set_axis_on()
                 cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
-                if current_targets is not False:
-                    x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
-                    x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
-                    cur_ax.set_xticks([x_min, x_max])
+                # if current_targets is not False:
+                #     x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+                #     x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+                #     cur_ax.set_xticks([x_min, x_max])
 
                 # try:
                 p_len = len(params_by_exp[i])
@@ -805,7 +805,6 @@ def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xla
     plt.close()
 
 
-
 def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, title, xlabel=False, ylabel=False, baseline=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
@@ -854,7 +853,6 @@ def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, tit
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
-
 
 
 def bar_plot_all_neuron_rates(rates, stds, bin_size, exp_type, uuid, fname, legends):
