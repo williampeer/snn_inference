@@ -31,7 +31,7 @@ class microGIF_weights_only(nn.Module):
                 elif key == 'Delta_u':
                     Delta_u = FT(torch.ones((N,)) * parameters[key])
 
-        __constants__ = ['N', 'self_recurrence_mask', 'R_m']
+        __constants__ = ['N', 'self_recurrence_mask']
         self.N = N
 
         if parameters.__contains__('preset_weights'):
@@ -62,7 +62,7 @@ class microGIF_weights_only(nn.Module):
         self.theta_inf = FT(torch.ones((N,)) * 15.)
         self.reset_potential = 0.
         self.theta_v = FT(self.theta_inf * torch.ones((N,)))
-        self.R_m = FT(R_m)
+        # self.R_m = FT(R_m)
         self.t_refractory = 2.
 
         self.register_backward_clamp_hooks()
@@ -98,7 +98,7 @@ class microGIF_weights_only(nn.Module):
         W_syn = self.self_recurrence_mask * self.w
         I_syn = ((W_syn).matmul(epsilon_spike_pulse))
         # I_syn = ((W_syn) * (epsilon_spike_pulse)).sum(dim=0)
-        dv = (self.E_L - self.v + self.R_m * I_ext) / self.tau_m + I_syn
+        dv = (self.E_L - self.v + I_ext) / self.tau_m + I_syn
         v_next = self.v + dv
 
         not_refractory = torch.where(self.time_since_spike > self.t_refractory, 1, 0)

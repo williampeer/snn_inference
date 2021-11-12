@@ -123,37 +123,25 @@ class microGIF(nn.Module):
             -(self.time_since_spike - self.Delta_delay) / self.tau_s) / self.tau_s
 
         # W_syn = self.self_recurrence_mask * self.w * self.neuron_types
-        # W_syn = self.self_recurrence_mask * self.w * self.neuron_types
         W_syn = self.self_recurrence_mask * self.w
         I_syn = ((W_syn).matmul(epsilon_spike_pulse))
         # I_syn = ((W_syn) * (epsilon_spike_pulse)).sum(dim=0)
         dv = (self.E_L - self.v + I_ext) / self.tau_m + I_syn
         v_next = self.v + dv
 
-        # spikes_lambda = (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)).clip(0., 1.)
         not_refractory = torch.where(self.time_since_spike > self.t_refractory, 1, 0)
 
         spikes_lambda = not_refractory * (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u))
         spikes_lambda = spikes_lambda.clip(0., 1.)
 
-        # spiked = torch.where(spikes_lambda >= 1., 1., 0.)
-        # try:
         m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
         spiked = m.sample()
-        # except Exception as e:
-        #     print(e)
-        #     print('spikes_lambda: {}'.format(spikes_lambda))
-        #     raise e
 
         self.spiked = spiked
         not_spiked = (spiked - 1) / -1
 
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
-        # self.v = not_spiked * v_next + spiked * self.E_L
-
-        # if spiked[0] > 0:
-        #     print('alskjdlaksjd')
 
         # return spikes_lambda, spiked
         return spikes_lambda, spiked, self.v
