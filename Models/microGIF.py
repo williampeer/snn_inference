@@ -34,7 +34,7 @@ class microGIF(nn.Module):
                 elif key == 'Delta_u':
                     Delta_u = FT(torch.ones((N,)) * parameters[key])
 
-        __constants__ = ['N', 'self_recurrence_mask', 'R_m']
+        __constants__ = ['N', 'self_recurrence_mask']
         self.N = N
 
         if parameters.__contains__('preset_weights'):
@@ -67,7 +67,7 @@ class microGIF(nn.Module):
         self.theta_inf = FT(torch.ones((N,)) * 15.)
         self.reset_potential = 0.
         self.theta_v = FT(self.theta_inf * torch.ones((N,)))
-        self.R_m = FT(R_m)
+        # self.R_m = FT(R_m)
         self.t_refractory = 2.
 
         self.register_backward_clamp_hooks()
@@ -106,7 +106,7 @@ class microGIF(nn.Module):
         params_dict['Delta_u'] = self.Delta_u.data
         params_dict['c'] = self.c.data
 
-        params_dict['R_m'] = self.R_m
+        # params_dict['R_m'] = self.R_m
         params_dict['theta_inf'] = self.theta_inf
 
         return params_dict
@@ -127,7 +127,7 @@ class microGIF(nn.Module):
         W_syn = self.self_recurrence_mask * self.w
         I_syn = ((W_syn).matmul(epsilon_spike_pulse))
         # I_syn = ((W_syn) * (epsilon_spike_pulse)).sum(dim=0)
-        dv = (self.E_L - self.v + self.R_m * I_ext) / self.tau_m + I_syn
+        dv = (self.E_L - self.v + I_ext) / self.tau_m + I_syn
         v_next = self.v + dv
 
         # spikes_lambda = (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u)).clip(0., 1.)
@@ -150,6 +150,7 @@ class microGIF(nn.Module):
 
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
+        # self.v = not_spiked * v_next + spiked * self.E_L
 
         # if spiked[0] > 0:
         #     print('alskjdlaksjd')

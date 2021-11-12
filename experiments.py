@@ -108,7 +108,7 @@ def white_noise_sum_of_sinusoids(t=120, A_coeff = torch.rand((4,)), phase_shifts
     period_ms = torch.tensor([period_ms, period_ms / 2, period_ms / 3, period_ms / 4])
 
     period_rads = (np.pi / period_ms)
-    white_noise = torch.rand((t, 1))
+    white_noise = 0.1*torch.rand((t, 1))
     arange = torch.reshape(torch.arange(0, t), (t, 1))
     # return (A_coeff * torch.sin(phase_shifts + period_rads * (white_noise+arange))).sum(dim=1)
     return 0.2 * (A_coeff * torch.sin(phase_shifts + period_rads * (white_noise+arange))).sum(dim=1)
@@ -136,6 +136,22 @@ def get_interesting_inputs(t, N):
     for _ in range(N - 2):
         current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
     return current_inputs.T
+
+
+def generate_composite_input_of_white_noise_modulated_sine_waves(t, A_coeffs, phase_shifts, input_types):
+    all_inputs = white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeffs[-1], phase_shifts=phase_shifts[-1])
+    for in_i in range(1, len(input_types)):
+        if input_types[in_i] == 2:
+            white_noise = 0.1 * torch.rand((t,))
+            input_i = white_noise
+        elif input_types[in_i] == 1:
+            input_i = white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeffs[-1], phase_shifts=phase_shifts[-1])
+            A_coeffs.append(torch.randn((4,)))
+            phase_shifts.append(phase_shifts[-1] + torch.randn((4,)))
+        else:
+            raise NotImplementedError()
+        all_inputs = torch.vstack([all_inputs, input_i])
+    return all_inputs.T
 
 # =============================
 

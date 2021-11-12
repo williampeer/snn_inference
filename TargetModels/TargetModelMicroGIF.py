@@ -36,10 +36,10 @@ def get_low_dim_micro_GIF_transposed(random_seed):
     # weights_inhib_L4 = draw_weights_for_pop(pop_num=1, pop_sizes=pop_sizes, probabilities=2*[1.], weights=torch.mul(T(2 * [-4.964]), T([0.1350, 0.1597])))
     c = 0.3
     params_pop_excit_L4 = {'tau_m': 10., 'tau_s': 3., 'Delta_u': 5., 'tau_theta': 1000., 'c': c,
-                           'J_theta': 1., 'E_L': 0., 'R_m': 19., 'pop_sizes': 438}
+                           'J_theta': 1., 'E_L': -0.1, 'pop_sizes': 438}
     # hand_coded_params_pop_excit_L4 = {'preset_weights': weights_excit_L4}
     params_pop_inhib_L4 = {'tau_m': 10., 'tau_s': 6., 'Delta_u': 5., 'tau_theta': 1000., 'c': c,
-                           'J_theta': 0., 'E_L': 0., 'R_m': 11.964, 'pop_sizes': 109}
+                           'J_theta': 0., 'E_L': -0.1, 'pop_sizes': 109}
     # hand_coded_params_pop_inhib_L4 = {'preset_weights': weights_inhib_L4}
 
     params_pop_excit_L4 = randomise_parameters(params_pop_excit_L4, coeff=T(0.), N_dim=2)
@@ -52,8 +52,8 @@ def get_low_dim_micro_GIF_transposed(random_seed):
     # rand_ws = 2.*torch.ones((N,N))
     # rand_ws[2:, :] = 0.
     # rand_ws = torch.zeros((N,N))
-    rand_ws = 8.* torch.ones((N,N))
-    rand_ws[:, 2:] = -1.5
+    rand_ws = 10.* torch.ones((N,N))
+    rand_ws[:, 2:] = -4.
     sut_weights_params['preset_weights'] = rand_ws
 
     randomised_params = zip_tensor_dicts(params_pop_excit_L4, params_pop_inhib_L4)
@@ -71,7 +71,6 @@ def micro_gif_populations_model_full_size(random_seed):
     # Conclusion: E_L set too high, but they implemented tonically firing neurons, i.e. model with stationary
     #  firing rates. I've tested that the rates differ without input, and without weights.
 
-    weights_std = 0.0
     # weights_std = 0
 
     pop_sizes = [8, 2, 9, 2]

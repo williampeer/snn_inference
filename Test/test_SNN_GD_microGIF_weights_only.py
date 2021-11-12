@@ -23,7 +23,7 @@ for random_seed in range(start_seed, start_seed+num_seeds):
 
     N = snn_target.N
     t = 1200
-    learn_rate = 0.05
+    learn_rate = 0.02
     num_train_iter = 1000
     plot_every = 50
     bin_size = 100
