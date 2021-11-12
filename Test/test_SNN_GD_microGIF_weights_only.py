@@ -45,11 +45,12 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     current_inputs = experiments.generate_composite_input_of_white_noise_modulated_sine_waves(t, A_coeffs, phase_shifts, input_types)
     _, target_spikes, target_vs = model_util.feed_inputs_sequentially_return_args(snn_target, current_inputs)
     target_spikes = target_spikes.clone().detach()
+    target_parameters = snn_target.state_dict()
 
     # params_model = draw_from_uniform(microGIF.parameter_init_intervals, N)
     # params_model['N'] = N
     # params_model['R_m'] = snn_target.R_m.clone().detach()
-    params_model = snn_target.get_parameters()
+    # params_model = snn_target.get_parameters()
 
     # snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
     pop_sizes_snn, snn = get_low_dim_micro_GIF_transposed(random_seed=random_seed)
@@ -75,6 +76,10 @@ for random_seed in range(start_seed, start_seed+num_seeds):
 
     losses = []; prev_write_index = -1
     weights = []
+    model_parameter_trajectories = {}
+    cur_params = snn.state_dict()
+    for p_i, key in enumerate(cur_params):
+        model_parameter_trajectories[key] = [cur_params[key].clone().detach().numpy()]
     for i in range(num_train_iter+1):
         optimiser.zero_grad()
 
@@ -118,6 +123,10 @@ for random_seed in range(start_seed, start_seed+num_seeds):
             writer.add_figure('Model membrane potentials', fig_vs, global_step=i)
             writer.add_figure('Weights heatmap', fig_heatmap, global_step=i)
 
+        cur_params = snn.state_dict()
+        for p_i, key in enumerate(cur_params):
+            model_parameter_trajectories[key].append(cur_params[key].clone().detach().numpy())
+
         release_computational_graph(snn, current_inputs)
         loss = None; current_inputs = None
 
@@ -149,7 +158,17 @@ for random_seed in range(start_seed, start_seed+num_seeds):
                                                   custom_title='Test weights plot',
                                                   fname='test_weights_inference_trajectories')
 
+    parameter_names = snn.free_parameters
+    plot.plot_parameter_inference_trajectories_2d(model_parameter_trajectories,
+                                                  uuid=snn.__class__.__name__ + '/' + timestamp,
+                                                  exp_type='GD_test',
+                                                  target_params=target_parameters,
+                                                  param_names=parameter_names,
+                                                  custom_title='Inferred parameters across training iterations',
+                                                  fname='inferred_param_trajectories_{}_exp_num_{}_train_iters_{}'
+                                                  .format(snn.__class__.__name__, None, i))
+
     logger.log('snn.parameters(): {}'.format(snn.parameters()), list(snn.parameters()))
-    logger.log('params_model: ', params_model)
+    logger.log('model_parameter_trajectories: ', model_parameter_trajectories)
 
 sys.exit(0)
