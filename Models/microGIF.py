@@ -27,8 +27,6 @@ class microGIF(nn.Module):
                     J_theta = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'E_L':
                     E_L = FT(torch.ones((N,)) * parameters[key])
-                elif key == 'R_m':
-                    R_m = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'c':
                     c = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'Delta_u':
@@ -42,7 +40,8 @@ class microGIF(nn.Module):
             rand_ws = parameters['preset_weights']
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
-            rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
+            # rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
+            rand_ws = 0.5 + 2. * torch.randn((N, N))
         # nt = torch.tensor(neuron_types).float()
         # self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         # self.neuron_types = (torch.ones((self.N, 1)) * nt).T
@@ -60,7 +59,7 @@ class microGIF(nn.Module):
         self.tau_m = nn.Parameter(FT(tau_m), requires_grad=True)
         self.tau_s = nn.Parameter(FT(tau_s), requires_grad=True)
         self.tau_theta = nn.Parameter(FT(tau_theta), requires_grad=True)  # Adaptation time constant
-        self.J_theta = nn.Parameter(FT(J_theta).clamp(0.1, 2.), requires_grad=True)  # Adaptation strength
+        self.J_theta = nn.Parameter(FT(J_theta), requires_grad=True)  # Adaptation strength
         self.c = nn.Parameter(FT(c), requires_grad=True)
         self.Delta_u = nn.Parameter(FT(Delta_u), requires_grad=True)  # Noise level
         self.Delta_delay = 1.  # Transmission delay

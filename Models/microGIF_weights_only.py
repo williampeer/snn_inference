@@ -24,8 +24,6 @@ class microGIF_weights_only(nn.Module):
                     J_theta = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'E_L':
                     E_L = FT(torch.ones((N,)) * parameters[key])
-                elif key == 'R_m':
-                    R_m = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'c':
                     c = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'Delta_u':
@@ -40,7 +38,7 @@ class microGIF_weights_only(nn.Module):
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             # rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
-            rand_ws = 10. * torch.randn((N, N))
+            rand_ws = 0.5 + 2. * torch.randn((N, N))
         nt = torch.tensor(neuron_types).float()
         self.neuron_types = nt
         # self.neuron_types = (torch.ones((self.N, 1)) * nt).T

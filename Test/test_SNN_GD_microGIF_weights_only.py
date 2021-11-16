@@ -17,7 +17,11 @@ from experiments import release_computational_graph
 
 start_seed = 7
 num_seeds = 1
-prev_timestamp = '11-12_13-27-54-034'
+# prev_timestamp = '11-12_13-27-54-034'
+# prev_timestamp = '11-16_10-50-30-238'
+# prev_timestamp = '11-16_11-03-55-161'
+# prev_timestamp = '11-16_11-12-37-827'
+prev_timestamp = '11-16_11-21-13-903'
 for random_seed in range(start_seed, start_seed+num_seeds):
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
@@ -26,13 +30,13 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     fname = 'snn_model_target_GD_test'
     load_data = torch.load(IO.PATH + microGIF.__name__ + '/' + prev_timestamp + '/' + fname + IO.fname_ext)
     snn_target = load_data['model']
-    saved_target_losses = load_data['losses']
+    saved_target_losses = load_data['loss']
 
     N = snn_target.N
     t = 1200
-    learn_rate = 0.005
+    learn_rate = 0.001
     num_train_iter = 2000
-    plot_every = 50
+    plot_every = int(num_train_iter/20)
     bin_size = 100
     # optim_class = torch.optim.SGD(optfig_params, lr=learn_rate)
     optim_class = torch.optim.Adam
@@ -56,10 +60,11 @@ for random_seed in range(start_seed, start_seed+num_seeds):
 
     # params_model = draw_from_uniform(microGIF.parameter_init_intervals, N)
     # params_model['N'] = N
-    # params_model['R_m'] = snn_target.R_m.clone().detach()
-    params_model = snn_target.get_parameters()
-
-    snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
+    # params_model = snn_target.get_parameters()
+    # snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
+    params_model = experiments.draw_from_uniform(microGIF.parameter_init_intervals, N)
+    # params_model['preset_weights'] = params_model['w']
+    snn = microGIF(N=N, parameters=params_model)
     # pop_sizes_snn, snn = get_low_dim_micro_GIF_transposed(random_seed=random_seed)
     fig_W_init = plot.plot_heatmap(snn.w.detach().numpy() / 10., ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
                                    exp_type='GD_test', fname='plot_heatmap_W_initial.png')
