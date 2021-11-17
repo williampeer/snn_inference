@@ -11,6 +11,7 @@ import experiments
 import model_util
 import plot
 from Models.microGIF import microGIF
+from Models.microGIF_fixed_c import microGIF_fixed_c
 from Models.microGIF_weights_only import microGIF_weights_only
 from TargetModels.TargetModelMicroGIF import get_low_dim_micro_GIF_transposed
 from experiments import release_computational_graph
@@ -34,8 +35,8 @@ for random_seed in range(start_seed, start_seed+num_seeds):
 
     N = snn_target.N
     t = 1200
-    learn_rate = 0.001
-    num_train_iter = 2000
+    learn_rate = 0.01
+    num_train_iter = 1000
     plot_every = int(num_train_iter/20)
     bin_size = 100
     # optim_class = torch.optim.SGD(optfig_params, lr=learn_rate)
@@ -58,13 +59,21 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     target_spikes = target_spikes.clone().detach()
     target_parameters = snn_target.state_dict()
 
-    # params_model = draw_from_uniform(microGIF.parameter_init_intervals, N)
-    # params_model['N'] = N
-    # params_model = snn_target.get_parameters()
-    # snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
-    params_model = experiments.draw_from_uniform(microGIF.parameter_init_intervals, N)
     # params_model['preset_weights'] = params_model['w']
-    snn = microGIF(N=N, parameters=params_model)
+
+    # params_model = experiments.draw_from_uniform(microGIF.parameter_init_intervals, N)
+    # snn = microGIF(N=N, parameters=params_model)
+
+    # params_model['c'] = snn_target.c.clone().detach().data
+    # snn = microGIF_fixed_c(N=N, parameters=params_model)
+
+    params_model = snn_target.get_parameters()
+    # TODO: Test setting GT sign of weights
+    target_w_signs = torch.sign(snn_target.w.clone().detach().data)
+    rand_ws = 0.4 + 0.25 * torch.randn((N, N))
+    params_model['preset_weights'] = target_w_signs * torch.abs(rand_ws)
+    snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
+
     # pop_sizes_snn, snn = get_low_dim_micro_GIF_transposed(random_seed=random_seed)
     fig_W_init = plot.plot_heatmap(snn.w.detach().numpy() / 10., ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
                                    exp_type='GD_test', fname='plot_heatmap_W_initial.png')
@@ -107,15 +116,12 @@ for random_seed in range(start_seed, start_seed+num_seeds):
 
         loss.backward(retain_graph=True)
 
-        weights.append(snn.w.clone().detach().flatten().numpy())
-        # weights.append(np.mean(snn.w.clone().detach().numpy(), axis=1))
-
-        for p_i, param in enumerate(list(snn.parameters())):
-            print('grad for param #{}: {}'.format(p_i, param.grad))
-
         optimiser.step()
 
-        losses.append(loss.clone().detach().data)
+        loss_data = loss.clone().detach().data
+        losses.append(loss_data)
+        print('loss: {}'.format(loss_data))
+        writer.add_scalar('training_loss', scalar_value=loss_data, global_step=i)
 
         if i == 0 or i % plot_every == 0 or i == num_train_iter:
             fig_spikes = plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
@@ -126,9 +132,15 @@ for random_seed in range(start_seed, start_seed+num_seeds):
                                    exp_type='GD_test', fname='plot_heatmap_W_train_i_{}.png'.format(i))
 
             # writer.add_scalars('training_loss', { 'losses': torch.tensor(losses[prev_write_index:]) }, i)
-            for loss_i in range(len(losses) - prev_write_index):
-                writer.add_scalar('training_loss', scalar_value=losses[prev_write_index+loss_i], global_step=prev_write_index+loss_i)
-            prev_write_index = i
+            # for loss_i in range(len(losses) - prev_write_index):
+            #     writer.add_scalar('training_loss', scalar_value=losses[prev_write_index+loss_i], global_step=prev_write_index+loss_i)
+            # prev_write_index = i
+
+            weights.append(snn.w.clone().detach().flatten().numpy())
+            # weights.append(np.mean(snn.w.clone().detach().numpy(), axis=1))
+
+            for p_i, param in enumerate(list(snn.parameters())):
+                print('grad for param #{}: {}'.format(p_i, param.grad))
 
             # ...log a Matplotlib Figure showing the model's predictions on a random mini-batch
             writer.add_figure('Model spikes vs. target spikes', fig_spikes, global_step=i)
