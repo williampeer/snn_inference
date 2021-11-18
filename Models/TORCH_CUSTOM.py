@@ -16,7 +16,7 @@ def static_clamp_for(new_grad, l, m, p, p_name=''):
 def static_clamp_for_scalar(new_grad, l, m, p):
     p_out_of_bounds = p < l or m < p
     if p_out_of_bounds:
-        LOG.log('PARAMETER OUT OF BOUNDS for scalar. \ni: {}, p: {},\nl: {}, m: {},\ngrad: {}'.format(i, p, l, m, new_grad))
+        LOG.log('PARAMETER OUT OF BOUNDS for scalar. \np: {},\nl: {}, m: {},\ngrad: {}'.format(p, l, m, new_grad))
     new_grad.data.clamp_(p - m, p - l)  # the gradient is subtracted. test with Adam too.
 
     return new_grad.data
@@ -27,7 +27,7 @@ def static_clamp_for_matrix(new_grad, l, m, p):
         for j in range(p.shape[1]):
             p_out_of_bounds = p[i][j] < l or m < p[i][j]
             if p_out_of_bounds:
-                LOG.log('PARAMETER OUT OF BOUNDS in matrix. \ni: {}, p: {},\nl: {}, m: {},\ngrad: {}'.format(i, p[i][j], l, m, new_grad[i][j]))
+                LOG.log('PARAMETER OUT OF BOUNDS in matrix (w). \ni: {}, p: {},\nl: {}, m: {},\ngrad: {}'.format(i, p[i][j], l, m, new_grad[i][j]))
             new_grad[i].data.clamp_(p[i][j] - m, p[i][j] - l)  # the gradient is subtracted. test with Adam too.
 
     return new_grad.data

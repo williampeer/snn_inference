@@ -100,6 +100,7 @@ def plot_spike_trains_side_by_side(model_spikes, target_spikes, uuid, exp_type='
     fig.savefig(fname=full_path + fname)
     # plt.show()
     plt.close()
+    return fig
 
 
 def plot_spike_train_projection(spikes, uuid='test', exp_type='default', title=False, fname=False, legend=None, export=False):
@@ -196,7 +197,7 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     legend = []
     for i in range(len(membrane_potentials_through_time)):
         legend.append('N.{}'.format(i+1))
-    plt.figure()
+    fig = plt.figure()
     plt.plot(np.arange(membrane_potentials_through_time.shape[0]), membrane_potentials_through_time)
     plt.legend(legend, loc='upper left', ncol=4)
     # plt.title(title)
@@ -206,6 +207,8 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists(full_path)
     plt.savefig(fname=full_path + fname)
+    plt.close()
+    return fig
 
 
 def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False):
@@ -491,10 +494,10 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     axs = fig.subplots(nrows=num_of_parameters - 1, ncols=num_of_parameters - 1, sharex=True, sharey=True)
     dot_msize = 5.0
     if num_of_parameters == 2:
-        if current_targets is not False:
-            x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
-            x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
-            plt.xticks([x_min, x_max])
+        # if current_targets is not False:
+            # x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
+            # x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[0], [current_targets[0]]]))))
+            # plt.xticks([x_min, x_max])
 
         p_len = len(params_by_exp[0])
         colors = cm.YlGn(np.linspace(0, 1, p_len))
@@ -512,10 +515,10 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
                 cur_ax = axs[j - 1, i]
                 cur_ax.set_axis_on()
                 cur_ax.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
-                if current_targets is not False:
-                    x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
-                    x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
-                    cur_ax.set_xticks([x_min, x_max])
+                # if current_targets is not False:
+                #     x_min = float('{}'.format(np.min(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+                #     x_max = float('\n{}'.format(np.max(np.concatenate([params_by_exp[i], [current_targets[i]]]))))
+                #     cur_ax.set_xticks([x_min, x_max])
 
                 # try:
                 p_len = len(params_by_exp[i])
@@ -533,7 +536,7 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
     plt.close()
 
 
-def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title, logger):
+def plot_parameter_inference_trajectories_2d(param_means, target_params, param_names, exp_type, uuid, fname, custom_title):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -802,7 +805,6 @@ def bar_plot_crosscorrdiag(y1, y1_std, labels, exp_type, uuid, fname, title, xla
     plt.close()
 
 
-
 def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, title, xlabel=False, ylabel=False, baseline=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
@@ -851,7 +853,6 @@ def bar_plot_two_grps(y1, y1_std, y2, y2_std, labels, exp_type, uuid, fname, tit
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
-
 
 
 def bar_plot_all_neuron_rates(rates, stds, bin_size, exp_type, uuid, fname, legends):
@@ -919,3 +920,52 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_siz
     plt.savefig(fname=full_path + fname)
     plt.close()
 
+
+def plot_heatmap(heat_mat, axes, exp_type, uuid, fname):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'heat_mat': heat_mat, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_heatmap')
+
+    for row_i in range(heat_mat.shape[0]):
+        for col_i in range(heat_mat.shape[1]):
+            if np.isnan(heat_mat[row_i][col_i]):
+                heat_mat[row_i][col_i] = 0.
+
+    fig = plt.figure()
+    im = plt.imshow(heat_mat, cmap="PuOr", vmin=-1, vmax=1)
+    cbar = plt.colorbar(im)
+    # cbar.set_label("correlation coeff.")
+    plt.xticks(np.arange(0, len(heat_mat), 5))
+    plt.yticks(np.arange(0, len(heat_mat)))
+    plt.ylabel(axes[0])
+    plt.xlabel(axes[1])
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
+    return fig
+
+
+def plot_parameter_landscape(p1s, p2s, p1_name, p2_name, summary_statistic, statistic_name, exp_type, uuid, fname):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'p1s': p1s, 'p2s': p2s, 'summary_statistic': summary_statistic,
+            'p1_name': p1_name, 'p2_name': p2_name, 'statistic_name': statistic_name,
+            'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_parameter_landscape')
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    surf = ax.plot_trisurf(p1s, p2s, summary_statistic, cmap=plt.cm.jet, linewidth=0.01)
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+    ax.set_xlabel('${}$'.format(p1_name))
+    ax.set_ylabel('${}$'.format(p2_name))
+    ax.set_zlabel('${}$'.format(statistic_name))
+    # ax.view_init(30, 45)
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()

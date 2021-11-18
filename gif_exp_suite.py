@@ -6,11 +6,10 @@ import PDF_metrics
 import gif_fit
 import model_util
 from Constants import ExperimentType
-from Models.TORCH_CUSTOM import static_clamp_for_scalar
 from data_util import load_sparse_data
-from eval import sanity_checks, calculate_loss
+from eval import sanity_checks
 from experiments import draw_from_uniform, release_computational_graph, \
-    generate_synthetic_data_tuple, micro_gif_input, zip_dicts
+    generate_synthetic_data_tuple, micro_gif_input
 from plot import *
 
 torch.autograd.set_detect_anomaly(True)
@@ -167,9 +166,7 @@ def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coe
     test_losses = np.array([]); train_losses = np.array([]); train_i = 0; converged = False; next_step = 0
 
     inputs = None
-    N = model.N
     train_targets, gen_inputs = generate_synthetic_data_tuple(target_model, t=constants.rows_per_train_iter,
-                                                              neurons_coeff = neurons_coeff,
                                                               burn_in=constants.burn_in)
     if constants.EXP_TYPE == ExperimentType.SanityCheck:
         inputs = gen_inputs
@@ -188,14 +185,12 @@ def fit_model(logger, constants, model_class, params_model, exp_num, neurons_coe
         # ---- Train ----
         train_input = None
         train_targets, gen_train_input = generate_synthetic_data_tuple(gen_model=target_model, t=constants.rows_per_train_iter,
-                                                                       neurons_coeff=neurons_coeff,
                                                                        burn_in=constants.burn_in)
         if constants.EXP_TYPE == ExperimentType.SanityCheck:
             train_input = gen_train_input
 
         avg_unseen_loss, abs_grads_mean, converged = gif_fit.fit_batches(model, gen_inputs=train_input, target_spiketrain=train_targets,
-                                                                         neurons_coeff=neurons_coeff, optimiser=optim,
-                                                                         constants=constants, train_i=train_i, logger=logger)
+                                                                         optimiser=optim, constants=constants, train_i=train_i, logger=logger)
 
         cur_params = model.state_dict()
         logger.log('current parameters {}'.format(cur_params))

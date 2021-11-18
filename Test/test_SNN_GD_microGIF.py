@@ -51,14 +51,14 @@ for random_seed in range(3, 4):
     params_model['N'] = N
     params_model['R_m'] = snn_target.R_m.clone().detach()
 
-    snn = microGIF(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
+    snn = microGIF(N=N, parameters=params_model, neuron_types=torch.tensor([1., -1., 1., -1.]))
     optim_params = list(snn.parameters())
-    learn_rate = 0.01
+    learn_rate = 0.03
     # optimiser = torch.optim.SGD(optim_params, lr=learn_rate)
     optimiser = torch.optim.Adam(optim_params, lr=learn_rate)
 
     losses = []
-    for i in range(10):
+    for i in range(20):
         optimiser.zero_grad()
 
         # current_inputs = sine_modulated_white_noise(t=t, N=snn.N, neurons_coeff=neurons_coeff)
@@ -77,7 +77,7 @@ for random_seed in range(3, 4):
         spike_probs, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, current_inputs)
 
         if i == 0:
-            plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid='test', exp_type='GD_test',
+            plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=snn.__class__.__name__, exp_type='GD_test',
                                                 title='Test {} spike trains'.format(snn.__class__.__name__),
                                                 legend=['Fitted', 'Target'], fname='spike_trains_before_training.png')
 
@@ -101,11 +101,11 @@ for random_seed in range(3, 4):
         loss = None; current_inputs = None
 
 
-    plot.plot_loss(losses, uuid='test', exp_type='GD_test',
+    plot.plot_loss(losses, uuid=snn.__class__.__name__, exp_type='GD_test',
                    custom_title='Loss {}, $\\alpha$={}, {}'.format('poisson_nll', learn_rate, optimiser.__class__.__name__),
                    fname='plot_loss_test'+IO.dt_descriptor())
 
-    plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid='test', exp_type='GD_test',
+    plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=snn.__class__.__name__, exp_type='GD_test',
                                         title='Test {} spike trains'.format(snn.__class__.__name__),
                                         legend=['Fitted', 'Target'])
 

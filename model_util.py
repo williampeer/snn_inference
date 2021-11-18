@@ -16,6 +16,22 @@ def feed_inputs_sequentially_return_tuple(model, inputs):
     return membrane_potentials, model_spiketrain
 
 
+def feed_inputs_sequentially_return_args(model, inputs):
+    print('Feeding {} inputs sequentially through SNN in time'.format(inputs.size(0)))
+    s_lambdas, model_spiketrain, vs = model(inputs[0])
+    for x_in in inputs[1:]:
+        s_lambda, spikes, v = model(x_in)
+        # membrane_potentials = torch.cat([membrane_potentials, v])
+        # model_spiketrain = torch.cat([model_spiketrain, spikes])
+        s_lambdas = torch.vstack([s_lambdas, s_lambda])
+        model_spiketrain = torch.vstack([model_spiketrain, spikes])
+        vs = torch.vstack([vs, v])
+
+    # membrane_potentials = torch.reshape(membrane_potentials, (-1, model.v.shape[0]))
+    # model_spiketrain = torch.reshape(model_spiketrain, (-1, model.v.shape[0]))
+    return s_lambdas, model_spiketrain, vs
+
+
 def feed_inputs_sequentially_return_spike_train(model, inputs):
     print('Feeding {} inputs sequentially through SNN in time'.format(inputs.shape[0]))
     # _, model_spiketrain = model(inputs[0])
