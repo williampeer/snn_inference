@@ -9,7 +9,7 @@ class microGIF(nn.Module):
     free_parameters = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta', 'c', 'Delta_u']
     parameter_init_intervals = { 'E_L': [0., 3.], 'tau_m': [7., 9.], 'tau_s': [4., 8.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1], 'c': [0.15, 0.2], 'Delta_u': [3.5, 4.5] }
-    param_lin_constraints = [[0., 2.], [-5., 25.], [1., 20.], [1., 20.], [800., 1500.], [0.1, 2.], [1., 20.], [1., 20.]]
+    param_lin_constraints = [[0., 2.], [-5., 25.], [1., 20.], [1., 20.], [800., 1500.], [0.1, 2.], [0.01, 1.], [1., 20.]]
 
     # def __init__(self, parameters, N=4, neuron_types=[1, -1]):
     def __init__(self, parameters, N=4):

@@ -36,7 +36,7 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     N = snn_target.N
     t = 1200
     learn_rate = 0.01
-    num_train_iter = 1000
+    num_train_iter = 600
     plot_every = int(num_train_iter/20)
     bin_size = 100
     # optim_class = torch.optim.SGD(optfig_params, lr=learn_rate)
@@ -59,20 +59,20 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     target_spikes = target_spikes.clone().detach()
     target_parameters = snn_target.state_dict()
 
-    # params_model['preset_weights'] = params_model['w']
+    target_w_signs = torch.sign(snn_target.w.clone().detach().data)
 
-    # params_model = experiments.draw_from_uniform(microGIF.parameter_init_intervals, N)
-    # snn = microGIF(N=N, parameters=params_model)
+    params_model = experiments.draw_from_uniform(microGIF.parameter_init_intervals, N)
+    rand_ws = 2. + 2. * torch.randn((N, N))
+    rand_ws = torch.abs(rand_ws) * target_w_signs
+    params_model['preset_weights'] = rand_ws
+    snn = microGIF(N=N, parameters=params_model)
 
     # params_model['c'] = snn_target.c.clone().detach().data
     # snn = microGIF_fixed_c(N=N, parameters=params_model)
 
-    params_model = snn_target.get_parameters()
-    # TODO: Test setting GT sign of weights
-    target_w_signs = torch.sign(snn_target.w.clone().detach().data)
-    rand_ws = 0.4 + 0.25 * torch.randn((N, N))
-    params_model['preset_weights'] = target_w_signs * torch.abs(rand_ws)
-    snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
+    # params_model = snn_target.get_parameters()
+    # params_model['preset_weights'] = target_w_signs * torch.abs(rand_ws)
+    # snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
 
     # pop_sizes_snn, snn = get_low_dim_micro_GIF_transposed(random_seed=random_seed)
     fig_W_init = plot.plot_heatmap(snn.w.detach().numpy() / 10., ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),

@@ -946,3 +946,26 @@ def plot_heatmap(heat_mat, axes, exp_type, uuid, fname):
     plt.savefig(fname=full_path + fname)
     plt.close()
     return fig
+
+
+def plot_parameter_landscape(p1s, p2s, p1_name, p2_name, summary_statistic, statistic_name, exp_type, uuid, fname):
+    full_path = './figures/' + exp_type + '/' + uuid + '/'
+    IO.makedir_if_not_exists('./figures/' + exp_type + '/')
+    IO.makedir_if_not_exists(full_path)
+
+    data = {'p1s': p1s, 'p2s': p2s, 'summary_statistic': summary_statistic,
+            'p1_name': p1_name, 'p2_name': p2_name, 'statistic_name': statistic_name,
+            'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_parameter_landscape')
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    surf = ax.plot_trisurf(p1s, p2s, summary_statistic, cmap=plt.cm.jet, linewidth=0.01)
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+    ax.set_xlabel('${}$'.format(p1_name))
+    ax.set_ylabel('${}$'.format(p2_name))
+    ax.set_zlabel('${}$'.format(statistic_name))
+    # ax.view_init(30, 45)
+    # plt.show()
+    plt.savefig(fname=full_path + fname)
+    plt.close()
