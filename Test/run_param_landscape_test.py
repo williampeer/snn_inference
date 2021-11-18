@@ -12,7 +12,7 @@ A_coeffs = [torch.randn((4,))]
 phase_shifts = [torch.rand((4,))]
 input_types = [1, 1, 1, 1]
 t = 1200
-num_steps = 35
+num_steps = 100
 
 prev_timestamp = '11-16_11-21-13-903'
 fname = 'snn_model_target_GD_test'
