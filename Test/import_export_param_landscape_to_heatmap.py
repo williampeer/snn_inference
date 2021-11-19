@@ -16,8 +16,8 @@ num_steps = 100
 archive_path = '/home/william/repos/archives_snn_inference/archive_1911/archive/saved/plot_data/test/'
 # specific_plot_file = 'plot_parameter_landscape11-18_15-50-34-535.pt'
 # specific_plot_file = 'plot_parameter_landscape11-18_16-59-03-748.pt'
-specific_plot_file = 'plot_parameter_landscape11-18_18-08-50-429.pt'
-# specific_plot_file = 'plot_parameter_landscape11-18_19-18-25-950.pt'
+# specific_plot_file = 'plot_parameter_landscape11-18_18-08-50-429.pt'
+specific_plot_file = 'plot_parameter_landscape11-18_19-18-25-950.pt'
 
 load_data = torch.load(archive_path + specific_plot_file)
 save_data = load_data['plot_data']
@@ -48,11 +48,16 @@ tar_p2 = target_params[save_data['p2_name']].numpy()
 t_p1_index = int(N_dim * (np.mean(tar_p1) / p1_last))
 t_p2_index = int(N_dim * (np.mean(tar_p2) / p2_last))
 target_coords = [t_p1_index, t_p2_index]
+xticks = []
+yticks = []
+for i_tick in range(N_dim):
+    xticks.append(save_data['p1s'][i_tick*N_dim])
+    yticks.append(save_data['p2s'][i_tick])
 # ---------------- target data feature request from Arno ------------------
 
 axes = ['${}$'.format(save_data['p1_name']), '${}$'.format(save_data['p2_name'])]
 exp_type = 'test'; uuid = 'export_p_landscape_2d'
 plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname='test_export_2d_heatmap_{}_{}.png'.format(save_data['p1_name'], save_data['p2_name']),
-                  target_coords=target_coords)
+                  target_coords=target_coords, xticks=xticks, yticks=yticks)
 
 # sys.exit(0)

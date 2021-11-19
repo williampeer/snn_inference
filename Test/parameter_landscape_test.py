@@ -15,8 +15,8 @@ def plot_param_landscape(model_class, p1_interval, p2_interval, p1_name, p2_name
     p2s = []
     losses = []
     avg_rates = []
-    for i_step in range(num_steps_i):
-        for j_step in range(num_steps_j):
+    for i_step in range(num_steps_i+1):
+        for j_step in range(num_steps_j+1):
             cur_p1 = p1_interval[0] + i_step*p1_step_size
             cur_p2 = p2_interval[0] + j_step*p2_step_size
             all_parameters[p1_name] = cur_p1

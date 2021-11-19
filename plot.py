@@ -1,7 +1,7 @@
 import os
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
+from matplotlib.ticker import FormatStrFormatter, FuncFormatter
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import torch
@@ -921,7 +921,7 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_siz
     plt.close()
 
 
-def plot_heatmap(heat_mat, axes, exp_type, uuid, fname, target_coords):
+def plot_heatmap(heat_mat, axes, exp_type, uuid, fname, target_coords=False, xticks=False, yticks=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -935,14 +935,28 @@ def plot_heatmap(heat_mat, axes, exp_type, uuid, fname, target_coords):
                 heat_mat[row_i][col_i] = 0.
 
     fig = plt.figure()
-    im = plt.imshow(heat_mat, cmap="PuOr", vmin=-1, vmax=1)
+    im = plt.imshow(heat_mat, cmap="PuOr", vmin=0., vmax=1)
     cbar = plt.colorbar(im)
-    # cbar.set_label("correlation coeff.")
-    plt.xticks(np.arange(0, len(heat_mat), 5))
-    plt.yticks(np.arange(0, len(heat_mat)))
-    plt.ylabel(axes[0])
-    plt.xlabel(axes[1])
-    plt.scatter(target_coords[0], target_coords[1], color='yellow', marker='x', s=30.0)
+    cbar.set_label("loss")
+    ticks_fmt = lambda x: float('{:.2f}'.format(x))
+    if xticks:
+        N_dim = len(xticks)
+        tar_xticks = [xticks[0], xticks[int(N_dim/2)], xticks[-1]]
+        tar_xticks = list(map(ticks_fmt, tar_xticks))
+        plt.xticks([0, int(N_dim/2), N_dim-1], tar_xticks)
+    else:
+        plt.xticks(np.arange(0, len(heat_mat), 5))
+    if yticks:
+        N_dim = len(yticks)
+        tar_yticks = [yticks[0], yticks[int(N_dim / 2)], yticks[-1]]
+        tar_yticks = list(map(ticks_fmt, tar_yticks))
+        plt.yticks([0, int(N_dim / 2), N_dim - 1], [yticks[0], yticks[int(N_dim / 2)], yticks[-1]])
+    else:
+        plt.yticks(np.arange(0, len(heat_mat)))
+    plt.xlabel(axes[0])
+    plt.ylabel(axes[1])
+    if target_coords:
+        plt.scatter(target_coords[0], target_coords[1], color='magenta', marker='x', s=30.0)
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
