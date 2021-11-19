@@ -11,9 +11,7 @@ import experiments
 import model_util
 import plot
 from Models.microGIF import microGIF
-from Models.microGIF_fixed_c import microGIF_fixed_c
-from Models.microGIF_weights_only import microGIF_weights_only
-from TargetModels.TargetModelMicroGIF import get_low_dim_micro_GIF_transposed
+from Models.microGIF_fixed import microGIF_fixed
 from experiments import release_computational_graph
 
 start_seed = 7
@@ -35,8 +33,8 @@ for random_seed in range(start_seed, start_seed+num_seeds):
 
     N = snn_target.N
     t = 1200
-    learn_rate = 0.01
-    num_train_iter = 600
+    learn_rate = 0.02
+    num_train_iter = 300
     plot_every = int(num_train_iter/20)
     bin_size = 100
     # optim_class = torch.optim.SGD(optfig_params, lr=learn_rate)
@@ -62,13 +60,15 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     target_w_signs = torch.sign(snn_target.w.clone().detach().data)
 
     params_model = experiments.draw_from_uniform(microGIF.parameter_init_intervals, N)
-    rand_ws = 2. + 2. * torch.randn((N, N))
+    rand_ws = 5. + 2. * torch.randn((N, N))
     rand_ws = torch.abs(rand_ws) * target_w_signs
     params_model['preset_weights'] = rand_ws
-    snn = microGIF(N=N, parameters=params_model)
+    # snn = microGIF(N=N, parameters=params_model)
 
-    # params_model['c'] = snn_target.c.clone().detach().data
-    # snn = microGIF_fixed_c(N=N, parameters=params_model)
+    params_model['tau_m'] = snn_target.tau_m.clone().detach().numpy()
+    params_model['tau_s'] = snn_target.tau_s.clone().detach().numpy()
+    params_model['c'] = snn_target.c.clone().detach().data
+    snn = microGIF_fixed(N=N, parameters=params_model)
 
     # params_model = snn_target.get_parameters()
     # params_model['preset_weights'] = target_w_signs * torch.abs(rand_ws)

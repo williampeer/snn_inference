@@ -26,7 +26,7 @@ def plot_param_landscape(model_class, p1_interval, p2_interval, p1_name, p2_name
             # current_inputs = 0
             spike_probs, spikes, vs = model_util.feed_inputs_sequentially_return_args(snn, inputs)
 
-            loss = PDF_metrics.poisson_nll(spike_probabilities=spike_probs, target_spikes=target_spikes, bin_size=100).detach().numpy()
+            loss = PDF_metrics.poisson_nll(spike_probabilities=spike_probs, target_spikes=target_spikes, bin_size=100).clone().detach().numpy()
             losses.append(loss)
             mean_model_rate = spikes.sum(dim=0) * 1000. / spikes.shape[0]  # Hz
             mean_model_rate = torch.mean(mean_model_rate).detach().numpy()

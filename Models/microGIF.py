@@ -132,6 +132,7 @@ class microGIF(nn.Module):
 
         spikes_lambda = not_refractory * (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u))
         spikes_lambda = spikes_lambda.clip(0., 1.)
+        spikes_lambda[torch.isnan(spikes_lambda)] = 1.  # tmp nan-fix
 
         m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
         spiked = m.sample()

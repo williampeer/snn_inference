@@ -921,7 +921,7 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_siz
     plt.close()
 
 
-def plot_heatmap(heat_mat, axes, exp_type, uuid, fname):
+def plot_heatmap(heat_mat, axes, exp_type, uuid, fname, target_coords):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -942,6 +942,7 @@ def plot_heatmap(heat_mat, axes, exp_type, uuid, fname):
     plt.yticks(np.arange(0, len(heat_mat)))
     plt.ylabel(axes[0])
     plt.xlabel(axes[1])
+    plt.scatter(target_coords[0], target_coords[1], color='yellow', marker='x', s=30.0)
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
