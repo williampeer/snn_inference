@@ -563,8 +563,12 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
                 param_path = path+'_param_{}'.format(p_k)
                 if not os.path.exists(param_path) and not os.path.exists(param_path + '.png'):
                     # decompose_param_pair_trajectory_plot(cur_p[:,:,:4], current_targets[:,:,:4], name=name, path=param_path)
-                    max_index = min(5, len(current_targets))
-                    decompose_param_pair_trajectory_plot(cur_p[:, :max_index], current_targets[:max_index], name=name, path=param_path)
+                    if current_targets is not False:
+                        max_index = min(5, len(current_targets))
+                        decompose_param_pair_trajectory_plot(cur_p[:, :max_index], current_targets[:max_index], name=name, path=param_path)
+                    else:
+                        max_index = 5
+                        decompose_param_pair_trajectory_plot(cur_p[:, :max_index], False, name=name, path=param_path)
 
 
 def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname, custom_title=False):
@@ -935,7 +939,7 @@ def plot_heatmap(heat_mat, axes, exp_type, uuid, fname, target_coords=False, xti
                 heat_mat[row_i][col_i] = 0.
 
     fig = plt.figure()
-    im = plt.imshow(heat_mat, cmap="PuOr", vmin=0., vmax=1)
+    im = plt.imshow(heat_mat, cmap="PuOr", vmin=-1., vmax=1)
     cbar = plt.colorbar(im)
     cbar.set_label("loss")
     ticks_fmt = lambda x: float('{:.2f}'.format(x))
