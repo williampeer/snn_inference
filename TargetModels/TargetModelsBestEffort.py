@@ -158,13 +158,13 @@ def glif(random_seed, N = 12):
     # weights_std = 0
     hand_coded_params_pop1 = {'preset_weights': (torch.ones((pop_size, 1)) +
                                                  (2*weights_std * torch.randn((pop_size, N))) - weights_std) *
-                                                torch.cat([T(pop_size * [0.14]), T(pop_size_last * [0.06])])}
+                                                torch.cat([T(pop_size * [0.55]), T(pop_size_last * [0.45])])}
 
-    params_pop2 = {'tau_m': 2.6, 'G': 0.8, 'E_L': -66., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14, 'delta_V': 12.,
+    params_pop2 = {'tau_m': 2.6, 'G': 0.8, 'E_L': -62., 'delta_theta_s': 18., 'b_s': 0.25, 'f_v': 0.14, 'delta_V': 12.,
                    'f_I': 0.35, 'b_v': 0.4, 'a_v': 0.3, 'theta_inf': -11., 'tau_s': 2.4}
     hand_coded_params_pop2 = {'preset_weights': (torch.ones((pop_size_last, 1)) +
                                                  (2*weights_std * torch.randn((pop_size_last, N))) - weights_std) *
-                                                torch.cat([T(pop_size * [-.06]), T(pop_size_last * [-.1])])}
+                                                torch.cat([T(pop_size * [-.5]), T(pop_size_last * [-.35])])}
 
     params_pop1 = randomise_parameters(params_pop1, coeff=T(0.025), N_dim=pop_size)
     params_pop1 = zip_tensor_dicts(params_pop1, hand_coded_params_pop1)
