@@ -106,20 +106,20 @@ class LIF_R_ASC(nn.Module):
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
     def get_parameters(self):
-        params_list = []
+        params_dict = []
         # parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'delta_V', 'tau_s']
-        params_list.append(self.w.data)
-        params_list.append(self.E_L.data)
-        params_list.append(self.tau_m.data)
-        params_list.append(self.G.data)
-        params_list.append(self.f_v.data)
-        params_list.append(self.f_I.data)
-        params_list.append(self.delta_theta_s.data)
-        params_list.append(self.b_s.data)
-        params_list.append(self.delta_V.data)
-        params_list.append(self.tau_s.data)
+        params_dict['w'] = self.w.data
+        params_dict['E_L'] = self.E_L.data
+        params_dict['tau_m'] = self.tau_m.data
+        params_dict['G'] = self.G.data
+        params_dict['f_v'] = self.f_v.data
+        params_dict['f_I'] = self.f_I.data
+        params_dict['delta_theta_s'] = self.delta_theta_s.data
+        params_dict['b_s'] = self.b_s.data
+        params_dict['delta_V'] = self.delta_V.data
+        params_dict['tau_s'] = self.tau_s.data
 
-        return params_list
+        return params_dict
 
     def name(self):
         return self.__class__.__name__
@@ -135,10 +135,12 @@ class LIF_R_ASC(nn.Module):
         spiked = (v_next >= self.theta_s).float()
         not_spiked = (spiked - 1.) / -1.
 
-        gating = (v_next / self.theta_s).clamp(0., 1.)
-        dv_max = (self.theta_s - self.E_L)
-        ds = (-self.s + gating * (dv / dv_max).clamp(0., 1.)) / self.tau_s
-        self.s = self.s + ds
+        # gating = (v_next / self.theta_s).clamp(0., 1.)
+        # dv_max = (self.theta_s - self.E_L)
+        # ds = (-self.s + gating * (dv / dv_max).clamp(0., 1.)) / self.tau_s
+        # self.s = self.s + ds
+        ds = -self.s/self.tau_s
+        self.s = spiked + not_spiked * (self.s + ds)
 
         v_reset = self.E_L + self.f_v * (self.v - self.E_L) - self.delta_V
         self.v = torch.add(spiked * v_reset, not_spiked * v_next)
@@ -158,5 +160,5 @@ class LIF_R_ASC(nn.Module):
 
         # differentiable soft threshold
         soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
-        return soft_spiked  # return sigmoidal spiked
+        return self.v, soft_spiked  # return sigmoidal spiked
         # return gating
