@@ -154,6 +154,7 @@ class GLIF(nn.Module):
         # non-differentiable, hard threshold
         spiked = (v_next >= self.theta_s + self.theta_v).int()
         not_spiked = (spiked - 1) / -1
+        soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s + self.theta_v))
 
         # gating = ((v_next-self.theta_inf) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
         # # gating = ((v_next) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
@@ -175,7 +176,6 @@ class GLIF(nn.Module):
         self.I_additive = self.I_additive - self.f_I * self.I_additive + spiked * self.f_I
 
         # differentiable soft threshold
-        soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s + self.theta_v))
         # readouts = self.W_out.matmul(soft_spiked)
         # return self.v, readouts
         return self.v, soft_spiked

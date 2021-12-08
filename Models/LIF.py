@@ -106,6 +106,8 @@ class LIF(nn.Module):
         # spiked = (v_next >= self.V_thresh).float()
         spiked = torch.where(v_next >= self.V_thresh, T(1.), T(0.))
         not_spiked = torch.div(torch.sub(spiked, 1.), -1.)
+        # differentiable soft threshold
+        soft_spiked = torch.sigmoid(torch.sub(v_next, self.V_thresh))
 
         self.v = torch.add(torch.mul(spiked, self.E_L), torch.mul(not_spiked, v_next))
 
@@ -115,8 +117,6 @@ class LIF(nn.Module):
         # dg = (gating * dv.clamp(-1., 1.) - self.g) / self.tau_g
         # self.g = self.g + dg
 
-        # differentiable soft threshold
-        soft_spiked = torch.sigmoid(torch.sub(v_next, self.V_thresh))
         # readouts = self.W_out.matmul(soft_spiked)
         # return soft_spiked
         return self.v, soft_spiked

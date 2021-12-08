@@ -129,6 +129,8 @@ class LIF_R(nn.Module):
         # non-differentiable, hard threshold for nonlinear reset dynamics
         spiked = (v_next >= self.theta_s).float()
         not_spiked = (spiked - 1.) / -1.
+        # differentiable soft threshold
+        soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
 
         ds = -self.s / self.tau_s
         # gating = (v_next / self.theta_s).clamp(0., 1.)
@@ -144,8 +146,6 @@ class LIF_R(nn.Module):
         # return self.s * self.tau_s  # use synaptic current as spike signal
         # return self.s * (self.tau_s + 1) / 2.  # return readout of synaptic current as spike signal
 
-        # differentiable soft threshold
-        soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s))
         # readout = self.W_out.matmul(soft_spiked)
         return self.v, soft_spiked  # return sigmoidal spiked
         # return self.v, readout  # return sigmoidal spiked
