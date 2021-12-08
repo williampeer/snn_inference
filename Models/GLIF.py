@@ -146,24 +146,23 @@ class GLIF(nn.Module):
         return self.__class__.__name__
 
     def forward(self, x_in):
-        # assuming input weights to be Eye(N,N)
         W_syn = self.self_recurrence_mask * self.w * self.neuron_types
-        # W_syn = self.w * self.neuron_types
-        # I = (self.I_additive + self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
-        I = ((self.I_additive + self.s) / 2).matmul(W_syn) + self.W_in.matmul(x_in)
+        I_tot = ((self.I_additive + self.s) / 2).matmul(W_syn) + x_in
 
-        dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
+        dv = (self.G * (self.E_L - self.v) + I_tot * self.norm_R_const) / self.tau_m
         v_next = self.v + dv
         # non-differentiable, hard threshold
         spiked = (v_next >= self.theta_s + self.theta_v).int()
         not_spiked = (spiked - 1) / -1
 
-        gating = ((v_next-self.theta_inf) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
-        # gating = ((v_next) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
-        dv_max = (self.theta_s + self.theta_v - self.E_L)
-        # dv_max = self.Theta_max
-        ds = (-self.s + gating * (dv / dv_max).clamp(0., 1.0)) / self.tau_s
-        self.s = self.s + ds
+        # gating = ((v_next-self.theta_inf) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
+        # # gating = ((v_next) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
+        # dv_max = (self.theta_s + self.theta_v - self.E_L)
+        # # dv_max = self.Theta_max
+        # ds = (-self.s + gating * (dv / dv_max).clamp(0., 1.0)) / self.tau_s
+        # self.s = self.s + ds
+        ds = -self.s/self.tau_s
+        self.s = spiked + not_spiked * (self.s + ds)
 
         v_reset = self.E_L + self.f_v * (self.v - self.E_L) - self.delta_V
         self.v = torch.add(spiked * v_reset, not_spiked * v_next)
@@ -177,13 +176,7 @@ class GLIF(nn.Module):
 
         # differentiable soft threshold
         soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s + self.theta_v))
-        readouts = self.W_out.matmul(soft_spiked)
-        return self.v, readouts
+        # readouts = self.W_out.matmul(soft_spiked)
+        # return self.v, readouts
+        return self.v, soft_spiked
         # return gating
-
-        # return self.v, self.s * self.tau_s
-        # return self.s * self.tau_s  # use synaptic current as spike signal
-        # return self.s * (self.tau_s + 1) / 2.  # return readout of synaptic current as spike signal
-
-        # return self.v, self.spiked
-        # return self.spiked
