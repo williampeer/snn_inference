@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch import FloatTensor as FT
 from torch import tensor as T
 
-from Models.TORCH_CUSTOM import static_clamp_for
+from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class Izhikevich(nn.Module):
@@ -11,8 +11,8 @@ class Izhikevich(nn.Module):
     parameter_init_intervals = {'a': [0.02, 0.05], 'b': [0.25, 0.27], 'c': [-65., -55.], 'd': [4., 8.], 'R_I': [40., 50.],
                                 'tau_s': [2., 3.5]}
 
-    def __init__(self, parameters, N=4, w_mean=0.1, w_var=0.25):
-        # , neuron_types=T([1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])):
+    def __init__(self, parameters, N=4, w_mean=0.5, w_var=0.25, #):
+                 neuron_types=T([1., 1., -1., -1.])):
         super(Izhikevich, self).__init__()
         # self.device = device
 
@@ -56,14 +56,10 @@ class Izhikevich(nn.Module):
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.abs(torch.rand((self.N, self.N)))
-        # for i in range(len(neuron_types)):
-        #     if neuron_types[i] == -1:
-        #         rand_ws[i, :] = -torch.abs(FT(rand_ws[i, :]))
-        #     elif neuron_types[i] == 1:
-        #         rand_ws[i, :] = torch.abs(FT(rand_ws[i, :]))
-        #     else:
-        #         raise NotImplementedError()
         # self.neuron_types = neuron_types
+        nt = T(neuron_types).float()
+        self.neuron_types = nt * torch.ones((self.N, self.N))
+
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
 
         self.a = nn.Parameter(FT(a), requires_grad=True)
@@ -75,14 +71,17 @@ class Izhikevich(nn.Module):
 
         # self.parameter_names = ['w', 'a', 'b', 'c', 'd', '\\tau_g']
         # self.to(self.device)
+        self.register_backward_clamp_hooks()
 
     def register_backward_clamp_hooks(self):
         # self.R_I.register_hook(lambda grad: static_clamp_for(grad, 100., 150., self.R_I))
-        self.a.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.2, self.E_L))
-        self.b.register_hook(lambda grad: static_clamp_for(grad, 0.2, 0.255, self.tau_m))
-        self.c.register_hook(lambda grad: static_clamp_for(grad, -80., -50., self.tau_m))
-        self.d.register_hook(lambda grad: static_clamp_for(grad, 2., 8., self.tau_m))
+        self.a.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.2, self.a))
+        self.b.register_hook(lambda grad: static_clamp_for(grad, 0.15, 0.35, self.b))
+        self.c.register_hook(lambda grad: static_clamp_for(grad, -80., -40., self.c))
+        self.d.register_hook(lambda grad: static_clamp_for(grad, 1., 8., self.d))
         self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1.15, 3.5, self.tau_s))
+
+        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 2., self.w))
 
         # # row per neuron
         # for i in range(len(self.neuron_types)):
@@ -122,14 +121,16 @@ class Izhikevich(nn.Module):
 
     def forward(self, x_in):
         # I = torch.add(self.w.matmul(self.s), x_in)
-        W_syn = self.self_recurrence_mask * self.w
-        I = W_syn.matmul(self.s) + 0.9 * x_in
+        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        I_syn = W_syn.matmul(self.s)
+        I_ext = x_in
+        I = I_syn + I_ext
 
         dv = T(0.04) * torch.pow(self.v, 2) + T(5.) * self.v + T(140.) - self.u + I * self.R_I
         v_next = self.v + dv
 
         gating = v_next.clamp(0., 1.)
-        ds = (gating * dv.clamp(-1., 1.) - self.s) / self.tau_s
+        ds = (gating * dv.clamp(0., 1.) - self.s) / self.tau_s
         self.s = self.s + ds
 
         # dg = - torch.div(self.s, self.tau_g)

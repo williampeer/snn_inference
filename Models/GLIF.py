@@ -6,14 +6,14 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class GLIF(nn.Module):
-    parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf',
+    free_parameters = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf',
                        'delta_V', 'tau_s']
     parameter_init_intervals = {'E_L': [-64., -58.], 'tau_m': [2.7, 2.8], 'G': [0.7, 0.8],  'f_v': [0.25, 0.35],
                                 'f_I': [0.35, 0.45], 'delta_theta_s': [10., 20.], 'b_s': [0.25, 0.35], 'a_v': [0.15, 0.2],
                                 'b_v': [0.25, 0.35], 'theta_inf': [-10., -8.], 'delta_V': [8., 14.],
                                 'tau_s': [3., 4.]}
 
-    def __init__(self, parameters, N=12, w_mean=0.2, w_var=0.15,
+    def __init__(self, parameters, N=12, w_mean=0.6, w_var=0.25,
                  neuron_types=[1, -1]):
         super(GLIF, self).__init__()
 
@@ -54,7 +54,7 @@ class GLIF(nn.Module):
         self.Theta_max = (delta_theta_s / b_s - (a_v / b_v) * E_L + delta_V)
         # self.Theta_max = delta_theta_s/(1+b_s) + delta_V/(1+b_v)
         # self.norm_R_const = R_factor * self.Theta_max - E_L
-        self.norm_R_const = 1.1*self.Theta_max
+        self.norm_R_const = self.Theta_max
 
         self.v = E_L * torch.ones((self.N,))
         # self.spiked = torch.zeros_like(self.v)  # spike prop. for next time-step
@@ -72,8 +72,11 @@ class GLIF(nn.Module):
         else:
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
         nt = torch.tensor(neuron_types).float()
+        # self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
+        self.neuron_types = nt * torch.ones((self.N, self.N))
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
-        self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
+        self.W_in = nn.Parameter(FT(torch.rand((N, N)).clamp(-1., 1.)), requires_grad=True)
+        self.W_out = nn.Parameter(FT(torch.rand((N, N)).clamp(-1., 1.)), requires_grad=True)
 
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
@@ -119,32 +122,35 @@ class GLIF(nn.Module):
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
 
     def get_parameters(self):
-        params_list = []
+        params_dict = {}
         # parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'tau_s']
-        params_list.append(self.w.data)
-        params_list.append(self.E_L.data)
-        params_list.append(self.tau_m.data)
-        params_list.append(self.G.data)
-        params_list.append(self.f_v.data)
-        params_list.append(self.f_I.data)
-        params_list.append(self.delta_theta_s.data)
-        params_list.append(self.b_s.data)
-        params_list.append(self.a_v.data)
-        params_list.append(self.b_v.data)
-        params_list.append(self.theta_inf.data)
-        params_list.append(self.delta_V.data)
-        params_list.append(self.tau_s.data)
+        params_dict['w'] = self.w.data
+        params_dict['W_in'] = self.W_in.data
+        params_dict['W_out'] = self.W_out.data
+        params_dict['E_L'] = self.E_L.data
+        params_dict['tau_m'] = self.tau_m.data
+        params_dict['tau_s'] = self.tau_s.data
+        params_dict['G'] = self.G.data
+        params_dict['f_v'] = self.f_v.data
+        params_dict['f_I'] = self.f_I.data
+        params_dict['delta_theta_s'] = self.delta_theta_s.data
+        params_dict['b_s'] = self.b_s.data
+        params_dict['a_v'] = self.a_v.data
+        params_dict['b_v'] = self.b_v.data
+        params_dict['theta_inf'] = self.theta_inf.data
+        params_dict['delta_V'] = self.delta_V.data
 
-        return params_list
+        return params_dict
 
     def name(self):
         return self.__class__.__name__
 
     def forward(self, x_in):
         # assuming input weights to be Eye(N,N)
-        W_syn = self.w * self.neuron_types
+        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        # W_syn = self.w * self.neuron_types
         # I = (self.I_additive + self.s).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
-        I = ((self.I_additive + self.s) / 2).matmul(self.self_recurrence_mask * W_syn) + 1.75 * x_in
+        I = ((self.I_additive + self.s) / 2).matmul(W_syn) + self.W_in.matmul(x_in)
 
         dv = (self.G * (self.E_L - self.v) + I * self.norm_R_const) / self.tau_m
         v_next = self.v + dv
@@ -171,7 +177,8 @@ class GLIF(nn.Module):
 
         # differentiable soft threshold
         soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s + self.theta_v))
-        return soft_spiked  # return sigmoidal spiked
+        readouts = self.W_out.matmul(soft_spiked)
+        return self.v, readouts
         # return gating
 
         # return self.v, self.s * self.tau_s

@@ -11,7 +11,10 @@ import experiments
 import model_util
 import plot
 import spike_metrics
+from Models.GLIF import GLIF
 from Models.Izhikevich import Izhikevich
+from Models.LIF import LIF
+from Models.LIF_R import LIF_R
 from Models.microGIF import microGIF
 from Models.microGIF_fixed import microGIF_fixed
 from experiments import release_computational_graph
@@ -33,21 +36,26 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     snn_target = load_data['model']
     saved_target_losses = load_data['loss']
 
-    snn_class = Izhikevich
+    # snn_class = Izhikevich
+    model_class = LIF
+    # model_class = GLIF
+    # model_class = LIF_R
 
     N = snn_target.N
     t = 1200
-    learn_rate = 0.03
-    num_train_iter = 200
-    plot_every = int(num_train_iter/20)
+    learn_rate = 0.04
+    num_train_iter = 20
+    plot_every = round(num_train_iter/20)
     bin_size = 100
+    tau_vr = 100.
     # optim_class = torch.optim.SGD(optfig_params, lr=learn_rate)
     optim_class = torch.optim.Adam
     # lfn = PDF_metrics.PDF_LFN.BERNOULLI
     # lfn = PDF_metrics.PDF_LFN.POISSON
-    # lfn = 'frd'
-    lfn = 'vrd'
+    lfn = 'frd'
+    # lfn = 'vrd'
     # lfn = 'frdvrd'
+    # lfn = 'custom'
     config_str = '$\\alpha={}$, lfn: {}, bin_size: {}, optim: {}'.format(learn_rate, lfn, bin_size, optim_class.__name__)
 
     timestamp = IO.dt_descriptor()
@@ -66,7 +74,7 @@ for random_seed in range(start_seed, start_seed+num_seeds):
 
     target_w_signs = torch.sign(snn_target.w.clone().detach().data)
 
-    params_model = experiments.draw_from_uniform(snn_class.parameter_init_intervals, N)
+    params_model = experiments.draw_from_uniform(model_class.parameter_init_intervals, N)
     # rand_ws = 5. + 2. * torch.randn((N, N))
     # rand_ws = torch.abs(rand_ws) * target_w_signs
     # params_model['preset_weights'] = rand_ws
@@ -76,16 +84,22 @@ for random_seed in range(start_seed, start_seed+num_seeds):
     # params_model['tau_s'] = snn_target.tau_s.clone().detach().numpy()
     # params_model['c'] = snn_target.c.clone().detach().data
     # snn = microGIF_fixed(N=N, parameters=params_model)
-    snn = snn_class(parameters=params_model, N=N)
+    snn = model_class(parameters=params_model, N=N, neuron_types=torch.tensor([1., 1., -1., -1.]))
 
     # params_model = snn_target.get_parameters()
     # params_model['preset_weights'] = target_w_signs * torch.abs(rand_ws)
     # snn = microGIF_weights_only(N=N, parameters=params_model, neuron_types=torch.tensor([1., 1., -1., -1.]))
 
     # pop_sizes_snn, snn = get_low_dim_micro_GIF_transposed(random_seed=random_seed)
-    fig_W_init = plot.plot_heatmap(snn.w.detach().numpy() / 10., ['W_syn_col', 'W_row'],
+    fig_W_init = plot.plot_heatmap((snn.w.clone().detach() * snn.neuron_types.clone().detach()).numpy() / 5., ['W_syn_col', 'W_row'],
                                    uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
                                    exp_type='GD_test', fname='plot_heatmap_W_initial.png')
+    _ = plot.plot_heatmap((snn.W_in.clone().detach() * snn.neuron_types.clone().detach()).numpy(),
+                          ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
+                          exp_type='GD_test', fname='plot_heatmap_W_in_initial.png')
+    # _ = plot.plot_heatmap((snn.W_out.clone().detach() * snn.neuron_types.clone().detach()).numpy(),
+    #                       ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
+    #                       exp_type='GD_test', fname='plot_heatmap_W_out_initial.png')
 
     optim_params = list(snn.parameters())
     optimiser = optim_class(optim_params, lr=learn_rate)
@@ -125,11 +139,13 @@ for random_seed in range(start_seed, start_seed+num_seeds):
         elif lfn == 'frd':
             loss = spike_metrics.firing_rate_distance(model_spikes=spikes, target_spikes=target_spikes)
         elif lfn == 'vrd':
-            loss = spike_metrics.van_rossum_dist(spikes=spikes, target_spikes=target_spikes, tau=50.0)
+            loss = spike_metrics.van_rossum_dist(spikes=spikes, target_spikes=target_spikes, tau=tau_vr)
         elif lfn == 'frdvrd':
             frd_loss = spike_metrics.firing_rate_distance(model_spikes=spikes, target_spikes=target_spikes)
-            vrd_loss = spike_metrics.van_rossum_dist(spikes=spikes, target_spikes=target_spikes, tau=50.0)
+            vrd_loss = spike_metrics.van_rossum_dist(spikes=spikes, target_spikes=target_spikes, tau=tau_vr)
             loss = frd_loss + vrd_loss
+        elif lfn == 'custom':
+            loss = spike_metrics.correlation_metric_distance(spikes, target_spikes, bin_size=100)
         else:
             raise NotImplementedError()
 
@@ -147,7 +163,7 @@ for random_seed in range(start_seed, start_seed+num_seeds):
                                                 exp_type='GD_test', title='Test {} spike trains'.format(snn.__class__.__name__),
                                                 legend=['Initial', 'Target'], fname='spike_trains_train_iter_{}.png'.format(i))
             fig_vs = plot.plot_neuron(vs.detach().data, uuid=snn.__class__.__name__ + '/{}'.format(timestamp), exp_type='GD_test', fname='membrane_pots_train_i_{}.png'.format(i))
-            fig_heatmap = plot.plot_heatmap(snn.w.detach().numpy() / 10., ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
+            fig_heatmap = plot.plot_heatmap((snn.w.clone().detach() * snn.neuron_types.clone().detach()).numpy() / 5., ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
                                    exp_type='GD_test', fname='plot_heatmap_W_train_i_{}.png'.format(i))
 
             # writer.add_scalars('training_loss', { 'losses': torch.tensor(losses[prev_write_index:]) }, i)
@@ -155,7 +171,7 @@ for random_seed in range(start_seed, start_seed+num_seeds):
             #     writer.add_scalar('training_loss', scalar_value=losses[prev_write_index+loss_i], global_step=prev_write_index+loss_i)
             # prev_write_index = i
 
-            weights.append(snn.w.clone().detach().flatten().numpy())
+            weights.append((snn.w.clone().detach() * snn.neuron_types.clone().detach() / 5.).flatten().numpy())
             # weights.append(np.mean(snn.w.clone().detach().numpy(), axis=1))
 
             for p_i, param in enumerate(list(snn.parameters())):
@@ -181,8 +197,13 @@ for random_seed in range(start_seed, start_seed+num_seeds):
                                         exp_type='GD_test', title='Test {} spike trains'.format(snn.__class__.__name__),
                                         legend=['Fitted', 'Target'])
 
-    _ = plot.plot_heatmap(snn.w.detach().numpy(), ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__+'/{}'.format(timestamp),
+    _ = plot.plot_heatmap((snn.w.clone().detach() * snn.neuron_types.clone().detach()).numpy() / 5., ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__+'/{}'.format(timestamp),
                           exp_type='GD_test', fname='plot_heatmap_W_after_training.png')
+
+    _ = plot.plot_heatmap((snn.W_in.clone().detach() * snn.neuron_types.clone().detach()).numpy(), ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__+'/{}'.format(timestamp),
+                          exp_type='GD_test', fname='plot_heatmap_W_in_after_training.png')
+    # _ = plot.plot_heatmap((snn.W_out.clone().detach() * snn.neuron_types.clone().detach()).numpy(), ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__+'/{}'.format(timestamp),
+    #                       exp_type='GD_test', fname='plot_heatmap_W_out_after_training.png')
 
     hard_thresh_spikes_sum = torch.round(spikes).sum()
     print('spikes sum: {}'.format(hard_thresh_spikes_sum))

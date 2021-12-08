@@ -13,7 +13,7 @@ input_types = [1, 1, 1, 1]
 t = 1200
 num_steps = 100
 
-prev_timestamp = '12-03_13-26-09-778'
+# prev_timestamp = '12-03_13-26-09-778'
 # fname = 'snn_model_target_GD_test'
 # load_data = torch.load(IO.PATH + Izhikevich.__name__ + '/' + prev_timestamp + '/' + fname + IO.fname_ext)
 # snn_target = load_data['model']
@@ -30,11 +30,14 @@ other_parameters['N'] = snn_target.N
 #                      inputs=current_inputs.clone().detach())
 # parameter_init_intervals = {'a': [0.02, 0.05], 'b': [0.25, 0.27], 'c': [-65., -55.], 'd': [4., 8.], 'R_I': [40., 50.],
 #                                 'tau_s': [2., 3.5]}
-plot_param_landscape(Izhikevich, [0.01, 0.2], [0.15, 0.35], 'a', 'b', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach())
-plot_param_landscape(Izhikevich, [0.01, 0.2], [-70., -40.], 'a', 'c', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach())
-plot_param_landscape(Izhikevich, [0.15, 0.35], [-70., -40.], 'b', 'c', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach())
-plot_param_landscape(Izhikevich, [0.15, 0.35], [1., 10.], 'b', 'd', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach())
-plot_param_landscape(Izhikevich, [0.15, 0.35], [35., 60.], 'b', 'R_I', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach())
+plot_param_landscape(Izhikevich, [0.01, 0.2], [0.15, 0.35], 'a', 'b', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='non_transposed_nt')
+plot_param_landscape(Izhikevich, [0.01, 0.2], [-70., -40.], 'a', 'c', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='non_transposed_nt')
+plot_param_landscape(Izhikevich, [0.15, 0.35], [-70., -40.], 'b', 'c', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='non_transposed_nt')
+plot_param_landscape(Izhikevich, [0.15, 0.35], [1., 10.], 'b', 'd', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='non_transposed_nt')
+plot_param_landscape(Izhikevich, [0.15, 0.35], [35., 60.], 'b', 'R_I', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='non_transposed_nt')
+
+# plot_param_landscape(Izhikevich, [0., 1.], [-1., 0.], 'w_excit', 'w_inhib', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach())
+
 # plot_param_landscape(Izhikevich, [0.01, 1.], [1., 20.], 'tau_m', 'tau_s', other_parameters, target_spikes, num_steps=num_steps,
 #                      inputs=current_inputs.clone().detach())
 # plot_param_landscape(Izhikevich, [0.01, 1.], [1., 20.], 'E_L', 'tau_m', other_parameters, target_spikes, num_steps=num_steps,

@@ -6,7 +6,7 @@ import plot
 import spike_metrics
 
 
-def plot_param_landscape(model_class, p1_interval, p2_interval, p1_name, p2_name, other_parameters, target_spikes,  num_steps, inputs):
+def plot_param_landscape(model_class, p1_interval, p2_interval, p1_name, p2_name, other_parameters, target_spikes,  num_steps, inputs, fname_addition=''):
     all_parameters = other_parameters
 
     num_steps_i = num_steps; num_steps_j = num_steps
@@ -39,6 +39,6 @@ def plot_param_landscape(model_class, p1_interval, p2_interval, p1_name, p2_name
             p2s.append(cur_p2)
 
     plot.plot_parameter_landscape(p1s, p2s, p1_name, p2_name, summary_statistic=losses, statistic_name='loss',
-                                  exp_type='param_landscape', uuid='test', fname='test_landscape_{}_{}_losses.png'.format(p1_name, p2_name))
+                                  exp_type='param_landscape', uuid='test', fname='test_landscape_{}_{}_losses_{}.png'.format(p1_name, p2_name, fname_addition))
     plot.plot_parameter_landscape(p1s, p2s, p1_name, p2_name, summary_statistic=avg_rates, statistic_name='rate',
-                                  exp_type='param_landscape', uuid='test', fname='test_landscape_{}_{}_rates.png'.format(p1_name, p2_name))
+                                  exp_type='param_landscape', uuid='test', fname='test_landscape_{}_{}_rates_{}.png'.format(p1_name, p2_name, fname_addition))
