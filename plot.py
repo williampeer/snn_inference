@@ -925,7 +925,7 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_siz
     plt.close()
 
 
-def plot_heatmap(heat_mat, axes, exp_type, uuid, fname, target_coords=False, xticks=False, yticks=False):
+def plot_heatmap(heat_mat, axes, exp_type, uuid, fname, target_coords=False, xticks=False, yticks=False, v_min=0, v_max=1):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -939,7 +939,7 @@ def plot_heatmap(heat_mat, axes, exp_type, uuid, fname, target_coords=False, xti
                 heat_mat[row_i][col_i] = 0.
 
     fig = plt.figure()
-    im = plt.imshow(heat_mat, cmap="PuOr", vmin=0, vmax=1)
+    im = plt.imshow(heat_mat, cmap="PuOr", vmin=v_min, vmax=v_max)
     cbar = plt.colorbar(im)
     cbar.set_label("loss")
     ticks_fmt = lambda x: float('{:.2f}'.format(x))

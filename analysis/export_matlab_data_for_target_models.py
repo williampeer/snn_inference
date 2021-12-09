@@ -4,16 +4,12 @@ import sys
 import numpy as np
 import torch
 
-from TargetModels import TargetModels
-from TargetModels.TargetModels import lif_continuous_ensembles_model_dales_compliant, \
-    lif_r_continuous_ensembles_model_dales_compliant, lif_r_asc_continuous_ensembles_model_dales_compliant, \
-    glif_continuous_ensembles_model_dales_compliant
 from data_util import prefix, path
 from spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
 def main(argv):
-    num_neurons = 3
+    num_neurons = 4
     duration = 2 * 60 * 1000
 
     print('Argument List:', str(argv))
@@ -29,12 +25,7 @@ def main(argv):
         elif opt in ("-N", "--num-neurons"):
             num_neurons = int(args[i])
 
-    for m_fn in [
-                # lif_continuous_ensembles_model_dales_compliant,
-                 lif_r_continuous_ensembles_model_dales_compliant,
-                 # lif_asc_continuous_ensembles_model_dales_compliant,
-                 lif_r_asc_continuous_ensembles_model_dales_compliant,
-                 glif_continuous_ensembles_model_dales_compliant]:
+    for m_fn in []:
 
         for f_i in range(3, 7):
         # for f_i in range(42, 43):

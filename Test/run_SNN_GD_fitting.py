@@ -11,9 +11,7 @@ import experiments
 import model_util
 import plot
 import spike_metrics
-from Models.GLIF import GLIF
 from Models.LIF import LIF
-from Models.microGIF import microGIF
 from TargetModels import TargetModelsBestEffort
 from experiments import release_computational_graph
 
@@ -27,6 +25,7 @@ num_seeds = 1
 
 # prev_timestamp = '12-09_11-12-47-541'  # GLIF
 # prev_timestamp = '12-09_11-49-59-999'  # LIF
+target_model_timestamps = []
 
 for random_seed in range(start_seed, start_seed+num_seeds):
     torch.manual_seed(random_seed)

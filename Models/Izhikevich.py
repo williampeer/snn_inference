@@ -7,7 +7,7 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class Izhikevich(nn.Module):
-    free_parameters = ['w', 'a', 'b', 'c', 'd', 'tau_m', 'tau_s']
+    free_parameters = ['w', 'a', 'b', 'c', 'd', 'tau_s']
     parameter_init_intervals = {'a': [0.02, 0.05], 'b': [0.25, 0.25], 'c': [-62., -58.], 'd': [4., 8.], 'tau_s': [2., 3.5]}
 
     def __init__(self, parameters, N=4, w_mean=0.6, w_var=0.15, #):
