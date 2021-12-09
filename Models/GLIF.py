@@ -13,8 +13,8 @@ class GLIF(nn.Module):
                                 'b_v': [0.25, 0.35], 'theta_inf': [-10., -8.], 'delta_V': [8., 14.],
                                 'tau_s': [3., 4.]}
 
-    def __init__(self, parameters, N=12, w_mean=0.6, w_var=0.25,
-                 neuron_types=[1, -1]):
+    def __init__(self, parameters, N=4, w_mean=0.6, w_var=0.25,
+                 neuron_types=[1, 1, -1, -1]):
         super(GLIF, self).__init__()
 
         if parameters is not None:
@@ -75,8 +75,6 @@ class GLIF(nn.Module):
         # self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         self.neuron_types = nt * torch.ones((self.N, self.N))
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
-        self.W_in = nn.Parameter(FT(torch.rand((N, N)).clamp(-1., 1.)), requires_grad=True)
-        self.W_out = nn.Parameter(FT(torch.rand((N, N)).clamp(-1., 1.)), requires_grad=True)
 
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
         self.tau_m = nn.Parameter(FT(tau_m).clamp(1.5, 8.), requires_grad=True)
@@ -106,9 +104,9 @@ class GLIF(nn.Module):
         self.I_additive = self.I_additive.clone().detach()
 
     def register_backward_clamp_hooks(self):
-        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -80., -35., self.E_L))
+        self.E_L.register_hook(lambda grad: static_clamp_for(grad, -70., -40., self.E_L))
         self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 1.5, 8., self.tau_m))
-        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 12., self.tau_s))
+        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 10., self.tau_s))
         self.G.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.G))
         self.f_v.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_v))
         self.f_I.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.99, self.f_I))
@@ -125,8 +123,6 @@ class GLIF(nn.Module):
         params_dict = {}
         # parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'tau_s']
         params_dict['w'] = self.w.data
-        params_dict['W_in'] = self.W_in.data
-        params_dict['W_out'] = self.W_out.data
         params_dict['E_L'] = self.E_L.data
         params_dict['tau_m'] = self.tau_m.data
         params_dict['tau_s'] = self.tau_s.data

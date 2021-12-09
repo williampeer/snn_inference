@@ -86,6 +86,15 @@ def strong_sine_modulated_white_noise(t, N, neurons_coeff):
     return ret
 
 
+def sine_modulated_input(input):
+    t = input.shape[0]
+    arange = torch.reshape(torch.arange(0, t), (t, 1))
+    period_ms = t/8
+    period_rads = (np.pi / period_ms)
+    sine_inputs = torch.sin(input * arange * period_rads)
+    return sine_inputs
+
+
 def sine_input(t, N, neurons_coeff, period=1200.):
     # if neurons_coeff is None:
     #     neurons_coeff = torch.cat([T(int(N / 2) * [0.]), T(int(N/4) * [0.25]), T(int(N/4) * [0.1])])
@@ -136,22 +145,6 @@ def get_interesting_inputs(t, N):
     for _ in range(N - 2):
         current_inputs = torch.vstack([current_inputs, torch.rand((1, t)).clamp(0., 1.)])
     return current_inputs.T
-
-
-def generate_composite_input_of_white_noise_modulated_sine_waves(t, A_coeffs, phase_shifts, input_types):
-    all_inputs = white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeffs[-1], phase_shifts=phase_shifts[-1])
-    for in_i in range(1, len(input_types)):
-        if input_types[in_i] == 2:
-            white_noise = 0.1 * torch.rand((t,))
-            input_i = white_noise
-        elif input_types[in_i] == 1:
-            input_i = white_noise_sum_of_sinusoids(t=t, A_coeff=A_coeffs[-1], phase_shifts=phase_shifts[-1])
-            A_coeffs.append(torch.randn((4,)))
-            phase_shifts.append(phase_shifts[-1] + torch.randn((4,)))
-        else:
-            raise NotImplementedError()
-        all_inputs = torch.vstack([all_inputs, input_i])
-    return all_inputs.T
 
 # =============================
 

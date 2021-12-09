@@ -39,7 +39,9 @@ def white_noise_sum_of_sinusoids(t=120, period_ms=40, A_coeff = torch.rand((4,))
     period_rads = (numpy.pi / period_ms)
     white_noise = torch.rand((t, 1))
     arange = torch.reshape(torch.arange(0, t), (t, 1))
-    return (A_coeff * torch.sin(phase_shifts + period_rads * (white_noise+arange))).sum(dim=1)
+    N_dim_sum = (A_coeff * torch.sin(phase_shifts + period_rads * (white_noise+arange))).sum(dim=1)
+    normalised_sum = N_dim_sum / torch.max(N_dim_sum)
+    return normalised_sum
 
 # low-pass filter
 def auto_encode_input(inputs, tau_filter=20.):

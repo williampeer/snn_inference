@@ -939,7 +939,7 @@ def plot_heatmap(heat_mat, axes, exp_type, uuid, fname, target_coords=False, xti
                 heat_mat[row_i][col_i] = 0.
 
     fig = plt.figure()
-    im = plt.imshow(heat_mat, cmap="PuOr", vmin=-1., vmax=1)
+    im = plt.imshow(heat_mat, cmap="PuOr", vmin=0, vmax=1)
     cbar = plt.colorbar(im)
     cbar.set_label("loss")
     ticks_fmt = lambda x: float('{:.2f}'.format(x))

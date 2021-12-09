@@ -7,11 +7,10 @@ from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
 class Izhikevich(nn.Module):
-    free_parameters = ['w', 'a', 'b', 'c', 'd', 'R_I', 'tau_s']
-    parameter_init_intervals = {'a': [0.02, 0.05], 'b': [0.25, 0.27], 'c': [-65., -55.], 'd': [4., 8.], 'R_I': [40., 50.],
-                                'tau_s': [2., 3.5]}
+    free_parameters = ['w', 'a', 'b', 'c', 'd', 'tau_m', 'tau_s']
+    parameter_init_intervals = {'a': [0.02, 0.05], 'b': [0.25, 0.25], 'c': [-62., -58.], 'd': [4., 8.], 'tau_s': [2., 3.5]}
 
-    def __init__(self, parameters, N=4, w_mean=0.5, w_var=0.25, #):
+    def __init__(self, parameters, N=4, w_mean=0.6, w_var=0.15, #):
                  neuron_types=T([1., 1., -1., -1.])):
         super(Izhikevich, self).__init__()
         # self.device = device
@@ -36,8 +35,6 @@ class Izhikevich(nn.Module):
                     c = FT(torch.ones((N,)) * parameters[key])
                 elif key == 'd':
                     d = FT(torch.ones((N,)) * parameters[key])
-                elif key == 'R_I':
-                    R_I = FT(torch.ones((N,)) * parameters[key])
 
         __constants__ = ['spike_threshold', 'N']
         self.spike_threshold = T(30.)
@@ -67,14 +64,12 @@ class Izhikevich(nn.Module):
         self.c = nn.Parameter(FT(c), requires_grad=True)
         self.d = nn.Parameter(FT(d), requires_grad=True)
         self.tau_s = nn.Parameter(FT(tau_s), requires_grad=True)
-        self.R_I = nn.Parameter(FT(R_I), requires_grad=True)
 
         # self.parameter_names = ['w', 'a', 'b', 'c', 'd', '\\tau_g']
         # self.to(self.device)
         self.register_backward_clamp_hooks()
 
     def register_backward_clamp_hooks(self):
-        # self.R_I.register_hook(lambda grad: static_clamp_for(grad, 100., 150., self.R_I))
         self.a.register_hook(lambda grad: static_clamp_for(grad, 0.01, 0.2, self.a))
         self.b.register_hook(lambda grad: static_clamp_for(grad, 0.15, 0.35, self.b))
         self.c.register_hook(lambda grad: static_clamp_for(grad, -80., -40., self.c))
@@ -82,15 +77,6 @@ class Izhikevich(nn.Module):
         self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1.15, 3.5, self.tau_s))
 
         self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 2., self.w))
-
-        # # row per neuron
-        # for i in range(len(self.neuron_types)):
-        #     if self.neuron_types[i] == -1:
-        #         self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, -1., 0., self.w[i, :]))
-        #     elif self.neuron_types[i] == 1:
-        #         self.w[i, :].register_hook(lambda grad: static_clamp_for(grad, 0., 1., self.w[i, :]))
-        #     else:
-        #         raise NotImplementedError()
 
     def reset(self):
         for p in self.parameters():
@@ -115,8 +101,6 @@ class Izhikevich(nn.Module):
         params['c'] = self.c.data
         params['d'] = self.d.data
         params['tau_s'] = self.tau_s.data
-        params['R_I'] = self.R_I.data
-
         return params
 
     def forward(self, x_in):
@@ -126,26 +110,29 @@ class Izhikevich(nn.Module):
         I_ext = x_in
         I = I_syn + I_ext
 
-        dv = T(0.04) * torch.pow(self.v, 2) + T(5.) * self.v + T(140.) - self.u + I * self.R_I
+        dv = (T(0.04) * torch.pow(self.v, 2) + T(5.) * self.v + T(140.) - self.u + I + 0.1)
         v_next = self.v + dv
 
-        gating = v_next.clamp(0., 1.)
-        ds = (gating * dv.clamp(0., 1.) - self.s) / self.tau_s
-        self.s = self.s + ds
+        du = self.a * (self.b * self.v - self.u)
+        ds = -self.s / self.tau_s
+
+        # gating = v_next.clamp(0., 1.)
+        # ds = (gating * dv.clamp(0., 1.) - self.s) / self.tau_s
+        # self.s = self.s + ds
 
         # dg = - torch.div(self.s, self.tau_g)
-        du = torch.mul(torch.abs(self.a), torch.sub(torch.mul(torch.abs(self.b), self.v), self.u))
+        # du = torch.mul(torch.abs(self.a), torch.sub(torch.mul(torch.abs(self.b), self.v), self.u))
 
         # spiked = (v_next >= self.spike_threshold).float()
         # not_spiked = (spiked - 1.) / -1.  # not op.
         spiked = torch.where(v_next >= self.spike_threshold, T(1.), T(0.))
         not_spiked = torch.div(torch.sub(spiked, 1.), -1.)
+        soft_spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
 
         self.v = not_spiked * v_next + spiked * self.c
         self.u = not_spiked * (self.u + du) + spiked * self.d
         self.s = not_spiked * (self.s + ds) + spiked
 
-        soft_spiked = torch.sigmoid(torch.sub(v_next, self.spike_threshold))
         # return self.v, self.s
         return self.v, soft_spiked
         # return self.spiked

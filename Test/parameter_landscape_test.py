@@ -1,6 +1,5 @@
 import torch
 
-import PDF_metrics
 import model_util
 import plot
 import spike_metrics
@@ -29,8 +28,8 @@ def plot_param_landscape(model_class, p1_interval, p2_interval, p1_name, p2_name
             vs, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, inputs)
 
             # loss = PDF_metrics.poisson_nll(spike_probabilities=spike_probs, target_spikes=target_spikes, bin_size=100).clone().detach().numpy()
-            # loss = spike_metrics.firing_rate_distance(model_spikes=spikes, target_spikes=target_spikes).clone().detach().numpy()
-            loss = spike_metrics.van_rossum_dist(spikes, target_spikes, tau=50.).clone().detach().numpy()
+            loss = spike_metrics.firing_rate_distance(model_spikes=spikes, target_spikes=target_spikes).clone().detach().numpy()
+            # loss = spike_metrics.van_rossum_dist(spikes, target_spikes, tau=50.).clone().detach().numpy()
             losses.append(loss)
             mean_model_rate = spikes.sum(dim=0) * 1000. / spikes.shape[0]  # Hz
             mean_model_rate = torch.mean(mean_model_rate).detach().numpy()

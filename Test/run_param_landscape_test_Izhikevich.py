@@ -19,7 +19,9 @@ num_steps = 100
 # snn_target = load_data['model']
 params_model = experiments.draw_from_uniform(Izhikevich.parameter_init_intervals, N=4)
 snn_target = Izhikevich(parameters=params_model, N=4)
-current_inputs = experiments.generate_composite_input_of_white_noise_modulated_sine_waves(t, A_coeffs, phase_shifts, input_types)
+# current_inputs = experiments.generate_composite_input_of_white_noise_modulated_sine_waves(t, A_coeffs, phase_shifts, input_types)
+white_noise = torch.rand((1200, snn_target.N))
+current_inputs = white_noise
 target_vs, target_spikes = model_util.feed_inputs_sequentially_return_tuple(snn_target, current_inputs.clone().detach())
 
 # other_parameters = experiments.draw_from_uniform(microGIF.parameter_init_intervals, N=snn_target.N)
@@ -30,11 +32,10 @@ other_parameters['N'] = snn_target.N
 #                      inputs=current_inputs.clone().detach())
 # parameter_init_intervals = {'a': [0.02, 0.05], 'b': [0.25, 0.27], 'c': [-65., -55.], 'd': [4., 8.], 'R_I': [40., 50.],
 #                                 'tau_s': [2., 3.5]}
-plot_param_landscape(Izhikevich, [0.01, 0.2], [0.15, 0.35], 'a', 'b', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='non_transposed_nt')
-plot_param_landscape(Izhikevich, [0.01, 0.2], [-70., -40.], 'a', 'c', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='non_transposed_nt')
-plot_param_landscape(Izhikevich, [0.15, 0.35], [-70., -40.], 'b', 'c', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='non_transposed_nt')
-plot_param_landscape(Izhikevich, [0.15, 0.35], [1., 10.], 'b', 'd', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='non_transposed_nt')
-plot_param_landscape(Izhikevich, [0.15, 0.35], [35., 60.], 'b', 'R_I', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='non_transposed_nt')
+plot_param_landscape(Izhikevich, [0.01, 0.2], [0.2, 0.3], 'a', 'b', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='white_noise')
+plot_param_landscape(Izhikevich, [0.01, 0.2], [-70., -40.], 'a', 'c', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='white_noise')
+plot_param_landscape(Izhikevich, [0.2, 0.3], [-70., -40.], 'b', 'c', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='white_noise')
+plot_param_landscape(Izhikevich, [0.15, 0.35], [1., 10.], 'b', 'd', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='white_noise')
 
 # plot_param_landscape(Izhikevich, [0., 1.], [-1., 0.], 'w_excit', 'w_inhib', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach())
 
