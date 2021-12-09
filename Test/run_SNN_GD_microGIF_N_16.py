@@ -33,8 +33,8 @@ for lfn_str in ['bernoulli_nll', 'poisson_nll']:
         timestamp = IO.dt_descriptor()
         # lfn_str = 'bernoulli_nll'
         lfn_str = 'poisson_nll'
-        learn_rate = 0.01
-        num_train_iter = 100
+        learn_rate = 0.005
+        num_train_iter = 200
         plot_every = round(num_train_iter / 20)
 
         # neurons_coeff = torch.cat([T(pop_sizes[0] * [0.]), T(pop_sizes[1] * [0.]), T(pop_sizes[2] * [0.25]), T(pop_sizes[3] * [0.1])])
