@@ -1,3 +1,4 @@
+import os
 import sys
 
 import numpy as np
@@ -13,16 +14,18 @@ input_types = [1, 1, 1, 1]
 t = 1200
 num_steps = 100
 
-GT_model_by_class = { 'LIF': '',
-                      'GLIF': '',
-                      'microGIF': '' }
+GT_model_by_class = { 'LIF': '12-09_11-49-59-999',
+                      'GLIF': '12-09_11-12-47-541',
+                      'microGIF': '12-09_14-56-20-319' }
 
 archive_path = '/home/william/repos/snn_inference/saved/plot_data/'
-model_type_dirs = []
-for mt_dir in model_type_dirs:
-    specific_plot_files = []
+GT_path = '/home/william/repos/snn_inference/Test/saved/'
+model_type_dirs = ['LIF', 'GLIF', 'microGIF']
+for mt_str in model_type_dirs:
+    mt_dir = 'test_{}'.format(mt_str)
+    specific_plot_files = os.listdir(archive_path + '/' + mt_dir)
     for sp_file in specific_plot_files:
-        load_data = torch.load(archive_path + mt_dir + sp_file)
+        load_data = torch.load(archive_path + mt_dir + '/' + sp_file)
         save_data = load_data['plot_data']
         # data = {'p1s': p1s, 'p2s': p2s, 'summary_statistic': summary_statistic,
         #             'p1_name': p1_name, 'p2_name': p2_name, 'statistic_name': statistic_name,
@@ -31,7 +34,7 @@ for mt_dir in model_type_dirs:
         N_dim = int(np.sqrt(len(save_data['p1s'])))  # assuming equal length of p1s and p2s
         heat_mat = np.zeros((N_dim, N_dim))
         summary_norm_const = np.max(save_data['summary_statistic'])
-        p1_last = save_data['p1s'][-1]
+        p1_last = save_data['p1s'][-1]  # TODO: Fix E_L: [-70., -40] remapping here. dividing by -40 now, should divide by -70 or something..
         p2_last = save_data['p2s'][-1]
         for i in range(len(save_data['p1s'])):
             # x_ind = int(save_data['p1s'][i] / p1_last)
@@ -43,8 +46,9 @@ for mt_dir in model_type_dirs:
         # ---------------- target data feature request from Arno ------------------
         # prev_timestamp = '11-16_11-21-13-903'
         fname = 'snn_model_target_GD_test'
-        load_data = torch.load(IO.PATH + microGIF.__name__ + '/' + prev_timestamp + '/' + fname + IO.fname_ext)
-        snn_target = load_data['model']
+        GT_euid = GT_model_by_class[mt_str]
+        load_data_target = torch.load(GT_path + mt_str + '/' + GT_euid + '/' + fname + IO.fname_ext)
+        snn_target = load_data_target['model']
         target_params = snn_target.get_parameters()
         tar_p1 = target_params[save_data['p1_name']].numpy()
         tar_p2 = target_params[save_data['p2_name']].numpy()
@@ -60,7 +64,7 @@ for mt_dir in model_type_dirs:
 
         axes = ['${}$'.format(save_data['p1_name']), '${}$'.format(save_data['p2_name'])]
         exp_type = 'test'; uuid = 'export_p_landscape_2d'
-        plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname='test_export_2d_heatmap_{}_{}.png'.format(save_data['p1_name'], save_data['p2_name']),
+        plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname=mt_str+'/test_export_2d_heatmap_{}_{}.png'.format(save_data['p1_name'], save_data['p2_name']),
                           target_coords=target_coords, xticks=xticks, yticks=yticks)
 
 sys.exit()
