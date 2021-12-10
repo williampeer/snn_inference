@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import torch
 
-from data_util import prefix, path
+from data_util import prefix, target_data_path
 from spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
@@ -37,7 +37,7 @@ def main(argv):
 
             cur_fname = 'target_model_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.name(), num_neurons, f_i, duration)
             # cur_fname = 'target_model_sbi_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.name(), num_neurons, random_seed, duration)
-            save_file_name = prefix + path + cur_fname + '.mat'
+            save_file_name = prefix + target_data_path + cur_fname + '.mat'
             # if not os.path.exists(save_file_name):
             simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=duration, exp_num=f_i,
                                                     model_name=snn.name(), fname=cur_fname)

@@ -2,11 +2,14 @@ import scipy.io as sio
 import numpy as np
 import torch
 
+import IO
 
 prefix = '/home/william/'  # Ubuntu
 # prefix = '/Users/william/'  # OS X
 # prefix = '/home/williampeer/'  # server
-path = 'data/target_data/'
+target_data_path = 'data/target_data/'
+sleep_data_path = 'data/sleep_data/'
+
 matlab_export = 'matlab_export/'
 
 
@@ -45,13 +48,9 @@ def save_spiketrain_in_sparse_matlab_format(fname, spike_indices, spike_times):
     exp_data['res'] = np.reshape(spike_times, (-1, 1))
     mat_data = {'DATA': exp_data}
 
-    # sio.savemat(file_name=prefix + path + matlab_export + fname, mdict=mat_data)
-    # sio.savemat(file_name='/Users/william/repos/pnmf-fork/data/' + fname, mdict=mat_data)
-    # dir_path = ''
-    # path_parts = (prefix + path + fname).split('/')
-    # for p_i in range(len(path_parts)-1):
-    #     dir_path = dir_path + '/' + path_parts[p_i]
-    sio.savemat(file_name=prefix + path + fname, mdict=mat_data)
+    IO.makedir_if_not_exists(prefix + target_data_path + matlab_export)
+    sio.savemat(file_name=prefix + target_data_path + matlab_export + fname, mdict=mat_data)
+    # sio.savemat(file_name=prefix + path + fname, mdict=mat_data)
 
 
 def get_spike_train_matrix(index_last_step, advance_by_t_steps, spike_times, spike_indices, node_numbers):

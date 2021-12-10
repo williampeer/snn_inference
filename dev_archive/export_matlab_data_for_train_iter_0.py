@@ -3,7 +3,7 @@ import sys
 
 import torch
 
-from data_util import prefix, path
+from data_util import prefix, target_data_path
 from spike_train_matlab_export import load_and_export_sim_data
 
 
@@ -29,7 +29,7 @@ def main(argv):
                 model_type = f.split('_exp_num_')[0]
                 exp_num = int(f.split('_exp_num_')[1].split('.pt')[0])
                 cur_fname = 'spikes_{}_{}_exp_num_{}'.format(model_type, id, exp_num)
-                save_file_name = prefix + path + cur_fname + '.mat'
+                save_file_name = prefix + target_data_path + cur_fname + '.mat'
                 if not os.path.exists(save_file_name):
                     load_and_export_sim_data(full_folder_path + f, fname=cur_fname)
                 else:

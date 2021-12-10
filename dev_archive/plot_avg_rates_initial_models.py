@@ -5,7 +5,7 @@ import plot
 import stats
 from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
 from TargetModels import TargetModels
-from data_util import prefix, path
+from data_util import prefix, target_data_path
 from experiments import sine_modulated_white_noise_input, draw_from_uniform
 from model_util import generate_model_data
 
@@ -75,7 +75,7 @@ for exp_i in range(4):
 
     exp_type = 'export'
     cur_fname = 'initial_spikes_LIF_R_exp_num_{}'.format(exp_i)
-    save_file_name = prefix + path + cur_fname + '.mat'
+    save_file_name = prefix + target_data_path + cur_fname + '.mat'
 
     if not experiment_averages.__contains__(model_type):
         experiment_averages[model_type] = {

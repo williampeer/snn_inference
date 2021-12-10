@@ -6,22 +6,13 @@ import torch
 
 from IO import makedir_if_not_exists
 from analysis.spike_train_matlab_export import load_and_export_sim_data
-from data_util import prefix, path
+from data_util import prefix, target_data_path
 
 
 def main(argv):
     print('Argument List:', str(argv))
     offset = 42
 
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1607/saved/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_2607/saved/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_0208_LIF_R/archive/saved/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1108_full_some_diverged/archive/saved/'  # Done
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/'  # Done
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/'  # Done
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1809_q/archive/saved/'  # Done
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_2009_tmp/archive/saved/'  # Done
     experiments_path = '/home/william/repos/archives_snn_inference/archive_osx_2009/archive/saved/'  # Done
     # experiments_path = '/media/william/p6/archives_snn_inference/PLACEHOLDER/saved/'
 
@@ -74,13 +65,13 @@ def main(argv):
                     lfn = loss_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
                     exp_type = loss_data['plot_data']['exp_type']
 
-                    # exp_type = 'DataDriven'
-                    cur_fname = 'spikes_{}_{}_{}_{}_{}_{}_exp_num_{}_60s'.format(exp_type, model_type, optimiser, lfn, lr, id, exp_num).replace('=', '_')
-                    save_file_name = prefix + path + archive_name + cur_fname + '.mat'
+                    # cur_fname = 'spikes_{}_{}_{}_{}_{}_{}_exp_num_{}_60s'.format(exp_type, model_type, optimiser, lfn, lr, id, exp_num).replace('=', '_')
+                    cur_fname = 'nuovo_spikes_mt_{}_et_{}_seed_{}'.format(model_type, exp_type, exp_num)
+                    save_file_name = prefix + target_data_path + archive_name + cur_fname + '.mat'
 
                     # if lfn == 'FIRING_RATE_DIST':
                     print('checking: {}'.format(save_file_name))
-                    if not os.path.exists(prefix + path + archive_name) or not os.path.exists(save_file_name):
+                    if not os.path.exists(prefix + target_data_path + archive_name) or not os.path.exists(save_file_name):
                         makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
                         load_and_export_sim_data(full_folder_path + f, fname=archive_name + cur_fname)
                     else:

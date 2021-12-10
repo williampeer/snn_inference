@@ -3,8 +3,9 @@ import torch
 
 import experiments
 from IO import save_model_params
+from Models.microGIF import microGIF
 from data_util import save_spiketrain_in_sparse_matlab_format, convert_to_sparse_vectors
-from model_util import generate_model_data
+from model_util import feed_inputs_sequentially_return_tuple, feed_inputs_sequentially_return_args
 from plot import plot_spike_train
 
 
@@ -26,10 +27,10 @@ def load_and_export_sim_data(model_path, fname=False, t = 60 * 1000):
 
     print('Loaded model.')
 
-    simulate_and_save_model_spike_train(model, poisson_rate, t, exp_num, cur_model_name, fname=fname)
+    simulate_and_save_model_spike_train(model, t, exp_num, cur_model_name, fname=fname)
 
 
-def simulate_and_save_model_spike_train(model, poisson_rate, t, exp_num, model_name, fname=False):
+def simulate_and_save_model_spike_train(model, t, exp_num, model_name, fname=False):
     interval_size = 6000
     interval_range = int(t / interval_size)
     assert interval_range > 0, "t must be greater than the interval size, {}. t={}".format(interval_size, t)
@@ -39,24 +40,24 @@ def simulate_and_save_model_spike_train(model, poisson_rate, t, exp_num, model_n
     input_indices = np.array([], dtype='int8')
     input_times = np.array([], dtype='float32')
     print('Simulating data..')
-    spike_train = None
+    spikes = None
     for t_i in range(interval_range):
         model.reset_hidden_state()
         # spiketrain = generate_synthetic_data(model, poisson_rate, t=interval_size)
         t = interval_size
         white_noise = torch.rand((t, model.N))
-        gen_input = experiments.sine_modulated_input(white_noise)
-        gen_spiketrain = generate_model_data(model=model, inputs=gen_input)
+        inputs = experiments.sine_modulated_input(white_noise)
+        if model.__class__ is microGIF:
+            _, spikes, _ = feed_inputs_sequentially_return_args(model=model, inputs=inputs.clone().detach())
+        else:
+            _, spikes = feed_inputs_sequentially_return_tuple(model=model, inputs=inputs.clone().detach())
         # for gen spiketrain this may be thresholded to binary values:
-        gen_spiketrain = torch.round(gen_spiketrain)
-
-        inputs = gen_input.clone().detach()
-        spike_train = gen_spiketrain.clone().detach()
+        spikes = torch.round(spikes).clone().detach()
 
         cur_input_indices, cur_input_times = convert_to_sparse_vectors(inputs, t_offset=t_i * interval_size)
         input_indices = np.append(input_indices, cur_input_indices)
         input_times = np.append(input_times, cur_input_times)
-        cur_spike_indices, cur_spike_times = convert_to_sparse_vectors(spike_train, t_offset=t_i * interval_size)
+        cur_spike_indices, cur_spike_times = convert_to_sparse_vectors(spikes, t_offset=t_i * interval_size)
         spike_indices = np.append(spike_indices, cur_spike_indices)
         spike_times = np.append(spike_times, cur_spike_times)
         print('{} seconds ({:.2f} min) simulated.'.format(interval_size * (t_i + 1) / 1000.,
@@ -70,10 +71,12 @@ def simulate_and_save_model_spike_train(model, poisson_rate, t, exp_num, model_n
     save_fname_output = 'fitted_spikes_{}_{}_{}_t_{}'.format(model_name, id, exp_num, t).replace('.', '_')
     if not fname:
         fname = save_fname_output
-    if spike_train is not None:
-        plot_spike_train(spike_train, 'Plot imported SNN', 'plot_imported_model', fname=fname)
+    if spikes is not None:
+        plot_spike_train(spikes, 'Plot imported SNN', 'plot_imported_model', fname=fname)
 
     # save_fname_output = 'fitted_spike_train_{}_{}_{}{}_exp_num_{}'.format(cur_model_descr, optim, loss_fn, lr, exp_num).replace('.', '_') + '.mat'
     # save_fname_output = 'fitted_spike_train_{}_id_{}_exp_no_{}'.format(cur_model_name, id, exp_num).replace('.', '_') + '.mat'
+
+    # fname = model.__class__.__name__ + '/' + fname
     save_spiketrain_in_sparse_matlab_format(fname=fname + '.mat', spike_indices=spike_indices, spike_times=spike_times)
     save_model_params(model, fname=fname.replace('.mat', '_params'))

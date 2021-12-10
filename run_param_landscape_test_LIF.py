@@ -15,7 +15,7 @@ num_steps = 100
 
 prev_timestamp = '12-09_11-49-59-999'
 fname = 'snn_model_target_GD_test'
-load_data = torch.load(IO.PATH + LIF.__name__ + '/' + prev_timestamp + '/' + fname + IO.fname_ext)
+load_data = torch.load('./Test/' + IO.PATH + LIF.__name__ + '/' + prev_timestamp + '/' + fname + IO.fname_ext)
 snn_target = load_data['model']
 # params_model = experiments.draw_from_uniform(GLIF.parameter_init_intervals, N=4)
 # snn_target = TargetModelsBestEffort.glif(random_seed=42, N=4)

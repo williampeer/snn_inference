@@ -86,7 +86,7 @@ def main():
                 torch.manual_seed(tar_seed)
                 np.random.seed(tar_seed)
 
-                if not os.path.exists(data_util.prefix + data_util.path + save_fname + '_sample_N_1.mat'):
+                if not os.path.exists(data_util.prefix + data_util.target_data_path + save_fname + '_sample_N_1.mat'):
                     # samples = data_arr['samples']
                     observation = data_arr['observation']
                     # points = data_arr['tar_parameters']

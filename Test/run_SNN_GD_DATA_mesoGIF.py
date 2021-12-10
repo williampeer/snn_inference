@@ -7,44 +7,33 @@ from torch.utils.tensorboard import SummaryWriter
 import IO
 import Log
 import PDF_metrics
+import data_util
 import experiments
 import model_util
 import plot
-import spike_metrics
-from Models.GLIF import GLIF
-from Models.LIF import LIF
-from TargetModels import TargetModelsBestEffort
+from Models.microGIF import microGIF
 from experiments import release_computational_graph
 
-# prev_timestamp = '11-12_13-27-54-034'
-# prev_timestamp = '11-16_10-50-30-238'
-# prev_timestamp = '11-16_11-03-55-161'
-# prev_timestamp = '11-16_11-12-37-827'
-# prev_timestamp = '11-16_11-21-13-903'
 start_seed = 3
 num_seeds = 20
 
-tar_timestamp_GLIF = '12-09_11-12-47-541'  # GLIF
-tar_timestamp_LIF = '12-09_11-49-59-999'  # LIF
-# target_model_timestamps = [tar_timestamp_GLIF, tar_timestamp_LIF]
-target_model_timestamps = [tar_timestamp_LIF]
-# target_model_classes = [GLIF, LIF]
-target_model_classes = [LIF]
+# target_data_fname = 'GT_LIF_N_4_seed_3_duration_120000.mat'
+# target_data_path = data_util.prefix + data_util.target_data_path
 
-for tmt_i, tmt in enumerate(target_model_timestamps):
-    for lfn in ['frd', 'vrd']:
+target_data_path = data_util.prefix + data_util.sleep_data_path
+sleep_data_files = ['exp108.mat', 'exp109.mat', 'exp124.mat', 'exp126.mat', 'exp138.mat', 'exp146.mat', 'exp147.mat']
+
+# data_files = [target_data_fname]
+data_files = sleep_data_files
+for data_file in data_files:
+    node_indices, spike_times, spike_indices = data_util.load_sparse_data(target_data_path + data_file)
+
+    for lfn in ['bernoulli_nll', 'poisson_nll']:
         for random_seed in range(start_seed, start_seed+num_seeds):
             torch.manual_seed(random_seed)
             np.random.seed(random_seed)
-            # pop_sizes, snn = TargetModelMicroGIF.micro_gif_populations_model_full_size(random_seed=random_seed)
-            # pop_sizes, snn_target = get_low_dim_micro_GIF_transposed(random_seed=random_seed)
-            fname = 'snn_model_target_GD_test'
-            model_class = target_model_classes[tmt_i]
-            load_data = torch.load(IO.PATH + model_class.__name__ + '/' + tmt + '/' + fname + IO.fname_ext)
-            snn_target = load_data['model']
-            saved_target_losses = load_data['loss']
 
-            N = snn_target.N
+            N = 4
             t = 1200
             learn_rate = 0.001
             num_train_iter = 100
@@ -53,45 +42,32 @@ for tmt_i, tmt in enumerate(target_model_timestamps):
             tau_vr = 4.
             # optim_class = torch.optim.SGD
             optim_class = torch.optim.Adam
+            model_class = microGIF
             config_str = '$\\alpha={}$, lfn: {}, bin_size: {}, optim: {}'.format(learn_rate, lfn, bin_size, optim_class.__name__)
 
             timestamp = IO.dt_descriptor()
-            logger = Log.Logger('{}_GD_{}.txt'.format(model_class.__name__, timestamp))
+            logger = Log.Logger('{}_GD_{}.txt'.format('DATA', timestamp))
             writer = SummaryWriter('runs/' + timestamp)
+            # current_uuid = 'GT' + '/' + model_class.__name__ + '/' + timestamp
+            current_uuid = 'sleep_data' + '/' + model_class.__name__ + '/' + timestamp
 
             A_coeffs = [torch.randn((4,))]
             phase_shifts = [torch.rand((4,))]
             input_types = [1, 1, 1, 1]
 
-            white_noise = torch.rand((t, N))
-            assert white_noise.shape[0] > white_noise.shape[1]
-            current_inputs = experiments.sine_modulated_input(white_noise)
-            target_vs, target_spikes = model_util.feed_inputs_sequentially_return_tuple(snn_target, current_inputs)
-            target_spikes = target_spikes.clone().detach()
-            target_parameters = snn_target.state_dict()
+            next_step_i = 0
+            next_step_i, target_spikes = data_util.get_spike_train_matrix(next_step_i, t, spike_times, spike_indices, node_indices)
+            # target_spikes = target_spikes.clone().detach()
+            target_parameters = False
 
             params_model = experiments.draw_from_uniform(model_class.parameter_init_intervals, N)
-            snn = model_class(parameters=params_model, N=N, neuron_types=torch.tensor([1., 1., -1., -1.]))
+            snn = model_class(parameters=params_model, N=N)
 
             fig_W_init = plot.plot_heatmap((snn.w.clone().detach()), ['W_syn_col', 'W_row'],
-                                           uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
-                                           exp_type='GD_test', fname='plot_heatmap_W_initial.png')
+                                           uuid=current_uuid, exp_type='GD_test', fname='plot_heatmap_W_initial.png')
 
             optim_params = list(snn.parameters())
             optimiser = optim_class(optim_params, lr=learn_rate)
-
-            fig_inputs = plot.plot_neuron(current_inputs.detach().data, uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
-                                          exp_type='GD_test', fname='train_inputs.png')
-            fig_tar_vs = plot.plot_neuron(target_vs.detach().data, uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
-                                          exp_type='GD_test',
-                                          fname='membrane_pots_target.png')
-            tar_W_heatmap_fig = plot.plot_heatmap(snn_target.w.detach().numpy(), ['W_syn_col', 'W_row'],
-                                                  uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
-                                                  exp_type='GD_test', fname='plot_heatmap_W_target.png')
-
-            writer.add_figure('Training input', fig_inputs)
-            writer.add_figure('Target W heatmap', tar_W_heatmap_fig)
-            writer.add_figure('Target vs', fig_tar_vs)
 
             losses = []; prev_write_index = -1
             weights = []
@@ -103,25 +79,16 @@ for tmt_i, tmt in enumerate(target_model_timestamps):
                 optimiser.zero_grad()
 
                 white_noise = torch.rand((t, N))
-                current_inputs = experiments.sine_modulated_input(white_noise)
-                # spike_probs, spikes, vs = model_util.feed_inputs_sequentially_return_args(snn, current_inputs)
-                spike_probs = None
-                vs, spikes = model_util.feed_inputs_sequentially_return_tuple(snn, current_inputs)
+                current_inputs = white_noise
+                if (next_step_i+t)>spike_indices[-1]:
+                    next_step_i = 0
+                next_step_i, target_spikes = data_util.get_spike_train_matrix(next_step_i, t, spike_times, spike_indices, node_indices)
+                s_lambdas, spikes, vs = model_util.feed_inputs_sequentially_return_args(snn, current_inputs)
 
-                if lfn == PDF_metrics.PDF_LFN.POISSON:
-                    loss = PDF_metrics.poisson_nll(spike_probabilities=spike_probs, target_spikes=target_spikes, bin_size=bin_size)
-                elif lfn == PDF_metrics.PDF_LFN.BERNOULLI:
-                    loss = PDF_metrics.bernoulli_nll(spike_probabilities=spike_probs, target_spikes=target_spikes)
-                elif lfn == 'frd':
-                    loss = spike_metrics.firing_rate_distance(model_spikes=spikes, target_spikes=target_spikes)
-                elif lfn == 'vrd':
-                    loss = spike_metrics.van_rossum_dist(spikes=spikes, target_spikes=target_spikes, tau=tau_vr)
-                elif lfn == 'frdvrd':
-                    frd_loss = spike_metrics.firing_rate_distance(model_spikes=spikes, target_spikes=target_spikes)
-                    vrd_loss = spike_metrics.van_rossum_dist(spikes=spikes, target_spikes=target_spikes, tau=tau_vr)
-                    loss = frd_loss + vrd_loss
-                elif lfn == 'custom':
-                    loss = spike_metrics.correlation_metric_distance(spikes, target_spikes, bin_size=100)
+                if lfn == 'bernoulli_nll':
+                    loss = PDF_metrics.bernoulli_nll(spike_probabilities=s_lambdas, target_spikes=target_spikes)
+                elif lfn == 'poisson_nll':
+                    loss = PDF_metrics.poisson_nll(spike_probabilities=s_lambdas, target_spikes=target_spikes, bin_size=100)
                 else:
                     raise NotImplementedError()
 
@@ -135,11 +102,11 @@ for tmt_i, tmt in enumerate(target_model_timestamps):
                 writer.add_scalar('training_loss', scalar_value=loss_data, global_step=i)
 
                 if i == 0 or i % plot_every == 0 or i == num_train_iter:
-                    fig_spikes = plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
+                    fig_spikes = plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=current_uuid,
                                                         exp_type='GD_test', title='Test {} spike trains'.format(snn.__class__.__name__),
                                                         legend=['Initial', 'Target'], fname='spike_trains_train_iter_{}.png'.format(i))
-                    fig_vs = plot.plot_neuron(vs.detach().data, uuid=snn.__class__.__name__ + '/{}'.format(timestamp), exp_type='GD_test', fname='membrane_pots_train_i_{}.png'.format(i))
-                    fig_heatmap = plot.plot_heatmap(snn.w.clone().detach(), ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__ + '/{}'.format(timestamp),
+                    fig_vs = plot.plot_neuron(vs.detach().data, uuid=current_uuid, exp_type='GD_test', fname='membrane_pots_train_i_{}.png'.format(i))
+                    fig_heatmap = plot.plot_heatmap(snn.w.clone().detach(), ['W_syn_col', 'W_row'], uuid=current_uuid,
                                            exp_type='GD_test', fname='plot_heatmap_W_train_i_{}.png'.format(i))
 
                     weights.append((snn.w.clone().detach()).flatten().numpy())
@@ -160,15 +127,15 @@ for tmt_i, tmt in enumerate(target_model_timestamps):
                 release_computational_graph(snn, current_inputs)
                 loss = None; current_inputs = None
 
-            plot.plot_loss(losses, uuid=snn.__class__.__name__+'/{}'.format(timestamp), exp_type='GD_test',
+            plot.plot_loss(losses, uuid=current_uuid, exp_type='GD_test',
                            custom_title='Loss {}, $\\alpha$={}, {}, bin_size={}'.format(lfn, learn_rate, optimiser.__class__.__name__, bin_size),
                            fname='plot_loss_test'+IO.dt_descriptor())
 
-            plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=snn.__class__.__name__+'/{}'.format(timestamp),
+            plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=current_uuid,
                                                 exp_type='GD_test', title='Test {} spike trains'.format(snn.__class__.__name__),
                                                 legend=['Fitted', 'Target'])
 
-            _ = plot.plot_heatmap((snn.w.clone().detach()), ['W_syn_col', 'W_row'], uuid=snn.__class__.__name__+'/{}'.format(timestamp),
+            _ = plot.plot_heatmap((snn.w.clone().detach()), ['W_syn_col', 'W_row'], uuid=current_uuid,
                                   exp_type='GD_test', fname='plot_heatmap_W_after_training.png')
 
             hard_thresh_spikes_sum = torch.round(spikes).sum()
@@ -181,9 +148,9 @@ for tmt_i, tmt in enumerate(target_model_timestamps):
             print('=========avg. zero thresh rate: {}'.format(1000*zero_thresh_spikes_sum / (spikes.shape[1] * spikes.shape[0])))
 
             # 🍝 weights across iterations plot.
+            plot.plot_parameter_inference_trajectories_2d({'w': weights}, target_params=False,
             # plot.plot_parameter_inference_trajectories_2d({'w': weights}, target_params={'w': snn_target.w.detach().flatten().numpy() },
-            plot.plot_parameter_inference_trajectories_2d({'w': weights}, target_params={'w': snn_target.w.detach().flatten().numpy() },
-                                                          uuid=snn.__class__.__name__ + '/' + timestamp,
+                                                          uuid=current_uuid,
                                                           exp_type='GD_test',
                                                           param_names=['w'],
                                                           custom_title='Test weights plot',
@@ -191,7 +158,7 @@ for tmt_i, tmt in enumerate(target_model_timestamps):
 
             parameter_names = snn.free_parameters
             plot.plot_parameter_inference_trajectories_2d(model_parameter_trajectories,
-                                                          uuid=snn.__class__.__name__ + '/' + timestamp,
+                                                          uuid=current_uuid,
                                                           exp_type='GD_test',
                                                           target_params=target_parameters,
                                                           param_names=parameter_names,
@@ -199,7 +166,7 @@ for tmt_i, tmt in enumerate(target_model_timestamps):
                                                           fname='inferred_param_trajectories_{}_exp_num_{}_train_iters_{}'
                                                           .format(snn.__class__.__name__, None, i))
 
-            IO.save(snn, loss={'losses': losses}, uuid=snn.__class__.__name__ + '/' + timestamp, fname='snn_model_target_GD_test')
+            IO.save(snn, loss={'losses': losses}, uuid=current_uuid, fname='snn_model_target_GD_test')
 
             logger.log('snn.parameters(): {}'.format(snn.parameters()), list(snn.parameters()))
             logger.log('model_parameter_trajectories: ', model_parameter_trajectories)
