@@ -33,9 +33,9 @@ for mt_str in model_type_dirs:
 
         N_dim = int(np.sqrt(len(save_data['p1s'])))  # assuming equal length of p1s and p2s
         heat_mat = np.zeros((N_dim, N_dim))
-        summary_norm_const = np.max(save_data['summary_statistic'])
-        p1_last = save_data['p1s'][-1]  # TODO: Fix E_L: [-70., -40] remapping here. dividing by -40 now, should divide by -70 or something..
-        p2_last = save_data['p2s'][-1]
+        summary_norm_const = np.sign(save_data['summary_statistic'][0]) * np.max(np.abs(save_data['summary_statistic']))  # loss, rate
+        statistic_name = save_data['statistic_name']  # loss, rate
+
         for i in range(len(save_data['p1s'])):
             # x_ind = int(save_data['p1s'][i] / p1_last)
             # y_ind = int(save_data['p2s'][i] / p2_last)
@@ -52,8 +52,17 @@ for mt_str in model_type_dirs:
         target_params = snn_target.get_parameters()
         tar_p1 = target_params[save_data['p1_name']].numpy()
         tar_p2 = target_params[save_data['p2_name']].numpy()
-        t_p1_index = int(N_dim * (np.mean(tar_p1) / p1_last))
-        t_p2_index = int(N_dim * (np.mean(tar_p2) / p2_last))
+
+        # TODO: Fix all this..
+        # p1_last = save_data['p1s'][-1]
+        # p2_last = save_data['p2s'][-1]
+        interval_1 = save_data['p1s'][-1] - save_data['p1s'][0]  # interval
+        # e.g. -40 + 70 = 30
+        #   pt: -50. => tp1i := (-50. + 70) / 30 = 2/3. OK.
+        #   pt: 2. => tp1 := (2-1.5) / (3.5-1.5) = 1/4. OK.
+        interval_2 = save_data['p2s'][-1] - save_data['p2s'][0]  # interval
+        t_p1_index = int(N_dim * ((np.mean(tar_p1) - save_data['p1s'][0]) / interval_1))
+        t_p2_index = int(N_dim * ((np.mean(tar_p2) - save_data['p2s'][0]) / interval_2))
         target_coords = [t_p1_index, t_p2_index]
         xticks = []
         yticks = []
@@ -64,7 +73,7 @@ for mt_str in model_type_dirs:
 
         axes = ['${}$'.format(save_data['p1_name']), '${}$'.format(save_data['p2_name'])]
         exp_type = 'test'; uuid = 'export_p_landscape_2d'
-        plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname=mt_str+'/test_export_2d_heatmap_{}_{}.png'.format(save_data['p1_name'], save_data['p2_name']),
-                          target_coords=target_coords, xticks=xticks, yticks=yticks)
+        plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname=mt_str+'/test_export_2d_heatmap_{}_{}_{}.png'.format(statistic_name, save_data['p1_name'], save_data['p2_name']),
+                          target_coords=target_coords, xticks=xticks, yticks=yticks, cbar_label=statistic_name)
 
 sys.exit()
