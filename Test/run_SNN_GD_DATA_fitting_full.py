@@ -37,8 +37,8 @@ for data_file in data_files:
                 torch.manual_seed(random_seed)
                 np.random.seed(random_seed)
 
-                N = 4
-                # N = np.unique(node_indices)
+                # N = 4
+                N = len(np.unique(node_indices))
                 t = 1200
                 learn_rate = 0.001
                 num_train_iter = 100
@@ -65,7 +65,10 @@ for data_file in data_files:
                 target_parameters = False
 
                 params_model = experiments.draw_from_uniform(model_class.parameter_init_intervals, N)
-                snn = model_class(parameters=params_model, N=N, neuron_types=torch.tensor([1., 1., -1., -1.]))
+                neuron_types = N * [1]
+                n_inhib = int(N/4)
+                neuron_types[-n_inhib:] = n_inhib * [-1]
+                snn = model_class(parameters=params_model, N=N, neuron_types=neuron_types)
 
                 fig_W_init = plot.plot_heatmap((snn.w.clone().detach()), ['W_syn_col', 'W_row'],
                                                uuid=current_uuid, exp_type='GD_test', fname='plot_heatmap_W_initial.png')

@@ -33,7 +33,8 @@ for data_file in data_files:
             torch.manual_seed(random_seed)
             np.random.seed(random_seed)
 
-            N = 4
+            # N = 4
+            N = len(np.unique(node_indices))
             t = 1200
             learn_rate = 0.001
             num_train_iter = 100
