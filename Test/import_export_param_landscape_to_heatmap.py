@@ -6,11 +6,7 @@ import torch
 
 import IO
 import plot
-from Models.microGIF import microGIF
 
-A_coeffs = [torch.randn((4,))]
-phase_shifts = [torch.rand((4,))]
-input_types = [1, 1, 1, 1]
 t = 1200
 num_steps = 100
 
@@ -53,7 +49,7 @@ for mt_str in model_type_dirs:
         tar_p1 = target_params[save_data['p1_name']].numpy()
         tar_p2 = target_params[save_data['p2_name']].numpy()
 
-        # TODO: Fix all this..
+        # WIP: Fix all this.
         # p1_last = save_data['p1s'][-1]
         # p2_last = save_data['p2s'][-1]
         interval_1 = save_data['p1s'][-1] - save_data['p1s'][0]  # interval

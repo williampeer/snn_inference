@@ -23,7 +23,7 @@ for str_tt in target_timestamps:
     # params_model = experiments.draw_from_uniform(GLIF.parameter_init_intervals, N=4)
     # snn_target = TargetModelsBestEffort.glif(random_seed=42, N=4)
     # current_inputs = experiments.generate_composite_input_of_white_noise_modulated_sine_waves(t, A_coeffs, phase_shifts, input_types)
-    white_noise = torch.rand((1200, snn_target.N))
+    white_noise = torch.rand((4000, snn_target.N))
     current_inputs = white_noise
     target_spike_probs, target_spikes, target_vs = model_util.feed_inputs_sequentially_return_args(snn_target, current_inputs.clone().detach())
 
@@ -32,9 +32,9 @@ for str_tt in target_timestamps:
     other_parameters['N'] = snn_target.N
     # other_parameters = snn_target.parameters()
     # free_parameters = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta', 'c', 'Delta_u']
-    plot_param_landscape(microGIF, [-5., 25.], [2., 20.], 'E_L', 'tau_m', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='white_noise', GIF_flag=True)
-    plot_param_landscape(microGIF, [2., 20.], [1., 20.], 'tau_m', 'tau_s', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='white_noise', GIF_flag=True)
-    plot_param_landscape(microGIF, [800., 1500.], [0.1, 2.], 'tau_theta', 'J_theta', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='white_noise', GIF_flag=True)
-    plot_param_landscape(microGIF, [0.01, 1.0], [1., 20.0], 'c', 'Delta_u', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), fname_addition='white_noise', GIF_flag=True)
+    plot_param_landscape(microGIF, [-5., 25.], [2., 20.], 'E_L', 'tau_m', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), N=snn_target.N, fname_addition='white_noise', GIF_flag=True)
+    plot_param_landscape(microGIF, [2., 20.], [1., 20.], 'tau_m', 'tau_s', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), N=snn_target.N, fname_addition='white_noise', GIF_flag=True)
+    plot_param_landscape(microGIF, [800., 1500.], [0.1, 2.], 'tau_theta', 'J_theta', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), N=snn_target.N, fname_addition='white_noise', GIF_flag=True)
+    plot_param_landscape(microGIF, [0.01, 1.0], [1., 20.0], 'c', 'Delta_u', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), N=snn_target.N, fname_addition='white_noise', GIF_flag=True)
 
 sys.exit(0)

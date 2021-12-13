@@ -46,7 +46,8 @@ def simulate_and_save_model_spike_train(model, t, exp_num, model_name, fname=Fal
         # spiketrain = generate_synthetic_data(model, poisson_rate, t=interval_size)
         t = interval_size
         white_noise = torch.rand((t, model.N))
-        inputs = experiments.sine_modulated_input(white_noise)
+        # inputs = experiments.sine_modulated_input(white_noise)
+        inputs = white_noise
         if model.__class__ is microGIF:
             _, spikes, _ = feed_inputs_sequentially_return_args(model=model, inputs=inputs.clone().detach())
         else:
