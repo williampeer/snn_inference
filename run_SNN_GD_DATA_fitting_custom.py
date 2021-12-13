@@ -22,8 +22,7 @@ from experiments import release_computational_graph
 
 target_data_path = data_util.prefix + data_util.sleep_data_path
 sleep_data_files = ['exp108.mat', 'exp109.mat', 'exp124.mat', 'exp126.mat', 'exp138.mat', 'exp146.mat', 'exp147.mat']
-class_lookup = { 'LIF': LIF, 'GLIF': GLIF,
-                 'LIF_no_cell_types': LIF_no_cell_types, 'GLIF_no_cell_types': GLIF_no_cell_types }
+class_lookup = { 'LIF_no_cell_types': LIF_no_cell_types, 'GLIF_no_cell_types': GLIF_no_cell_types }
 
 
 def main(argv):
@@ -98,7 +97,7 @@ def main(argv):
             neuron_types = N * [1]
             n_inhib = int(N/3)
             neuron_types[-n_inhib:] = n_inhib * [-1]
-            snn = model_class(parameters=params_model, N=N, neuron_types=neuron_types)
+            snn = model_class(parameters=params_model, N=N)
 
             fig_W_init = plot.plot_heatmap((snn.w.clone().detach()), ['W_syn_col', 'W_row'],
                                            uuid=current_uuid, exp_type='GD_test', fname='plot_heatmap_W_initial.png')

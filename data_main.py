@@ -3,9 +3,7 @@ import sys
 import Constants as C
 import data_exp_suite
 from Models.GLIF import GLIF
-from Models.GLIF_dynamic_R_I import GLIF_dynamic_R_I
 from Models.LIF import LIF
-from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 
