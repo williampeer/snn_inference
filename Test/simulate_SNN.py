@@ -6,12 +6,13 @@ import torch
 import experiments
 import model_util
 import spike_metrics
-import util
-from Models.Izhikevich import Izhikevich
-from TargetModels import TargetModelsBestEffort
+from Models.GLIF import GLIF
+from Models.GLIF_no_cell_types import GLIF_no_cell_types
+from Models.LIF import LIF
+from Models.LIF_no_cell_types import LIF_no_cell_types
 from plot import plot_spike_trains_side_by_side, plot_neuron
 
-for random_seed in range(3, 7):
+for random_seed in range(23, 30):
     # snn = lif_ensembles_model_dales_compliant(random_seed=random_seed)
     torch.manual_seed(random_seed)
     np.random.seed(random_seed)
@@ -22,18 +23,26 @@ for random_seed in range(3, 7):
     # snn = TargetModels.lif_r_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
     # snn = TargetModels.lif_r_asc_continuous_ensembles_model_dales_compliant(random_seed=random_seed, N=num_neurons)
     # snn = TargetModelsBestEffort.glif(random_seed=random_seed, N=4)
-    snn = TargetModelsBestEffort.lif(random_seed=random_seed, N=4)
-    # params_model = experiments.draw_from_uniform(Izhikevich.parameter_init_intervals, N=4)
+    # snn = TargetModelsBestEffort.lif(random_seed=random_seed, N=10)
+    N = 10
+    # model_class = GLIF
+    # model_class = GLIF_no_cell_types
+    model_class = LIF_no_cell_types
+    params_model = experiments.draw_from_uniform(model_class.parameter_init_intervals, N=N)
+    neuron_types = N * [1]
+    neuron_types[-int(N/3):] = int(N/3) * [-1]
+    # snn = model_class(parameters=params_model, N=N, neuron_types=neuron_types)
+    snn = model_class(parameters=params_model, N=N)
     # snn = Izhikevich(parameters=params_model, N=4)
 
 
     # inputs = sine_modulated_white_noise(10., t=2400., N=snn.N)
     t = 1200
     white_noise = torch.rand((t, snn.N))
-    # input_type = 'white_noise'
-    # inputs = white_noise
-    input_type = 'sine_modulated_white_noise_input'
-    inputs = experiments.sine_modulated_input(white_noise)
+    input_type = 'white_noise'
+    inputs = white_noise
+    # input_type = 'sine_modulated_white_noise_input'
+    # inputs = experiments.sine_modulated_input(white_noise)
 
     print('- SNN test for class {} -'.format(snn.__class__.__name__))
     print('#inputs: {}'.format(inputs.sum()))

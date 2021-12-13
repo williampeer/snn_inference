@@ -5,7 +5,7 @@ from torch import FloatTensor as FT
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
-class GLIF(nn.Module):
+class GLIF_no_cell_types(nn.Module):
     free_parameters = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf',
                        'delta_V', 'tau_s']
     parameter_init_intervals = {'E_L': [-62., -56.], 'tau_m': [3., 3.2], 'G': [0.75, 0.8],  'f_v': [0.25, 0.35],
@@ -13,9 +13,8 @@ class GLIF(nn.Module):
                                 'b_v': [0.28, 0.32], 'theta_inf': [-10., -8.], 'delta_V': [9., 11.],
                                 'tau_s': [3., 4.]}
 
-    def __init__(self, parameters, N=4, w_mean=0.15, w_var=0.1,
-                 neuron_types=[1, 1, -1, -1]):
-        super(GLIF, self).__init__()
+    def __init__(self, parameters, N=4, w_mean=0.1, w_var=0.2):
+        super(GLIF_no_cell_types, self).__init__()
 
         if parameters is not None:
             for key in parameters.keys():
@@ -67,14 +66,10 @@ class GLIF(nn.Module):
         if parameters.__contains__('preset_weights'):
             # print('DEBUG: Setting w to preset weights: {}'.format(parameters['preset_weights']))
             # print('Setting w to preset weights.')
-            rand_ws = torch.abs(parameters['preset_weights'])
+            rand_ws = parameters['preset_weights']
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             rand_ws = (w_mean - w_var) + 2 * w_var * torch.rand((self.N, self.N))
-            rand_ws = torch.abs(rand_ws)
-        nt = torch.tensor(neuron_types).float()
-        # self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
-        self.neuron_types = nt * torch.ones((self.N, self.N))
         self.w = nn.Parameter(FT(rand_ws), requires_grad=True)  # initialise with positive weights only
 
         self.E_L = nn.Parameter(FT(E_L).clamp(-80., -35.), requires_grad=True)
@@ -118,11 +113,10 @@ class GLIF(nn.Module):
         self.theta_inf.register_hook(lambda grad: static_clamp_for(grad, -25., 0., self.theta_inf))
         self.delta_V.register_hook(lambda grad: static_clamp_for(grad, 1., 35., self.delta_V))
 
-        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, 0., 1., self.w))
+        self.w.register_hook(lambda grad: static_clamp_for_matrix(grad, -1., 1., self.w))
 
     def get_parameters(self):
         params_dict = {}
-        # parameter_names = ['w', 'E_L', 'tau_m', 'G', 'f_v', 'f_I', 'delta_theta_s', 'b_s', 'a_v', 'b_v', 'theta_inf', 'delta_V', 'tau_s']
         params_dict['w'] = self.w.data
         params_dict['E_L'] = self.E_L.data
         params_dict['tau_m'] = self.tau_m.data
@@ -143,7 +137,7 @@ class GLIF(nn.Module):
         return self.__class__.__name__
 
     def forward(self, x_in):
-        W_syn = self.self_recurrence_mask * self.w * self.neuron_types
+        W_syn = self.self_recurrence_mask * self.w
         I_tot = ((self.I_additive + self.s) / 2).matmul(W_syn) + x_in
 
         dv = (self.G * (self.E_L - self.v) + I_tot * self.norm_R_const) / self.tau_m
@@ -153,12 +147,6 @@ class GLIF(nn.Module):
         not_spiked = (spiked - 1) / -1
         soft_spiked = torch.sigmoid(torch.sub(v_next, self.theta_s + self.theta_v))
 
-        # gating = ((v_next-self.theta_inf) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
-        # # gating = ((v_next) / (self.theta_s + self.theta_v)).clamp(0., 1.)  # sub-threshold currents above theta_inf
-        # dv_max = (self.theta_s + self.theta_v - self.E_L)
-        # # dv_max = self.Theta_max
-        # ds = (-self.s + gating * (dv / dv_max).clamp(0., 1.0)) / self.tau_s
-        # self.s = self.s + ds
         ds = -self.s/self.tau_s
         self.s = spiked + not_spiked * (self.s + ds)
 
@@ -169,11 +157,6 @@ class GLIF(nn.Module):
         d_theta_v = self.a_v * (self.v - self.E_L) - self.b_v * (self.theta_v - self.theta_inf)
         self.theta_v = self.theta_v + not_spiked * d_theta_v
 
-        # self.I_additive = (1. - self.f_I) * self.I_additive + spiked * self.I_A
         self.I_additive = self.I_additive - self.f_I * self.I_additive + spiked * self.f_I
 
-        # differentiable soft threshold
-        # readouts = self.W_out.matmul(soft_spiked)
-        # return self.v, readouts
         return self.v, soft_spiked
-        # return gating

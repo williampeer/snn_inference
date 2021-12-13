@@ -1,4 +1,5 @@
 import sys
+import sys
 
 import numpy as np
 import torch
@@ -53,7 +54,7 @@ for data_file in data_files:
                 logger = Log.Logger('{}_GD_{}.txt'.format('DATA', timestamp))
                 writer = SummaryWriter('runs/' + timestamp)
                 # current_uuid = 'GT' + '/' + model_class.__name__ + '/' + timestamp
-                current_uuid = 'sleep_data' + '/' + model_class.__name__ + '/' + timestamp
+                current_uuid = 'sleep_data_no_types' + '/' + model_class.__name__ + '/' + timestamp
 
                 A_coeffs = [torch.randn((4,))]
                 phase_shifts = [torch.rand((4,))]
