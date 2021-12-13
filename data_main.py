@@ -50,7 +50,8 @@ def main(argv):
 
     evaluate_step = 2
     # evaluate_step = int(max(max_train_iters/10, 1))
-    prefix = '/Users/william/data/unpublished/'
+    # prefix = '/Users/william/data/unpublished/'
+    prefix = '/home/williampeer/data/sleep_data/'
     data_path = prefix + 'exp138.mat'
     model_type = None
 
