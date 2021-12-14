@@ -9,6 +9,7 @@ from Models.TORCH_CUSTOM import static_clamp_for
 class LIF(nn.Module):
     free_parameters = ['w', 'E_L', 'tau_m', 'tau_s']
     parameter_init_intervals = {'E_L': [-58., -52.], 'tau_m': [2.5, 3.], 'tau_s': [3., 3.5] }
+    param_lin_constraints = [[0., 1.], [-70., -40.], [1.5, 10.], [1., 12.]]
 
     def __init__(self, parameters, N=4, w_mean=0.1, w_var=0.15, neuron_types=None):
         super(LIF, self).__init__()

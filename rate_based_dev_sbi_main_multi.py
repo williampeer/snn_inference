@@ -1,27 +1,17 @@
 import sys
 
+import numpy as np
 import torch
 from sbi import analysis as analysis
 from sbi import utils as utils
 from sbi.inference.base import infer
 
 import IO
-from Models.no_grad.GLIF_soft_no_grad import GLIF_soft_no_grad
-from Models.no_grad.LIF_R_ASC_no_grad import LIF_R_ASC_no_grad
-from Models.no_grad.LIF_R_soft_no_grad import LIF_R_soft_no_grad
-from TargetModels.TargetModels import lif_r_asc_continuous_ensembles_model_dales_compliant
-from TargetModels.TargetModelsSoft import lif_r_soft_continuous_ensembles_model_dales_compliant, \
-    glif_soft_continuous_ensembles_model_dales_compliant
+import model_util
+from Models.microGIF import microGIF
 from analysis.sbi_export_plots import export_plots
-from experiments import sine_modulated_white_noise_input
-from model_util import feed_inputs_sequentially_return_spike_train
 
 torch.autograd.set_detect_anomaly(True)
-
-# data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_seed_4_N_3_duration_300000.mat'
-# node_indices, spike_times, spike_indices = data_util.load_sparse_data(full_path=data_path)
-# next_step, targets = data_util.get_spike_train_matrix(index_last_step=0, advance_by_t_steps=t_interval,
-#                                                       spike_times=spike_times, spike_indices=spike_indices, node_numbers=node_indices)
 
 
 def transform_model_to_sbi_params(model):
@@ -34,30 +24,30 @@ def transform_model_to_sbi_params(model):
                 ctr += 1
 
     model_params_list = model.get_parameters()
-    for p_i in range(1, len(model.__class__.parameter_names)):
-        m_params = torch.hstack((m_params, model_params_list[p_i]))
-        # model_params_list[(N ** 2 - N) + N * (i - 1):(N ** 2 - N) + N * i] = [model_class.parameter_names[i]]
+    for p_name in model.__class__.free_parameters:
+        if p_name != 'w':
+            m_params = torch.hstack((m_params, model_params_list[p_name]))
+        # model_params_list[(N ** 2 - N) + N * (i - 1):(N ** 2 - N) + N * i] = [model_class.free_parameters[i]]
 
     return m_params
 
 
 def main(argv):
-    NUM_WORKERS = 16
+    NUM_WORKERS = 12
+    # NUM_WORKERS = 2
 
-    t_interval = 16000
-    N = 3
+    t_interval = 4000
+    N = 4
     # methods = ['SNPE', 'SNLE', 'SNRE']
-    # methods = ['SNPE']
     # method = None
-    method = 'SNRE'
+    method = 'SNPE'
     # model_type = None
-    model_type = 'LIF_R_soft'
+    # model_type = 'LIF'
+    # model_type = 'GLIF'
+    model_type = 'mesoGIF'
     budget = 10000
     # budget = 40
-    tar_seed = 42
-
-    # class_lookup = { 'LIF': LIF_no_grad, 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad }
-    class_lookup = { 'LIF_R_soft': LIF_R_soft_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF_soft': GLIF_soft_no_grad }
+    rand_seed = 23
 
     print('Argument List:', str(argv))
 
@@ -75,41 +65,39 @@ def main(argv):
             N = int(args[i])
         elif opt in ("-t", "--t-interval"):
             t_interval = int(args[i])
-        elif opt in ("-pn", "--param-number"):
-            param_number = int(args[i])
         elif opt in ("-b", "--budget"):
             budget = int(args[i])
         elif opt in ("-nw", "--num-workers"):
             NUM_WORKERS = int(args[i])
-        elif opt in ("-ts", "--tar-seed"):
-            tar_seed = int(args[i])
+        elif opt in ("-rs", "--rand-seed"):
+            rand_seed = int(args[i])
 
-    # assert param_number >= 0, "please specify a parameter to fit. (-pn || --param-number)"
     assert model_type is not None, "please specify a model type (-mt || --model-type)"
-    model_class = class_lookup[model_type]
-    # assert param_number < len(model_class.parameter_names), \
-    #     "param_number: {} cannot be greater than number of parameters: {} in model_class: {}" \
-    #         .format(param_number, len(model_class.parameter_names), model_class)
+    # model_class = class_lookup[model_type]
 
     if method is not None:
-        sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS)
+        sbi(method, t_interval, N, model_type, budget, rand_seed, NUM_WORKERS)
 
 
-# def get_spike_rates(out, bins=10):
-#     bin_len = int(out.shape[0] / bins)
-#     out_counts = torch.zeros((bins, out.shape[1]))
-#     for b_i in range(bins):
-#         out_counts[b_i] = (out[b_i * bin_len:(b_i + 1) * bin_len].sum(dim=0))
-#     return out_counts
+def sbi(method, t_interval, N, model_type_str, budget, rand_seed, NUM_WORKERS=3):
+    torch.manual_seed(rand_seed)
+    np.random.seed(rand_seed)
 
-
-def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
-    tar_model_fn_lookup = { 'LIF_R_soft_no_grad': lif_r_soft_continuous_ensembles_model_dales_compliant,
-                            'LIF_R_ASC_no_grad': lif_r_asc_continuous_ensembles_model_dales_compliant,
-                            'GLIF_soft_no_grad': glif_soft_continuous_ensembles_model_dales_compliant }
-    tar_in_rate = 10.
-    tar_model_fn = tar_model_fn_lookup[model_class.__name__]
-    tar_model = tar_model_fn(random_seed=tar_seed, N=N)
+    # tar_model_fn_lookup = { 'LIF': LIF, 'GLIF': GLIF, 'microGIF': microGIF }
+    GT_path = '/home/william/repos/snn_inference/Test/saved/'
+    GT_model_by_type = {'LIF': '12-09_11-49-59-999',
+                        'GLIF': '12-09_11-12-47-541',
+                        'mesoGIF': '12-09_14-56-20-319' }  #,
+                        # 'microGIF': '12-09_14-56-17-312'}
+    GT_euid = GT_model_by_type[model_type_str]
+    tar_fname = 'snn_model_target_GD_test'
+    model_name = model_type_str
+    if model_type_str == 'mesoGIF':
+        model_name = 'microGIF'
+    load_data_target = torch.load(GT_path + model_name + '/' + GT_euid + '/' + tar_fname + IO.fname_ext)
+    tar_model = load_data_target['model']
+    model_class = tar_model.__class__
+    # tar_params = tar_model.get_parameters()
 
     def simulator(parameter_set):
         programmatic_params_dict = {}
@@ -123,70 +111,60 @@ def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=6):
                 if (n_i != n_j):
                     preset_weights[n_i, n_j] = parsed_preset_weights[ctr]
                     ctr += 1
-        programmatic_params_dict[model_class.parameter_names[0]] = preset_weights
+        programmatic_params_dict[model_class.free_parameters[0]] = preset_weights
 
-        for i in range(1, len(model_class.parameter_names)):
-            programmatic_params_dict[model_class.parameter_names[i]] = parameter_set[(N**2-N)+N*(i-1):(N**2-N)+N*i]  # assuming only N-dimensional params otherwise
+        for i in range(1, len(model_class.free_parameters)):
+            programmatic_params_dict[model_class.free_parameters[i]] = parameter_set[(N**2-N)+N*(i-1):(N**2-N)+N*i]  # assuming only N-dimensional params otherwise
 
-        programmatic_neuron_types = torch.ones((N,))
-        for n_i in range(int(2 * N / 3), N):
-            programmatic_neuron_types[n_i] = -1
-
-        model = model_class(parameters=programmatic_params_dict, N=N, neuron_types=programmatic_neuron_types)
-        inputs = sine_modulated_white_noise_input(rate=tar_in_rate, t=t_interval, N=N)
-        outputs = feed_inputs_sequentially_return_spike_train(model=model, inputs=inputs)
+        # inputs = sine_modulated_white_noise_input(rate=tar_in_rate, t=t_interval, N=N)
+        white_noise = torch.rand((t_interval, N))
+        current_inputs = white_noise
+        if model_class is microGIF:
+            model = model_class(parameters=programmatic_params_dict, N=N)
+            _, spikes, _ = model_util.feed_inputs_sequentially_return_args(model, current_inputs)
+        else:
+            programmatic_neuron_types = N * [1]
+            n_inhib = int(N / 4)
+            programmatic_neuron_types[-n_inhib:] = n_inhib * [-1]
+            model = model_class(parameters=programmatic_params_dict, N=N, neuron_types=programmatic_neuron_types)
+            _, spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
 
         model.reset()
-        mean_output_rates = outputs.clone().detach().sum(dim=0) * 1000. / outputs.shape[0]  # Hz
+        mean_output_rates = spikes.clone().detach().sum(dim=0) * 1000. / spikes.shape[0]  # Hz
         return mean_output_rates
-
-        # return torch.reshape(get_binned_spike_counts(outputs.clone().detach()), (-1,))
-
-    # inputs = poisson_input(rate=tar_in_rate, t=t_interval, N=N)
 
     limits_low = torch.zeros((N**2-N,))
     limits_high = torch.ones((N**2-N,))
 
-    for i in range(1, len(model_class.parameter_names)):
+    for i in range(1, len(model_class.free_parameters)):
         limits_low = torch.hstack((limits_low, torch.ones((N,)) * model_class.param_lin_constraints[i][0]))
         limits_high = torch.hstack((limits_high, torch.ones((N,)) * model_class.param_lin_constraints[i][1]))
 
     prior = utils.BoxUniform(low=limits_low, high=limits_high)
 
     tar_sbi_params = transform_model_to_sbi_params(tar_model)
-    # targets_per_sample = None
-    # n_samples = 8
-    # for i in range(n_samples):
-    #     cur_targets = simulator(tar_sbi_params)
-    #     if targets_per_sample is None:
-    #         targets_per_sample = cur_targets
-    #     else:
-    #         # spike_counts_per_sample = torch.vstack((spike_counts_per_sample, cur_cur_spike_count))
-    #         targets_per_sample = targets_per_sample + cur_targets
-    # avg_tar_model_simulations = targets_per_sample / n_samples
-    avg_tar_model_simulations = simulator(tar_sbi_params)
+    tar_model_simulations = simulator(tar_sbi_params)
 
     posterior = infer(simulator, prior, method=method, num_simulations=budget, num_workers=NUM_WORKERS)
-    # posterior = infer(LIF_simulator, prior, method=method, num_simulations=10)
     dt_descriptor = IO.dt_descriptor()
     res = {}
     res[method] = posterior
     res['model_class'] = model_class
     res['N'] = N
     res['dt_descriptor'] = dt_descriptor
-    res['tar_seed'] = tar_seed
-    # num_dim = N**2-N+N*(len(model_class.parameter_names)-1)
+    res['tar_seed'] = rand_seed
+    # num_dim = N**2-N+N*(len(model_class.free_parameters)-1)
     num_dim = limits_high.shape[0]
 
     try:
         IO.save_data(res, 'sbi_res', description='Res from SBI using {}, dt descr: {}'.format(method, dt_descriptor),
-                     fname='res_{}_dt_{}_tar_seed_{}'.format(method, dt_descriptor, tar_seed))
+                     fname='res_{}_dt_{}_tar_seed_{}'.format(method, dt_descriptor, rand_seed))
 
         posterior_stats(posterior, method=method,
                         # observation=torch.reshape(avg_tar_model_simulations, (-1, 1)), points=tar_sbi_params,
-                        observation=avg_tar_model_simulations, points=tar_sbi_params,
+                        observation=tar_model_simulations, points=tar_sbi_params,
                         limits=torch.stack((limits_low, limits_high), dim=1), figsize=(num_dim, num_dim), budget=budget,
-                        m_name=tar_model.name(), dt_descriptor=dt_descriptor, tar_seed=tar_seed)
+                        m_name=tar_model.name(), dt_descriptor=dt_descriptor, tar_seed=rand_seed)
     except Exception as e:
         print("except: {}".format(e))
 
@@ -199,7 +177,7 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
 
     # observation = torch.reshape(targets, (1, -1))
     data_arr = {}
-    samples = posterior.sample((budget,), x=observation)
+    samples = posterior.sample((budget,), x=observation, sample_with_mcmc=True)
     data_arr['samples'] = samples
     data_arr['observation'] = observation
     data_arr['tar_parameters'] = points
@@ -215,7 +193,7 @@ def posterior_stats(posterior, method, observation, points, limits, figsize, bud
     # plot 100d
     try:
         # def export_plots(samples, points, lim_low, lim_high, N, method, m_name, description, model_class):
-        export_plots(samples, points, limits[0], limits[1], len(points[1]), 'SNRE', m_name, 'sbi_export_{}'.format(dt_descriptor), m_name)
+        export_plots(samples, points, limits[0], limits[1], figsize[0], method, m_name, 'sbi_export_{}'.format(dt_descriptor), m_name)
     except Exception as e:
         print('exception in new plot code: {}'.format(e))
 

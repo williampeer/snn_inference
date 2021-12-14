@@ -6,15 +6,7 @@ from sbi import utils as utils
 from sbi.inference.base import infer
 
 import IO
-from Models.LowerDim.GLIF_soft_lower_dim import GLIF_soft_lower_dim
-from Models.LowerDim.LIF_R_soft_lower_dim import LIF_R_soft_lower_dim
-from Models.microGIF import microGIF
-from Models.no_grad.GLIF_no_grad import GLIF_no_grad
-from Models.no_grad.LIF_R_ASC_no_grad import LIF_R_ASC_no_grad
-from Models.no_grad.LIF_R_no_grad import LIF_R_no_grad
 from PDF_metrics import get_binned_spike_counts
-from TargetModels.TargetModelMicroGIF import micro_gif_populations_model
-from TargetModels.TargetModelsSoft import glif_soft_continuous_ensembles_model_dales_compliant
 from experiments import sine_modulated_white_noise
 from model_util import feed_inputs_sequentially_return_spike_train
 
@@ -49,23 +41,21 @@ def main(argv):
     # NUM_WORKERS = 1
 
     # t_interval = 12000
-    t_interval = 1600
-    N = 8
+    t_interval = 4000
+    # N = 4
     # methods = ['SNPE', 'SNLE', 'SNRE']
     # methods = ['SNPE']
     # method = None
-    method = 'SNRE'
+    method = 'SNPE'
     # model_type = None
-    # model_type = 'GLIF_soft_lower_dim'
+    # model_type = 'LIF'
     model_type = 'microGIF'
-    # model_type = 'LIF_R_soft_lower_dim'
+    # model_type = 'GLIF'
     # budget = 10000
     budget = 20
     tar_seed = 42
 
-    class_lookup = { 'LIF_R': LIF_R_no_grad, 'LIF_R_ASC': LIF_R_ASC_no_grad, 'GLIF': GLIF_no_grad,
-                     'GLIF_soft_lower_dim' : GLIF_soft_lower_dim, 'LIF_R_soft_lower_dim': LIF_R_soft_lower_dim,
-                     'microGIF': microGIF }
+    # class_lookup = { 'LIF': LIF, 'GLIF': GLIF, 'microGIF': microGIF }
 
     print('Argument List:', str(argv))
 
@@ -94,33 +84,27 @@ def main(argv):
 
     # assert param_number >= 0, "please specify a parameter to fit. (-pn || --param-number)"
     assert model_type is not None, "please specify a model type (-mt || --model-type)"
-    model_class = class_lookup[model_type]
+    # model_class = class_lookup[model_type]
 
     if method is not None:
-        sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS)
+        sbi(method, t_interval, N, model_type, budget, tar_seed, NUM_WORKERS)
 
 
-def sbi(method, t_interval, N, model_class, budget, tar_seed, NUM_WORKERS=5):
-    tar_model_fn_lookup = { 'GLIF_soft_lower_dim': glif_soft_continuous_ensembles_model_dales_compliant,
-                            'microGIF': micro_gif_populations_model }
-    # tar_in_rate = 10.
-    tar_model_fn = tar_model_fn_lookup[model_class.__name__]
-    if N == 4:
-        N_pops = 2
-        pop_size = 2
-    elif N == 16:
-        N_pops = 4
-        pop_size = 4
-    elif N == 8:
-        N_pops = 4
-        pop_size = 2
-    elif N == 2:
-        N_pops = 2
-        pop_size = 1
-    else:
-        raise NotImplementedError('N has to be in [2, 4, 8, 16]')
-
-    tar_model = tar_model_fn(random_seed=tar_seed, pop_size=pop_size, N_pops=N_pops)
+def sbi(method, t_interval, N, model_type_str, budget, tar_seed, NUM_WORKERS=5):
+    # tar_model = tar_model_fn(random_seed=tar_seed, pop_size=pop_size, N_pops=N_pops)
+    GT_path = '/home/william/repos/snn_inference/Test/saved/'
+    GT_model_by_type = {'LIF': '12-09_11-49-59-999',
+                        'GLIF': '12-09_11-12-47-541',
+                        'mesoGIF': '12-09_14-56-20-319',
+                        'microGIF': '12-09_14-56-17-312'}
+    GT_euid = GT_model_by_type[model_type_str]
+    tar_fname = 'snn_model_target_GD_test'
+    model_name = model_type_str
+    if model_type_str == 'mesoGIF':
+        model_name = 'microGIF'
+    load_data_target = torch.load(GT_path + model_name + '/' + GT_euid + '/' + tar_fname + IO.fname_ext)
+    tar_model = load_data_target['model']
+    model_class = tar_model.__class__
 
     def simulator(parameter_set):
         programmatic_params_dict = {}
