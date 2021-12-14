@@ -84,7 +84,7 @@ def sbi(method, t_interval, N, model_type_str, budget, rand_seed, NUM_WORKERS=3)
     np.random.seed(rand_seed)
 
     # tar_model_fn_lookup = { 'LIF': LIF, 'GLIF': GLIF, 'microGIF': microGIF }
-    GT_path = '/home/william/repos/snn_inference/Test/saved/'
+    GT_path = './Test/saved/'
     GT_model_by_type = {'LIF': '12-09_11-49-59-999',
                         'GLIF': '12-09_11-12-47-541',
                         'mesoGIF': '12-09_14-56-20-319' }  #,
