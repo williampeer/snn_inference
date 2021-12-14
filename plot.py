@@ -975,7 +975,7 @@ def plot_parameter_landscape(p1s, p2s, p1_name, p2_name, summary_statistic, stat
     data = {'p1s': p1s, 'p2s': p2s, 'summary_statistic': summary_statistic,
             'p1_name': p1_name, 'p2_name': p2_name, 'statistic_name': statistic_name,
             'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
-    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_parameter_landscape')
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn=fname)
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
