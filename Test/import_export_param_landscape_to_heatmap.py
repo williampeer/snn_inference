@@ -12,17 +12,22 @@ num_steps = 100
 
 GT_model_by_class = { 'LIF': '12-09_11-49-59-999',
                       'GLIF': '12-09_11-12-47-541',
-                      'microGIF': '12-09_14-56-20-319' }
+                      'mesoGIF': '12-09_14-56-20-319',
+                      'microGIF': '12-09_14-56-17-312' }
 
-archive_path = '/home/william/repos/snn_inference/saved/plot_data/'
+# archive_path = '/home/william/repos/snn_inference/saved/plot_data/'
+archive_path = '/media/william/p6/archive_14122021/archive/saved/plot_data/'
 GT_path = '/home/william/repos/snn_inference/Test/saved/'
-model_type_dirs = ['LIF', 'GLIF', 'microGIF']
+# model_type_dirs = ['LIF', 'GLIF', 'microGIF']
+model_type_dirs = ['microGIF']
 for mt_str in model_type_dirs:
     mt_dir = 'test_{}'.format(mt_str)
-    specific_plot_files = os.listdir(archive_path + '/' + mt_dir)
+    specific_plot_files = os.listdir(archive_path + mt_dir)
     for sp_file in specific_plot_files:
         load_data = torch.load(archive_path + mt_dir + '/' + sp_file)
         save_data = load_data['plot_data']
+        saved_fname = save_data['fname']
+        model_N = int(saved_fname.split('_N_')[1].split('_')[0])
         # data = {'p1s': p1s, 'p2s': p2s, 'summary_statistic': summary_statistic,
         #             'p1_name': p1_name, 'p2_name': p2_name, 'statistic_name': statistic_name,
         #             'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
@@ -39,10 +44,12 @@ for mt_str in model_type_dirs:
             y_ind = int(i/N_dim)
             heat_mat[x_ind, y_ind] = save_data['summary_statistic'][i] / summary_norm_const
 
-        # ---------------- target data feature request from Arno ------------------
         # prev_timestamp = '11-16_11-21-13-903'
         fname = 'snn_model_target_GD_test'
-        GT_euid = GT_model_by_class[mt_str]
+        GT_lookup_str = mt_str
+        if mt_str == 'microGIF' and model_N == 4:
+            GT_lookup_str = 'mesoGIF'
+        GT_euid = GT_model_by_class[GT_lookup_str]
         load_data_target = torch.load(GT_path + mt_str + '/' + GT_euid + '/' + fname + IO.fname_ext)
         snn_target = load_data_target['model']
         target_params = snn_target.get_parameters()
@@ -69,7 +76,8 @@ for mt_str in model_type_dirs:
 
         axes = ['${}$'.format(save_data['p1_name']), '${}$'.format(save_data['p2_name'])]
         exp_type = 'test'; uuid = 'export_p_landscape_2d'
-        plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname=mt_str+'/test_export_2d_heatmap_{}_{}_{}.png'.format(statistic_name, save_data['p1_name'], save_data['p2_name']),
+        # model_N =
+        plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname=mt_str+'/test_export_2d_heatmap_N_{}_{}_{}_{}.png'.format(model_N, statistic_name, save_data['p1_name'], save_data['p2_name']),
                           target_coords=target_coords, xticks=xticks, yticks=yticks, cbar_label=statistic_name)
 
 sys.exit()
