@@ -28,7 +28,7 @@ def save_entire_model(model, uuid, fname='test_model'):
 
 
 def save_model_params(model, fname='test_model_params'):
-    full_path = data_util.prefix + data_util.path
+    full_path = data_util.prefix + data_util.target_data_path + data_util.matlab_export
     makedir_if_not_exists(full_path)
 
     torch.save(model.state_dict(), full_path+'/'+fname+fname_ext)

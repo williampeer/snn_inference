@@ -1,7 +1,7 @@
 import os
 
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
+from matplotlib.ticker import FormatStrFormatter, FuncFormatter
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import torch
@@ -563,8 +563,12 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
                 param_path = path+'_param_{}'.format(p_k)
                 if not os.path.exists(param_path) and not os.path.exists(param_path + '.png'):
                     # decompose_param_pair_trajectory_plot(cur_p[:,:,:4], current_targets[:,:,:4], name=name, path=param_path)
-                    max_index = min(5, len(current_targets))
-                    decompose_param_pair_trajectory_plot(cur_p[:, :max_index], current_targets[:max_index], name=name, path=param_path)
+                    if current_targets is not False:
+                        max_index = min(5, len(current_targets))
+                        decompose_param_pair_trajectory_plot(cur_p[:, :max_index], current_targets[:max_index], name=name, path=param_path)
+                    else:
+                        max_index = 5
+                        decompose_param_pair_trajectory_plot(cur_p[:, :max_index], False, name=name, path=param_path)
 
 
 def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname, custom_title=False):
@@ -921,7 +925,7 @@ def heatmap_spike_train_correlations(corrs, axes, exp_type, uuid, fname, bin_siz
     plt.close()
 
 
-def plot_heatmap(heat_mat, axes, exp_type, uuid, fname):
+def plot_heatmap(heat_mat, axes, exp_type, uuid, fname, target_coords=False, xticks=False, yticks=False, v_min=0, v_max=1, cbar_label='loss'):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -935,13 +939,28 @@ def plot_heatmap(heat_mat, axes, exp_type, uuid, fname):
                 heat_mat[row_i][col_i] = 0.
 
     fig = plt.figure()
-    im = plt.imshow(heat_mat, cmap="PuOr", vmin=-1, vmax=1)
+    im = plt.imshow(heat_mat, cmap="PuOr", vmin=v_min, vmax=v_max)
     cbar = plt.colorbar(im)
-    # cbar.set_label("correlation coeff.")
-    plt.xticks(np.arange(0, len(heat_mat), 5))
-    plt.yticks(np.arange(0, len(heat_mat)))
-    plt.ylabel(axes[0])
-    plt.xlabel(axes[1])
+    cbar.set_label(cbar_label)
+    ticks_fmt = lambda x: float('{:.2f}'.format(x))
+    if xticks:
+        N_dim = len(xticks)
+        tar_xticks = [xticks[0], xticks[int(N_dim/2)], xticks[-1]]
+        tar_xticks = list(map(ticks_fmt, tar_xticks))
+        plt.xticks([0, int(N_dim/2), N_dim-1], tar_xticks)
+    else:
+        plt.xticks(np.arange(0, len(heat_mat), 5))
+    if yticks:
+        N_dim = len(yticks)
+        tar_yticks = [yticks[0], yticks[int(N_dim / 2)], yticks[-1]]
+        tar_yticks = list(map(ticks_fmt, tar_yticks))
+        plt.yticks([0, int(N_dim / 2), N_dim - 1], [yticks[0], yticks[int(N_dim / 2)], yticks[-1]])
+    else:
+        plt.yticks(np.arange(0, len(heat_mat)))
+    plt.xlabel(axes[0])
+    plt.ylabel(axes[1])
+    if target_coords:
+        plt.scatter(target_coords[0], target_coords[1], color='magenta', marker='x', s=30.0)
     # plt.show()
     plt.savefig(fname=full_path + fname)
     plt.close()
@@ -956,7 +975,7 @@ def plot_parameter_landscape(p1s, p2s, p1_name, p2_name, summary_statistic, stat
     data = {'p1s': p1s, 'p2s': p2s, 'summary_statistic': summary_statistic,
             'p1_name': p1_name, 'p2_name': p2_name, 'statistic_name': statistic_name,
             'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
-    IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_parameter_landscape')
+    IO.save_plot_data(data=data, uuid=uuid, plot_fn=fname)
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')

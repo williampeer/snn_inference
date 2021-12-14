@@ -2,10 +2,11 @@ import os
 import sys
 
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 
 import plot
 from Models.no_grad.GLIF_soft_no_grad import GLIF_soft_no_grad
-from TargetModels.TargetModels import *
 from analysis import parameter_distance
 from analysis.sbi_import_export_spikes import convert_posterior_to_model_params_dict
 from dev_sbi_main_multi import get_binned_spike_counts, export_plots

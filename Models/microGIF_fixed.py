@@ -5,7 +5,7 @@ from torch import FloatTensor as FT
 from Models.TORCH_CUSTOM import static_clamp_for, static_clamp_for_matrix
 
 
-class microGIF_fixed_c(nn.Module):
+class microGIF_fixed(nn.Module):
     free_parameters = ['w', 'E_L', 'tau_m', 'tau_s', 'tau_theta', 'J_theta', 'c', 'Delta_u']
     parameter_init_intervals = { 'E_L': [0., 3.], 'tau_m': [7., 9.], 'tau_s': [4., 8.], 'tau_theta': [950., 1050.],
                                  'J_theta': [0.9, 1.1], 'c': [0.15, 0.2], 'Delta_u': [3.5, 4.5] }
@@ -13,7 +13,7 @@ class microGIF_fixed_c(nn.Module):
 
     # def __init__(self, parameters, N=4, neuron_types=[1, -1]):
     def __init__(self, parameters, N=4):
-        super(microGIF_fixed_c, self).__init__()
+        super(microGIF_fixed, self).__init__()
 
         if parameters is not None:
             for key in parameters.keys():
@@ -56,11 +56,10 @@ class microGIF_fixed_c(nn.Module):
         self.time_since_spike = 1e4 * torch.ones((N,))
 
         self.E_L = nn.Parameter(FT(E_L), requires_grad=True)  # Rest potential
-        self.tau_m = nn.Parameter(FT(tau_m), requires_grad=True)
-        self.tau_s = nn.Parameter(FT(tau_s), requires_grad=True)
+        self.tau_m = nn.Parameter(FT(tau_m), requires_grad=False)
+        self.tau_s = nn.Parameter(FT(tau_s), requires_grad=False)
         self.tau_theta = nn.Parameter(FT(tau_theta), requires_grad=True)  # Adaptation time constant
         self.J_theta = nn.Parameter(FT(J_theta), requires_grad=True)  # Adaptation strength
-        # self.c = nn.Parameter(FT(c), requires_grad=True)
         self.c = nn.Parameter(FT(c), requires_grad=False)
         self.Delta_u = nn.Parameter(FT(Delta_u), requires_grad=True)  # Noise level
         self.Delta_delay = 1.  # Transmission delay
@@ -85,8 +84,8 @@ class microGIF_fixed_c(nn.Module):
 
     def register_backward_clamp_hooks(self):
         self.E_L.register_hook(lambda grad: static_clamp_for(grad, -5., 25., self.E_L, 'E_L'))
-        self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 2., 20., self.tau_m, 'tau_m'))
-        self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.tau_s, 'tau_s'))
+        # self.tau_m.register_hook(lambda grad: static_clamp_for(grad, 2., 20., self.tau_m, 'tau_m'))
+        # self.tau_s.register_hook(lambda grad: static_clamp_for(grad, 1., 20., self.tau_s, 'tau_s'))
         self.tau_theta.register_hook(lambda grad: static_clamp_for(grad, 800., 1500, self.tau_theta, 'tau_theta'))
         self.J_theta.register_hook(lambda grad: static_clamp_for(grad, 0.1, 2., self.J_theta, 'J_theta'))
         # self.c.register_hook(lambda grad: static_clamp_for(grad, 0.01, 1., self.c, 'c'))

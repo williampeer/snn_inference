@@ -9,7 +9,7 @@ import Log
 import data_util
 from Constants import ExperimentType
 from IO import makedir_if_not_exists
-from data_util import prefix, path, load_sparse_data, get_spike_train_matrix
+from data_util import prefix, target_data_path, load_sparse_data, get_spike_train_matrix
 from eval import evaluate_loss
 from exp_suite import stats_training_iterations
 
@@ -24,7 +24,7 @@ def simulate_and_eval_loss(model, poisson_rate, rpti, exp_num, model_name, loss_
     torch.manual_seed(non_overlapping_offset + exp_num)
     np.random.seed(non_overlapping_offset + exp_num)  # reproduce randomness
 
-    data_path = data_util.prefix + data_util.path + 'target_model_spikes_GLIF_N_3_seed_4_duration_1800000.mat'
+    data_path = data_util.prefix + data_util.target_data_path + 'target_model_spikes_GLIF_N_3_seed_4_duration_1800000.mat'
     constants = Constants.Constants(0.005, train_iters=30, N_exp=3, batch_size=12000, tau_van_rossum=10.0, initial_poisson_rate=poisson_rate,
                                     rows_per_train_iter=12000, optimiser='SGD', loss_fn=loss_fn, evaluate_step=1, data_path=data_path,
                                     start_seed=start_seed, exp_type_str=ExperimentType.DataDriven.name)
@@ -173,7 +173,7 @@ def main(argv):
 
                     exp_type = 'Synthetic'
                     cur_fname = 'loss_spiketrains_{}_{}_{}_{}_{}_{}_exp_num_{}'.format(exp_type, model_type, optimiser, lfn, lr, id, exp_num).replace('=', '_')
-                    save_file_name = prefix + path + archive_name + cur_fname + '.mat'
+                    save_file_name = prefix + target_data_path + archive_name + cur_fname + '.mat'
 
                     if lfn.__contains__('FIRING_RATE_DIST'):
                         if optimiser == 'SGD':

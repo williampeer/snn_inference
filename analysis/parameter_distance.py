@@ -1,29 +1,25 @@
 import os
+import sys
 
+import numpy as np
+import torch
 from torch import FloatTensor as FT
 
+import IO
 from Models.GLIF import GLIF
-from Models.LIF_R import LIF_R
-from Models.LIF_R_ASC import LIF_R_ASC
-from TargetModels.TargetModels import *
+from Models.LIF import LIF
+from Models.microGIF import microGIF
 from experiments import draw_from_uniform, zip_dicts
 from plot import bar_plot_pair_custom_labels
 
-class_lookup = {'LIF_R': LIF_R, 'LIF_R_ASC': LIF_R_ASC, 'GLIF': GLIF}
-target_fn_lookup = {'LIF': lif_continuous_ensembles_model_dales_compliant,
-                    'LIF_R': lif_r_continuous_ensembles_model_dales_compliant,
-                    'LIF_ASC': lif_asc_continuous_ensembles_model_dales_compliant,
-                    'LIF_R_ASC': lif_r_asc_continuous_ensembles_model_dales_compliant,
-                    'GLIF': glif_continuous_ensembles_model_dales_compliant}
 
+class_lookup = { 'LIF': LIF, 'GLIF': GLIF, 'microGIF': microGIF }
 
 def get_init_params(model_class, rand_seed, N=12):
     torch.manual_seed(rand_seed)
     np.random.seed(rand_seed)
 
-    w_mean = 0.3;
-    w_var = 0.2;
-    programmatic_neuron_types = torch.ones((N,))
+    w_mean = 0.3; w_var = 0.2; programmatic_neuron_types = torch.ones((N,))
     for n_i in range(int(2 * N / 3), N):
         programmatic_neuron_types[n_i] = -1
     neuron_types = programmatic_neuron_types
@@ -40,21 +36,14 @@ def get_init_params(model_class, rand_seed, N=12):
 
 
 def euclid_dist(p1, p2):
-    # print('p1:', p1)
-    # print('p1.shape:', p1.shape)
-    # print('p2:', p2)
-    # sqrt((s1 - s2) ** 2)
     return np.sqrt(np.power((p1 - p2), 2).sum()) / len(p1)
 
 
 def main():
-    # all_exps_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
-    # all_exps_path = '/home/william/repos/archives_snn_inference/archive (5)/saved/plot_data/'
-    # all_exps_path = '/home/william/repos/archives_snn_inference/archive/saved/plot_data/'
-    all_exps_path = '/home/william/repos/archives_snn_inference/archive_0908/archive/saved/plot_data/'
+    all_exps_path = '/home/william/repos/archives_snn_inference/GENERIC/archive/saved/plot_data/'
     folders = os.listdir(all_exps_path)
     experiment_averages = {}
-    optim_to_include = 'RMSprop'
+    optim_to_include = 'Adam'
     # res_per_exp = {}
     for exp_folder in folders:
         full_folder_path = all_exps_path + exp_folder + '/'
@@ -79,25 +68,32 @@ def main():
                 lr = custom_title.split(', ')[-1].strip(' =lr').strip(')')
                 lfn = f_data['plot_data']['fname'].split('loss_fn_')[1].split('_tau')[0]
 
-        # assert len(param_files) == 1, "should only be one plot_all_param_pairs_with_variance-file per folder. len: {}".format(len(param_files))
-        # if model_type == 'LIF' and len(param_files) == 1:
-        # if model_type == 'GLIF' and optimiser == 'SGD' and len(param_files) == 1:
-        if optimiser == optim_to_include and model_type in ['LIF_R', 'LIF_R_ASC', 'GLIF'] and spf == 'None' and len(param_files) == 1:
+        if optimiser == optim_to_include and model_type in ['LIF', 'GLIF', 'microGIF'] and spf == 'None' and len(param_files) == 1:
             print('Succes! Processing exp: {}'.format(exp_folder + '/' + param_files[0]))
             exp_data = torch.load(full_folder_path + param_files[0])
             # param_names = exp_data['plot_data']['param_names']
             param_names = class_lookup[model_type].parameter_names
             m_p_by_exp = exp_data['plot_data']['param_means']
+
+            GT_path = '/home/william/repos/snn_inference/Test/saved/'
+            GT_model_by_type = {'LIF': '12-09_11-49-59-999',
+                                'GLIF': '12-09_11-12-47-541',
+                                'mesoGIF': '12-09_14-56-20-319',
+                                'microGIF': '12-09_14-56-17-312'}
+            GT_euid = GT_model_by_type[model_type]
+            tar_fname = 'snn_model_target_GD_test'
+            model_name = model_type
+            if model_type == 'mesoGIF':
+                model_name = 'microGIF'
+            load_data_target = torch.load(GT_path + model_name + '/' + GT_euid + '/' + tar_fname + IO.fname_ext)
+            target_model = load_data_target['model']
+            # model_class = tar_model.__class__
+
             if(len(m_p_by_exp)>0):
                 model_N = m_p_by_exp[1][0][0].shape[0]
-                # t_p_by_exp = list(exp_data['plot_data']['target_params'].values())
 
                 # config = '{}_{}_{}_{}'.format(model_type, optimiser, lfn, lr.replace('.', '_'))
                 config = '{}_{}_{}'.format(model_type, optimiser, lfn)
-                # distances = {}
-                # stds = {}
-                # distances_init = {}
-                # stds_init = {}
                 if not experiment_averages.__contains__(config):
                     experiment_averages[config] = { 'dist' : {}, 'std': {}, 'init_dist': {}, 'init_std': {}}
                     for k in range(len(m_p_by_exp)):
@@ -111,7 +107,6 @@ def main():
                     for e_i in range(len(m_p_by_exp[p_i])):
                         init_model_params = get_init_params(class_lookup[model_type], e_i, N=model_N)
                         # if(param_names[p_i] in init_model_params.keys()):
-                        target_model = target_fn_lookup[model_type](random_seed=3 + e_i, N=model_N)
                         t_p_by_exp = target_model.params_wrapper()
                         c_d = euclid_dist(init_model_params[param_names[p_i]].numpy(), t_p_by_exp[p_i])
                         per_exp.append(c_d)
@@ -121,7 +116,6 @@ def main():
                 for p_i in range(len(m_p_by_exp)):
                     per_exp = []
                     for e_i in range(len(m_p_by_exp[p_i])):
-                        target_model = target_fn_lookup[model_type](random_seed=3 + e_i, N=model_N)
                         t_p_by_exp = target_model.params_wrapper()
                         c_d = euclid_dist(m_p_by_exp[p_i][e_i][0], t_p_by_exp[p_i])
                         per_exp.append(c_d)
@@ -190,16 +184,6 @@ def main():
             exp_avg_init_stds.append(np.std(np.array(flat_ds_init)/norm_kern))
             # exp_avg_init_stds.append(np.mean(flat_stds_init))
 
-    # norm_kern = 1.
-    # norm_kern = np.max(exp_avg_init_ds)
-    # bar_plot_two_grps(np.array(exp_avg_ds[:4]),
-    #                   np.array(exp_avg_stds[:4]),
-    #                   np.array(exp_avg_ds[4:]),
-    #                   np.array(exp_avg_stds[4:]),
-    #                   labels, 'export', 'test',
-    #                   'exp_export_all_euclid_dist_params_across_exp.eps',
-    #                   'Avg Euclid dist for all parameters across experiments',
-    #                   baseline=1.0)
     bar_plot_pair_custom_labels(np.array(exp_avg_init_ds), np.array(exp_avg_ds),
                                 np.array(exp_avg_init_stds), np.array(exp_avg_stds),
                                 labels, 'export', 'test',
@@ -210,4 +194,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # sys.exit(0)
+    sys.exit(0)

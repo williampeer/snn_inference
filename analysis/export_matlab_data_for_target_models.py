@@ -4,16 +4,12 @@ import sys
 import numpy as np
 import torch
 
-from TargetModels import TargetModels
-from TargetModels.TargetModels import lif_continuous_ensembles_model_dales_compliant, \
-    lif_r_continuous_ensembles_model_dales_compliant, lif_r_asc_continuous_ensembles_model_dales_compliant, \
-    glif_continuous_ensembles_model_dales_compliant
-from data_util import prefix, path
+from data_util import prefix, target_data_path
 from spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
 def main(argv):
-    num_neurons = 3
+    num_neurons = 4
     duration = 2 * 60 * 1000
 
     print('Argument List:', str(argv))
@@ -29,12 +25,7 @@ def main(argv):
         elif opt in ("-N", "--num-neurons"):
             num_neurons = int(args[i])
 
-    for m_fn in [
-                # lif_continuous_ensembles_model_dales_compliant,
-                 lif_r_continuous_ensembles_model_dales_compliant,
-                 # lif_asc_continuous_ensembles_model_dales_compliant,
-                 lif_r_asc_continuous_ensembles_model_dales_compliant,
-                 glif_continuous_ensembles_model_dales_compliant]:
+    for m_fn in []:
 
         for f_i in range(3, 7):
         # for f_i in range(42, 43):
@@ -46,7 +37,7 @@ def main(argv):
 
             cur_fname = 'target_model_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.name(), num_neurons, f_i, duration)
             # cur_fname = 'target_model_sbi_spikes_{}_N_{}_seed_{}_duration_{}'.format(snn.name(), num_neurons, random_seed, duration)
-            save_file_name = prefix + path + cur_fname + '.mat'
+            save_file_name = prefix + target_data_path + cur_fname + '.mat'
             # if not os.path.exists(save_file_name):
             simulate_and_save_model_spike_train(model=snn, poisson_rate=10., t=duration, exp_num=f_i,
                                                     model_name=snn.name(), fname=cur_fname)

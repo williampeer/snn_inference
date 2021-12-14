@@ -46,5 +46,5 @@ save_spiketrain_in_sparse_matlab_format(fname=save_fname_output, spike_indices=n
 
 combined_model_params = {'w': weights, 'rate': rate}
 combined_model_params = zip_dicts(combined_model_params, current_model_parameters)
-full_save_path = data_util.prefix + data_util.path + fname
+full_save_path = data_util.prefix + data_util.target_data_path + fname
 torch.save(combined_model_params, full_save_path.replace('.mat', '_params.pt'))

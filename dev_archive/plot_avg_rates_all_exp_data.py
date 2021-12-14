@@ -7,7 +7,7 @@ import plot
 import stats
 from IO import makedir_if_not_exists
 from TargetModels import TargetModels
-from data_util import prefix, path
+from data_util import prefix, target_data_path
 from experiments import sine_modulated_white_noise_input
 from model_util import generate_model_data
 
@@ -128,7 +128,7 @@ for folder_path in folders:
                 exp_type = 'DataDriven'
                 cur_fname = 'spikes_{}_{}_{}_{}_{}_{}_exp_num_{}_60s'.format(exp_type, model_type, optimiser, lfn, lr,
                                                                              id, exp_num).replace('=', '_')
-                save_file_name = prefix + path + archive_name + cur_fname + '.mat'
+                save_file_name = prefix + target_data_path + archive_name + cur_fname + '.mat'
 
                 if optimiser == 'SGD':
                     print('checking: {}'.format(save_file_name))

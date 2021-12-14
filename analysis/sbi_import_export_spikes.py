@@ -1,5 +1,6 @@
+import numpy as np
+
 from IO import *
-from TargetModels.TargetModels import *
 from analysis.spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
@@ -26,16 +27,7 @@ def convert_posterior_to_model_params_dict(model_class, posterior_params, target
 
 
 def main():
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_multi_sbi_1308/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_sbi_runs_1608/archive/saved/data/'  # Single
-
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1208_GLIF_3_LIF_R_AND_ASC_10_PLUSPLUS/archive/saved/data/'  # Done (export)
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_sbi_runs_1608/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1908_multi_N_3_10/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_3008_all_seed_64_and_sbi_3_and_4/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1809_q/archive/saved/data/'
-    experiments_path = '/home/william/repos/archives_snn_inference/archive_2009_tmp/archive/saved/data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_osx_2009/archive/saved/data/'
+    experiments_path = '/home/william/repos/archives_snn_inference/GENERIC/archive/saved/data/'
 
     files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
 
@@ -86,7 +78,7 @@ def main():
                 torch.manual_seed(tar_seed)
                 np.random.seed(tar_seed)
 
-                if not os.path.exists(data_util.prefix + data_util.path + save_fname + '_sample_N_1.mat'):
+                if not os.path.exists(data_util.prefix + data_util.target_data_path + save_fname + '_sample_N_1.mat'):
                     # samples = data_arr['samples']
                     observation = data_arr['observation']
                     # points = data_arr['tar_parameters']
@@ -101,7 +93,7 @@ def main():
                     print('\nposterior_params: {}'.format(posterior_params))
 
                     for s_i in range(N_samples):
-                        model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], N)
+                        model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], target_class=model_class, target_points=[], N=N)
                         programmatic_neuron_types = torch.ones((N,))
                         for n_i in range(int(2 * N / 3), N):
                             programmatic_neuron_types[n_i] = -1
@@ -109,7 +101,7 @@ def main():
 
                         # makedir_if_not_exists('./figures/default/plot_imported_model/' + archive_name)
                         # load_and_export_sim_data(full_folder_path + f, fname=archive_name + cur_fname)
-                        simulate_and_save_model_spike_train(model, 10., 60*1000, None, m_name, fname=save_fname+'_sample_N_{}'.format(s_i))
+                        simulate_and_save_model_spike_train(model, 60*1000, None, m_name, fname=save_fname+'_sample_N_{}'.format(s_i))
                 else:
                     print('file exists. skipping..')
 

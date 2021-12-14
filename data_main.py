@@ -3,9 +3,7 @@ import sys
 import Constants as C
 import data_exp_suite
 from Models.GLIF import GLIF
-from Models.GLIF_dynamic_R_I import GLIF_dynamic_R_I
 from Models.LIF import LIF
-from Models.LIF_ASC import LIF_ASC
 from Models.LIF_R import LIF_R
 from Models.LIF_R_ASC import LIF_R_ASC
 
@@ -50,7 +48,8 @@ def main(argv):
 
     evaluate_step = 2
     # evaluate_step = int(max(max_train_iters/10, 1))
-    prefix = '/Users/william/data/unpublished/'
+    # prefix = '/Users/william/data/unpublished/'
+    prefix = '/home/williampeer/data/sleep_data/'
     data_path = prefix + 'exp138.mat'
     model_type = None
 

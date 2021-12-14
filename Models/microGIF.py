@@ -41,7 +41,7 @@ class microGIF(nn.Module):
             assert rand_ws.shape[0] == N and rand_ws.shape[1] == N, "shape of weights matrix should be NxN"
         else:
             # rand_ws = torch.abs((0.5 - 0.25) + 2 * 0.25 * torch.rand((self.N, self.N)))
-            rand_ws = 0.5 + 2. * torch.randn((N, N))
+            rand_ws = 8. * torch.randn((N, N))
         # nt = torch.tensor(neuron_types).float()
         # self.neuron_types = torch.transpose((nt * torch.ones((self.N, self.N))), 0, 1)
         # self.neuron_types = (torch.ones((self.N, 1)) * nt).T
@@ -132,6 +132,7 @@ class microGIF(nn.Module):
 
         spikes_lambda = not_refractory * (self.c * torch.exp((v_next - self.theta_v) / self.Delta_u))
         spikes_lambda = spikes_lambda.clip(0., 1.)
+        spikes_lambda[torch.isnan(spikes_lambda)] = 1.  # tmp nan-fix
 
         m = torch.distributions.bernoulli.Bernoulli(spikes_lambda)
         spiked = m.sample()
@@ -142,5 +143,4 @@ class microGIF(nn.Module):
         self.time_since_spike = not_spiked * (self.time_since_spike + 1)
         self.v = not_spiked * v_next + spiked * self.reset_potential
 
-        # return spikes_lambda, spiked
         return spikes_lambda, spiked, self.v
