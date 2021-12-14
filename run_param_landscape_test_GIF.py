@@ -13,10 +13,32 @@ input_types = [1, 1, 1, 1]
 t = 1200
 num_steps = 100
 
-target_timestamp_mesoGIF = '12-09_14-56-20-319'
-target_timestamp_microGIF = '12-09_14-56-17-312'
-target_timestamps = [target_timestamp_mesoGIF, target_timestamp_microGIF]
-for str_tt in target_timestamps:
+
+def main(argv):
+    print('Argument List:', str(argv))
+    model_type_str = 'meso'
+
+    opts = [opt for opt in argv if opt.startswith("-")]
+    args = [arg for arg in argv if not arg.startswith("-")]
+    for i, opt in enumerate(opts):
+        if opt == '-h':
+            print(
+                'main.py -mt <model-type>')
+            sys.exit()
+        elif opt in ("-mt", "--model-type"):
+            model_type_str = str(args[i])
+
+    if model_type_str == 'meso':
+        target_timestamp_mesoGIF = '12-09_14-56-20-319'
+        str_tt = target_timestamp_mesoGIF
+    elif model_type_str == 'micro':
+        target_timestamp_microGIF = '12-09_14-56-17-312'
+        str_tt = target_timestamp_microGIF
+    else:
+        raise NotImplementedError("Model type str not supported: {}".format(model_type_str))
+
+    # target_timestamps = [target_timestamp_mesoGIF, target_timestamp_microGIF]
+    # for str_tt in target_timestamps:
     fname = 'snn_model_target_GD_test'
     load_data = torch.load('./Test/' + IO.PATH + microGIF.__name__ + '/' + str_tt + '/' + fname + IO.fname_ext)
     snn_target = load_data['model']
@@ -37,4 +59,7 @@ for str_tt in target_timestamps:
     plot_param_landscape(microGIF, [800., 1500.], [0.1, 2.], 'tau_theta', 'J_theta', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), N=snn_target.N, fname_addition='white_noise', GIF_flag=True)
     plot_param_landscape(microGIF, [0.01, 1.0], [1., 20.0], 'c', 'Delta_u', other_parameters, target_spikes, num_steps=num_steps, inputs=current_inputs.clone().detach(), N=snn_target.N, fname_addition='white_noise', GIF_flag=True)
 
-sys.exit(0)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
+    sys.exit(0)
