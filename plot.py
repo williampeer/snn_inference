@@ -215,7 +215,7 @@ def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False):
     if not fname:
         fname = 'loss'+IO.dt_descriptor()
     else:
-        fname = fname+IO.dt_descriptor()
+        fname = fname
     data = {'loss': loss, 'exp_type': exp_type, 'custom_title': custom_title, 'fname': fname}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_loss')
 
@@ -343,7 +343,7 @@ def plot_avg_losses_composite(loss_res, keys, archive_path='default_export'):
 
     full_path = './figures/' + archive_path + '/'
     IO.makedir_if_not_exists(full_path)
-    plt.savefig(fname=full_path + 'export_avg_loss_composite.png')
+    plt.savefig(fname=full_path + 'export_avg_loss_composite')
     # plt.show()
     plt.close()
 
@@ -470,8 +470,8 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
                     decompose_param_plot(cur_p, cur_tar, name=name, path=path+'_param_{}'.format(name), custom_title=custom_title)
 
 
-def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
-    if os.path.exists(path + '.png'):
+def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path, params=['p', 'p']):
+    if os.path.exists(path):
         return
 
     params_by_exp = np.array(param_2D).T
@@ -530,9 +530,15 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
                     cur_ax.scatter(current_targets[i], current_targets[j], color='black', marker='x', s=2.*dot_msize)  # test 2*dot_msize
 
     if not path:
-        path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
+        path = './figures/{}/{}/param_subplot_inferred_params_{}.png'.format('default', 'test_uuid', IO.dt_descriptor())
+    else:
+        path_parts = path.split('.')
+        path = '.'
+        for p in path_parts[-1:]:
+            path += p
+        path += '_{}_{}'.format(params[0], params[1]) + path_parts[-1]
     # plt.show()
-    fig.savefig(path + '.png')
+    fig.savefig(path)
     plt.close()
 
 
@@ -542,7 +548,7 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
     IO.makedir_if_not_exists(full_path)
 
     if not fname:
-        fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
+        fname = 'new_inferred_params_{}.png'.format(IO.dt_descriptor())
     path = full_path + fname
 
     if not os.path.exists(path):
@@ -560,15 +566,14 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
 
             # silently fail for 3D params (weights)
             if len(cur_p.shape) == 2:
-                param_path = path+'_param_{}'.format(p_k)
-                if not os.path.exists(param_path) and not os.path.exists(param_path + '.png'):
+                # if not os.path.exists(path):
                     # decompose_param_pair_trajectory_plot(cur_p[:,:,:4], current_targets[:,:,:4], name=name, path=param_path)
-                    if current_targets is not False:
-                        max_index = min(5, len(current_targets))
-                        decompose_param_pair_trajectory_plot(cur_p[:, :max_index], current_targets[:max_index], name=name, path=param_path)
-                    else:
-                        max_index = 5
-                        decompose_param_pair_trajectory_plot(cur_p[:, :max_index], False, name=name, path=param_path)
+                if current_targets is not False:
+                    max_index = min(5, len(current_targets))
+                    decompose_param_pair_trajectory_plot(cur_p[:, :max_index], current_targets[:max_index], name=name, path=path, params=[p_i, p_k])
+                else:
+                    max_index = 5
+                    decompose_param_pair_trajectory_plot(cur_p[:, :max_index], False, name=name, path=path, params=[p_i, p_k])
 
 
 def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname, custom_title=False):

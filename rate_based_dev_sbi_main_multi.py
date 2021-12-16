@@ -33,8 +33,8 @@ def transform_model_to_sbi_params(model):
 
 
 def main(argv):
-    NUM_WORKERS = 12
-    # NUM_WORKERS = 2
+    # NUM_WORKERS = 12
+    NUM_WORKERS = 2
 
     t_interval = 4000
     N = 4
@@ -45,8 +45,8 @@ def main(argv):
     # model_type = 'LIF'
     # model_type = 'GLIF'
     model_type = 'mesoGIF'
-    budget = 10000
-    # budget = 40
+    # budget = 10000
+    budget = 100
     rand_seed = 23
 
     print('Argument List:', str(argv))

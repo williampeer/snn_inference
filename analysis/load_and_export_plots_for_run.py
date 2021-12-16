@@ -16,33 +16,15 @@ def main(argv):
 
     # opts = [opt for opt in argv if opt.startswith("-")]
     # args = [arg for arg in argv if not arg.startswith("-")]
+    # experiments_path = '/media/william/p6/archive_14122021/archive/saved/plot_data/sleep_data_no_types/'
+    experiments_path = '/home/william/repos/Test/saved/plot_data/GT/'
 
-    # experiments_path = '/Users/william/repos/archives_snn_inference/archive 13/saved/plot_data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_2707/archive/saved/plot_data/'
-    # experiments_path = '/home/william/repos/archives_snn_inference/archive_1009/archive/saved/plot_data/'
-    experiments_path = '/media/william/p6/archive_1009/archive/saved/plot_data/'
-
-    # for i, opt in enumerate(opts):
-    #     if opt == '-h':
-    #         print('load_and_export_plot_data.py -p <path>')
-    #         sys.exit()
-    #     elif opt in ("-p", "--path"):
-    #         load_path = args[i]
-    #
-    # if load_path is None:
-    #     print('No path to load model from specified.')
-    #     sys.exit(1)
-
-    folders = os.listdir(experiments_path)
-    for folder_path in folders:
+    # folders = os.listdir(experiments_path)
+    model_types = ['LIF', 'GLIF', 'microGIF']
+    for model_type_str in model_types:
         # print(folder_path)
-        full_folder_path = experiments_path + folder_path + '/'
-        if not folder_path.__contains__('.DS_Store'):
-            files = os.listdir(full_folder_path)
-            id = folder_path.split('-')[-1]
-        else:
-            files = []
-            id = 'None'
+        full_path = experiments_path + model_type_str + '/'
+        files = os.listdir(full_path)
         plot_all_param_pairs_with_variance_files = []; plot_parameter_inference_trajectories_2d_files = []
         plot_spike_trains_files = []
         for f in files:
@@ -53,7 +35,7 @@ def main(argv):
             elif f.__contains__('plot_spiketrains_side_by_side'):
                 plot_spike_trains_files.append(f)
             elif f.__contains__('plot_losses'):
-                f_data = torch.load(full_folder_path + f)
+                f_data = torch.load(full_path + f)
                 custom_title = f_data['plot_data']['custom_title']
                 optimiser = custom_title.split(', ')[1].strip(' ')
                 model_type = custom_title.split(',')[0].split('(')[-1]
@@ -93,7 +75,7 @@ def main(argv):
         #                                    fname='rate_plot_bin_{}_{}'.format(bin_size, save_fname))
 
         for f in plot_all_param_pairs_with_variance_files:
-            data = torch.load(full_folder_path + f)
+            data = torch.load(full_path + f)
             print('Loaded saved plot data.')
 
             plot_data = data['plot_data']
@@ -127,7 +109,7 @@ def main(argv):
                                                     export_flag=True)
 
         for f in plot_parameter_inference_trajectories_2d_files:
-            data = torch.load(full_folder_path + f)
+            data = torch.load(full_path + f)
             print('Loaded saved plot data.')
 
             plot_data = data['plot_data']
