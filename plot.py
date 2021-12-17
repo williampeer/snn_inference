@@ -211,7 +211,7 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     return fig
 
 
-def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False):
+def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False, ylabel=False):
     if not fname:
         fname = 'loss'+IO.dt_descriptor()
     else:
@@ -221,13 +221,16 @@ def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False):
 
     plt.plot(loss)
     # plt.legend(['Training loss', 'Test loss'])
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    # plt.xticks(range(len(loss_arr+1)))
-    if custom_title:
-        plt.title(custom_title)
+    plt.xlabel('Training epoch')
+    if ylabel:
+        plt.ylabel(ylabel)
     else:
-        plt.title('Loss')
+        plt.ylabel('Loss')
+    # plt.xticks(range(len(loss_arr+1)))
+    # if custom_title:
+    #     plt.title(custom_title)
+    # else:
+    #     plt.title('Loss')
 
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
@@ -532,11 +535,7 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path, 
     if not path:
         path = './figures/{}/{}/param_subplot_inferred_params_{}.png'.format('default', 'test_uuid', IO.dt_descriptor())
     else:
-        path_parts = path.split('.')
-        path = '.'
-        for p in path_parts[-1:]:
-            path += p
-        path += '_{}_{}'.format(params[0], params[1]) + path_parts[-1]
+        path = '{}_{}_{}_{}'.format(path[:-4], params[0], params[1], path[-4:])
     # plt.show()
     fig.savefig(path)
     plt.close()

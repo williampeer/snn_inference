@@ -7,11 +7,10 @@ BIN_SIZE = 400
 def torch_van_rossum_convolution(spikes, tau):
     decay_kernel = torch.exp(-torch.tensor(1.) / tau)
     convolved_spiketrain = spikes.clone()
-    one_row_of_zeros = torch.zeros((1, spikes.shape[1]))
+    one_row_of_zeros = torch.ones((1, spikes.shape[1]))
     for i in range(int(3*tau)):
         tmp_shifted_conv = torch.cat([one_row_of_zeros, convolved_spiketrain[:-1]])
         # sig(v - threshold) = 0.5 for v = threshold
-        # this obscures signals. TODO: FIX
         convolved_spiketrain = torch.where(spikes < 0.5, tmp_shifted_conv.clone() * decay_kernel, spikes.clone())
     return convolved_spiketrain
 
