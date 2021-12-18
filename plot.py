@@ -575,7 +575,7 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
                     decompose_param_pair_trajectory_plot(cur_p[:, :max_index], False, name=name, path=path, params=[p_i, p_k])
 
 
-def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname, custom_title=False):
+def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, exp_type, uuid, fname, custom_title=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -599,12 +599,12 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     plt.close()
 
 
-def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, baseline=False, colours=False):
+def bar_plot(y, y_std, labels, exp_type, uuid, fname, ylabel=False, xlabel=False, baseline=False, colours=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
 
-    data = {'y': y, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
+    data = {'y': y, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot')
 
     if str(type(y)).__contains__('array') or str(type(y)).__contains__('list'):
