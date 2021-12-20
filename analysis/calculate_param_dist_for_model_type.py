@@ -56,6 +56,7 @@ def get_param_dist(model, target_model):
     model_params = model.get_parameters()
     target_params = target_model.get_parameters()
     assert len(model_params) == len(target_params), "parameter dicts should be of equal length.."
+
     total_mean_param_dist = 0.
     for p_v, p_k in enumerate(model_params):
         if p_k != 'w':
@@ -176,6 +177,6 @@ for model_type_str in model_type_dirs:
 # importlib.reload(plot)
 plot.bar_plot_neuron_rates(np.asarray(mean_dists), init_dists, np.asarray(std_dists), init_dist_stds,
                            exp_type=plot_exp_type, uuid='all', fname=global_fname, xticks=xticks,
-                           custom_legend=['Initial models', 'Fitted models'])
+                           custom_legend=['Initial models', 'Fitted models'], ylabel='Avg. param dist.')
 
 # sys.exit()

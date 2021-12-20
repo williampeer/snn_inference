@@ -575,7 +575,8 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
                     decompose_param_pair_trajectory_plot(cur_p[:, :max_index], False, name=name, path=path, params=[p_i, p_k])
 
 
-def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, exp_type, uuid, fname, xticks=False, custom_legend=False):
+def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, exp_type, uuid, fname, xticks=False,
+                          custom_legend=['Fitted model', 'Target model'], ylabel='$Hz$'):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -589,10 +590,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, exp_type, uuid, fname, xticks=
         xs = np.linspace(1, 2, 1)
     plt.bar(xs-0.2, r1, yerr=r1_std, width=0.4)
     plt.bar(xs+0.2, r2, yerr=r2_std, width=0.4)
-    if not custom_legend:
-        plt.legend(['Fitted model', 'Target model'])
-    else:
-        plt.legend(custom_legend)
+    plt.legend(custom_legend)
     rmax1 = np.max(np.asarray(r1))
     rmax2 = np.max(np.asarray(r2))
     r_max = np.max([rmax1, rmax2])
@@ -605,7 +603,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, exp_type, uuid, fname, xticks=
         plt.xticks(xs)
     else:
         plt.xticks(xs, xticks)
-    plt.ylabel('$Hz$')
+    plt.ylabel(ylabel)
     plt.savefig(fname=full_path + fname)
     plt.close()
 
