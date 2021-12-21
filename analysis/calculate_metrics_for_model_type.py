@@ -22,8 +22,8 @@ torch.manual_seed(man_seed)
 np.random.seed(man_seed)
 
 load_fname = 'snn_model_target_GD_test'
-model_class_lookup = { 'LIF': LIF, 'GLIF': GLIF, 'microGIF': microGIF,
-                       'LIF_no_cell_types': LIF_no_cell_types, 'GLIF_no_cell_types': GLIF_no_cell_types }
+# model_class_lookup = { 'LIF': LIF, 'GLIF': GLIF, 'mesoGIF': microGIF, 'microGIF': microGIF,
+#                        'LIF_no_cell_types': LIF_no_cell_types, 'GLIF_no_cell_types': GLIF_no_cell_types }
 
 experiments_path = '/home/william/repos/snn_inference/Test/saved/'
 experiments_path_plot_data = '/home/william/repos/snn_inference/Test/saved/plot_data/'
@@ -31,7 +31,7 @@ experiments_path_plot_data = '/home/william/repos/snn_inference/Test/saved/plot_
 # archive_name = 'data/'
 # plot_data_path = experiments_path + 'plot_data/'
 # model_type_dirs = os.listdir(experiments_path)
-model_type_dirs = ['LIF', 'GLIF', 'microGIF']
+model_type_dirs = ['LIF', 'GLIF', 'mesoGIF', 'microGIF']
 # model_type_dirs = ['LIF']
 
 
@@ -59,27 +59,16 @@ def get_param_dist(model, target_model):
 
     total_mean_param_dist = 0.
     for p_v, p_k in enumerate(model_params):
-        if p_k != 'w':
-            p_rmse = np.sqrt(np.mean(np.power(p_v - target_params[p_k].numpy(), 2)))
-            total_mean_param_dist += p_rmse
+        # if p_k != 'w':
+        m_p = model_params[p_k].numpy()
+        t_p = target_params[p_k].numpy()
+        p_rmse = np.sqrt(np.mean(np.power(m_p - t_p, 2)))
+        total_mean_param_dist += p_rmse
 
     return (total_mean_param_dist/len(model_params))
 
 
-def get_param_dist_no_weights(model, target_model):
-    model_params = model.get_parameters()
-    target_params = target_model.get_parameters()
-    assert len(model_params) == len(target_params), "parameter dicts should be of equal length.."
-    total_mean_param_dist = 0.
-    for p_v, p_k in enumerate(model_params):
-        if p_k != 'w':
-            p_rmse = torch.mean(torch.sqrt(torch.pow(p_v - target_params[p_k], 2)))
-            total_mean_param_dist += p_rmse.numpy()
-
-    return (total_mean_param_dist/len(model_params))
-
-
-def get_init_param_dist_no_weights(target_model):
+def get_init_param_dist(target_model):
     model_class = target_model.__class__
     start_seed = 23
     p_dists = []
@@ -92,7 +81,7 @@ def get_init_param_dist_no_weights(target_model):
         else:
             model = model_class(params_model, N=target_model.N)
 
-        cur_dist = get_param_dist_no_weights(model, target_model)
+        cur_dist = get_param_dist(model, target_model)
         p_dists.append(cur_dist)
 
     return np.mean(p_dists), np.std(p_dists)
@@ -107,7 +96,7 @@ def get_lfn_from_plot_data_in_folder(exp_folder):
     return lfn
 
 
-def get_mean_rate_for_model_helper(model):
+def get_mean_rate_for_model(model):
     white_noise = torch.rand((4000, model.N))
     # inputs = experiments.sine_modulated_input(white_noise)
     inputs = white_noise
@@ -122,35 +111,40 @@ def get_mean_rate_for_model_helper(model):
 
 
 
-plot_exp_type = 'export_p_dist'
-global_fname = 'export_p_dists_{}_all.eps'.format(experiments_path.split('/')[-2])
+plot_exp_type = 'export_metrics'
+global_fname_p_dist = 'export_p_dists_{}_all.eps'.format(experiments_path.split('/')[-2])
+global_fname_rates = 'export_rates_{}_all.eps'.format(experiments_path.split('/')[-2])
 mean_dists = []; std_dists = []; xticks = []
 init_dists = []; init_dist_stds = []
+mean_rates = []; std_rates = []; target_rates = []
 for model_type_str in model_type_dirs:
     target_model = get_target_model(model_type_str)
-    target_rate = get_mean_rate_for_model_helper(target_model)
+    target_rate = get_mean_rate_for_model(target_model)
     cur_fname = 'export_rates_{}_{}_N_{}.eps'.format(model_type_str, experiments_path.split('/')[-2], target_model.N)
 
     plot_uid = model_type_str
     full_path = './figures/' + plot_exp_type + '/' + plot_uid + '/'
     # mean_rates_by_lfn = { 'frd': [], 'vrd': [], 'bernoulli_nll': [], 'poisson_nll': [] }
-    if model_type_str == 'microGIF':
+    if model_type_str == 'microGIF' or model_type_str == 'mesoGIF':
         mean_dist_by_lfn = {'bernoulli_nll': [], 'poisson_nll': []}
         mean_rates_by_lfn = {'bernoulli_nll': [], 'poisson_nll': []}
     else:
         mean_dist_by_lfn = {'frd': [], 'vrd': []}
         mean_rates_by_lfn = {'frd': [], 'vrd': []}
 
-    model_class = model_class_lookup[model_type_str]
     # model_class = microGIF
-    exp_uids = os.listdir(experiments_path + '/' + model_type_str)
+    model_type_path = model_type_str
+    if model_type_str == 'mesoGIF':
+        model_type_path = 'microGIF'
+    exp_uids = os.listdir(experiments_path + model_type_path)
     for euid in exp_uids:
-        lfn = get_lfn_from_plot_data_in_folder(experiments_path_plot_data + model_type_str + '/' + euid + '/')
+        lfn = get_lfn_from_plot_data_in_folder(experiments_path_plot_data + model_type_path + '/' + euid + '/')
 
-        load_data = torch.load(experiments_path + '/' + model_type_str + '/' + euid + '/' + load_fname + IO.fname_ext)
+        load_data = torch.load(experiments_path + '/' + model_type_path + '/' + euid + '/' + load_fname + IO.fname_ext)
         cur_model = load_data['model']
-        mean_dist_by_lfn[lfn].append(get_param_dist(cur_model, target_model))
-        mean_rates_by_lfn[lfn].append(get_mean_rate_for_model_helper(cur_model))
+        if cur_model.N == target_model.N:
+            mean_dist_by_lfn[lfn].append(get_param_dist(cur_model, target_model))
+            mean_rates_by_lfn[lfn].append(get_mean_rate_for_model(cur_model))
 
     for lfn in mean_dist_by_lfn.keys():
         cur_dists = []
@@ -167,16 +161,29 @@ for model_type_str in model_type_dirs:
         mean_dists.append(cur_mean_dist)
         std_dists.append(cur_std_dist)
 
-        init_p_dist, init_p_dist_std = get_init_param_dist_no_weights(target_model)
+        init_p_dist, init_p_dist_std = get_init_param_dist(target_model)
         init_dists.append(init_p_dist)
         init_dist_stds.append(init_p_dist_std)
-        xticks.append('{},\n${}$'.format(model_type_str.replace('microGIF', 'miGIF'),
+        xticks.append('{},\n${}$'.format(model_type_str.replace('microGIF', 'miGIF').replace('mesoGIF', 'meGIF'),
                                          lfn.replace('poisson_nll', 'P_{NLL}').replace('bernoulli_nll', 'B_{NLL}')))
+
+    for lfn in mean_rates_by_lfn.keys():
+        target_rates.append(target_rate)
+        cur_mean_rate = np.mean(list(filter(lambda x: not np.isnan(x) and (x < 1.75 * target_rate and x > 0.25 * target_rate), mean_rates_by_lfn[lfn])))
+        cur_std_rate = np.std(list(filter(lambda x: not np.isnan(x) and (x < 1.75 * target_rate and x > 0.25 * target_rate), mean_rates_by_lfn[lfn])))
+        if np.isnan(cur_mean_rate):
+            cur_mean_rate = 0.; cur_std_rate = 0.
+        mean_rates.append(cur_mean_rate)
+        std_rates.append(cur_std_rate)
 # plot.bar_plot(np.asarray(mean_dists), np.asarray(std_dists), labels=xticks, exp_type=plot_exp_type, uuid='all', fname=global_fname)
 # import importlib
 # importlib.reload(plot)
-plot.bar_plot_neuron_rates(np.asarray(mean_dists), init_dists, np.asarray(std_dists), init_dist_stds,
-                           exp_type=plot_exp_type, uuid='all', fname=global_fname, xticks=xticks,
+plot.bar_plot_neuron_rates(init_dists, np.asarray(mean_dists), init_dist_stds, np.asarray(std_dists),
+                           exp_type=plot_exp_type, uuid='all', fname=global_fname_p_dist, xticks=xticks,
                            custom_legend=['Initial models', 'Fitted models'], ylabel='Avg. param dist.')
+plot.bar_plot_neuron_rates(target_rates, np.asarray(mean_rates), 0., np.asarray(std_rates), plot_exp_type, 'all',
+                           custom_legend=['Target models', 'Fitted models'],
+                           fname=global_fname_rates, xticks=xticks,
+                           custom_colors=['Green', 'Magenta'])
 
 # sys.exit()

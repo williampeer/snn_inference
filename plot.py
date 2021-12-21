@@ -576,7 +576,8 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
 
 
 def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, exp_type, uuid, fname, xticks=False,
-                          custom_legend=['Fitted model', 'Target model'], ylabel='$Hz$'):
+                          custom_legend=['Fitted model', 'Target model'], ylabel='$Hz$',
+                          custom_colors=['Blue', 'Orange']):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -585,11 +586,15 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, exp_type, uuid, fname, xticks=
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_neuron_rates')
 
     if len(np.asarray(r1)) > 1:
-        xs = np.linspace(1, r1.shape[0], r1.shape[0])
+        rlen = len(np.asarray(r1))
+        xs = np.linspace(1, rlen, rlen)
+    elif len(np.asarray(r2)) > 1:
+        rlen = len(np.asarray(r2))
+        xs = np.linspace(1, rlen, rlen)
     else:
         xs = np.linspace(1, 2, 1)
-    plt.bar(xs-0.2, r1, yerr=r1_std, width=0.4)
-    plt.bar(xs+0.2, r2, yerr=r2_std, width=0.4)
+    plt.bar(xs-0.2, r1, yerr=r1_std, width=0.4, color=custom_colors[0])
+    plt.bar(xs+0.2, r2, yerr=r2_std, width=0.4, color=custom_colors[1])
     plt.legend(custom_legend)
     rmax1 = np.max(np.asarray(r1))
     rmax2 = np.max(np.asarray(r2))
