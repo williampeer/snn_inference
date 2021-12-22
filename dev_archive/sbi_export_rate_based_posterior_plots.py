@@ -1,10 +1,10 @@
 import os
+import torch
 
 import matplotlib.pyplot as plt
 from sbi import analysis as analysis
 
 import plot
-from TargetModels.TargetModels import *
 from analysis import parameter_distance
 from analysis.sbi_import_export_spikes import convert_posterior_to_model_params_dict
 from experiments import generate_synthetic_data
@@ -56,7 +56,7 @@ def export_stats_model_target(model, observation, descriptor):
     n_samples = 10
     rate_per_sample = None
     for spike_iters in range(n_samples-1):
-        spike_train, _ = generate_synthetic_data(model, poisson_rate=10., t=6000)
+        spike_train, _ = generate_synthetic_data(model, t=4000)
         mean_model_rate = spike_train.sum(dim=0) * 1000. / spike_train.shape[0]
         if rate_per_sample is None:
             rate_per_sample = mean_model_rate
