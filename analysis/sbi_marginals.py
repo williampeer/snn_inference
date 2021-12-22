@@ -2,8 +2,10 @@ import sys
 
 import numpy as np
 
+import plot
 from IO import *
 from Models.microGIF import microGIF
+from analysis import analysis_util
 from analysis.spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
@@ -35,6 +37,10 @@ def main():
 
     files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
 
+    rates_per_model_type = { 'LIF': [], 'GLIF': [], 'microGIF': [] }
+    p_dists_per_model_type = { 'LIF': [], 'GLIF': [], 'microGIF': [] }
+    init_dists_per_model_type = { 'LIF': [], 'GLIF': [], 'microGIF': [] }
+    target_rate_per_m_t = {}
     for sbi_res_file in files_sbi_res:
         print(sbi_res_file)
 
@@ -69,38 +75,22 @@ def main():
         torch.manual_seed(tar_seed)
         np.random.seed(tar_seed)
 
-        if not os.path.exists(data_util.prefix + data_util.target_data_path + data_util.matlab_export + save_fname + '_sample_N_20.mat'):
-            # samples = data_arr['samples']
-            observation = data_arr['observation']
-            # points = data_arr['tar_parameters']
-            m_name = data_arr['m_name']
+        # samples = data_arr['samples']
+        observation = data_arr['observation']
+        # points = data_arr['tar_parameters']
+        m_name = data_arr['m_name']
 
-            # log_probability = posterior.log_prob(samples, x=observation)
-            # print('log_probability: {}'.format(log_probability))
+        # log_probability = posterior.log_prob(samples, x=observation)
+        # print('log_probability: {}'.format(log_probability))
 
-            print('drawing most likely sample..')
-            N_samples = 20
-            posterior_params = posterior.sample((N_samples,), x=observation)
-            print('\nposterior_params: {}'.format(posterior_params))
+        N_samples = 10
+        print('Drawing the {} most likely samples..'.format(N_samples))
+        posterior_params = posterior.sample((N_samples,), x=observation)
+        print('\nposterior_params: {}'.format(posterior_params))
+        target_model = analysis_util.get_target_model(m_name)
 
-            for s_i in range(N_samples):
-                model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], target_class=model_class, target_points=[], N=N)
-                programmatic_neuron_types = torch.ones((N,))
-                for n_i in range(int(2 * N / 3), N):
-                    programmatic_neuron_types[n_i] = -1
-                if model_class is microGIF:
-                    model = model_class(parameters=model_params, N=N)
-                else:
-                    model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
+        # TODO: Plot marginals.
 
-
-                # simulate_and_save_model_spike_train(model, 60*1000, None, m_name, fname=save_fname+'_sample_N_{}'.format(s_i))
-        else:
-            print('file exists. skipping..')
-
-
-# sut_res = import_data(uuid='sbi_res', fname='')
-# sut_samples = import_data(uuid='sbi_samples', fname='')
 
 if __name__ == "__main__":
     main()
