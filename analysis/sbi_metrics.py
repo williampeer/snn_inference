@@ -82,7 +82,7 @@ for sbi_res_file in files_sbi_res:
     # log_probability = posterior.log_prob(samples, x=observation)
     # print('log_probability: {}'.format(log_probability))
 
-    N_samples = 10
+    N_samples = 20
     print('Drawing the {} most likely samples..'.format(N_samples))
     posterior_params = posterior.sample((N_samples,), x=observation)
     print('\nposterior_params: {}'.format(posterior_params))
@@ -111,11 +111,6 @@ for sbi_res_file in files_sbi_res:
 
         target_rate = analysis_util.get_mean_rate_for_model(target_model)
         target_rate_per_m_t[m_name] = target_rate
-
-        spike_correlation_white_noise = 0.
-        activity_RMSE_white_noise = 0.
-        spike_correlation_OU_process = 0.
-        activity_RMSE_OU_process = 0.
 
 xticks = []; rates = []; rate_stds = []; dists = []; dist_stds = []; init_dists = []; init_dist_stds = []
 for m_k in rates_per_model_type.keys():
