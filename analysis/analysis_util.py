@@ -83,18 +83,27 @@ def get_param_dist(model, target_model):
     return (total_mean_param_dist/len(model_params))
 
 
+def get_init_model(model_class, seed, N, neuron_types = False):
+    np.random.seed(seed)
+    torch.random.manual_seed(seed)
+    params_model = experiments.draw_from_uniform(model_class.parameter_init_intervals, N)
+    if model_class is not microGIF:
+        model = model_class(params_model, N=N, neuron_types=neuron_types)
+    else:
+        model = model_class(params_model, N=N)
+
+    return model
+
+
 def get_init_param_dist(target_model):
     model_class = target_model.__class__
     start_seed = 23
     p_dists = []
     for i in range(20):
-        np.random.seed(start_seed+i)
-        torch.random.manual_seed(start_seed+i)
-        params_model = experiments.draw_from_uniform(model_class.parameter_init_intervals, target_model.N)
+        neuron_types = False
         if hasattr(target_model, 'neuron_types'):
-            model = model_class(params_model, N=target_model.N, neuron_types=target_model.neuron_types)
-        else:
-            model = model_class(params_model, N=target_model.N)
+            neuron_types = target_model.neuron_types
+        model = get_init_model(model_class, seed=start_seed+i, N=target_model.N, neuron_types=neuron_types)
 
         cur_dist = get_param_dist(model, target_model)
         p_dists.append(cur_dist)

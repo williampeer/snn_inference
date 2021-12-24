@@ -60,12 +60,22 @@ for model_type_str in model_type_dirs:
             mean_dist_by_lfn[lfn].append(analysis_util.get_param_dist(cur_model, target_model))
             mean_rates_by_lfn[lfn].append(analysis_util.get_mean_rate_for_model(cur_model))
 
+    lfn_ctr = 0
     for lfn in mean_dist_by_lfn.keys():
         cur_dists = []
         for r_i in range(len(mean_rates_by_lfn[lfn])):
             cur_rate = mean_rates_by_lfn[lfn][r_i]
             if not np.isnan(cur_rate) and (cur_rate < 1.75 * target_rate and cur_rate > 0.25 * target_rate):
                 cur_dists.append(mean_dist_by_lfn[lfn][r_i])
+            else:  # diverged, fallback to init. model
+                init_p_dist, init_p_dist_std = analysis_util.get_init_param_dist(target_model)
+                cur_dists.append(init_p_dist)
+                neuron_types = False
+                if hasattr(target_model, 'neuron_types'):
+                    neuron_types = target_model.neuron_types
+                init_model = analysis_util.get_init_model(target_model.__class__, seed=23+lfn_ctr, N=target_model.N, neuron_types=neuron_types)
+                # correct rate to init for diverged fit
+                mean_rates_by_lfn[lfn][r_i] = analysis_util.get_mean_rate_for_model(init_model)
 
         if len(cur_dists) == 0:
             cur_mean_dist = 0.; cur_std_dist = 0.
@@ -80,13 +90,16 @@ for model_type_str in model_type_dirs:
         init_dist_stds.append(init_p_dist_std)
         xticks.append('{},\n${}$'.format(model_type_str.replace('microGIF', 'miGIF').replace('mesoGIF', 'meGIF'),
                                          lfn.replace('poisson_nll', 'P_{NLL}').replace('bernoulli_nll', 'B_{NLL}')))
+        lfn_ctr += 1
 
     for lfn in mean_rates_by_lfn.keys():
         target_rates.append(target_rate)
-        cur_mean_rate = np.mean(list(filter(lambda x: not np.isnan(x) and (x < 1.75 * target_rate and x > 0.25 * target_rate), mean_rates_by_lfn[lfn])))
-        cur_std_rate = np.std(list(filter(lambda x: not np.isnan(x) and (x < 1.75 * target_rate and x > 0.25 * target_rate), mean_rates_by_lfn[lfn])))
-        if np.isnan(cur_mean_rate):
-            cur_mean_rate = 0.; cur_std_rate = 0.
+        # cur_mean_rate = np.mean(list(filter(lambda x: not np.isnan(x) and (x < 1.75 * target_rate and x > 0.25 * target_rate), mean_rates_by_lfn[lfn])))
+        # cur_std_rate = np.std(list(filter(lambda x: not np.isnan(x) and (x < 1.75 * target_rate and x > 0.25 * target_rate), mean_rates_by_lfn[lfn])))
+        cur_mean_rate = np.mean(mean_rates_by_lfn[lfn])
+        cur_std_rate = np.std(mean_rates_by_lfn[lfn])
+        # if np.isnan(cur_mean_rate):
+        #     cur_mean_rate = 0.; cur_std_rate = 0.
         mean_rates.append(cur_mean_rate)
         std_rates.append(cur_std_rate)
 # plot.bar_plot(np.asarray(mean_dists), np.asarray(std_dists), labels=xticks, exp_type=plot_exp_type, uuid='all', fname=global_fname)
