@@ -79,7 +79,7 @@ for sbi_res_file in files_sbi_res:
     # log_probability = posterior.log_prob(samples, x=observation)
     # print('log_probability: {}'.format(log_probability))
 
-    N_samples = 1000
+    N_samples = 5000
     print('Plotting with {} samples..'.format(N_samples))
     posterior_params = posterior.sample((N_samples,), x=observation)
     print('\nposterior_params: {}'.format(posterior_params))
@@ -101,7 +101,12 @@ for sbi_res_file in files_sbi_res:
         p_avgs_samples = torch.vstack((p_avgs_samples, p_single_value_avg_samples))
         t_single_value_avg = torch.mean(GT_pts[(weights_offset + p_i * N_dim):(weights_offset + (p_i + 1) * N_dim)])
         t_avgs = torch.hstack((t_avgs, t_single_value_avg))
-        plot_labels.append('${}$'.format(p_labels[p_i+1].replace('tau', '\\tau')))
+        plot_labels.append('${}$'.format(p_labels[p_i+1].replace('tau', '\\tau')
+                                         .replace('delta_theta', '\\delta_\\theta')
+                                         .replace('theta_inf', '\\theta_{inf}')
+                                         .replace('_theta', '_\\theta')
+                                         .replace('Delta_u', '\\Delta_u')
+                                         ))
 
     limits_low = torch.tensor([0.])
     limits_high = torch.tensor([1.])

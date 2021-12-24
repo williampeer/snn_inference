@@ -44,7 +44,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                               uuid=m_k, fname='rate_bar_plot_model_avg_rate_within_exp_{}_{}_{}_{}'.format(m_k, lfn_k, lr_k.replace('.', '_'), archive_name),
                               # title='Model rates across GBO experiments ({}, {}, {})'.format(m_k, lfn_k, lr_k),
                               title='',
-                              ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$', colours=colours)
+                              ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$', custom_colors=colours)
                 plot.bar_plot_pair_custom_labels(y1=cur_model_mean, y2=cur_target_mean,
                                                  y1_std=cur_model_std, y2_std=cur_target_std,
                                                  labels=labels,
@@ -69,7 +69,7 @@ def plot_stats_across_experiments(avg_statistics_per_exp, archive_name):
                       uuid=m_k, fname='rate_bar_plot_model_avg_rate_across_exp_{}_{}'.format(m_k, archive_name),
                       # title='Model rates across GBO experiments ({})'.format(m_k),
                       title='',
-                      ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$', colours=colours)
+                      ylabel='Firing rate ($Hz$)', xlabel='$\\alpha$', custom_colors=colours)
         plot.bar_plot_pair_custom_labels(y1=avg_model_rates, y2=avg_target_rates,
                                          y1_std=avg_model_rates_std, y2_std=avg_target_rates_std,
                                          labels=labels,

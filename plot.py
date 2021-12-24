@@ -613,7 +613,7 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, exp_type, uuid, fname, xticks=
     plt.close()
 
 
-def bar_plot(y, y_std, labels, exp_type, uuid, fname, ylabel=False, xlabel=False, baseline=False, colours=False):
+def bar_plot(y, y_std, labels, exp_type, uuid, fname, ylabel=False, xlabel=False, baseline=False, custom_colors=False, custom_legend=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -630,15 +630,15 @@ def bar_plot(y, y_std, labels, exp_type, uuid, fname, ylabel=False, xlabel=False
         y_std = np.reshape(np.array([y_std]), (1,))
 
     if hasattr(y_std, 'shape') and len(y_std.shape) > 0 or hasattr(y_std, 'len') and len(y_std) > 0 or hasattr(y_std, 'append'):
-        if colours:
-            plt.bar(xs-0.15, y, yerr=y_std, width=0.3, color=colours)
+        if custom_colors:
+            plt.bar(xs, y, yerr=y_std, width=0.35, color=custom_colors)
         else:
-            plt.bar(xs-0.15, y, yerr=y_std, width=0.3)
+            plt.bar(xs, y, yerr=y_std, width=0.35)
     else:
-        if colours:
-            plt.bar(xs-0.15, y, width=0.3, color=colours)
+        if custom_colors:
+            plt.bar(xs, y, width=0.35, color=custom_colors)
         else:
-            plt.bar(xs-0.15, y, width=0.3)
+            plt.bar(xs, y, width=0.35)
 
     if baseline:
         plt.plot(xs, np.ones_like(y) * baseline, 'g--')
@@ -659,6 +659,9 @@ def bar_plot(y, y_std, labels, exp_type, uuid, fname, ylabel=False, xlabel=False
         plt.ylabel(ylabel)
     else:
         plt.ylabel('Distance')
+
+    if custom_legend:
+        plt.legend(custom_legend)
     # if title:
     #     plt.title(title)
     # else:
