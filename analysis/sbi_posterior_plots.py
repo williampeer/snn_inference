@@ -102,9 +102,9 @@ for sbi_res_file in files_sbi_res:
         t_single_value_avg = torch.mean(GT_pts[(weights_offset + p_i * N_dim):(weights_offset + (p_i + 1) * N_dim)])
         t_avgs = torch.hstack((t_avgs, t_single_value_avg))
         plot_labels.append('${}$'.format(p_labels[p_i+1].replace('tau', '\\tau')
-                                         .replace('delta_theta', '\\delta_\\theta')
+                                         .replace('delta_theta_s', '\\delta_{\\theta_s}')
                                          .replace('theta_inf', '\\theta_{inf}')
-                                         .replace('_theta', '_\\theta')
+                                         .replace('_theta', '_{\\theta}')
                                          .replace('Delta_u', '\\Delta_u')
                                          ))
 
