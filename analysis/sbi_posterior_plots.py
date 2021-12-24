@@ -79,7 +79,7 @@ for sbi_res_file in files_sbi_res:
     # log_probability = posterior.log_prob(samples, x=observation)
     # print('log_probability: {}'.format(log_probability))
 
-    N_samples = 200
+    N_samples = 1000
     print('Plotting with {} samples..'.format(N_samples))
     posterior_params = posterior.sample((N_samples,), x=observation)
     print('\nposterior_params: {}'.format(posterior_params))
@@ -93,13 +93,15 @@ for sbi_res_file in files_sbi_res:
     weights_offset = N_dim**2-N_dim
     p_labels = target_model.free_parameters
     num_free_params = len(p_labels)
-    p_avgs_samples = torch.mean(posterior_params[:weights_offset], dim=1)
+    p_avgs_samples = torch.mean(posterior_params[:,:weights_offset], dim=1)
     t_avgs = torch.mean(GT_pts[:weights_offset])
+    plot_labels = ['$w$']
     for p_i in range(len(p_labels)-1):
         p_single_value_avg_samples = torch.mean(posterior_params[:,(weights_offset + p_i * N_dim):(weights_offset + (p_i + 1) * N_dim)], dim=1)
-        p_avgs_samples = torch.hstack((p_avgs_samples, p_single_value_avg_samples))
+        p_avgs_samples = torch.vstack((p_avgs_samples, p_single_value_avg_samples))
         t_single_value_avg = torch.mean(GT_pts[(weights_offset + p_i * N_dim):(weights_offset + (p_i + 1) * N_dim)])
         t_avgs = torch.hstack((t_avgs, t_single_value_avg))
+        plot_labels.append('${}$'.format(p_labels[p_i+1].replace('tau', '\\tau')))
 
     limits_low = torch.tensor([0.])
     limits_high = torch.tensor([1.])
@@ -108,10 +110,9 @@ for sbi_res_file in files_sbi_res:
         limits_low = torch.hstack((limits_low, torch.tensor(model_class.param_lin_constraints[i][0])))
         limits_high = torch.hstack((limits_high, torch.tensor(model_class.param_lin_constraints[i][1])))
 
-    fig, ax = analysis.pairplot(samples=p_avgs_samples, points=t_avgs, limits=torch.stack((limits_low, limits_high), dim=1),
-                                figsize=(num_free_params, num_free_params))
-    if method is None:
-        method = dt_descriptor
-    fig.savefig('./figures/analysis_pairplot_{}_one_param_{}_{}.png'.format(method, m_name, dt_descriptor))
+    fig, ax = analysis.pairplot(samples=p_avgs_samples.T, points=t_avgs, limits=torch.stack((limits_low, limits_high), dim=1),
+                                # figsize=(num_free_params, num_free_params),
+                                labels=plot_labels)
+    fig.savefig('./figures/sbi_p_avgs_pairplot_{}_{}_{}.eps'.format(method, m_name, dt_descriptor))
 
 # sys.exit()
