@@ -51,13 +51,29 @@ for model_type_str in model_type_dirs:
     if model_type_str == 'mesoGIF':
         model_type_path = 'microGIF'
     exp_uids = os.listdir(experiments_path + model_type_path)
+    lfn_ctr = 0
     for euid in exp_uids:
         lfn = analysis_util.get_lfn_from_plot_data_in_folder(experiments_path_plot_data + model_type_path + '/' + euid + '/')
 
         load_data = torch.load(experiments_path + '/' + model_type_path + '/' + euid + '/' + load_fname + IO.fname_ext)
         cur_model = load_data['model']
         if cur_model.N == target_model.N:
-            mean_rates_by_lfn[lfn].append(analysis_util.get_mean_rate_for_model(cur_model))
+            cur_rate = analysis_util.get_mean_rate_for_model(cur_model)
+            if not np.isnan(cur_rate) and (cur_rate < 1.75 * target_rate and cur_rate > 0.25 * target_rate):
+                # cur_dists.append(mean_dist_by_lfn[lfn][r_i])
+                mean_rates_by_lfn[lfn].append(cur_rate)
+            else:  # diverged, fallback to init. model
+                # init_p_dist, init_p_dist_std = analysis_util.get_init_param_dist(target_model)
+                # cur_dists.append(init_p_dist)
+                neuron_types = False
+                if hasattr(target_model, 'neuron_types'):
+                    neuron_types = target_model.neuron_types
+                init_seed = 23 + int(lfn_ctr*20/len(exp_uids))
+                init_model = analysis_util.get_init_model(target_model.__class__, seed=init_seed, N=target_model.N, neuron_types=neuron_types)
+                # correct rate to init for diverged fit
+                cur_rate = analysis_util.get_mean_rate_for_model(init_model)
+                mean_rates_by_lfn[lfn].append(cur_rate)
+        lfn_ctr += 1
 
     for lfn in mean_rates_by_lfn.keys():
         target_rates.append(target_rate)
@@ -72,6 +88,10 @@ for model_type_str in model_type_dirs:
 # plot.bar_plot(np.asarray(mean_dists), np.asarray(std_dists), labels=xticks, exp_type=plot_exp_type, uuid='all', fname=global_fname)
 # import importlib
 # importlib.reload(plot)
+# For non-micro:
+# plot.bar_plot_neuron_rates(target_rates[:-2], np.asarray(mean_rates)[:-2], 0., np.asarray(std_rates)[:-2], plot_exp_type, 'all',
+#                            custom_legend=['Target models', 'Fitted models'],
+#                            fname=global_fname_rates, xticks=xticks, custom_colors=['Green', 'Magenta'])
 plot.bar_plot_neuron_rates(target_rates, np.asarray(mean_rates), 0., np.asarray(std_rates), plot_exp_type, 'all',
                            custom_legend=['Target models', 'Fitted models'],
                            fname=global_fname_rates, xticks=xticks, custom_colors=['Green', 'Magenta'])

@@ -69,7 +69,7 @@ for model_type_str in model_type_dirs:
             lfn = analysis_util.get_lfn_from_plot_data_in_folder(experiments_path_sleep_data_microGIF_plot_data + model_type_str + '/' + euid + '/')
 
             load_fname = 'snn_model_target_GD_test'
-            load_data = torch.load(experiments_path + '/' + model_type_str + '/' + euid + '/' + load_fname + IO.fname_ext)
+            load_data = torch.load(experiments_path_sleep_data_microGIF + model_type_str + '/' + euid + '/' + load_fname + IO.fname_ext)
             cur_model = load_data['model']
             result_per_exp[sleep_exp][model_type_str][lfn].append(analysis_util.get_mean_rate_for_model(cur_model))
 
