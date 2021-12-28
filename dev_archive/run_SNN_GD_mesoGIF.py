@@ -17,7 +17,7 @@ from experiments import release_computational_graph, draw_from_uniform
 
 target_timestamp = '12-09_14-56-20-319'
 for lfn_str in ['bernoulli_nll', 'poisson_nll']:
-    for random_seed in range(3, 24):
+    for random_seed in range(23, 44):
         torch.manual_seed(random_seed)
         np.random.seed(random_seed)
         # pop_sizes, snn = TargetModelMicroGIF.micro_gif_populations_model_full_size(random_seed=random_seed)
