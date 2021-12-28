@@ -23,7 +23,7 @@ for lfn in ['bernoulli_nll', 'poisson_nll']:
         torch.manual_seed(random_seed)
         np.random.seed(random_seed)
 
-        snn_target = micro_gif_populations_model_full_size(random_seed)
+        pop_sizes, snn_target = micro_gif_populations_model_full_size(random_seed)
 
         N = snn_target.N
         t = 1200
