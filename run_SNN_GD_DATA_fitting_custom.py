@@ -27,8 +27,8 @@ class_lookup = { 'LIF_no_cell_types': LIF_no_cell_types, 'GLIF_no_cell_types': G
 
 def main(argv):
     print('Argument List:', str(argv))
-    start_seed = 13
-    num_seeds = 10
+    start_seed = 23
+    num_seeds = 20
     model_class = LIF_no_cell_types
     # model_class = GLIF_no_cell_types
     sleep_exp_num = None
@@ -170,8 +170,8 @@ def main(argv):
                 loss = None; current_inputs = None
 
             plot.plot_loss(losses, uuid=current_uuid, exp_type='GD_test',
-                           custom_title='Loss {}, $\\alpha$={}, {}, bin_size={}'.format(lfn, learn_rate, optimiser.__class__.__name__, bin_size),
-                           fname='plot_loss_test'+IO.dt_descriptor())
+                           custom_title='Loss {}, $\\alpha$={}, {}, bin_size={}, sleep exp. #{}'.format(lfn, learn_rate, optimiser.__class__.__name__, bin_size, data_file.strip('.mat')),
+                           fname='plot_loss_test_df_{}'.format(data_file)+IO.dt_descriptor())
 
             plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=current_uuid,
                                                 exp_type='GD_test', title='Test {} spike trains'.format(snn.__class__.__name__),

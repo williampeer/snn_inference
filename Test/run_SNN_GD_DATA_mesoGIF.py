@@ -14,7 +14,7 @@ import plot
 from Models.microGIF import microGIF
 from experiments import release_computational_graph
 
-start_seed = 3
+start_seed = 23
 num_seeds = 20
 
 # target_data_fname = 'GT_LIF_N_4_seed_3_duration_120000.mat'
@@ -129,8 +129,8 @@ for data_file in data_files:
                 loss = None; current_inputs = None
 
             plot.plot_loss(losses, uuid=current_uuid, exp_type='GD_test',
-                           custom_title='Loss {}, $\\alpha$={}, {}, bin_size={}'.format(lfn, learn_rate, optimiser.__class__.__name__, bin_size),
-                           fname='plot_loss_test'+IO.dt_descriptor())
+                           custom_title='Loss {}, $\\alpha$={}, {}, bin_size={}, sleep exp #{}'.format(lfn, learn_rate, optimiser.__class__.__name__, bin_size, data_file.strip('.mat')),
+                           fname='plot_loss_test_df_{}'.format(data_file) + IO.dt_descriptor())
 
             plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=current_uuid,
                                                 exp_type='GD_test', title='Test {} spike trains'.format(snn.__class__.__name__),
