@@ -50,7 +50,7 @@ for lfn in ['bernoulli_nll', 'poisson_nll']:
         white_noise = torch.rand((t, N))
         assert white_noise.shape[0] > white_noise.shape[1]
         current_inputs = experiments.sine_modulated_input(white_noise)
-        target_vs, target_spikes = model_util.feed_inputs_sequentially_return_tuple(snn_target, current_inputs)
+        _, target_spikes, _ = model_util.feed_inputs_sequentially_return_args(snn_target, current_inputs)
         target_spikes = target_spikes.clone().detach()
         target_parameters = snn_target.state_dict()
 
