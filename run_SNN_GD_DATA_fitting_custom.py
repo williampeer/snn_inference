@@ -86,7 +86,7 @@ def main(argv):
 
             A_coeffs = [torch.randn((4,))]
             phase_shifts = [torch.rand((4,))]
-            input_types = [1, 1, 1, 1]
+            # input_types = [1, 1, 1, 1]
 
             next_step_i = 0
             next_step_i, target_spikes = data_util.get_spike_train_matrix(next_step_i, t, spike_times, spike_indices, node_indices)
