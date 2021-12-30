@@ -21,8 +21,8 @@ from experiments import release_computational_graph
 # prev_timestamp = '11-16_11-03-55-161'
 # prev_timestamp = '11-16_11-12-37-827'
 # prev_timestamp = '11-16_11-21-13-903'
-start_seed = 3
-num_seeds = 20
+start_seed = 23
+num_seeds = 10
 
 tar_timestamp_GLIF = '12-09_11-12-47-541'  # GLIF
 tar_timestamp_LIF = '12-09_11-49-59-999'  # LIF
@@ -32,7 +32,8 @@ target_model_timestamps = [tar_timestamp_LIF]
 target_model_classes = [LIF]
 
 for tmt_i, tmt in enumerate(target_model_timestamps):
-    for lfn in ['frd', 'vrd']:
+    # for lfn in ['frd', 'vrd']:
+    for lfn in ['vrd']:
         for random_seed in range(start_seed, start_seed+num_seeds):
             torch.manual_seed(random_seed)
             np.random.seed(random_seed)

@@ -18,22 +18,24 @@ from Models.LIF import LIF
 from Models.microGIF import microGIF
 from experiments import release_computational_graph
 
-start_seed = 3
+start_seed = 23
 num_seeds = 20
 
-# target_data_fname = 'GT_LIF_N_4_seed_3_duration_120000.mat'
-# target_data_path = data_util.prefix + data_util.target_data_path
+target_data_fname = 'GT_LIF_N_4_seed_3_duration_120000.mat'
+target_data_path = data_util.prefix + data_util.target_data_path
 
-target_data_path = data_util.prefix + data_util.sleep_data_path
-sleep_data_files = ['exp108.mat', 'exp109.mat', 'exp124.mat', 'exp126.mat', 'exp138.mat', 'exp146.mat', 'exp147.mat']
+# target_data_path = data_util.prefix + data_util.sleep_data_path
+# sleep_data_files = ['exp108.mat', 'exp109.mat', 'exp124.mat', 'exp126.mat', 'exp138.mat', 'exp146.mat', 'exp147.mat']
 
-# data_files = [target_data_fname]
-data_files = sleep_data_files
+data_files = [target_data_fname]
+# data_files = sleep_data_files
 for data_file in data_files:
     node_indices, spike_times, spike_indices = data_util.load_sparse_data(target_data_path + data_file)
 
     for model_class in [LIF, GLIF]:
-        for lfn in ['frd', 'vrd']:
+    # for model_class in [LIF]:
+    # for model_class in [GLIF]:
+        for lfn in ['vrd']:
             for random_seed in range(start_seed, start_seed+num_seeds):
                 torch.manual_seed(random_seed)
                 np.random.seed(random_seed)
@@ -41,8 +43,8 @@ for data_file in data_files:
                 # N = 4
                 N = len(np.unique(node_indices))
                 t = 1200
-                learn_rate = 0.001
-                num_train_iter = 100
+                learn_rate = 0.01
+                num_train_iter = 200
                 plot_every = round(num_train_iter/20)
                 bin_size = 100
                 tau_vr = 4.
@@ -54,7 +56,9 @@ for data_file in data_files:
                 logger = Log.Logger('{}_GD_{}.txt'.format('DATA', timestamp))
                 writer = SummaryWriter('runs/' + timestamp)
                 # current_uuid = 'GT' + '/' + model_class.__name__ + '/' + timestamp
-                current_uuid = 'sleep_data_no_types' + '/' + model_class.__name__ + '/' + timestamp
+                # current_uuid = 'sleep_data_no_types' + '/' + model_class.__name__ + '/' + timestamp
+                # current_uuid = 'sdnt_vrd_conv_2' + '/' + model_class.__name__ + '/' + timestamp
+                current_uuid = 'GT_vrd_conv_2' + '/' + model_class.__name__ + '/' + timestamp
 
                 A_coeffs = [torch.randn((4,))]
                 phase_shifts = [torch.rand((4,))]

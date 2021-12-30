@@ -1,11 +1,13 @@
 import torch
 
-from experiments import sine_modulated_white_noise_input
+import experiments
 from spike_metrics import van_rossum_dist
 
 
-s1 = sine_modulated_white_noise_input(10., 4000, 12)
-s2 = sine_modulated_white_noise_input(10., 4000, 12)
+# s1 = sine_modulated_white_noise_input(10., 4000, 12)
+# s2 = sine_modulated_white_noise_input(10., 4000, 12)
+s1 = torch.round(torch.rand((1200, 4)))
+s2 = torch.round(torch.rand((1200, 4)))
 
 t2 = float(s2.sum())
 

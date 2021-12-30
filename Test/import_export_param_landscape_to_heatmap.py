@@ -7,19 +7,17 @@ import torch
 import IO
 import plot
 
-t = 1200
-num_steps = 100
-
 GT_model_by_class = { 'LIF': '12-09_11-49-59-999',
                       'GLIF': '12-09_11-12-47-541',
                       'mesoGIF': '12-09_14-56-20-319',
                       'microGIF': '12-09_14-56-17-312' }
 
-# archive_path = '/home/william/repos/snn_inference/saved/plot_data/'
-archive_path = '/media/william/p6/archive_14122021/archive/saved/plot_data/'
+archive_path = '/home/william/repos/snn_inference/saved/plot_data/'
+# archive_path = '/media/william/p6/archive_14122021/archive/saved/plot_data/'
+# archive_path = '/home/william/repos/archives_snn_inference/archive_1612/archive/saved/plot_data/'
 GT_path = '/home/william/repos/snn_inference/Test/saved/'
-# model_type_dirs = ['LIF', 'GLIF', 'microGIF']
-model_type_dirs = ['microGIF']
+model_type_dirs = ['LIF', 'GLIF', 'microGIF']
+# model_type_dirs = ['microGIF']
 for mt_str in model_type_dirs:
     mt_dir = 'test_{}'.format(mt_str)
     specific_plot_files = os.listdir(archive_path + mt_dir)
@@ -27,7 +25,8 @@ for mt_str in model_type_dirs:
         load_data = torch.load(archive_path + mt_dir + '/' + sp_file)
         save_data = load_data['plot_data']
         saved_fname = save_data['fname']
-        model_N = int(saved_fname.split('_N_')[1].split('_')[0])
+        # model_N = int(saved_fname.split('_N_')[1].split('_')[0])
+        model_N = 4
         # data = {'p1s': p1s, 'p2s': p2s, 'summary_statistic': summary_statistic,
         #             'p1_name': p1_name, 'p2_name': p2_name, 'statistic_name': statistic_name,
         #             'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
@@ -77,7 +76,7 @@ for mt_str in model_type_dirs:
         axes = ['${}$'.format(save_data['p1_name']), '${}$'.format(save_data['p2_name'])]
         exp_type = 'test'; uuid = 'export_p_landscape_2d'
         # model_N =
-        plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname=mt_str+'/test_export_2d_heatmap_N_{}_{}_{}_{}.png'.format(model_N, statistic_name, save_data['p1_name'], save_data['p2_name']),
+        plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname=mt_str+'/test_export_2d_heatmap_N_{}_{}_{}_{}.eps'.format(model_N, statistic_name, save_data['p1_name'], save_data['p2_name']),
                           target_coords=target_coords, xticks=xticks, yticks=yticks, cbar_label=statistic_name)
 
 sys.exit()

@@ -211,23 +211,26 @@ def plot_neuron(membrane_potentials_through_time, uuid, exp_type='default', titl
     return fig
 
 
-def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False):
+def plot_loss(loss, uuid, exp_type='default', custom_title=False, fname=False, ylabel=False):
     if not fname:
         fname = 'loss'+IO.dt_descriptor()
     else:
-        fname = fname+IO.dt_descriptor()
+        fname = fname
     data = {'loss': loss, 'exp_type': exp_type, 'custom_title': custom_title, 'fname': fname}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='plot_loss')
 
     plt.plot(loss)
     # plt.legend(['Training loss', 'Test loss'])
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    # plt.xticks(range(len(loss_arr+1)))
-    if custom_title:
-        plt.title(custom_title)
+    plt.xlabel('Training epoch')
+    if ylabel:
+        plt.ylabel(ylabel)
     else:
-        plt.title('Loss')
+        plt.ylabel('Loss')
+    # plt.xticks(range(len(loss_arr+1)))
+    # if custom_title:
+    #     plt.title(custom_title)
+    # else:
+    #     plt.title('Loss')
 
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
@@ -343,7 +346,7 @@ def plot_avg_losses_composite(loss_res, keys, archive_path='default_export'):
 
     full_path = './figures/' + archive_path + '/'
     IO.makedir_if_not_exists(full_path)
-    plt.savefig(fname=full_path + 'export_avg_loss_composite.png')
+    plt.savefig(fname=full_path + 'export_avg_loss_composite')
     # plt.show()
     plt.close()
 
@@ -470,8 +473,8 @@ def plot_all_param_pairs_with_variance(param_means, target_params, param_names, 
                     decompose_param_plot(cur_p, cur_tar, name=name, path=path+'_param_{}'.format(name), custom_title=custom_title)
 
 
-def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
-    if os.path.exists(path + '.png'):
+def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path, params=['p', 'p']):
+    if os.path.exists(path):
         return
 
     params_by_exp = np.array(param_2D).T
@@ -530,9 +533,11 @@ def decompose_param_pair_trajectory_plot(param_2D, current_targets, name, path):
                     cur_ax.scatter(current_targets[i], current_targets[j], color='black', marker='x', s=2.*dot_msize)  # test 2*dot_msize
 
     if not path:
-        path = './figures/{}/{}/param_subplot_inferred_params_{}'.format('default', 'test_uuid', IO.dt_descriptor())
+        path = './figures/{}/{}/param_subplot_inferred_params_{}.png'.format('default', 'test_uuid', IO.dt_descriptor())
+    else:
+        path = '{}_{}_{}_{}'.format(path[:-4], params[0], params[1], path[-4:])
     # plt.show()
-    fig.savefig(path + '.png')
+    fig.savefig(path)
     plt.close()
 
 
@@ -542,7 +547,7 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
     IO.makedir_if_not_exists(full_path)
 
     if not fname:
-        fname = 'new_inferred_params_{}'.format(IO.dt_descriptor())
+        fname = 'new_inferred_params_{}.png'.format(IO.dt_descriptor())
     path = full_path + fname
 
     if not os.path.exists(path):
@@ -560,18 +565,19 @@ def plot_parameter_inference_trajectories_2d(param_means, target_params, param_n
 
             # silently fail for 3D params (weights)
             if len(cur_p.shape) == 2:
-                param_path = path+'_param_{}'.format(p_k)
-                if not os.path.exists(param_path) and not os.path.exists(param_path + '.png'):
+                # if not os.path.exists(path):
                     # decompose_param_pair_trajectory_plot(cur_p[:,:,:4], current_targets[:,:,:4], name=name, path=param_path)
-                    if current_targets is not False:
-                        max_index = min(5, len(current_targets))
-                        decompose_param_pair_trajectory_plot(cur_p[:, :max_index], current_targets[:max_index], name=name, path=param_path)
-                    else:
-                        max_index = 5
-                        decompose_param_pair_trajectory_plot(cur_p[:, :max_index], False, name=name, path=param_path)
+                if current_targets is not False:
+                    max_index = min(5, len(current_targets))
+                    decompose_param_pair_trajectory_plot(cur_p[:, :max_index], current_targets[:max_index], name=name, path=path, params=[p_i, p_k])
+                else:
+                    max_index = 5
+                    decompose_param_pair_trajectory_plot(cur_p[:, :max_index], False, name=name, path=path, params=[p_i, p_k])
 
 
-def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fname, custom_title=False):
+def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, exp_type, uuid, fname, xticks=False,
+                          custom_legend=['Fitted model', 'Target model'], ylabel='$Hz$',
+                          custom_colors=['Blue', 'Orange']):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
@@ -579,28 +585,40 @@ def bar_plot_neuron_rates(r1, r2, r1_std, r2_std, bin_size, exp_type, uuid, fnam
     data = {'r1': r1, 'r2': r2, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot_neuron_rates')
 
-    xs = np.linspace(1, r1.shape[0], r1.shape[0])
-    plt.bar(xs-0.2, r1, yerr=r1_std, width=0.4)
-    plt.bar(xs+0.2, r2, yerr=r2_std, width=0.4)
-    plt.legend(['Fitted model', 'Target model'])
-    r_max = np.max([np.array(r1), np.array(r2)])
-    rstd_max = np.max([np.array(r1_std), np.array(r2_std)])
+    if len(np.asarray(r1)) > 1:
+        rlen = len(np.asarray(r1))
+        xs = np.linspace(1, rlen, rlen)
+    elif len(np.asarray(r2)) > 1:
+        rlen = len(np.asarray(r2))
+        xs = np.linspace(1, rlen, rlen)
+    else:
+        xs = np.linspace(1, 2, 1)
+    plt.bar(xs-0.2, r1, yerr=r1_std, width=0.4, color=custom_colors[0])
+    plt.bar(xs+0.2, r2, yerr=r2_std, width=0.4, color=custom_colors[1])
+    plt.legend(custom_legend)
+    rmax1 = np.max(np.asarray(r1))
+    rmax2 = np.max(np.asarray(r2))
+    r_max = np.max([rmax1, rmax2])
+    r1sm = np.max(np.array(r1_std))
+    r2sm = np.max(np.array(r2_std))
+    rstd_max = np.max([r1sm, r2sm])
     summed_max = r_max + rstd_max
-    # plt.ylim(0, summed_max + rstd_max*0.05)
-    plt.ylim(0, 15)
-    plt.xticks(xs)
-    plt.xlabel('Neuron')
-    plt.ylabel('$Hz$')
+    plt.ylim(0, summed_max + rstd_max*0.05)
+    if not xticks:
+        plt.xticks(xs)
+    else:
+        plt.xticks(xs, xticks)
+    plt.ylabel(ylabel)
     plt.savefig(fname=full_path + fname)
     plt.close()
 
 
-def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabel=False, baseline=False, colours=False):
+def bar_plot(y, y_std, labels, exp_type, uuid, fname, ylabel=False, xlabel=False, baseline=False, custom_colors=False, custom_legend=False):
     full_path = './figures/' + exp_type + '/' + uuid + '/'
     IO.makedir_if_not_exists('./figures/' + exp_type + '/')
     IO.makedir_if_not_exists(full_path)
 
-    data = {'y': y, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname, 'title': title}
+    data = {'y': y, 'exp_type': exp_type, 'uuid': uuid, 'fname': fname}
     IO.save_plot_data(data=data, uuid=uuid, plot_fn='bar_plot')
 
     if str(type(y)).__contains__('array') or str(type(y)).__contains__('list'):
@@ -612,15 +630,15 @@ def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabe
         y_std = np.reshape(np.array([y_std]), (1,))
 
     if hasattr(y_std, 'shape') and len(y_std.shape) > 0 or hasattr(y_std, 'len') and len(y_std) > 0 or hasattr(y_std, 'append'):
-        if colours:
-            plt.bar(xs-0.15, y, yerr=y_std, width=0.3, color=colours)
+        if custom_colors:
+            plt.bar(xs, y, yerr=y_std, width=0.35, color=custom_colors)
         else:
-            plt.bar(xs-0.15, y, yerr=y_std, width=0.3)
+            plt.bar(xs, y, yerr=y_std, width=0.35)
     else:
-        if colours:
-            plt.bar(xs-0.15, y, width=0.3, color=colours)
+        if custom_colors:
+            plt.bar(xs, y, width=0.35, color=custom_colors)
         else:
-            plt.bar(xs-0.15, y, width=0.3)
+            plt.bar(xs, y, width=0.35)
 
     if baseline:
         plt.plot(xs, np.ones_like(y) * baseline, 'g--')
@@ -641,6 +659,9 @@ def bar_plot(y, y_std, labels, exp_type, uuid, fname, title, ylabel=False, xlabe
         plt.ylabel(ylabel)
     else:
         plt.ylabel('Distance')
+
+    if custom_legend:
+        plt.legend(custom_legend)
     # if title:
     #     plt.title(title)
     # else:
