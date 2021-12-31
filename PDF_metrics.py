@@ -25,12 +25,12 @@ def bernoulli_nll(spike_probabilities, target_spikes):
     # return torch.mean(-m.log_prob(target_spikes))
 
 
-def calculate_loss(spike_probabilities, target_spikes, constants):
-    lfn = PDF_LFN[constants.loss_fn]
+def calculate_loss(spike_probabilities, target_spikes, loss_fn, bin_size=100):
+    lfn = PDF_LFN[loss_fn]
     if lfn == PDF_LFN.BERNOULLI:
         return bernoulli_nll(spike_probabilities, target_spikes)
     elif lfn == PDF_LFN.POISSON:
-        return poisson_nll(spike_probabilities, target_spikes, constants.bin_size)
+        return poisson_nll(spike_probabilities, target_spikes, bin_size)
     else:
         raise NotImplementedError()
 

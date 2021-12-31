@@ -117,7 +117,7 @@ def evaluate_loss_tuple(model, inputs, target_spiketrain, label, exp_type, train
     sanity_checks(target_spiketrain)
     print('-- sanity-checks-done --')
 
-    loss = PDF_metrics.calculate_loss(spike_probabilities=sproba, target_spikes=target_spiketrain, constants=constants)
+    loss = PDF_metrics.calculate_loss(spike_probabilities=sproba, target_spikes=target_spiketrain, constants=constants.loss_fn, bin_size=constants.bin_size)
     loss.backward(retain_graph=True)
 
     print('loss:', loss)

@@ -34,7 +34,7 @@ def fit_batches(model, gen_inputs, target_spiketrain, optimiser, constants, trai
 
     spike_probs, expressed_model_spikes = model_util.feed_inputs_sequentially_return_tuple(model, current_inputs)
 
-    loss = PDF_metrics.calculate_loss(spike_probs, target_spiketrain.detach(), constants)
+    loss = PDF_metrics.calculate_loss(spike_probs, target_spiketrain.detach(), constants.loss_fn, constants.bin_size)
     loss.backward(retain_graph=True)
 
     param_grads_converged = []
