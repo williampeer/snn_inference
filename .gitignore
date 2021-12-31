@@ -29,6 +29,8 @@ __pycache__
 *.csv
 *.txt
 *.pt
+!Test/saved/microGIF/12-09_14-56-17-312/snn_model_target_GD_test.pt
+!Test/saved/microGIF/12-09_14-56-20-319/snn_model_target_GD_test.pt
 ._*.mat
 
 sbi-logs/*
