@@ -27,6 +27,8 @@ class LIF(nn.Module):
                     w_mean = float(parameters[key])
                 elif key == 'w_var':
                     w_var = float(parameters[key])
+                elif key == 'neuron_types':
+                    neuron_types = parameters[key]
 
         __constants__ = ['N', 'norm_R_const', 'self_recurrence_mask', 'V_thresh']
         self.N = N

@@ -6,7 +6,7 @@ import plot
 import spike_metrics
 
 
-def plot_param_landscape(model_class, p1_interval, p2_interval, p1_name, p2_name, other_parameters, target_spikes,  num_steps, inputs, N, fname_addition='',
+def plot_param_landscape(model_class, p1_interval, p2_interval, p1_name, p2_name, other_parameters, target_spikes, num_steps, inputs, N, fname_addition='',
                          GIF_flag=False, lfn='lfn'):
     all_parameters = other_parameters
 

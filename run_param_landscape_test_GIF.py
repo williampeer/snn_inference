@@ -3,6 +3,7 @@ import sys
 import torch
 
 import IO
+import PDF_metrics
 import model_util
 from Models.microGIF import microGIF
 from Test.parameter_landscape_test import plot_param_landscape
@@ -17,6 +18,7 @@ num_steps = 100
 def main(argv):
     print('Argument List:', str(argv))
     model_type_str = 'meso'
+    lfn = PDF_metrics.PDF_LFN.BERNOULLI.name
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
