@@ -30,7 +30,7 @@ def plot_param_landscape(model_class, p1_interval, p2_interval, p1_name, p2_name
                 # lfn = PDF_metrics.PDF_LFN[lfn]
                 spike_probs, spikes, vs = model_util.feed_inputs_sequentially_return_args(snn, inputs)
 
-                loss = PDF_metrics.calculate_loss(spike_probs, target_spikes.detach(), lfn, bin_size=100)
+                loss = PDF_metrics.calculate_loss(spike_probs, target_spikes.detach(), lfn, bin_size=100).clone().detach().numpy()
                 # loss = PDF_metrics.calculate_loss(spike_probs, target_spikes.detach(), lfn)
                 losses.append(loss)
             else:

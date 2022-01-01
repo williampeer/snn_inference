@@ -19,6 +19,7 @@ def main(argv):
     print('Argument List:', str(argv))
     model_type_str = 'meso'
     lfn = PDF_metrics.PDF_LFN.BERNOULLI.name
+    # lfn = PDF_metrics.PDF_LFN.POISSON.name
 
     opts = [opt for opt in argv if opt.startswith("-")]
     args = [arg for arg in argv if not arg.startswith("-")]
