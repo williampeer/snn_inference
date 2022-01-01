@@ -82,7 +82,7 @@ for sbi_res_file in files_sbi_res:
     # log_probability = posterior.log_prob(samples, x=observation)
     # print('log_probability: {}'.format(log_probability))
 
-    N_samples = 20
+    N_samples = 15
     print('Drawing the {} most likely samples..'.format(N_samples))
     posterior_params = posterior.sample((N_samples,), x=observation)
     print('\nposterior_params: {}'.format(posterior_params))

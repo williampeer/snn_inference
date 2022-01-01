@@ -156,7 +156,7 @@ for sbi_res_file in files_sbi_res:
         # log_probability = posterior.log_prob(samples, x=observation)
         # print('log_probability: {}'.format(log_probability))
 
-        N_samples = 20
+        N_samples = 15
         t = 10000
         print('Drawing the {} most likely samples..'.format(N_samples))
         posterior_params = posterior.sample((N_samples,), x=observation)
@@ -263,6 +263,17 @@ plot.bar_plot_neuron_rates(init_corrs_OU, correlations_OU, 0, 0,
                            custom_legend=['Init. model', 'Posterior models'], ylabel='Avg. activity correlation',
                            custom_colors=['Gray', 'Brown'])
 
+# not_undef = lambda x: not np.isnan(x) and not np.isinf(x)
+# init_rmse_wn = list(filter(not_undef, init_rmse_wn))
+# rmse_wn = list(filter(not_undef, rmse_wn))
+# init_rmse_OU = list(filter(not_undef, init_rmse_OU))
+# rmse_OU = list(filter(not_undef, rmse_OU))
+#
+# correlations_wn = list(filter(not_undef, correlations_wn))
+# correlations_OU = list(filter(not_undef, correlations_OU))
+# init_corrs_wn = list(filter(not_undef, init_corrs_wn))
+# init_corrs_OU = list(filter(not_undef, init_corrs_OU))
+
 import torch.tensor as T
 n_init_rmse_wn = T(np.asarray(init_rmse_wn))/T(np.asarray(init_rmse_wn)); n_rmse_wn = T(rmse_wn) / T(np.asarray(init_rmse_wn))
 # n_rmse_wn[1] = torch.min(n_rmse_wn[1], T(4.))
@@ -274,5 +285,24 @@ plot.bar_plot(n_rmse_wn.numpy(), y_std=0, exp_type=plot_exp_type, uuid='all',
 plot.bar_plot(n_rmse_OU.numpy(), y_std=0, exp_type=plot_exp_type, uuid='all',
               ylabel='RMSE', fname='plot_rmse_OU_all.eps', labels=xticks, baseline=1.,
               custom_colors=['Purple'], custom_legend=['Init. model', 'Posterior models'])
+
+print('init_rmse_wn', init_rmse_wn)
+print('rmse_wn', rmse_wn)
+
+print('init_rmse_OU', init_rmse_OU)
+print('rmse_OU', rmse_OU)
+# ------
+
+print('n_init_rmse_wn', n_init_rmse_wn)
+print('n_rmse_wn', n_rmse_wn)
+
+print('n_init_rmse_OU', n_init_rmse_OU)
+print('n_rmse_OU', n_rmse_OU)
+
+print('init_corrs_wn', init_corrs_wn)
+print('correlations_wn', correlations_wn)
+
+print('init_corrs_OU', init_corrs_OU)
+print('correlations_OU', correlations_OU)
 
 # sys.exit()
