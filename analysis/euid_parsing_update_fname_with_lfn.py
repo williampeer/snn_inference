@@ -17,9 +17,7 @@ def get_lfn_from_plot_data_in_folder(exp_folder):
 
 
 exp_paths = ['/media/william/p6/archive_14122021/archive/saved/sleep_data_no_types/',
-             '/home/william/repos/snn_inference/Test/saved/sleep_data/',
-             '/home/william/repos/snn_inference/Test/saved/GT/',
-             '/home/william/repos/snn_inference/Test/saved/']
+             '/media/william/p6/archive_snn_inference/saved/']
 
 model_type_dirs = ['LIF', 'GLIF', 'LIF_no_cell_types', 'GLIF_no_cell_types', 'microGIF']
 
@@ -40,13 +38,19 @@ exported_files = os.listdir(matlab_export_path)
 for fname in exported_files:
     if fname.__contains__('.mat') and fname.__contains__('_euid_') and not fname.__contains__('_lfn_'):
         euid = fname.split('_euid_')[1].strip('.mat')
-        new_fname = '{}_lfn_{}.mat'.format(fname.strip('.mat'), euid_to_lfn[euid])
-        os.rename(matlab_export_path + fname, matlab_export_path + new_fname)
+        if euid in euid_to_lfn:
+            new_fname = '{}_lfn_{}.mat'.format(fname.strip('.mat'), euid_to_lfn[euid])
+            os.rename(matlab_export_path + fname, matlab_export_path + new_fname)
+        else:
+            print(euid, 'not in dict..')
 
 matlab_results_path = '/home/william/repos/pnmf-fork/results/'
 results_files = os.listdir(matlab_results_path)
 for fname in results_files:
     if fname.__contains__('.mat') and fname.__contains__('_euid_') and not fname.__contains__('_lfn_'):
         euid = fname.split('_euid_')[1][:-6]
-        new_fname = '{}_lfn_{}_4.mat'.format(fname[:-6], euid_to_lfn[euid])
-        os.rename(matlab_results_path + fname, matlab_results_path + new_fname)
+        if euid in euid_to_lfn:
+            new_fname = '{}_lfn_{}_4.mat'.format(fname[:-6], euid_to_lfn[euid])
+            os.rename(matlab_results_path + fname, matlab_results_path + new_fname)
+        else:
+            print(euid, 'not in dict..')
