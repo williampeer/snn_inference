@@ -11,6 +11,7 @@ from Models.GLIF_no_cell_types import GLIF_no_cell_types
 from Models.LIF import LIF
 from Models.LIF_no_cell_types import LIF_no_cell_types
 from Models.microGIF import microGIF
+from analysis.analysis_util import get_lfn_from_plot_data_in_folder
 from spike_train_matlab_export import simulate_and_save_model_spike_train
 
 man_seed = 3
@@ -28,8 +29,10 @@ model_class_lookup = { 'LIF': LIF, 'GLIF': GLIF, 'microGIF': microGIF,
 # experiments_path = '/media/william/p6/archive_30122021_full/archive/saved/sleep_data_no_types/'  # GLIF, LIF
 # experiments_path = '/media/william/p6/archive_30122021_full/archive/saved/sleep_data/'  # microGIF / SGIF
 
-exp_paths = ['/media/william/p6/archive_30122021_full/archive/saved/sleep_data_no_types/',
-             '/media/william/p6/archive_30122021_full/archive/saved/sleep_data/']
+# exp_paths = ['/media/william/p6/archive_30122021_full/archive/saved/sleep_data_no_types/',
+#              '/media/william/p6/archive_30122021_full/archive/saved/sleep_data/']
+
+exp_paths = ['/home/william/repos/archives_snn_inference/archive_0201/archive/saved/Synthetic/']
 
 for experiments_path in exp_paths:
     # archive_name = 'data/'
@@ -46,9 +49,12 @@ for experiments_path in exp_paths:
                 for euid in exp_uids:
                     load_data = torch.load(experiments_path + '/' + model_type_str + '/' + euid + '/' + load_fname + IO.fname_ext)
                     snn = load_data['model']
+
+                    single_exp_plot_data_path = experiments_path.replace('saved/', 'saved/plot_data/') + model_type_str + '/' + euid + '/'
+                    exp_lfn = get_lfn_from_plot_data_in_folder(single_exp_plot_data_path)
                     # saved_target_losses = load_data['loss']
                     # num_neurons = snn.N
-                    cur_fname = 'nuovo_sleep_v2_spikes_mt_{}_euid_{}'.format(model_class.__name__, euid)
+                    cur_fname = 'nuovo_synthetic_v2_spikes_mt_{}_lfn_{}_euid_{}'.format(model_class.__name__, exp_lfn, euid)
 
                     if not os.path.exists(data_util.prefix + data_util.target_data_path + data_util.matlab_export + cur_fname + '.mat'):
                         print('simulating data for: {}'.format(experiments_path + model_type_str))

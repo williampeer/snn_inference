@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import analysis_util
+import plot
 
 experiments_path = '/media/william/p6/archive_14122021/archive/saved/sleep_data_no_types/'
 # experiments_path_plot_data = '/media/william/p6/archive_14122021/archive/saved/plot_data/sleep_data_no_types/'
@@ -11,9 +12,12 @@ experiments_path_sleep_data_microGIF = '/home/william/repos/snn_inference/Test/s
 
 sleep_exps = ['exp108', 'exp109', 'exp124', 'exp126', 'exp138', 'exp146', 'exp147']
 sleep_data_approx_rates = []
+sleep_data_approx_rate_stds = []
 for sleep_exp in sleep_exps:
-    sleep_data_rate = analysis_util.get_target_rate_for_sleep_exp(sleep_exp)
+    sleep_data_rate, sleep_data_rate_std = analysis_util.get_target_rate_for_sleep_exp(sleep_exp)
     sleep_data_approx_rates.append(sleep_data_rate)
+    sleep_data_approx_rate_stds.append(sleep_data_rate_std)
+plot.bar_plot(sleep_data_approx_rates, sleep_data_approx_rate_stds, sleep_exps, exp_type='export_sleep', uuid='export_sleep', fname='approx_rate_per_exp')
 
 euid_to_sleep_exp_num = {}
 model_type_dirs = ['LIF_no_cell_types', 'GLIF_no_cell_types']
@@ -37,11 +41,11 @@ for model_type_str in model_type_dirs:
         euid_to_sleep_exp_num[model_type_str][euid] = sleep_exps[estimated_exp_num]
         euid_num += 1
 
-euid_to_sleep_exp_num['microGIF'] = {}
-exp_uids = os.listdir(experiments_path_sleep_data_microGIF + 'microGIF')
-euid_num = 0
-assert len(exp_uids) == 2*7*20, "more than 2*7*20 exps. please add logic to account for exps."
-for euid in exp_uids:
-    estimated_exp_num = int(np.floor(euid_num / 20)) % 7
-    euid_to_sleep_exp_num['microGIF'][euid] = sleep_exps[estimated_exp_num]
-    euid_num += 1
+# euid_to_sleep_exp_num['microGIF'] = {}
+# exp_uids = os.listdir(experiments_path_sleep_data_microGIF + 'microGIF')
+# euid_num = 0
+# assert len(exp_uids) == 2*7*20, "more than 2*7*20 exps. please add logic to account for exps."
+# for euid in exp_uids:
+#     estimated_exp_num = int(np.floor(euid_num / 20)) % 7
+#     euid_to_sleep_exp_num['microGIF'][euid] = sleep_exps[estimated_exp_num]
+#     euid_num += 1

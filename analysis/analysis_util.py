@@ -44,13 +44,14 @@ def get_target_rate_for_sleep_exp(exp_str):
 
     node_indices, spike_times, spike_indices = data_util.load_sparse_data(sleep_data_path + data_file)
     _, target_spikes = data_util.get_spike_train_matrix(0, 12000, spike_times, spike_indices, node_indices)
-    cur_mean_rate_np = get_mean_rate_for_spikes(target_spikes)
-    return cur_mean_rate_np
+    # cur_mean_rate_np, cur_std_rate_np = get_mean_rate_for_spikes(target_spikes)
+    return get_mean_rate_for_spikes(target_spikes)
+    # return cur_mean_rate_np, stds
 
 
 def get_mean_rate_for_spikes(spikes):
     normalised_spike_rate = spikes.sum(dim=0) * 1000. / (spikes.shape[0])
-    return np.mean(normalised_spike_rate.numpy())
+    return np.mean(normalised_spike_rate.numpy()), np.std(normalised_spike_rate.numpy())
 
 
 def get_mean_rate_for_model(model):

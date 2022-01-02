@@ -16,8 +16,9 @@ def get_lfn_from_plot_data_in_folder(exp_folder):
     return lfn
 
 
-exp_paths = ['/media/william/p6/archive_14122021/archive/saved/sleep_data_no_types/',
-             '/media/william/p6/archive_snn_inference/saved/']
+# exp_paths = ['/media/william/p6/archive_14122021/archive/saved/sleep_data_no_types/',
+#              '/media/william/p6/archive_snn_inference/saved/']
+exp_paths = ['/media/william/p6/archive_30122021_full/archive/saved/sleep_data/']
 
 model_type_dirs = ['LIF', 'GLIF', 'LIF_no_cell_types', 'GLIF_no_cell_types', 'microGIF']
 
@@ -35,22 +36,28 @@ for model_str in model_type_dirs:
 
 matlab_export_path = '/home/william/data/target_data/matlab_export/'
 exported_files = os.listdir(matlab_export_path)
+exported_files = list(filter(lambda x: x.__contains__('_microGIF_') and x.__contains__('_exp_') and x.__contains__('_sleep_v2_'), exported_files))
 for fname in exported_files:
     if fname.__contains__('.mat') and fname.__contains__('_euid_') and not fname.__contains__('_lfn_'):
-        euid = fname.split('_euid_')[1].strip('.mat')
+        # euid = fname.split('_euid_')[1].strip('.mat')
+        euid = fname.split('_euid_')[1].split('_exp_')[0]
         if euid in euid_to_lfn:
             new_fname = '{}_lfn_{}.mat'.format(fname.strip('.mat'), euid_to_lfn[euid])
             os.rename(matlab_export_path + fname, matlab_export_path + new_fname)
+            # print('A:{}\nB:{}'.format(fname, new_fname))
         else:
             print(euid, 'not in dict..')
 
 matlab_results_path = '/home/william/repos/pnmf-fork/results/'
 results_files = os.listdir(matlab_results_path)
+results_files = list(filter(lambda x: x.__contains__('_microGIF_') and x.__contains__('_exp_') and x.__contains__('_sleep_v2_'), results_files))
 for fname in results_files:
     if fname.__contains__('.mat') and fname.__contains__('_euid_') and not fname.__contains__('_lfn_'):
-        euid = fname.split('_euid_')[1][:-6]
+        # euid = fname.split('_euid_')[1][:-6]
+        euid = fname.split('_euid_')[1].split('_exp_')[0]
         if euid in euid_to_lfn:
             new_fname = '{}_lfn_{}_4.mat'.format(fname[:-6], euid_to_lfn[euid])
             os.rename(matlab_results_path + fname, matlab_results_path + new_fname)
+            # print('A:{}\nB:{}'.format(fname, new_fname))
         else:
             print(euid, 'not in dict..')
