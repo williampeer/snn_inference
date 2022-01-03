@@ -22,14 +22,15 @@ def proper_label(p_name):
         .replace('Delta_u', '\\Delta_u')\
 
 # archive_path = '/home/william/repos/snn_inference/saved/plot_data/'
-# archive_path = '/media/william/p6/archive_14122021/archive/saved/plot_data/'
+archive_path = '/media/william/p6/archive_14122021/archive/saved/plot_data/'
 # archive_path = '/home/william/repos/archives_snn_inference/archive_1612/archive/saved/plot_data/'
 # archive_path = '/home/william/repos/archives_snn_inference/archive_gating_p_scapes/archive/saved/plot_data/'
-archive_path = '/home/william/repos/archives_snn_inference/archive_0201/archive/saved/plot_data/'
+# archive_path = '/home/william/repos/archives_snn_inference/archive_0201/archive/saved/plot_data/'
 GT_path = '/home/william/repos/snn_inference/Test/saved/'
 # model_type_dirs = ['LIF', 'GLIF', 'microGIF']
+model_type_dirs = ['LIF', 'GLIF']
 # model_type_dirs = ['LIF', 'NLIF']
-model_type_dirs = ['microGIF']
+# model_type_dirs = ['microGIF']
 for mt_str in model_type_dirs:
     mt_dir = 'test_{}'.format(mt_str)
     specific_plot_files = os.listdir(archive_path + mt_dir)
