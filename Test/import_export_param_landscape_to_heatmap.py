@@ -12,14 +12,24 @@ GT_model_by_class = { 'LIF': '12-09_11-49-59-999',
                       'mesoGIF': '12-09_14-56-20-319',
                       'microGIF': '12-09_14-56-17-312' }
 
+
+def proper_label(p_name):
+    return p_name\
+        .replace('tau_theta', '\\tau_{\\theta}')\
+        .replace('J_theta', 'J_{\\theta}')\
+        .replace('tau_m', '\\tau_m')\
+        .replace('tau_s', '\\tau_s')\
+        .replace('Delta_u', '\\Delta_u')\
+
 # archive_path = '/home/william/repos/snn_inference/saved/plot_data/'
 # archive_path = '/media/william/p6/archive_14122021/archive/saved/plot_data/'
 # archive_path = '/home/william/repos/archives_snn_inference/archive_1612/archive/saved/plot_data/'
-archive_path = '/home/william/repos/archives_snn_inference/archive_gating_p_scapes/archive/saved/plot_data/'
+# archive_path = '/home/william/repos/archives_snn_inference/archive_gating_p_scapes/archive/saved/plot_data/'
+archive_path = '/home/william/repos/archives_snn_inference/archive_0201/archive/saved/plot_data/'
 GT_path = '/home/william/repos/snn_inference/Test/saved/'
 # model_type_dirs = ['LIF', 'GLIF', 'microGIF']
-model_type_dirs = ['LIF', 'NLIF']
-# model_type_dirs = ['microGIF']
+# model_type_dirs = ['LIF', 'NLIF']
+model_type_dirs = ['microGIF']
 for mt_str in model_type_dirs:
     mt_dir = 'test_{}'.format(mt_str)
     specific_plot_files = os.listdir(archive_path + mt_dir)
@@ -75,10 +85,10 @@ for mt_str in model_type_dirs:
             yticks.append(save_data['p2s'][i_tick])
         # ---------------- target data feature request from Arno ------------------
 
-        axes = ['${}$'.format(save_data['p1_name']), '${}$'.format(save_data['p2_name'])]
+        axes = ['${}$'.format(proper_label(save_data['p1_name'])), '${}$'.format(proper_label(save_data['p2_name']))]
         exp_type = 'test'; uuid = 'export_p_landscape_2d'
         # model_N =
         plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname=mt_str+'/test_export_2d_heatmap_N_{}_{}_{}_{}.eps'.format(model_N, statistic_name, save_data['p1_name'], save_data['p2_name']),
-                          target_coords=target_coords, xticks=xticks, yticks=yticks, cbar_label=statistic_name)
+                          target_coords=target_coords, xticks=xticks, yticks=yticks, cbar_label=statistic_name.replace('loss_POISSON', 'Poiss. NLL loss').replace('loss_BERNOULLI', 'Bern. NLL loss'))
 
 sys.exit()
