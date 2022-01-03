@@ -12,7 +12,7 @@ import experiments
 import model_util
 import plot
 from Models.microGIF import microGIF
-from TargetModels.TargetModelMicroGIF import micro_gif_populations_model_full_size
+from TargetModels.TargetModelMicroGIF import get_low_dim_micro_GIF_transposed
 from experiments import release_computational_graph
 
 start_seed = 23
@@ -23,7 +23,7 @@ for lfn in ['bernoulli_nll', 'poisson_nll']:
         torch.manual_seed(random_seed)
         np.random.seed(random_seed)
 
-        pop_sizes, snn_target = micro_gif_populations_model_full_size(random_seed)
+        pop_sizes, snn_target = get_low_dim_micro_GIF_transposed(random_seed)
 
         N = snn_target.N
         t = 1200
@@ -120,7 +120,7 @@ for lfn in ['bernoulli_nll', 'poisson_nll']:
 
         plot.plot_loss(losses, uuid=current_uuid, exp_type='GD_test',
                        custom_title='Loss {}, $\\alpha$={}, {}, bin_size={}, SIF#'.format(lfn, learn_rate, optimiser.__class__.__name__, bin_size, random_seed),
-                       fname='plot_loss_test_target_SIF_{}'.format(random_seed) + IO.dt_descriptor())
+                       fname='plot_loss_test_target_SIF_{}_{}'.format(random_seed, lfn) + IO.dt_descriptor())
 
         plot.plot_spike_trains_side_by_side(spikes, target_spikes, uuid=current_uuid,
                                             exp_type='GD_test', title='Test {} spike trains'.format(snn.__class__.__name__),
@@ -157,7 +157,7 @@ for lfn in ['bernoulli_nll', 'poisson_nll']:
                                                       fname='inferred_param_trajectories_{}_exp_num_{}_train_iters_{}'
                                                       .format(snn.__class__.__name__, None, i))
 
-        IO.save(snn, loss={'losses': losses}, uuid=current_uuid, fname='snn_model_target_GD_test')
+        IO.save(snn, loss={'losses': losses, 'lfn': lfn, 'model_type': model_class.__name__}, uuid=current_uuid, fname='snn_model_target_GD_test')
 
         logger.log('snn.parameters(): {}'.format(snn.parameters()), list(snn.parameters()))
         logger.log('model_parameter_trajectories: ', model_parameter_trajectories)
