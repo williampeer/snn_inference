@@ -13,7 +13,8 @@ input_types = [1, 1, 1, 1]
 t = 1200
 num_steps = 100
 
-prev_timestamp = '12-09_11-14-47-449'
+# prev_timestamp = '12-09_11-14-47-449'
+prev_timestamp = '12-09_11-12-47-541'
 fname = 'snn_model_target_GD_test'
 load_data = torch.load('./Test/' + IO.PATH + GLIF.__name__ + '/' + prev_timestamp + '/' + fname + IO.fname_ext)
 snn_target = load_data['model']
