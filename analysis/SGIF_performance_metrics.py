@@ -98,11 +98,18 @@ def convert_posterior_to_model_params_dict(model_class, posterior_params, target
     return model_params
 
 
+tar_seed = 3
+torch.manual_seed(tar_seed)
+np.random.seed(tar_seed)
+
 # experiments_path = '/home/william/repos/archives_snn_inference/GENERIC/archive/saved/data/'
 # experiments_path = '/home/william/repos/archives_snn_inference/archive_1612/archive/saved/data/'
-experiments_path = '/home/william/repos/archives_snn_inference/archive_1612/archive/saved/data/'
+# experiments_path = '/home/william/repos/archives_snn_inference/archive_1612/archive/saved/data/'
+experiments_path = '/home/william/repos/archives_snn_inference/archive_mesoGIF_and_LIF_GIF_pscapes_0401/archive/saved/Synthetic/'
+model_type_str = 'microGIF'
+load_fname = 'snn_model_target_GD_test.pt'
 
-files_sbi_res = os.listdir(experiments_path + 'sbi_res/')
+exp_folders = os.listdir(experiments_path)
 
 correlations_OU_per_model_type = { 'microGIF': [] }
 activity_rmse_OU_per_model_type = { 'microGIF': [] }
@@ -113,122 +120,69 @@ init_correlations_OU_per_model_type = {}
 init_activity_rmse_OU_per_model_type = {}
 init_correlations_wn_per_model_type = {}
 init_activity_rmse_wn_per_model_type = {}
-for sbi_res_file in files_sbi_res:
-    print(sbi_res_file)
+exp_uids = os.listdir(experiments_path + '/' + model_type_str)
 
-    sbi_res_path = experiments_path + 'sbi_res/' + sbi_res_file
-    print('Loading: {}'.format(sbi_res_path))
-    res_load = torch.load(sbi_res_path)
-    print('sbi_res load successful.')
+method = 'GBO'
+t = 10000
+target_model = analysis_util.get_target_model('mesoGIF')
+init_params_dict = experiments.draw_from_uniform(microGIF.parameter_init_intervals, target_model.N)
+init_model = microGIF(parameters=init_params_dict, N=target_model.N)
 
-    sbi_res = res_load['data']
-    assert sbi_res.keys().__contains__('SNPE'), "method SNPE expected"
-    method = 'SNPE'
-    posterior = sbi_res[method]
-    sut_description = sbi_res['dt_descriptor']
-    model_class = sbi_res['model_class']
+burn_in_inputs = torch.rand((t,4))
+_ = get_model_activity(init_model, burn_in_inputs)
+_ = get_model_activity(target_model, burn_in_inputs)
+eval_inputs = OU_process_input(t=t)
+t_act_OU = get_model_activity(target_model, eval_inputs)
+init_act_OU = get_model_activity(init_model, eval_inputs)
 
-    if model_class is microGIF:
-        m_name = model_class.__name__
-        N = sbi_res['N']
-        dt_descriptor = sbi_res['dt_descriptor']
-        tar_seed = False
-        if sbi_res_file.__contains__('tar_seed'):
-            tar_seed = int(sbi_res_file.split('tar_seed_')[-1].split('.pt')[0])
+init_model.reset()
+target_model.reset()
 
-        if tar_seed:
-            corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}_tar_seed_{}.pt'.format(method, m_name, dt_descriptor, tar_seed)
-        else:
-            corresponding_samples_fname = 'samples_method_{}_m_name_{}_dt_{}.pt'.format(method, m_name, dt_descriptor)
+burn_in_inputs = torch.rand((t, 4))
+_ = get_model_activity(init_model, burn_in_inputs)
+_ = get_model_activity(target_model, burn_in_inputs)
+white_noise = torch.rand((t,))
+init_act_wn = get_model_activity(init_model, white_noise)
+t_act_wn = get_model_activity(target_model, white_noise)
 
-        data_arr = torch.load(experiments_path + 'sbi_samples/' + corresponding_samples_fname)['data']
-        print('sbi_samples load successful.')
+init_correlations_wn_per_model_type['microGIF'] = activity_correlations(init_act_wn, t_act_wn, bin_size=int(t/8))
+init_activity_rmse_wn_per_model_type['microGIF'] = activity_RMSE(init_act_wn, t_act_wn, bin_size=int(t/8))
+init_correlations_OU_per_model_type['microGIF'] = activity_correlations(init_act_OU, t_act_OU, bin_size=int(t/8))
+init_activity_rmse_OU_per_model_type['microGIF'] = activity_RMSE(init_act_OU, t_act_OU, bin_size=int(t/8))
 
-        save_fname = 'spikes_sbi_{}_tar_seed_{}'.format(corresponding_samples_fname.strip('.pt')+'', tar_seed)
+for euid in exp_uids:
+    load_data = torch.load(experiments_path + '/' + model_type_str + '/' + euid + '/' + load_fname)
+    model = load_data['model']
+    loss_data = load_data['loss']
+    exp_lfn = loss_data['lfn']
 
-        torch.manual_seed(tar_seed)
-        np.random.seed(tar_seed)
+    cur_fname = 'nuovo_synthetic_v3_mesoGIF__spikes_mt_{}_lfn_{}_euid_{}'.format(microGIF.__name__, exp_lfn, euid)
+    m_name = loss_data['model_type']
+    N = model.N
+    dt_descriptor = euid
 
-        # samples = data_arr['samples']
-        observation = data_arr['observation']
-        # points = data_arr['tar_parameters']
-        m_name = data_arr['m_name']
+    # burn in:
+    burn_in_inputs = OU_process_input(t=t)
+    _ = get_model_activity(model, burn_in_inputs)
+    eval_inputs = OU_process_input(t=t)
+    m_act_OU = get_model_activity(model, eval_inputs)
 
-        # log_probability = posterior.log_prob(samples, x=observation)
-        # print('log_probability: {}'.format(log_probability))
+    model.reset()
 
-        N_samples = 15
-        t = 10000
-        print('Drawing the {} most likely samples..'.format(N_samples))
-        posterior_params = posterior.sample((N_samples,), x=observation)
-        print('\nposterior_params: {}'.format(posterior_params))
-        tar_m_name = m_name
-        if m_name == 'microGIF':
-            tar_m_name = 'mesoGIF'
-        target_model = analysis_util.get_target_model(tar_m_name)
-        programmatic_neuron_types = N * [1]
-        n_inhib = int(N / 4)
-        programmatic_neuron_types[-n_inhib:] = n_inhib * [-1]
-        init_params_dict = experiments.draw_from_uniform(model_class.parameter_init_intervals, target_model.N)
-        if m_name == 'microGIF':
-            init_model = model_class(parameters=init_params_dict, N=N)
-        else:
-            init_model = model_class(parameters=init_params_dict, N=N, neuron_types=programmatic_neuron_types)
+    white_noise_burn_in = torch.rand((t,4))
+    _ = get_model_activity(model, white_noise_burn_in)
+    white_noise = torch.rand((t,4))
+    m_act_wn = get_model_activity(model, white_noise)
 
-        burn_in_inputs = torch.rand((t,4))
-        _ = get_model_activity(init_model, burn_in_inputs)
-        _ = get_model_activity(target_model, burn_in_inputs)
-        eval_inputs = OU_process_input(t=t)
-        t_act_OU = get_model_activity(target_model, eval_inputs)
-        init_act_OU = get_model_activity(init_model, eval_inputs)
+    activity_correlation_OU_process = activity_correlations(m_act_OU, t_act_OU, bin_size=int(t/8))
+    activity_RMSE_OU_process = activity_RMSE(m_act_OU, t_act_OU, bin_size=int(t/8))
+    activity_correlation_white_noise = activity_correlations(m_act_wn, t_act_wn, bin_size=int(t/8))
+    activity_RMSE_white_noise = activity_RMSE(m_act_wn, t_act_wn, bin_size=int(t/8))
 
-        init_model.reset()
-        target_model.reset()
-
-        burn_in_inputs = torch.rand((t, 4))
-        _ = get_model_activity(init_model, burn_in_inputs)
-        _ = get_model_activity(target_model, burn_in_inputs)
-        white_noise = torch.rand((t,))
-        init_act_wn = get_model_activity(init_model, white_noise)
-        t_act_wn = get_model_activity(target_model, white_noise)
-
-        init_correlations_wn_per_model_type[m_name] = activity_correlations(init_act_wn, t_act_wn, bin_size=int(t/8))
-        init_activity_rmse_wn_per_model_type[m_name] = activity_RMSE(init_act_wn, t_act_wn, bin_size=int(t/8))
-        init_correlations_OU_per_model_type[m_name] = activity_correlations(init_act_OU, t_act_OU, bin_size=int(t/8))
-        init_activity_rmse_OU_per_model_type[m_name] = activity_RMSE(init_act_OU, t_act_OU, bin_size=int(t/8))
-
-        for s_i in range(N_samples):
-            model_params = convert_posterior_to_model_params_dict(model_class, posterior_params[s_i], target_class=model_class, target_points=[], N=N)
-            programmatic_neuron_types = torch.ones((N,))
-            for n_i in range(int(2 * N / 3), N):
-                programmatic_neuron_types[n_i] = -1
-            if model_class is microGIF:
-                model = model_class(parameters=model_params, N=N)
-            else:
-                model = model_class(parameters=model_params, N=N, neuron_types=programmatic_neuron_types)
-
-            # burn in:
-            burn_in_inputs = OU_process_input(t=t)
-            _ = get_model_activity(model, burn_in_inputs)
-            eval_inputs = OU_process_input(t=t)
-            m_act_OU = get_model_activity(model, eval_inputs)
-
-            model.reset()
-
-            white_noise_burn_in = torch.rand((t,4))
-            _ = get_model_activity(model, white_noise_burn_in)
-            white_noise = torch.rand((t,4))
-            m_act_wn = get_model_activity(model, white_noise)
-
-            activity_correlation_OU_process = activity_correlations(m_act_OU, t_act_OU, bin_size=int(t/8))
-            activity_RMSE_OU_process = activity_RMSE(m_act_OU, t_act_OU, bin_size=int(t/8))
-            activity_correlation_white_noise = activity_correlations(m_act_wn, t_act_wn, bin_size=int(t/8))
-            activity_RMSE_white_noise = activity_RMSE(m_act_wn, t_act_wn, bin_size=int(t/8))
-
-            correlations_OU_per_model_type[m_name].append(activity_correlation_OU_process)
-            activity_rmse_OU_per_model_type[m_name].append(activity_RMSE_OU_process)
-            correlations_wn_per_model_type[m_name].append(activity_correlation_white_noise)
-            activity_rmse_wn_per_model_type[m_name].append(activity_RMSE_white_noise)
+    correlations_OU_per_model_type[m_name].append(activity_correlation_OU_process)
+    activity_rmse_OU_per_model_type[m_name].append(activity_RMSE_OU_process)
+    correlations_wn_per_model_type[m_name].append(activity_correlation_white_noise)
+    activity_rmse_wn_per_model_type[m_name].append(activity_RMSE_white_noise)
 
 
 xticks = []
@@ -256,11 +210,11 @@ for m_k in correlations_wn_per_model_type.keys():
 
 plot_exp_type = 'export_sbi'
 plot.bar_plot_neuron_rates(init_corrs_wn, correlations_wn, 0, 0,
-                           exp_type=plot_exp_type, uuid='all', fname='sbi_correlations_wn_all.eps', xticks=xticks,
+                           exp_type=plot_exp_type, uuid='all', fname='GBO_correlations_wn_all.eps', xticks=xticks,
                            custom_legend=['Init. model', 'Posterior models'], ylabel='Avg. activity correlation',
                            custom_colors=['Gray', 'Brown'])
 plot.bar_plot_neuron_rates(init_corrs_OU, correlations_OU, 0, 0,
-                           exp_type=plot_exp_type, uuid='all', fname='sbi_correlations_OU_all.eps', xticks=xticks,
+                           exp_type=plot_exp_type, uuid='all', fname='GBO_correlations_OU_all.eps', xticks=xticks,
                            custom_legend=['Init. model', 'Posterior models'], ylabel='Avg. activity correlation',
                            custom_colors=['Gray', 'Brown'])
 
@@ -281,10 +235,10 @@ n_init_rmse_wn = T(np.asarray(init_rmse_wn))/T(np.asarray(init_rmse_wn)); n_rmse
 n_init_rmse_OU = T(np.asarray(init_rmse_OU))/T(np.asarray(init_rmse_OU)); n_rmse_OU = T(rmse_OU) / T(np.asarray(init_rmse_OU))
 # n_rmse_OU[1] = torch.min(n_rmse_OU[1], T(4.))
 plot.bar_plot(n_rmse_wn.numpy(), y_std=0, exp_type=plot_exp_type, uuid='all',
-              ylabel='RMSE', fname='plot_rmse_wn_all.eps', labels=xticks, baseline=1.,
+              ylabel='RMSE', fname='plot_rmse_wn_all_GBO.eps', labels=xticks, baseline=1.,
               custom_colors=['Purple'], custom_legend=['Init. model', 'Posterior models'])
 plot.bar_plot(n_rmse_OU.numpy(), y_std=0, exp_type=plot_exp_type, uuid='all',
-              ylabel='RMSE', fname='plot_rmse_OU_all.eps', labels=xticks, baseline=1.,
+              ylabel='RMSE', fname='plot_rmse_OU_all_GBO.eps', labels=xticks, baseline=1.,
               custom_colors=['Purple'], custom_legend=['Init. model', 'Posterior models'])
 
 print('init_rmse_wn', init_rmse_wn)

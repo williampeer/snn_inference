@@ -18,7 +18,7 @@ man_seed = 3
 torch.manual_seed(man_seed)
 np.random.seed(man_seed)
 
-duration = 60 * 1000
+duration = 30 * 1000
 
 load_fname = 'snn_model_target_GD_test'
 model_class_lookup = { 'LIF': LIF, 'GLIF': GLIF, 'microGIF': microGIF,
@@ -32,7 +32,8 @@ model_class_lookup = { 'LIF': LIF, 'GLIF': GLIF, 'microGIF': microGIF,
 # exp_paths = ['/media/william/p6/archive_30122021_full/archive/saved/sleep_data_no_types/',
 #              '/media/william/p6/archive_30122021_full/archive/saved/sleep_data/']
 
-exp_paths = ['/home/william/repos/archives_snn_inference/archive_0201/archive/saved/Synthetic/']
+# exp_paths = ['/home/william/repos/archives_snn_inference/archive_0201/archive/saved/Synthetic/']
+exp_paths = ['/home/william/repos/archives_snn_inference/archive_mesoGIF_and_LIF_GIF_pscapes_0401/archive/saved/Synthetic/']
 
 for experiments_path in exp_paths:
     # archive_name = 'data/'
@@ -54,7 +55,7 @@ for experiments_path in exp_paths:
                     exp_lfn = get_lfn_from_plot_data_in_folder(single_exp_plot_data_path)
                     # saved_target_losses = load_data['loss']
                     # num_neurons = snn.N
-                    cur_fname = 'nuovo_synthetic_v2_spikes_mt_{}_lfn_{}_euid_{}'.format(model_class.__name__, exp_lfn, euid)
+                    cur_fname = 'nuovo_synthetic_v3_mesoGIF__spikes_mt_{}_lfn_{}_euid_{}'.format(model_class.__name__, exp_lfn, euid)
 
                     if not os.path.exists(data_util.prefix + data_util.target_data_path + data_util.matlab_export + cur_fname + '.mat'):
                         print('simulating data for: {}'.format(experiments_path + model_type_str))

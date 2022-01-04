@@ -20,12 +20,15 @@ def proper_label(p_name):
         .replace('tau_m', '\\tau_m')\
         .replace('tau_s', '\\tau_s')\
         .replace('Delta_u', '\\Delta_u')\
+        .replace('theta_inf', '\\theta_{inf}')\
+        .replace('delta_theta_s', '\\delta_{\\theta_s}')
 
 # archive_path = '/home/william/repos/snn_inference/saved/plot_data/'
-archive_path = '/media/william/p6/archive_14122021/archive/saved/plot_data/'
+# archive_path = '/media/william/p6/archive_14122021/archive/saved/plot_data/'
 # archive_path = '/home/william/repos/archives_snn_inference/archive_1612/archive/saved/plot_data/'
 # archive_path = '/home/william/repos/archives_snn_inference/archive_gating_p_scapes/archive/saved/plot_data/'
 # archive_path = '/home/william/repos/archives_snn_inference/archive_0201/archive/saved/plot_data/'
+archive_path = '/home/william/repos/archives_snn_inference/archive_mesoGIF_and_LIF_GIF_pscapes_0401/archive/saved/plot_data/'
 GT_path = '/home/william/repos/snn_inference/Test/saved/'
 # model_type_dirs = ['LIF', 'GLIF', 'microGIF']
 model_type_dirs = ['LIF', 'GLIF']
@@ -84,12 +87,16 @@ for mt_str in model_type_dirs:
         for i_tick in range(N_dim):
             xticks.append(save_data['p1s'][i_tick*N_dim])
             yticks.append(save_data['p2s'][i_tick])
-        # ---------------- target data feature request from Arno ------------------
 
+        # xticks = list(map(lambda x: int(x>2e-05) * x, xticks))
+        # yticks = list(map(lambda x: int(x>2e-05) * x, yticks))
+        # ---------------- target data feature request from Arno ------------------
         axes = ['${}$'.format(proper_label(save_data['p1_name'])), '${}$'.format(proper_label(save_data['p2_name']))]
         exp_type = 'test'; uuid = 'export_p_landscape_2d'
         # model_N =
         plot.plot_heatmap(heat_mat, axes, exp_type, uuid, fname=mt_str+'/test_export_2d_heatmap_N_{}_{}_{}_{}.eps'.format(model_N, statistic_name, save_data['p1_name'], save_data['p2_name']),
-                          target_coords=target_coords, xticks=xticks, yticks=yticks, cbar_label=statistic_name.replace('loss_POISSON', 'Poiss. NLL loss').replace('loss_BERNOULLI', 'Bern. NLL loss'))
+                          target_coords=target_coords, xticks=xticks, yticks=yticks,
+                          cbar_label=statistic_name.replace('loss_POISSON', 'Poiss. NLL loss').replace('loss_BERNOULLI', 'Bern. NLL loss')
+                          .replace('loss_frd', 'frd loss'))
 
 sys.exit()
