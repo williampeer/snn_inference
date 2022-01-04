@@ -20,10 +20,13 @@ np.random.seed(man_seed)
 model_class_lookup = { 'LIF': LIF, 'GLIF': GLIF, 'microGIF': microGIF,
                        'LIF_no_cell_types': LIF_no_cell_types, 'GLIF_no_cell_types': GLIF_no_cell_types }
 
-experiments_path = '/media/william/p6/archive_14122021/archive/saved/sleep_data_no_types/'
-experiments_path_plot_data = '/media/william/p6/archive_14122021/archive/saved/plot_data/sleep_data_no_types/'
-experiments_path_sleep_data_microGIF = '/home/william/repos/snn_inference/Test/saved/sleep_data/'
-experiments_path_sleep_data_microGIF_plot_data = '/home/william/repos/snn_inference/Test/saved/plot_data/sleep_data/'
+experiments_path = '/media/william/p6/archive_30122021_full/archive/saved/sleep_data_no_types/'
+experiments_path_plot_data = '/media/william/p6/archive_30122021_full/archive/saved/plot_data/sleep_data_no_types/'
+experiments_path_sleep_data_microGIF = '/media/william/p6/archive_30122021_full/archive/saved/sleep_data/'
+experiments_path_sleep_data_microGIF_plot_data = '/media/william/p6/archive_30122021_full/archive/saved/plot_data/sleep_data/'
+
+# experiments_path = '/media/william/p6/archive_30122021_full/archive/saved/sleep_data_no_types/'  # GLIF, LIF
+# experiments_path = '/media/william/p6/archive_30122021_full/archive/saved/sleep_data/'  # microGIF / SGIF
 
 # experiments_path = '/media/william/p6/archive_14122021/archive/saved/sleep_data_no_types/'
 # archive_name = 'data/'
