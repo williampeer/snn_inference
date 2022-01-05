@@ -15,7 +15,8 @@ for sleep_exp in sleep_exps:
     sleep_data_rate, sleep_data_rate_std = analysis_util.get_target_rate_for_sleep_exp(sleep_exp)
     sleep_data_approx_rates.append(sleep_data_rate)
     sleep_data_approx_rate_stds.append(sleep_data_rate_std)
-plot.bar_plot(sleep_data_approx_rates, sleep_data_approx_rate_stds, sleep_exps, exp_type='export_sleep', uuid='export_sleep', fname='approx_rate_per_exp')
+sleep_exp_labels = list(map(lambda x: 'exp ' + str(sleep_exps.index(x)), sleep_exps))
+plot.bar_plot(sleep_data_approx_rates, sleep_data_approx_rate_stds, sleep_exp_labels, exp_type='export_sleep', uuid='export_sleep', fname='approx_rate_per_exp.eps', ylabel='$Hz$')
 
 euid_to_sleep_exp_num = {}
 model_type_dirs = ['LIF_no_cell_types', 'GLIF_no_cell_types']

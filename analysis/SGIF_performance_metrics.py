@@ -1,5 +1,3 @@
-import sys
-
 import numpy as np
 
 import experiments
@@ -8,7 +6,6 @@ import plot
 from IO import *
 from Models.microGIF import microGIF
 from analysis import analysis_util
-from analysis.spike_train_matlab_export import simulate_and_save_model_spike_train
 
 
 def OU_process_input(t=10000):
@@ -55,6 +52,22 @@ def activity_RMSE(model_spikes, target_spikes, bin_size):
     return rmse.detach().numpy()
 
 
+def activity_RMSE_per_pop(model_spikes, target_spikes, bin_size):
+    num_pops = 4
+    assert model_spikes.shape[1] == num_pops, "assuming row by column shape, i.e. (t, 4): {}".format(model_spikes.shape)
+    assert target_spikes.shape[1] == num_pops, "assuming row by column shape, i.e. (t, 4): {}".format(target_spikes.shape)
+    assert model_spikes.shape[0] % bin_size == 0, "time should be a multiple of bin_size: {}, model_spikes.shape: {}".format(bin_size, model_spikes.shape)
+    num_bins = int(model_spikes.shape[0] / bin_size)
+    m_binned_spikes = torch.zeros((num_bins, num_pops))
+    t_binned_spikes = torch.zeros((num_bins, num_pops))
+    for b_i in range(num_bins):
+        for bp_i in range(num_pops):
+            m_binned_spikes[b_i, bp_i] = model_spikes[b_i * bin_size:(b_i + 1) * bin_size, bp_i].sum()
+            t_binned_spikes[b_i, bp_i] = target_spikes[b_i * bin_size:(b_i + 1) * bin_size, bp_i].sum()
+    rmse_per_pop = torch.sqrt((torch.mean(torch.pow(m_binned_spikes - t_binned_spikes, 2), dim=0)))
+    return rmse_per_pop.detach().numpy()
+
+
 def activity_correlations(model_act, tar_act, bin_size):
     num_pops = 4
     assert model_act.shape[1] == num_pops, "assuming row by column shape, i.e. (t, 4): {}".format(model_act.shape)
@@ -72,8 +85,25 @@ def activity_correlations(model_act, tar_act, bin_size):
     assert len(m_bin_avg) == num_pops, "len mactavg {} should be numpops {}".format(len(m_bin_avg), num_pops)
     rho = torch.tensor(0.)
     for p_i in range(num_pops):
-        rho+= ((t_bins[:, p_i] - t_bin_avg[p_i]) * (m_bins[:, p_i] - m_bin_avg[p_i]) / torch.sqrt(torch.pow((t_bins[:, p_i] - t_bin_avg[p_i]), 2) * torch.pow((m_bins[:, p_i] - m_bin_avg[p_i]), 2))).sum()
+        rho += ((t_bins[:, p_i] - t_bin_avg[p_i]) * (m_bins[:, p_i] - m_bin_avg[p_i]) / torch.sqrt(torch.pow((t_bins[:, p_i] - t_bin_avg[p_i]), 2) * torch.pow((m_bins[:, p_i] - m_bin_avg[p_i]), 2))).sum()
     return (rho / num_pops).detach().numpy()
+
+
+def activity_correlations_per_pop(model_act, tar_act, bin_size):
+    num_pops = 4
+    assert model_act.shape[1] == num_pops, "assuming row by column shape, i.e. (t, 4): {}".format(model_act.shape)
+    assert tar_act.shape[1] == num_pops, "assuming row by column shape, i.e. (t, 4): {}".format(tar_act.shape)
+    assert model_act.shape[0] % bin_size == 0, "time should be a multiple of bin_size: {}, m_act.shape: {}".format(bin_size, model_act.shape)
+    num_bins = int(model_act.shape[0] / bin_size)
+    m_bins = torch.zeros((num_bins, num_pops))
+    t_bins = torch.zeros((num_bins, num_pops))
+    for b_i in range(num_bins):
+        for bp_i in range(num_pops):
+            m_bins[b_i, bp_i] = model_act[b_i * bin_size:(b_i + 1) * bin_size, bp_i].sum()
+            t_bins[b_i, bp_i] = tar_act[b_i * bin_size:(b_i + 1) * bin_size, bp_i].sum()
+    import scipy
+    return scipy.stats.pearsonr(m_bins, t_bins)
+
 
 
 def convert_posterior_to_model_params_dict(model_class, posterior_params, target_class, target_points, N):
@@ -115,15 +145,24 @@ correlations_OU_per_model_type = { 'microGIF': [] }
 activity_rmse_OU_per_model_type = { 'microGIF': [] }
 correlations_wn_per_model_type = { 'microGIF': [] }
 activity_rmse_wn_per_model_type = { 'microGIF': [] }
+correlations_OU_per_model_type_per_pop = { 'microGIF': [] }
+activity_rmse_OU_per_model_type_per_pop = { 'microGIF': [] }
+correlations_wn_per_model_type_per_pop = { 'microGIF': [] }
+activity_rmse_wn_per_model_type_per_pop = { 'microGIF': [] }
 
 init_correlations_OU_per_model_type = {}
 init_activity_rmse_OU_per_model_type = {}
 init_correlations_wn_per_model_type = {}
 init_activity_rmse_wn_per_model_type = {}
+init_correlations_OU_per_model_type_per_pop = {}
+init_activity_rmse_OU_per_model_type_per_pop = {}
+init_correlations_wn_per_model_type_per_pop = {}
+init_activity_rmse_wn_per_model_type_per_pop = {}
 exp_uids = os.listdir(experiments_path + '/' + model_type_str)
 
 method = 'GBO'
-t = 10000
+t = 6000
+BIN_SIZE = int(t/3)
 target_model = analysis_util.get_target_model('mesoGIF')
 init_params_dict = experiments.draw_from_uniform(microGIF.parameter_init_intervals, target_model.N)
 init_model = microGIF(parameters=init_params_dict, N=target_model.N)
@@ -145,10 +184,16 @@ white_noise = torch.rand((t,))
 init_act_wn = get_model_activity(init_model, white_noise)
 t_act_wn = get_model_activity(target_model, white_noise)
 
-init_correlations_wn_per_model_type['microGIF'] = activity_correlations(init_act_wn, t_act_wn, bin_size=int(t/8))
-init_activity_rmse_wn_per_model_type['microGIF'] = activity_RMSE(init_act_wn, t_act_wn, bin_size=int(t/8))
-init_correlations_OU_per_model_type['microGIF'] = activity_correlations(init_act_OU, t_act_OU, bin_size=int(t/8))
-init_activity_rmse_OU_per_model_type['microGIF'] = activity_RMSE(init_act_OU, t_act_OU, bin_size=int(t/8))
+init_correlations_wn_per_model_type['microGIF'] = activity_correlations(init_act_wn, t_act_wn, bin_size=BIN_SIZE)
+init_activity_rmse_wn_per_model_type['microGIF'] = activity_RMSE(init_act_wn, t_act_wn, bin_size=BIN_SIZE)
+init_correlations_OU_per_model_type['microGIF'] = activity_correlations(init_act_OU, t_act_OU, bin_size=BIN_SIZE)
+init_activity_rmse_OU_per_model_type['microGIF'] = activity_RMSE(init_act_OU, t_act_OU, bin_size=BIN_SIZE)
+
+init_correlations_wn_per_model_type_per_pop['microGIF'] = activity_correlations_per_pop(init_act_wn, t_act_wn, bin_size=BIN_SIZE)
+init_activity_rmse_wn_per_model_type_per_pop['microGIF'] = activity_RMSE_per_pop(init_act_wn, t_act_wn, bin_size=BIN_SIZE)
+init_correlations_OU_per_model_type_per_pop['microGIF'] = activity_correlations_per_pop(init_act_OU, t_act_OU, bin_size=BIN_SIZE)
+init_activity_rmse_OU_per_model_type_per_pop['microGIF'] = activity_RMSE_per_pop(init_act_OU, t_act_OU, bin_size=BIN_SIZE)
+
 
 for euid in exp_uids:
     load_data = torch.load(experiments_path + '/' + model_type_str + '/' + euid + '/' + load_fname)
@@ -174,15 +219,37 @@ for euid in exp_uids:
     white_noise = torch.rand((t,4))
     m_act_wn = get_model_activity(model, white_noise)
 
-    activity_correlation_OU_process = activity_correlations(m_act_OU, t_act_OU, bin_size=int(t/8))
-    activity_RMSE_OU_process = activity_RMSE(m_act_OU, t_act_OU, bin_size=int(t/8))
-    activity_correlation_white_noise = activity_correlations(m_act_wn, t_act_wn, bin_size=int(t/8))
-    activity_RMSE_white_noise = activity_RMSE(m_act_wn, t_act_wn, bin_size=int(t/8))
+    activity_correlation_OU_process = activity_correlations(m_act_OU, t_act_OU, bin_size=BIN_SIZE)
+    activity_RMSE_OU_process = activity_RMSE(m_act_OU, t_act_OU, bin_size=BIN_SIZE)
+    activity_correlation_white_noise = activity_correlations(m_act_wn, t_act_wn, bin_size=BIN_SIZE)
+    activity_RMSE_white_noise = activity_RMSE(m_act_wn, t_act_wn, bin_size=BIN_SIZE)
+    activity_correlation_OU_process_per_pop = activity_correlations_per_pop(m_act_OU, t_act_OU, bin_size=BIN_SIZE)
+    activity_RMSE_OU_process_per_pop = activity_RMSE_per_pop(m_act_OU, t_act_OU, bin_size=BIN_SIZE)
+    activity_correlation_white_noise_per_pop = activity_correlations_per_pop(m_act_wn, t_act_wn, bin_size=BIN_SIZE)
+    activity_RMSE_white_noise_per_pop = activity_RMSE_per_pop(m_act_wn, t_act_wn, bin_size=BIN_SIZE)
 
     correlations_OU_per_model_type[m_name].append(activity_correlation_OU_process)
     activity_rmse_OU_per_model_type[m_name].append(activity_RMSE_OU_process)
     correlations_wn_per_model_type[m_name].append(activity_correlation_white_noise)
     activity_rmse_wn_per_model_type[m_name].append(activity_RMSE_white_noise)
+    correlations_OU_per_model_type_per_pop[m_name].append(activity_correlation_OU_process_per_pop)
+    activity_rmse_OU_per_model_type_per_pop[m_name].append(activity_RMSE_OU_process_per_pop)
+    correlations_wn_per_model_type_per_pop[m_name].append(activity_correlation_white_noise_per_pop)
+    activity_rmse_wn_per_model_type_per_pop[m_name].append(activity_RMSE_white_noise_per_pop)
+massive_dict = { 'correlations_OU_per_model_type': correlations_OU_per_model_type, 'activity_rmse_OU_per_model_type': activity_rmse_OU_per_model_type,
+                 'correlations_wn_per_model_type': correlations_wn_per_model_type, 'activity_rmse_wn_per_model_type': activity_rmse_wn_per_model_type,
+                 'correlations_OU_per_model_type_per_pop': correlations_OU_per_model_type_per_pop, 'activity_rmse_OU_per_model_type_per_pop': activity_rmse_OU_per_model_type_per_pop,
+                 'correlations_wn_per_model_type_per_pop': correlations_wn_per_model_type_per_pop, 'activity_rmse_wn_per_model_type_per_pop': activity_rmse_wn_per_model_type_per_pop }
+torch.save(massive_dict, './save_stuff/massive_dict_SGIF_perf_metrics.pt')
+
+
+# loaded = torch.load('./save_stuff/sgif_perf_metrics_res.pt')
+# print('loaded keys:', loaded.keys())
+# correlations_OU_per_model_type = loaded['correlations_OU_per_model_type']
+# activity_rmse_OU_per_model_type = loaded['activity_rmse_OU_per_model_type']
+# correlations_wn_per_model_type = loaded['correlations_wn_per_model_type']
+# activity_rmse_wn_per_model_type = loaded['activity_rmse_wn_per_model_type']
+
 
 
 xticks = []
@@ -218,46 +285,33 @@ plot.bar_plot_neuron_rates(init_corrs_OU, correlations_OU, 0, 0,
                            custom_legend=['Init. model', 'Posterior models'], ylabel='Avg. activity correlation',
                            custom_colors=['Gray', 'Brown'])
 
-# not_undef = lambda x: not np.isnan(x) and not np.isinf(x)
-# init_rmse_wn = list(filter(not_undef, init_rmse_wn))
-# rmse_wn = list(filter(not_undef, rmse_wn))
-# init_rmse_OU = list(filter(not_undef, init_rmse_OU))
-# rmse_OU = list(filter(not_undef, rmse_OU))
-#
-# correlations_wn = list(filter(not_undef, correlations_wn))
-# correlations_OU = list(filter(not_undef, correlations_OU))
-# init_corrs_wn = list(filter(not_undef, init_corrs_wn))
-# init_corrs_OU = list(filter(not_undef, init_corrs_OU))
+not_undef = lambda x: not np.isnan(x) and not np.isinf(x)
+init_rmse_wn = list(filter(not_undef, init_rmse_wn))
+rmse_wn = list(filter(not_undef, rmse_wn))
+init_rmse_OU = list(filter(not_undef, init_rmse_OU))
+rmse_OU = list(filter(not_undef, rmse_OU))
 
-import torch.tensor as T
-n_init_rmse_wn = T(np.asarray(init_rmse_wn))/T(np.asarray(init_rmse_wn)); n_rmse_wn = T(rmse_wn) / T(np.asarray(init_rmse_wn))
-# n_rmse_wn[1] = torch.min(n_rmse_wn[1], T(4.))
-n_init_rmse_OU = T(np.asarray(init_rmse_OU))/T(np.asarray(init_rmse_OU)); n_rmse_OU = T(rmse_OU) / T(np.asarray(init_rmse_OU))
-# n_rmse_OU[1] = torch.min(n_rmse_OU[1], T(4.))
-plot.bar_plot(n_rmse_wn.numpy(), y_std=0, exp_type=plot_exp_type, uuid='all',
+correlations_wn = list(filter(not_undef, correlations_wn))
+correlations_OU = list(filter(not_undef, correlations_OU))
+init_corrs_wn = list(filter(not_undef, init_corrs_wn))
+init_corrs_OU = list(filter(not_undef, init_corrs_OU))
+
+plot.bar_plot(np.asarray(rmse_wn), y_std=0, exp_type=plot_exp_type, uuid='all',
               ylabel='RMSE', fname='plot_rmse_wn_all_GBO.eps', labels=xticks, baseline=1.,
               custom_colors=['Purple'], custom_legend=['Init. model', 'Posterior models'])
-plot.bar_plot(n_rmse_OU.numpy(), y_std=0, exp_type=plot_exp_type, uuid='all',
+plot.bar_plot(np.asarray(rmse_OU), y_std=0, exp_type=plot_exp_type, uuid='all',
               ylabel='RMSE', fname='plot_rmse_OU_all_GBO.eps', labels=xticks, baseline=1.,
               custom_colors=['Purple'], custom_legend=['Init. model', 'Posterior models'])
 
-print('init_rmse_wn', init_rmse_wn)
-print('rmse_wn', rmse_wn)
-
-print('init_rmse_OU', init_rmse_OU)
-print('rmse_OU', rmse_OU)
 # ------
-
-print('n_init_rmse_wn', n_init_rmse_wn)
-print('n_rmse_wn', n_rmse_wn)
-
-print('n_init_rmse_OU', n_init_rmse_OU)
-print('n_rmse_OU', n_rmse_OU)
-
-print('init_corrs_wn', init_corrs_wn)
+print('rmse_wn', rmse_wn)
+print('rmse_OU', rmse_OU)
 print('correlations_wn', correlations_wn)
-
-print('init_corrs_OU', init_corrs_OU)
 print('correlations_OU', correlations_OU)
+
+print('rmse_wn_per_pop', rmse_wn_per_pop)
+print('rmse_OU_per_pop', rmse_OU_per_pop)
+print('correlations_wn_per_pop', correlations_wn_per_pop)
+print('correlations_OU_per_pop', correlations_OU_per_pop)
 
 # sys.exit()

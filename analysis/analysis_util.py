@@ -10,13 +10,14 @@ import model_util
 from Models.microGIF import microGIF
 
 
-def get_lfn_from_plot_data_in_folder(exp_folder):
+def get_lfn_loss_from_plot_data_in_folder(exp_folder):
     folder_files = os.listdir(exp_folder)
     loss_file = list(filter(lambda x: x.__contains__('plot_loss'), folder_files))[0]
     plot_data = torch.load(exp_folder + loss_file)['plot_data']
     custom_title = plot_data['custom_title']
     lfn = custom_title.split(',')[0].strip('Loss ')
-    return lfn
+    loss = plot_data['loss'][-1]
+    return lfn, loss
 
 
 def get_target_model(model_type_str):
