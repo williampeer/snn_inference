@@ -101,8 +101,12 @@ def activity_correlations_per_pop(model_act, tar_act, bin_size):
         for bp_i in range(num_pops):
             m_bins[b_i, bp_i] = model_act[b_i * bin_size:(b_i + 1) * bin_size, bp_i].sum()
             t_bins[b_i, bp_i] = tar_act[b_i * bin_size:(b_i + 1) * bin_size, bp_i].sum()
-    import scipy
-    return scipy.stats.pearsonr(m_bins, t_bins)
+
+    corrs = []
+    import scipy.stats
+    for bp_i in range(num_pops):
+        corrs.append(scipy.stats.pearsonr(m_bins[:, bp_i].detach().numpy(), t_bins[:, bp_i].detach().numpy()))
+    return corrs
 
 
 
@@ -161,7 +165,8 @@ init_activity_rmse_wn_per_model_type_per_pop = {}
 exp_uids = os.listdir(experiments_path + '/' + model_type_str)
 
 method = 'GBO'
-t = 6000
+t = 9000
+# t = 1200
 BIN_SIZE = int(t/3)
 target_model = analysis_util.get_target_model('mesoGIF')
 init_params_dict = experiments.draw_from_uniform(microGIF.parameter_init_intervals, target_model.N)
@@ -309,9 +314,9 @@ print('rmse_OU', rmse_OU)
 print('correlations_wn', correlations_wn)
 print('correlations_OU', correlations_OU)
 
-print('rmse_wn_per_pop', rmse_wn_per_pop)
-print('rmse_OU_per_pop', rmse_OU_per_pop)
-print('correlations_wn_per_pop', correlations_wn_per_pop)
-print('correlations_OU_per_pop', correlations_OU_per_pop)
+# print('rmse_wn_per_pop', rmse_wn_per_pop)
+# print('rmse_OU_per_pop', rmse_OU_per_pop)
+# print('correlations_wn_per_pop', correlations_wn_per_pop)
+# print('correlations_OU_per_pop', correlations_OU_per_pop)
 
 # sys.exit()
