@@ -20,62 +20,12 @@ experiments_path = '/media/william/p6/archive_30122021_full/archive/saved/sleep_
 experiments_path_plot_data = '/media/william/p6/archive_30122021_full/archive/saved/plot_data/sleep_data_no_types/'
 experiments_path_sleep_data_microGIF = '/media/william/p6/archive_30122021_full/archive/saved/sleep_data/'
 experiments_path_sleep_data_microGIF_plot_data = '/media/william/p6/archive_30122021_full/archive/saved/plot_data/sleep_data/'
-
-# experiments_path = '/media/william/p6/archive_30122021_full/archive/saved/sleep_data_no_types/'  # GLIF, LIF
-# experiments_path = '/media/william/p6/archive_30122021_full/archive/saved/sleep_data/'  # microGIF / SGIF
-
-# experiments_path = '/media/william/p6/archive_14122021/archive/saved/sleep_data_no_types/'
-# archive_name = 'data/'
-# plot_data_path = experiments_path + 'plot_data/'
-# model_type_dirs = os.listdir(experiments_path)
 model_type_dirs = ['LIF_no_cell_types', 'GLIF_no_cell_types', 'microGIF']
 exp_folder_name = experiments_path.split('/')[-2]
 
 
 sleep_exps = ['exp108', 'exp109', 'exp124', 'exp126', 'exp138', 'exp146', 'exp147']
-# rate_per_exp = {}
-# loss_per_exp = {}
-# target_rates = []
 plot_exp_type = 'export_metrics'
-# for model_type_str in model_type_dirs:
-#     for exp_str in sleep_exps:
-#         target_rate, _ = analysis_util.get_target_rate_for_sleep_exp(exp_str)
-#         target_rates.append(target_rate)
-#         cur_fname = 'export_rates_{}_{}_{}.eps'.format(model_type_str, experiments_path.split('/')[-2], exp_str)
-#
-#         plot_uid = model_type_str
-#         full_path = './figures/' + plot_exp_type + '/' + plot_uid + '/'
-#         # mean_rates_by_lfn = { 'frd': [], 'vrd': [], 'bernoulli_nll': [], 'poisson_nll': [] }
-#         if model_type_str == 'microGIF':
-#             rate_per_exp[exp_str] = {model_type_str : {'bernoulli_nll': [], 'poisson_nll': []}}
-#             loss_per_exp[exp_str] = {model_type_str : {'bernoulli_nll': [], 'poisson_nll': []}}
-#         else:
-#             rate_per_exp[exp_str] = {model_type_str : {'frd': [], 'vrd': []}}
-#             loss_per_exp[exp_str] = {model_type_str : {'frd': [], 'vrd': []}}
-#
-#     if os.path.exists(experiments_path + model_type_str):
-#         exp_uids = os.listdir(experiments_path + model_type_str)
-#         for euid in exp_uids:
-#             sleep_exp = euid_to_sleep_exp_num[model_type_str][euid]
-#             lfn, loss = analysis_util.get_lfn_loss_from_plot_data_in_folder(experiments_path_plot_data + model_type_str + '/' + euid + '/')
-#
-#             load_fname = 'snn_model_target_GD_test'
-#             load_data = torch.load(experiments_path + '/' + model_type_str + '/' + euid + '/' + load_fname + IO.fname_ext)
-#             cur_model = load_data['model']
-#             rate_per_exp[sleep_exp][model_type_str][lfn].append(analysis_util.get_mean_rate_for_model(cur_model))
-#             loss_per_exp[sleep_exp][model_type_str][lfn].append(loss)
-#
-#     if os.path.exists(experiments_path_sleep_data_microGIF + model_type_str):
-#         exp_uids = os.listdir(experiments_path_sleep_data_microGIF + model_type_str)
-#         for euid in exp_uids:
-#             sleep_exp = euid_to_sleep_exp_num[model_type_str][euid]
-#             lfn, loss = analysis_util.get_lfn_loss_from_plot_data_in_folder(experiments_path_sleep_data_microGIF_plot_data + model_type_str + '/' + euid + '/')
-#
-#             load_fname = 'snn_model_target_GD_test'
-#             load_data = torch.load(experiments_path_sleep_data_microGIF + model_type_str + '/' + euid + '/' + load_fname + IO.fname_ext)
-#             cur_model = load_data['model']
-#             rate_per_exp[sleep_exp][model_type_str][lfn].append(analysis_util.get_mean_rate_for_model(cur_model))
-#             loss_per_exp[sleep_exp][model_type_str][lfn].append(loss)
 
 loaded = torch.load('./save_stuff/calc_rates_for_sleep_exps_res_SGIF.pt')
 print('loaded: ', loaded)
@@ -84,10 +34,12 @@ rate_per_exp = loaded['rate_per_exp']
 loss_per_exp = loaded['loss_per_exp']
 print(rate_per_exp)
 target_rates = []
+target_rate_stds = []
 
 for exp_str in rate_per_exp.keys():
-    target_rate, _ = analysis_util.get_target_rate_for_sleep_exp(exp_str)
+    target_rate, tar_rate_std = analysis_util.get_target_rate_for_sleep_exp(exp_str)
     target_rates.append(target_rate)
+    target_rate_stds.append(tar_rate_std)
 
 ctr = 0
 res_rates = {}
@@ -140,6 +92,13 @@ sleep_exp_labels = list(map(lambda x: 'exp ' + str(sleep_exps.index(x)), sleep_e
 plot.bar_plot_neuron_rates(sut_rate['microGIF']['bernoulli_nll'], sut_rate_std['microGIF']['bernoulli_nll'], sut_rate['microGIF']['poisson_nll'], sut_rate_std['microGIF']['poisson_nll'],
                            xticks=sleep_exp_labels, exp_type='export_sleep', uuid='export_sleep', fname='approx_rate_across_exp_{}.eps'.format('microGIF'),
                            custom_legend=['Bernoulli NLL', 'Poisson NLL'])
+
+plot.bar_plot_neuron_rates(sut_rate['microGIF']['poisson_nll'], sut_rate_std['microGIF']['poisson_nll'], target_rates, target_rate_stds,
+                           xticks=sleep_exp_labels, exp_type='export_sleep', uuid='export_sleep', fname='approx_rate_across_exp_{}_poisson_nll_vs_fitted.eps'.format('microGIF'),
+                           custom_legend=['Fitted model', 'Target model'])
+plot.bar_plot_neuron_rates(sut_rate['microGIF']['bernoulli_nll'], sut_rate_std['microGIF']['bernoulli_nll'], target_rates, target_rate_stds,
+                           xticks=sleep_exp_labels, exp_type='export_sleep', uuid='export_sleep', fname='approx_rate_across_exp_{}_bernoulli_nll_vs_fitted.eps'.format('microGIF'),
+                           custom_legend=['Fitted model', 'Target model'])
 
 plot.bar_plot_neuron_rates(sut_loss['microGIF']['bernoulli_nll'], sut_loss_std['microGIF']['bernoulli_nll'], sut_loss['microGIF']['poisson_nll'], sut_loss_std['microGIF']['poisson_nll'],
                            xticks=sleep_exp_labels, exp_type='export_sleep', uuid='export_sleep', fname='approx_loss_across_exp_{}.eps'.format('microGIF'),
